@@ -1,0 +1,22 @@
+Project,TimeStamp,UseValueType,UseValueCircuitType,Description,UnitValue,UnitPrice,TurnoverTime,Total Supply,Total Quantity,Total Demand,Surplus,Total Value,Total Price,allocationShare
+4,1,Fixed,Capitalist,Department 1,1,1,360,0,0,0,0,0,0,0
+4,1,Circulating,Capitalist,Department 1,1,1,60,0,0,0,0,0,0,0
+4,1,Consumption,Capitalist,Department 2,0.5,0.5,1,0,0,0,0,0,0,0
+4,1,Labour Power,Social,Wage earners,0.5,0.5,1,0,0,0,0,0,0,0
+4,1,Money,Social,All forms of money,1,1,0,0,0,0,0,0,0,0
+1,1,Means of Production,Capitalist,Department 1,1,1,1,0,0,0,0,0,0,0
+1,1,Consumption,Capitalist,Department 2,1,1,1,0,0,0,0,0,0,0
+1,1,Money,Social,All forms of money,1,1,0,0,0,0,0,0,0,0
+1,1,Labour Power,Social,Wage earners,0.5,0.5,1,0,0,0,0,0,0,0
+3,1,Means of Production,Capitalist,Department 1,1,1,2,0,0,0,0,0,0,0
+3,1,Consumption,Capitalist,Department 2,1,1,2,0,0,0,0,0,0,0
+3,1,Money,Social,All forms of money,1,1,0,0,0,0,0,0,0,0
+3,1,Labour Power,Social,Wage earners,0.5,0.5,2,0,0,0,0,0,0,0
+2,1,Means of Production,Capitalist,Department 1,1,1,1,0,0,0,0,0,0,0
+2,1,Consumption,Capitalist,Department 2,1,1,1,0,0,0,0,0,0,0
+2,1,Money,Social,All forms of money,1,1,0,0,0,0,0,0,0,0
+2,1,Labour Power,Social,Wage earners,0.5,0.5,1,0,0,0,0,0,0,0
+5,1,Means of Production,Capitalist,Department 1,1,1,1,0,0,0,0,0,0,0
+5,1,Consumption,Capitalist,Department 2,1,1,1,0,0,0,0,0,0,0
+5,1,Money,Social,All forms of money,1,1,0,0,0,0,0,0,0,0
+5,1,Labour Power,Social,Wage earners,0.5,0.5,1,0,0,0,0,0,0,0

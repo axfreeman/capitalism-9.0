@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
+
+<fx:root type="javafx.scene.layout.HBox" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Label fx:id="description" prefHeight="30.0" text="Label">
+         <font>
+            <Font size="12.0" />
+         </font>
+      </Label>
+      <Pane HBox.hgrow="ALWAYS" />
+		<Label fx:id="numberLabel" alignment="CENTER_RIGHT" contentDisplay="RIGHT" prefHeight="30.0" prefWidth="60.0" text="0.00">
+         <font>
+            <Font size="12.0" />
+         </font>
+		</Label>
+   </children>
+</fx:root>

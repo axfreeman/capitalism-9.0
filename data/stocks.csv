@@ -1,0 +1,92 @@
+PROJECT,TIMESTAMP,OWNER,OWNERTYPE,USEVALUE,STOCKTYPE,QUANTITY,COEFFICIENT,QUANTITYDEMANDED
+1,1,Capitalists,Class,Labour Power,Sales,0,0,0
+1,1,Capitalists,Class,Consumption,Consumption,0,0,0
+1,1,Capitalists,Class,Money,Money,1500,0,0
+1,1,Consumption,Branch,Means of Production,Productive,0,0.666666667,0
+1,1,Consumption,Branch,Labour Power,Productive,0,0.333333333,0
+1,1,Consumption,Branch,Money,Money,3000,0,0
+1,1,Consumption,Branch,Consumption,Sales,3000,0,0
+1,1,Consumption,Branch,Consumption,Productive,0,0,0
+1,1,Means of Production,Branch,Money,Money,6000,0,0
+1,1,Means of Production,Branch,Consumption,Productive,0,0,0
+1,1,Means of Production,Branch,Means of Production,Sales,6000,0,0
+1,1,Means of Production,Branch,Labour Power,Productive,0,0.333333333,0
+1,1,Means of Production,Branch,Means of Production,Productive,0,0.666666667,0
+1,1,Workers,Class,Money,Money,1500,0,0
+1,1,Workers,Class,Labour Power,Sales,1500,0,0
+1,1,Workers,Class,Consumption,Consumption,0,0,0
+2,1,Capitalists,Class,Consumption,Consumption,0,0,0
+2,1,Capitalists,Class,Labour Power,Sales,0,0,0
+2,1,Capitalists,Class,Money,Money,1500,0,0
+2,1,Consumption,Branch,Money,Money,3000,0,0
+2,1,Consumption,Branch,Means of Production,Productive,0,0.666666667,0
+2,1,Consumption,Branch,Labour Power,Productive,0,0.333333333,0
+2,1,Consumption,Branch,Consumption,Sales,3000,0,0
+2,1,Consumption,Branch,Consumption,Productive,0,0,0
+2,1,Means of Production,Branch,Consumption,Productive,0,0,0
+2,1,Means of Production,Branch,Money,Money,6000,0,0
+2,1,Means of Production,Branch,Means of Production,Productive,0,0.666666667,0
+2,1,Means of Production,Branch,Labour Power,Productive,0,0.333333333,0
+2,1,Means of Production,Branch,Means of Production,Sales,6000,0,0
+2,1,Workers,Class,Consumption,Consumption,0,0,0
+2,1,Workers,Class,Money,Money,1500,0,0
+2,1,Workers,Class,Labour Power,Sales,1500,0,0
+3,1,Capitalists,Class,Labour Power,Sales,0,0,0
+3,1,Capitalists,Class,Consumption,Consumption,0,0,0
+3,1,Capitalists,Class,Money,Money,750,0,0
+3,1,Consumption,Branch,Money,Money,3000,0,0
+3,1,Consumption,Branch,Labour Power,Productive,0,0.333333333,0
+3,1,Consumption,Branch,Means of Production,Productive,0,0.666666667,0
+3,1,Consumption,Branch,Consumption,Productive,0,0,0
+3,1,Consumption,Branch,Consumption,Sales,3000,0,0
+3,1,Means of Production,Branch,Money,Money,6000,0,0
+3,1,Means of Production,Branch,Consumption,Productive,0,0,0
+3,1,Means of Production,Branch,Means of Production,Productive,0,0.666666667,0
+3,1,Means of Production,Branch,Labour Power,Productive,0,0.333333333,0
+3,1,Means of Production,Branch,Means of Production,Sales,6000,0,0
+3,1,Workers,Class,Consumption,Consumption,0,0,0
+3,1,Workers,Class,Money,Money,750,0,0
+3,1,Workers,Class,Labour Power,Sales,3000,0,0
+4,1,Bankers,Class,Consumption,Consumption,0,0,0
+4,1,Bankers,Class,Labour Power,Sales,0,0,0
+4,1,Bankers,Class,Money,Money,10000,0,0
+4,1,Capitalists,Class,Labour Power,Sales,0,0,0
+4,1,Capitalists,Class,Money,Money,3000,0,0
+4,1,Capitalists,Class,Consumption,Consumption,0,0,0
+4,1,Circulating,Branch,Fixed,Productive,0,0.01,0
+4,1,Circulating,Branch,Labour Power,Productive,0,0.01,0
+4,1,Circulating,Branch,Circulating,Sales,600,0,0
+4,1,Circulating,Branch,Circulating,Productive,0,0.01,0
+4,1,Circulating,Branch,Consumption,Productive,0,0,0
+4,1,Circulating,Branch,Money,Money,8000,0,0
+4,1,Consumption,Branch,Labour Power,Productive,0,0.01,0
+4,1,Consumption,Branch,Money,Money,9000,0,0
+4,1,Consumption,Branch,Circulating,Productive,0,0.005,0
+4,1,Consumption,Branch,Consumption,Sales,300,0,0
+4,1,Consumption,Branch,Fixed,Productive,0,0.01,0
+4,1,Consumption,Branch,Consumption,Productive,0,0,0
+4,1,Fixed,Branch,Money,Money,10000,0,0
+4,1,Fixed,Branch,Consumption,Productive,0,0,0
+4,1,Fixed,Branch,Circulating,Productive,0,0.01,0
+4,1,Fixed,Branch,Fixed,Productive,0,0.01,0
+4,1,Fixed,Branch,Fixed,Sales,10000,0,0
+4,1,Fixed,Branch,Labour Power,Productive,0,0.01,0
+4,1,Workers,Class,Consumption,Consumption,0,0,0
+4,1,Workers,Class,Money,Money,3000,0,0
+4,1,Workers,Class,Labour Power,Sales,300,0,0
+5,1,Capitalists,Class,Labour Power,Sales,0,0,0
+5,1,Capitalists,Class,Consumption,Consumption,0,0,0
+5,1,Capitalists,Class,Money,Money,1750,0,0
+5,1,Consumption,Branch,Means of Production,Productive,0,0.5,0
+5,1,Consumption,Branch,Labour Power,Productive,0,0.5,0
+5,1,Consumption,Branch,Money,Money,3000,0,0
+5,1,Consumption,Branch,Consumption,Sales,3000,0,0
+5,1,Consumption,Branch,Consumption,Productive,0,0,0
+5,1,Means of Production,Branch,Money,Money,6000,0,0
+5,1,Means of Production,Branch,Consumption,Productive,0,0,0
+5,1,Means of Production,Branch,Means of Production,Sales,5500,0,0
+5,1,Means of Production,Branch,Labour Power,Productive,0,0.333333333,0
+5,1,Means of Production,Branch,Means of Production,Productive,0,0.666666667,0
+5,1,Workers,Class,Money,Money,3500,0,0
+5,1,Workers,Class,Labour Power,Sales,1750,0,0
+5,1,Workers,Class,Consumption,Consumption,0,0,0

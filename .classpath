@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="data"/>
+	<classpathentry kind="src" path="img"/>
+	<classpathentry kind="src" path="log"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.8.0_144"/>
+	<classpathentry kind="con" path="org.eclipse.fx.ide.jdt.core.JAVAFX_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/EclipseLink 2.5.2"/>
+	<classpathentry kind="lib" path="lib/commons-io-2.6-javadoc.jar"/>
+	<classpathentry kind="lib" path="lib/commons-io-2.6-sources.jar"/>
+	<classpathentry kind="lib" path="lib/commons-io-2.6.jar"/>
+	<classpathentry kind="lib" path="lib/commons-math3-3.6.1.jar"/>
+	<classpathentry kind="lib" path="lib/h2-1.4.195.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-api-2.9.1-javadoc.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-api-2.9.1-sources.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-api-2.9.1.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-core-2.9.1-sources.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-core-2.9.1.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
