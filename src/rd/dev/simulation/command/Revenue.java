@@ -39,7 +39,6 @@ public class Revenue extends Simulation implements Command {
 	public void execute() {
 		Reporter.report(logger, 0, "REVENUE");
 		advanceOneStep(ActionStates.C_M_Revenue.getText(), ActionStates.C_M_Distribute.getText());
-		allocateProfits();
 
 		// Revenue properly speaking.
 		// Capitalists receive profits.
@@ -76,6 +75,7 @@ public class Revenue extends Simulation implements Command {
 			// its use is to determine what classes consume
 
 			capitalistRevenue+=profit;
+			c.setProfit(0);
 		}
 		Reporter.report(logger, 2, "  Capitalist revenue (disposable income) set to $%.2f", capitalistRevenue);
 		capitalists.setRevenue(capitalistRevenue);

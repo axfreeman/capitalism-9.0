@@ -2,7 +2,7 @@
 
 ##  What is this?
 
-Capitalism 8.0 is a simulation framework to show how a capitalist economy functions and provide a testbed for different theories about how this happens.
+Capitalism 9.0 is an app which shows how a capitalist economy functions, provides a testbed for different theories about how this happens, and allows users to learn about it and study it.
 
 ## Where do I find out more?
 

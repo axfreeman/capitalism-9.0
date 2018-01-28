@@ -259,7 +259,7 @@ public class Global extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param surplusMeansOfProduction the surplusMeansOfProduction to set
+	 * @param totalSurplusOfMeansOfProduction the totalSurplusOfMeansOfProduction to set
 	 */
 	public void setSurplusMeansOfProduction(double totalSurplusOfMeansOfProduction) {
 		this.surplusMeansOfProduction = totalSurplusOfMeansOfProduction;
