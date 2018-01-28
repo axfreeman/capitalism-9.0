@@ -1,36 +1,30 @@
-# Capitalism 8.0
-
-## Announcements
-
-### 1/28/2018 7:06:29 AM 
-
-Substantial changes to deal with expanded reproduction
-In consequence SR is working but with halved period, runs into problems.
-Code is included in this commit but, therefore, no new executable or runnable jar.
-Thus, this should be a working executable.
-
-Docs folder does not now include Luxemburg text, because it's too big.
-
-### 1/24/2018 8:06:44 PM 
-
-Changes to code for dealing with expanded reproduction. 
-This is not yet fully operational but is registered because it has substantial implications for the methodology
-'Docs' folder now includes:
-	Literature on expanded reproduction
-	Spreadsheet reproducing Marx's example 1
+# Capitalism 9.0
 
 ##  What is this?
 
 Capitalism 8.0 is a simulation framework to show how a capitalist economy functions and provide a testbed for different theories about how this happens.
 
+## Where do I find out more?
+
+### The user guide
+
+	The file 'User Guide.pdf' walks you through the project, and at the same time teaches you how to use it, and what it's for.
+
+### Announcements
+
+	The file 'announcements.md' contains updates on what's been done recently and the current state of the project
+
+### The Documents folder
+
+	The folder 'docs' contains material relating to the project - articles, spreadsheets, and a Word version of the user guide
+
+### The TODO file
+	
+	The file 'todo.md' in the docs folder is a more techie guide to what's going on, what the bugs are, what's been fixed, and so on
+
 ## How do I run it?
 
-The application runs from a single Windows executable called 'capitalism.exe'. 
-I haven't yet created a Mac or Android version. 
-Mac is unproblematic as is .nix. 
-Android is more complex because I don't know how to manage responsive layouts.
-
-See 'Installation' below.
+The application runs from a single Windows executable called 'capitalism.exe'. See 'Installation' below.
 
 ## What's it for?
 
@@ -157,11 +151,19 @@ Every table has a special column called 'timeStamp'. Every time the simulation d
 
 This may seem like overkill, but it's way less complicated than anything else and, with modern database technology and a small number of entities, it runs at an acceptable speed. It could become more difficult if there are a larger number of entities, but it doesn't matter that we are creating many records (of a small number of entities) because these days, storage is cheap.
 
-### What is to be done
+## legal and license stuff
 
-Minor requirements especially technical ones are listed in 'ToDo.md'. This section deals with major requirements especially conceptual ones.
+The app, documentation, and code (in other words, everything on this site) is copyright. It is free for you to use and distribute but you must acknowledge it, and you can't make money from it.
 
-####11/26/2017 7:51:16 PM 
-Profit, Profit rate, and Investment
+(well, you can, but I will probably sue you)
 
+Here's the formal statement:
+
+###Copyright (C) Alan Freeman 2017-2019
+ 
+  All files in this repository are part of the Capitalism Simulation, abbreviated to CapSim in the remainder of this project. Capsim is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either project of the License, or (at your option) any later project. Capsim is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the  GNU General Public License for more details. You should have received a copy of the GNU General Public License along with Capsim.  If not, see <http://www.gnu.org/licenses/>.
+
+### flaticons license
+
+The icons used in this project are from various sources which include the www.flaticon.com site from which they were downloaded. These are covered by the license agreement in the 'flaticonslicense' folder.
 
