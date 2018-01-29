@@ -53,10 +53,10 @@ public class ProjectCombo extends ComboBox<Project> {
 		valueProperty().addListener(new ChangeListener<Project>() {
 			@Override public void changed(ObservableValue<? extends Project> observable, Project oldValue, Project newValue) {
 				if (oldValue != null) {
-					Reporter.report(logger, 0, "User chose project " + oldValue.getDescription());
+					logger.debug("User chose project {}",oldValue.getDescription());
 				}
 				if (newValue != null) {
-					Reporter.report(logger, 0, "User chose project " + newValue.getDescription());
+					logger.debug("User chose project {}", newValue.getDescription());
 					setPromptText(newValue.getDescription());
 					Capitalism.viewManager.switchProject(newValue);
 				}

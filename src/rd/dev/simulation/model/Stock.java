@@ -257,8 +257,8 @@ public class Stock extends Observable implements Serializable {
 		quantity = newQuantity;
 		value = newValue;
 		price = newPrice;
-		Reporter.report(logger, 2, "  The size of commodity [%s], of type [%s], owned by [%s], is %.2f. ", pk.useValue, pk.stockType, pk.circuit, quantity);
-		Reporter.report(logger, 2, "  Its value has been set to $%.2f (intrinsic %.2f) and its price to $%.2f (intrinsic %.2f)" , value, value/melt, price, price/melt);
+		Reporter.report(logger, 2, "  Size of commodity [%s], of type [%s], owned by [%s]: is %.2f. Value set to $%.2f (intrinsic %.2f), and price to %.2f (intrinsic %.2f)", 
+				pk.useValue, pk.stockType, pk.circuit, quantity,value, value/melt, price, price/melt);
 		UseValue useValue=getUseValue();
 		useValue.setTotalQuantity(useValue.getTotalQuantity()+changeInQuantity);
 		useValue.setTotalValue(useValue.getTotalValue()+changeInValue);

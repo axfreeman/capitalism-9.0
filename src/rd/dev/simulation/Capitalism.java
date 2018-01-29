@@ -40,7 +40,6 @@ import rd.dev.simulation.datamanagement.ObservableListProvider;
 import rd.dev.simulation.datamanagement.SelectionsProvider;
 import rd.dev.simulation.utils.DBHandler;
 import rd.dev.simulation.utils.Reporter;
-import rd.dev.simulation.view.LogWindow;
 import rd.dev.simulation.view.ViewManager;
 
 public class Capitalism extends Application {
@@ -52,7 +51,6 @@ public class Capitalism extends Application {
 	public static Simulation simulation = new Simulation();			// controls the action
 	public static SelectionsProvider selectionsProvider = null;
 	public static ViewManager viewManager = null; 					// controls the display
-	public static LogWindow logWindow = new LogWindow();				// used by ViewManager and Reporter to tell the user what's going on.
 	/**
 	 * the base for all files that are created in, or copied into, the user's file system
 	 */
@@ -64,7 +62,7 @@ public class Capitalism extends Application {
 	private BorderPane rootLayout;
 
 	public static void main(String[] args) {
-		Reporter.report(logger, 1, "Entered Capitalism constructor");
+		logger.debug("Entered Capitalism constructor");
 
 		/*
 		 * 'Launch' is where the action begins.

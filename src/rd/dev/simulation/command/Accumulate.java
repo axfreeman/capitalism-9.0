@@ -29,20 +29,26 @@ import rd.dev.simulation.custom.ActionStates;
 import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.Circuit;
 import rd.dev.simulation.model.Global;
+import rd.dev.simulation.model.SocialClass;
+import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.model.UseValue;
 import rd.dev.simulation.utils.Reporter;
 
 public class Accumulate extends Simulation implements Command {
 	private static final Logger logger = LogManager.getLogger(Accumulate.class);
 
+	Global global; 
+
 	public Accumulate() {
 	}
 
 	public void execute() {
+		global=DataManager.getGlobal(timeStampIDCurrent);
 		Reporter.report(logger, 0, "ACCUMULATE");
 		advanceOneStep(ActionStates.C_M_Accumulate.getText(), ActionStates.C_M_Distribute.getText());
 		calculateSurplus();
 		calculateCostsOfInvestment();
+		allocateProfits();
 
 		// TODO Investment.
 		// One of several possible algorithms, to be improved on later if need be.
@@ -61,13 +67,52 @@ public class Accumulate extends Simulation implements Command {
 		
 		Capitalism.simulation.advanceOnePeriod();
 	}
+	
+	/**
+	 * given the surplus of means of production and the available funds, allocate the funds to the industries in a systematic way.
+	 * Initially while we are testing two-department models this takes the simple form of trying to invest
+	 * at the desired rate and giving up if we can't.
+	 */
+	private void allocateProfits() {
+		SocialClass capitalists = DataManager.socialClassByName(timeStampIDCurrent, "Capitalists");
+		double meansOfProductionAccountedFor=0;
+		
+		// TODO the above should all be done in price terms; make sure it is so.
+		
+		for(Circuit c:DataManager.circuitsAll(timeStampIDCurrent)) {
+			if (c.industryType()==Circuit.IndustryType.MEANSOFPRODUCTION) {
+				double fundsRequired=c.getCostOfExpansion();
+				Reporter.report(logger, 2, "  Industry [%s] needs to spend %.2s and will be allocated this from capitalist profits",c.getProductUseValueType(),fundsRequired);
+
+				// transfer enough profits from the capitalist class to grow to the industry's proposed output
+				// Give up if there isn't enough
+				// Reduce revenue correspondingly
+
+				Stock donor = capitalists.getMoneyStock();
+				Stock recipient = c.getMoneyStock();
+				recipient.modifyBy(fundsRequired);
+				donor.modifyBy(-fundsRequired);
+				Reporter.report(logger, 2, " The industry has received $%.2f from the capitalist class to accumulate",
+						fundsRequired);
+				capitalists.setRevenue(capitalists.getRevenue()-fundsRequired);
+				meansOfProductionAccountedFor=c.getCostOfMPForExpansion();
+			}
+		}
+		// TODO allocate remaining funds to consumption
+		double meansOfProductionRemaining=global.getSurplusMeansOfProduction()-meansOfProductionAccountedFor;
+		Reporter.report(logger, 2, " After allocating accumulation funds to Department I, %.2f remains to be allocated", meansOfProductionRemaining);
+		
+		//TODO do this
+	}
+
 	/**
 	 * calculate the surplus of means of production that are available to invest in
 	 */
 	private void calculateSurplus() {
+		
 		// calculate the total surplus of means of production
 		
-		Reporter.report(logger, 1, " Calculating the surplus of means of production available to invest in");
+		Reporter.report(logger, 1, " Calculating the surplus of means of production available for expansion");
 		double surplusMeansOfProduction=0.0;
 		for(UseValue u:DataManager.useValuesAll(timeStampIDCurrent)) {
 			if (!u.getUseValueType().equals("Consumption")) {
@@ -77,7 +122,6 @@ public class Accumulate extends Simulation implements Command {
 			}
 		}	
 		Reporter.report(logger, 2, "  Total investible surplus is $%.2f", surplusMeansOfProduction);
-		Global global =DataManager.getGlobal(timeStampIDCurrent);
 		global.setSurplusMeansOfProduction(surplusMeansOfProduction);
 	}
 
@@ -86,8 +130,9 @@ public class Accumulate extends Simulation implements Command {
 	 */
 	
 	private void calculateCostsOfInvestment() {
+		Reporter.report(logger, 1, " Calculating the costs of investment", "");
 		for(Circuit c:DataManager.circuitsAll(timeStampIDCurrent)) {
-			double proposedOutput=c.getOutput()*c.getGrowthRate();
+			double proposedOutput=c.getOutput()*(1+c.getGrowthRate());
 			c.calculateOutputCosts(proposedOutput);
 		}
 	}

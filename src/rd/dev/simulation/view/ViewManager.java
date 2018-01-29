@@ -339,7 +339,7 @@ public class ViewManager {
 			toggleHints();
 		});
 		logButton.setOnAction((event) -> {
-			Capitalism.logWindow.showLoggerWindow();
+			Reporter.logWindow.showLoggerWindow();
 		});
 		restartButton.setOnAction((event) -> {
 			restart();
@@ -567,9 +567,9 @@ public class ViewManager {
 	 *            the selected Project
 	 */
 	public void switchProject(Project newValue) {
-		Reporter.report(logger, 1, "entered switchProject");
+		logger.debug("entered switchProject");
 		if (newValue.getProjectID() != Simulation.projectCurrent) {
-			Reporter.report(logger, 1, "Requested switch to project with ID(%d) and description %s ", newValue.getProjectID(), newValue.getDescription());
+			logger.debug("Requested switch to project with ID {} and description {} ", newValue.getProjectID(), newValue.getDescription());
 			DataManager.switchProjects(newValue.getProjectID(), actionButtonsBox);
 			refreshTimeStampTable();
 			refreshDisplay();

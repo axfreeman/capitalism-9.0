@@ -70,6 +70,7 @@ public class Circuit extends Observable implements Serializable {
 	@Column(name = "RateOfProfit") private double rateOfProfit;
 	@Column(name = "Growthrate") private double growthRate;
 
+	
 	@Transient private double costOfExpansion; // what it would cost to achieve the given growth rate
 	@Transient private double costOfMPForExpansion; // what needs to be invested in Means of Production to achieve the requested growth rate
 	@Transient private double costOfLPForExpansion; // what needs to be invested in Labour Power to achieve the requested growth rate
@@ -82,6 +83,17 @@ public class Circuit extends Observable implements Serializable {
 		PRODUCTUSEVALUETYPE, OUTPUT, MAXIMUMOUTPUT, INITIALCAPITAL, CURRENTCAPITAL, PROFIT, RATEOFPROFIT, PRODUCTIVESTOCKS, MONEYSTOCK, SALESSTOCK, TOTAL, GROWTHRATE
 	}
 
+	/**
+	 * Says whether the industry produces means of production, necessities or luxuries.
+	 * Not (yet) a persistent variable hence we have a method that reports on this.
+	 * TODO fully abstract this from the text description of the industry.
+	 * @author afree
+	 *
+	 */
+	public enum IndustryType{
+		MEANSOFPRODUCTION,NECESSITIES,LUXURIES
+	}
+	
 	/**
 	 * A 'bare constructor' is required by JPA and this is it. However, when the new socialClass is constructed, the constructor does not automatically create a
 	 * new PK entity. So we create a 'hollow' primary key which must then be populated by the caller before persisting the entity
@@ -110,7 +122,17 @@ public class Circuit extends Observable implements Serializable {
 		profit = circuitTemplate.profit;
 		rateOfProfit = circuitTemplate.rateOfProfit;
 	}
+	
+	/**
+	 * @return what type of circuit this is
+	 * TODO improve on this
+	 */
 
+	public IndustryType industryType() {
+		if (pk.productUseValueType.equals("Consumption")) return IndustryType.NECESSITIES;
+		if (pk.productUseValueType.equals("Luxuries")) return IndustryType.LUXURIES;
+		return IndustryType.MEANSOFPRODUCTION;
+	}
 	/**
 	 * generic selector which returns a numerical attribute of the money stock depending on the {@link Stock.ValueExpression}
 	 * 
@@ -325,7 +347,7 @@ public class Circuit extends Observable implements Serializable {
 		costOfLPForExpansion = 0.0;
 
 		// ask each productive stock to tell us how much it would cost to increase that stock's size sufficient to produce the required output
-
+		Reporter.report(logger, 1, " Calculating the cost of attaining an output of %.2f",proposedOutput);
 		for (Stock s : DataManager.stocksProductiveByCircuit(Simulation.timeStampIDCurrent, pk.productUseValueType)) {
 			UseValue u = s.getUseValue();
 			if (u == null) {
@@ -345,16 +367,17 @@ public class Circuit extends Observable implements Serializable {
 					Reporter.report(logger, 2, "  Circuit [%s] has %.2f of productive input [%s] which requires an addition of %.2f to produce at level %.2f",
 							pk.productUseValueType, stockLevelExisting, s.getUseValueName(), stockNewRequired, proposedOutput);
 				}
+				stockNewPrice = stockNewRequired * u.getUnitPrice();
 				if (s.getUseValueName().equals("Labour Power")) {
 					costOfLPForExpansion += stockNewPrice;
 				} else {
 					costOfMPForExpansion += stockNewPrice;
 				}
-				stockNewPrice = stockNewRequired * u.getUnitPrice();
 				costOfExpansion += stockNewPrice;
 				Reporter.report(logger, 2,
 						"  Cost of acquiring sufficient stock of [%s] at unit price %.2f is %.2f",
 						s.getUseValueName(), u.getUnitPrice(), stockNewPrice);
+				Reporter.report(logger, 2, "  Of this, the cost of Means of Production is $%.2f and that of Labour Power is $%.2f",costOfMPForExpansion,costOfLPForExpansion);
 			}
 		}
 		Reporter.report(logger, 1,

@@ -31,11 +31,17 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import rd.dev.simulation.Capitalism;
+import rd.dev.simulation.view.LogWindow;
 
 public class Reporter {
 	private static final Logger logger = LogManager.getLogger(Reporter.class);
 	public static Level OVERVIEW = Level.getLevel("OVERVIEW");
+	public static LogWindow logWindow = new LogWindow();				// used by ViewManager and Reporter to tell the user what's going on.
 
+	public Reporter() {
+		
+	}
+	
 	/**
 	 * Report a message at the overview level. This is both a helper function to simplify the logging code, and a wrapper to allow us to display what is going
 	 * on to the user in a structured way without the tortuous business of writing funky logging appenders. The full functionality of the logging API is not
@@ -52,14 +58,13 @@ public class Reporter {
 	 * @param args
 	 *            the arguments, if any
 	 */
-
 	public static void report(Logger logger, int level, String formatString, Object... args) {
 		String message = String.format(formatString, args);
 		if (level==0) {
 			logger.log(OVERVIEW, "");
 		}
 		logger.log(OVERVIEW, message);
-		Capitalism.logWindow.addItem(message,level);
+		logWindow.addItem(message,level);
 	}
 	
 	/**

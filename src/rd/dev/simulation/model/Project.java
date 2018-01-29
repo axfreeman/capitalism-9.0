@@ -48,16 +48,27 @@ public class Project implements Serializable {
 	@Column(name="buttonState") private String buttonState;
 
 	public Project() {
-		// first time creation, set button state to the end of the non-existent last state of the previous period
-		this.buttonState=ActionStates.C_M_Distribute.getText();
+	}
+	
+	/**
+	 * To be used in startup: set button state to the end of the non-existent last state of the previous period
+	 * Added because of a completely mysterious fault on 28 January when suddenly, the default project constructor
+	 * would not work because 'ActionStates' had not been initialised. Until then, it always worked.
+	 * We will probably need this at some point but the App seems to survive without it.
+	 */
+	
+	public void setInitialButtonState() {
+		String distributeText=ActionStates.C_M_Distribute.getText();
+		this.buttonState=distributeText;
+
 	}
 
-	public Project(int projectID, String description) {
-		// first time creation, set button state to the end of the non-existent last state of the previous period
-		this.buttonState=ActionStates.C_M_Distribute.getText();
-		this.projectID = projectID;
-		this.description = description;
-	}
+//	public Project(int projectID, String description) {
+//		// set button state to the end of the non-existent last state of the previous period
+//		this.buttonState=ActionStates.C_M_Distribute.getText();
+//		this.projectID = projectID;
+//		this.description = description;
+//	}
 
 	public int getProjectID() {
 		return this.projectID;

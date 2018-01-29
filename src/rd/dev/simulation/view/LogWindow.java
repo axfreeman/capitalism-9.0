@@ -25,6 +25,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -35,10 +37,10 @@ public class LogWindow {
 
 	private static Scene logScene;
 	private Stage loggingStage = new Stage();
-	private FlowPane logPane = new FlowPane();
+	private HBox hBox = new HBox();
 	private TreeView<Label> treeView;
 	private double logWindowWidth = ViewManager.screenBounds.getWidth() * 0.5;
-	private double logWindowHeight = ViewManager.screenBounds.getHeight() * 0.98;
+	private double logWindowHeight = ViewManager.screenBounds.getHeight() * 0.9;
 	private TreeItem<Label> lastLevel1;
 	private TreeItem<Label> lastLevel2;
 
@@ -63,10 +65,10 @@ public class LogWindow {
 
 		treeView.setPrefHeight(logWindowHeight);
 		treeView.setMaxHeight(Region.USE_PREF_SIZE);
-		treeView.setPrefWidth(ViewManager.screenBounds.getWidth());
-		logScene = new Scene(logPane, logWindowWidth, logWindowHeight);
-
-		logPane.getChildren().add(treeView);
+		treeView.setPrefWidth(logWindowWidth);
+		logScene = new Scene(hBox, logWindowWidth, logWindowHeight);
+		hBox.getChildren().add(treeView);
+		HBox.setHgrow(treeView, Priority.ALWAYS);
 		loggingStage.setScene(logScene);
 		loggingStage.setX(0);
 		loggingStage.setY(0);
@@ -81,7 +83,7 @@ public class LogWindow {
 	}
 
 	/**
-	 * add a log message to the window. Messages are always added sequentially but can be displayed in tree form so as to abbreviat the display.
+	 * add a log message to the window. Messages are always added sequentially but can be displayed in tree form so as to abbreviate the display.
 	 * 
 	 * @param message
 	 *            the message to add

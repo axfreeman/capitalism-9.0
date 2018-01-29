@@ -25,7 +25,6 @@ import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.ActionStates;
 import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.Circuit;
-import rd.dev.simulation.model.Global;
 import rd.dev.simulation.model.SocialClass;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.utils.Reporter;
@@ -68,7 +67,7 @@ public class Revenue extends Simulation implements Command {
 			Stock donor = c.getMoneyStock();
 			recipient.modifyBy(profit);
 			donor.modifyBy(-profit);
-			Reporter.report(logger, 2, " Capitalist class has received $%.2f from circuit [%s]",
+			Reporter.report(logger, 1, " Capitalist class has received $%.2f from circuit [%s]",
 					profit, c.getProductUseValueType());
 
 			// Note: revenue is in effect a memo item, not a stock.
@@ -77,7 +76,7 @@ public class Revenue extends Simulation implements Command {
 			capitalistRevenue+=profit;
 			c.setProfit(0);
 		}
-		Reporter.report(logger, 2, "  Capitalist revenue (disposable income) set to $%.2f", capitalistRevenue);
+		Reporter.report(logger, 1, "  Capitalist revenue (disposable income) set to $%.2f", capitalistRevenue);
 		capitalists.setRevenue(capitalistRevenue);
 	}
 }

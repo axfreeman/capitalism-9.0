@@ -32,7 +32,6 @@ import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.Global;
 import rd.dev.simulation.model.SocialClass;
 import rd.dev.simulation.model.Stock;
-import rd.dev.simulation.model.UseValue;
 import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.Reporter;
 
@@ -50,8 +49,8 @@ public class ClassesReproduce extends Simulation implements Command {
 	public void execute() {
 		Reporter.report(logger, 0, "REPRODUCE CLASSES");
 		advanceOneStep(ActionStates.C_P_ClassesReproduce.getText(), ActionStates.C_P_Produce.getText());
-		UseValue consumptionUseValue=DataManager.useValueOfConsumptionGoods(timeStampIDCurrent);
-		double priceOfConsumptionGoods=consumptionUseValue.getUnitPrice();
+//		UseValue consumptionUseValue=DataManager.useValueOfConsumptionGoods(timeStampIDCurrent);
+//		double priceOfConsumptionGoods=consumptionUseValue.getUnitPrice();
 		Global global = DataManager.getGlobal(Simulation.timeStampIDCurrent);
 		double melt = global.getMelt();
 		List<SocialClass> socialClasses = DataManager.socialClassesAll(timeStampIDCurrent);

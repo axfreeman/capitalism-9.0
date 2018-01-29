@@ -581,7 +581,6 @@ public class DataManager {
 			logger.error("The programme attempted to switch to project {} which  is already current", newProjectID);
 			return;
 		}
-		Reporter.report(logger, 0, "THE USER OPTED TO SWITCH TO PROJECT %s", newProjectID);
 
 		// record the current timeStamp, timeStampDisplayCursor and buttonState in the current project record, and persist it to the database
 
@@ -603,6 +602,7 @@ public class DataManager {
 		Simulation.setTimeStampComparatorCursor(newProject.getTimeStampComparatorCursor());
 		actionButtonsBox.setActionStateFromLabel(newProject.getButtonState());
 		Simulation.projectCurrent=newProjectID;
+		Reporter.report(logger, 0, "SWITCH TO PROJECT %s (%s)", newProjectID,newProject.getDescription());
 	}
 	
 	/**
