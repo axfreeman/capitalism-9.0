@@ -37,103 +37,127 @@ import rd.dev.simulation.utils.Reporter;
 public class Accumulate extends Simulation implements Command {
 	private static final Logger logger = LogManager.getLogger(Accumulate.class);
 
-	Global global; 
+	Global global;
 
 	public Accumulate() {
 	}
 
 	public void execute() {
-		global=DataManager.getGlobal(timeStampIDCurrent);
+		global = DataManager.getGlobal(timeStampIDCurrent);
 		Reporter.report(logger, 0, "ACCUMULATE");
 		advanceOneStep(ActionStates.C_M_Accumulate.getText(), ActionStates.C_M_Distribute.getText());
 		calculateSurplus();
-		calculateCostsOfInvestment();
 		allocateProfits();
 
-		// TODO Investment.
-		// One of several possible algorithms, to be improved on later if need be.
-		// First (so as to implement Marx's schema of expanded reproduction) try to satisfy the investment demand of circuits
-		// producing Means of Production
+		// Investment.
+		// One of several possible algorithms, to be generalised later.
+		// First (so as to implement Marx's schema of expanded reproduction) try to satisfy the investment demand of circuits producing Means of Production
 		// TODO write a named query to deliver these specific circuits, for now use 'if' clauses
-		// to this end, give each circuit enough to satisfy what it asked for; if there is insufficient profit, 
+		// to this end, give each circuit enough to satisfy what it asked for; if there is insufficient profit,
 		// first dole out enough to satisfy the requests for means of production.
-		// if there is any left over, give it to the consumption circuits so as to satisfy their requests for MP
+		// if there are any means of production left over, give money to the consumption circuits to buy them and also the additional labour power required to
+		// use them.
 		// (The reason is that the aim is to purchase all the available MP)
-		// Next, allocate resources for the additional Labour Power that is implied by this request
-		// This allows us to incorporate changes in the technical structure of production, as in Marx's second case
 		// What remains in capitalist hands is their revenue.
-		// the final step is to set their anticipated consumption demand on the basis of this revenue.
-		// TODO the latter should ideally happen in the next period in its Demand phase.
-		
+		// Anticipated consumption demand on the basis of this revenue is finally reset.
+
 		Capitalism.simulation.advanceOnePeriod();
-	}
-	
-	/**
-	 * given the surplus of means of production and the available funds, allocate the funds to the industries in a systematic way.
-	 * Initially while we are testing two-department models this takes the simple form of trying to invest
-	 * at the desired rate and giving up if we can't.
-	 */
-	private void allocateProfits() {
-		SocialClass capitalists = DataManager.socialClassByName(timeStampIDCurrent, "Capitalists");
-		double meansOfProductionAccountedFor=0;
-		
-		// TODO the above should all be done in price terms; make sure it is so.
-		
-		for(Circuit c:DataManager.circuitsAll(timeStampIDCurrent)) {
-			if (c.industryType()==Circuit.IndustryType.MEANSOFPRODUCTION) {
-				double fundsRequired=c.getCostOfExpansion();
-				Reporter.report(logger, 2, "  Industry [%s] needs to spend %.2s and will be allocated this from capitalist profits",c.getProductUseValueType(),fundsRequired);
-
-				// transfer enough profits from the capitalist class to grow to the industry's proposed output
-				// Give up if there isn't enough
-				// Reduce revenue correspondingly
-
-				Stock donor = capitalists.getMoneyStock();
-				Stock recipient = c.getMoneyStock();
-				recipient.modifyBy(fundsRequired);
-				donor.modifyBy(-fundsRequired);
-				Reporter.report(logger, 2, " The industry has received $%.2f from the capitalist class to accumulate",
-						fundsRequired);
-				capitalists.setRevenue(capitalists.getRevenue()-fundsRequired);
-				meansOfProductionAccountedFor=c.getCostOfMPForExpansion();
-			}
-		}
-		// TODO allocate remaining funds to consumption
-		double meansOfProductionRemaining=global.getSurplusMeansOfProduction()-meansOfProductionAccountedFor;
-		Reporter.report(logger, 2, " After allocating accumulation funds to Department I, %.2f remains to be allocated", meansOfProductionRemaining);
-		
-		//TODO do this
 	}
 
 	/**
 	 * calculate the surplus of means of production that are available to invest in
 	 */
 	private void calculateSurplus() {
-		
+
 		// calculate the total surplus of means of production
-		
+
 		Reporter.report(logger, 1, " Calculating the surplus of means of production available for expansion");
-		double surplusMeansOfProduction=0.0;
-		for(UseValue u:DataManager.useValuesAll(timeStampIDCurrent)) {
-			if (!u.getUseValueType().equals("Consumption")) {
-				double thisSurplusMeansOfProduction=Precision.round(u.getSurplus()*u.getUnitPrice(),Simulation.roundingPrecision);
-				Reporter.report(logger, 2, "  The surplus of commodity [%s] is %.2f and its price is $%.2f", u.getUseValueType(),u.getSurplus(),thisSurplusMeansOfProduction);
-				surplusMeansOfProduction+=thisSurplusMeansOfProduction;
+		double surplusMeansOfProduction = 0.0;
+		for (UseValue u : DataManager.useValuesAll(timeStampIDCurrent)) {
+			if (u.useValueType() != (UseValue.USEVALUETYPE.NECESSITIES)) {
+				double thisSurplusMeansOfProduction = Precision.round(u.getSurplus() * u.getUnitPrice(), Simulation.roundingPrecision);
+				Reporter.report(logger, 2, "  The surplus of commodity [%s] is %.2f and its price is $%.2f", u.getUseValueType(), u.getSurplus(),
+						thisSurplusMeansOfProduction);
+				surplusMeansOfProduction += thisSurplusMeansOfProduction;
 			}
-		}	
-		Reporter.report(logger, 2, "  Total investible surplus is $%.2f", surplusMeansOfProduction);
+		}
+		Reporter.report(logger, 1, " Total surplus of means of production available for investment is $%.2f", surplusMeansOfProduction);
 		global.setSurplusMeansOfProduction(surplusMeansOfProduction);
 	}
 
 	/**
-	 * calculate the cost of the expansion proposed by the circuits
+	 * given the surplus of means of production and the available funds, allocate the funds to the industries in a systematic way.
+	 * Initially while we are testing two-department models this takes the simple form of trying to invest
+	 * at the desired rate and giving up if we can't.
 	 */
-	
-	private void calculateCostsOfInvestment() {
-		Reporter.report(logger, 1, " Calculating the costs of investment", "");
-		for(Circuit c:DataManager.circuitsAll(timeStampIDCurrent)) {
-			double proposedOutput=c.getOutput()*(1+c.getGrowthRate());
-			c.calculateOutputCosts(proposedOutput);
+	private void allocateProfits() {
+		Reporter.report(logger, 1, " Allocating capitalist profits to industries in order to expand production");
+		double meansOfProductionRemaining = global.getSurplusMeansOfProduction();
+		double meansOfProductionAccountedFor = allocateToCircuitsOfType(meansOfProductionRemaining, Circuit.INDUSTRYTYPE.MEANSOFPRODUCTION);
+		meansOfProductionRemaining -= meansOfProductionAccountedFor;
+		Reporter.report(logger, 2, " After allocating accumulation funds to Department I, %.2f remains to be allocated", meansOfProductionRemaining);
+		meansOfProductionAccountedFor -= allocateToCircuitsOfType(meansOfProductionRemaining, Circuit.INDUSTRYTYPE.NECESSITIES);
+	}
+
+	/**
+	 * 
+	 * @param meansOfProductionRemaining
+	 *            the remaining surplus of means of production available for productive investment, after allocating funds to other circuits
+	 * @param type
+	 *            the industry type of the circuit
+	 * @return the amount that was allocated
+	 */
+	private double allocateToCircuitsOfType(double meansOfProductionRemaining, Circuit.INDUSTRYTYPE type) {
+		SocialClass capitalists = DataManager.socialClassByName(timeStampIDCurrent, "Capitalists");
+		Stock donor = capitalists.getMoneyStock();
+		Stock recipient = null;
+		double fundsAllocated = 0;
+
+		// TODO write custom queries to get these specific circuits (or sets of circults in the general case)
+
+		switch (type) {
+		case MEANSOFPRODUCTION:
+
+			// in this case, allocate funds to finance proposed growth
+
+			for (Circuit c : DataManager.circuitsAll(timeStampIDCurrent)) {
+				if (c.iNDUSTRYTYPE() == type) {
+					double proposedOutput = c.getConstrainedOutput() * (1 + c.getGrowthRate());
+					c.setProposedOutput(proposedOutput);
+					c.calculateOutputCosts();
+					fundsAllocated = c.getCostOfExpansion(); // Allocate the money to the total expansion requested
+					Reporter.report(logger, 2, "  Industry [%s] has been allocated $%.2f of which %.2f for means of production ",
+							c.getProductUseValueType(), fundsAllocated, c.getCostOfMPForExpansion());
+					recipient = c.getMoneyStock();
+					global.setSurplusMeansOfProduction(global.getSurplusMeansOfProduction() - c.getCostOfMPForExpansion());
+				}
+			}
+			break;
+		case NECESSITIES:
+
+			// In this case, allocate all remaining funds to expansion and adjust output accordingly
+
+			for (Circuit c : DataManager.circuitsAll(timeStampIDCurrent)) {
+				if (c.iNDUSTRYTYPE() == type) {
+					c.computePossibleOutput(global.getSurplusMeansOfProduction());
+					fundsAllocated = c.getCostOfExpansion();
+					Reporter.report(logger, 2, "Industry [%s] has been allocated %.2f of which %.2f for means of production",
+							c.getProductUseValueType(), fundsAllocated, c.getCostOfMPForExpansion());
+					recipient = c.getMoneyStock();
+				}
+			}
+			break;
+		default:
+			return 0;
 		}
+		// transfer enough profits from the capitalist class to grow to the industry's proposed output
+		// Give up if there isn't enough
+		// Reduce revenue correspondingly
+
+		recipient.modifyBy(fundsAllocated);
+		donor.modifyBy(-fundsAllocated);
+		Reporter.report(logger, 2, " Industry [%s] has received $%.2f from the capitalist class to accumulate", recipient.getUseValueName(), fundsAllocated);
+		capitalists.setRevenue(capitalists.getRevenue() - fundsAllocated);
+		return fundsAllocated;
 	}
 }

@@ -51,10 +51,10 @@ public class CircuitTableCell extends TableCell<Circuit, String> {
 		setTextFill(circuit.changed(selector, TabbedTableViewer.displayAttribute) ? Color.RED : Color.BLACK);
 		if (ViewManager.displayHints) {
 			switch (selector) {
-			case OUTPUT:
+			case CONSTRAINEDOUTPUT:
 				setStyle("-fx-background-color: rgba(220,220,220,0.3)");
 				break;
-			case MAXIMUMOUTPUT:
+			case PROPOSEDOUTPUT:
 				setStyle("-fx-background-color: rgba(220,220,220,0.3)");
 				break;
 			case PRODUCTIVESTOCKS:

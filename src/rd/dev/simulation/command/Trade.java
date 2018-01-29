@@ -33,6 +33,7 @@ import rd.dev.simulation.model.Circuit;
 import rd.dev.simulation.model.SocialClass;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.model.UseValue;
+import rd.dev.simulation.model.UseValue.USEVALUETYPE;
 import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.Reporter;
 
@@ -70,7 +71,7 @@ public class Trade extends Simulation implements Command {
 			Stock buyerMoneyStock = buyer.getMoneyStock();
 			List<Stock> stocks = buyer.productiveStocks();
 
-			Reporter.report(logger, 2, "  Industry [%s] will purchase %d productive stocks to facilitate output of $%.2f ", buyerName,	stocks.size(), buyer.getOutput());
+			Reporter.report(logger, 2, "  Industry [%s] will purchase %d productive stocks to facilitate output of $%.2f ", buyerName,	stocks.size(), buyer.getConstrainedOutput());
 
 			for (Stock s : stocks) {
 				String useValueName = s.getUseValueName();
@@ -80,7 +81,7 @@ public class Trade extends Simulation implements Command {
 				Reporter.report(logger,2,"   industry [%s] is purchasing %.2f units of [%s] for $%.2f",s.getCircuit(), quantityTransferred, s.getUseValueName(), quantityTransferred*unitPrice);
 				Stock sellerMoneyStock;
 				Stock sellerSalesStock; 
-				if (useValueName.equals("Labour Power")) {
+				if (s.useValueType()==USEVALUETYPE.LABOURPOWER) {
 
 					// TODO in general, we do not assume that a single class supplies the commodity labour power.
 					// For example, small proprietors who also work for wages

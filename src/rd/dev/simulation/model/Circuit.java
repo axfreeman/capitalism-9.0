@@ -40,6 +40,7 @@ import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.TabbedTableViewer;
 import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.Stock.ValueExpression;
+import rd.dev.simulation.model.UseValue.USEVALUETYPE;
 import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.MathStuff;
 import rd.dev.simulation.utils.Reporter;
@@ -49,7 +50,7 @@ import rd.dev.simulation.view.ViewManager;
 @Table(name = "circuits")
 @NamedQueries({
 		@NamedQuery(name = "Circuits.project.timeStamp", query = "Select c from Circuit c where c.pk.project = :project and c.pk.timeStamp = :timeStamp"),
-		@NamedQuery(name = "Circuits.project.PrimaryKey", query = "Select c from Circuit c where c.pk.project= :project and c.pk.timeStamp = :timeStamp and c.pk.productUseValueType= :type")
+		@NamedQuery(name = "Circuits.project.PrimaryKey", query = "Select c from Circuit c where c.pk.project= :project and c.pk.timeStamp = :timeStamp and c.pk.productUseValueName= :type")
 })
 
 @XmlRootElement
@@ -62,38 +63,37 @@ public class Circuit extends Observable implements Serializable {
 	// TODO circuits should have a name that is distinct from what they produce
 
 	@EmbeddedId protected CircuitPK pk;
-	@Column(name = "Output") private double output;
-	@Column(name = "MaximumOutput") private double maximumOutput;
+	@Column(name = "ConstrainedOutput") private double constrainedOutput;
+	@Column(name = "ProposedOutput") private double proposedOutput;
 	@Column(name = "InitialCapital") private double initialCapital;
 	@Column(name = "CurrentCapital") private double currentCapital;
 	@Column(name = "Profit") private double profit;
 	@Column(name = "RateOfProfit") private double rateOfProfit;
 	@Column(name = "Growthrate") private double growthRate;
+	@Column(name = "costOfMPForExpansion") private double costOfMPForExpansion; // investment in Means of Production needed to achieve proposed expansion
+	@Column(name = "costOfLPForExpansion") private double costOfLPForExpansion; // investment in Labour Power needed to achieve proposed expansion
 
-	
-	@Transient private double costOfExpansion; // what it would cost to achieve the given growth rate
-	@Transient private double costOfMPForExpansion; // what needs to be invested in Means of Production to achieve the requested growth rate
-	@Transient private double costOfLPForExpansion; // what needs to be invested in Labour Power to achieve the requested growth rate
 	@Transient private Circuit comparator;
 
 	/**
 	 * Readable constants to refer to the methods which provide information about the persistent members of the class
 	 */
 	public enum Selector {
-		PRODUCTUSEVALUETYPE, OUTPUT, MAXIMUMOUTPUT, INITIALCAPITAL, CURRENTCAPITAL, PROFIT, RATEOFPROFIT, PRODUCTIVESTOCKS, MONEYSTOCK, SALESSTOCK, TOTAL, GROWTHRATE
+		PRODUCTUSEVALUETYPE, CONSTRAINEDOUTPUT, PROPOSEDOUTPUT, INITIALCAPITAL, CURRENTCAPITAL, PROFIT, RATEOFPROFIT, PRODUCTIVESTOCKS, MONEYSTOCK, SALESSTOCK, TOTAL, GROWTHRATE
 	}
 
 	/**
 	 * Says whether the industry produces means of production, necessities or luxuries.
 	 * Not (yet) a persistent variable hence we have a method that reports on this.
 	 * TODO fully abstract this from the text description of the industry.
+	 * 
 	 * @author afree
 	 *
 	 */
-	public enum IndustryType{
-		MEANSOFPRODUCTION,NECESSITIES,LUXURIES
+	public enum INDUSTRYTYPE {
+		MEANSOFPRODUCTION, NECESSITIES, LUXURIES
 	}
-	
+
 	/**
 	 * A 'bare constructor' is required by JPA and this is it. However, when the new socialClass is constructed, the constructor does not automatically create a
 	 * new PK entity. So we create a 'hollow' primary key which must then be populated by the caller before persisting the entity
@@ -110,11 +110,11 @@ public class Circuit extends Observable implements Serializable {
 	 *            TODO get BeanUtils to do this, or find some other way. There must be a better way but many people complain about it
 	 */
 	public void copyCircuit(Circuit circuitTemplate) {
-		pk.productUseValueType = circuitTemplate.getProductUseValueType();
+		pk.productUseValueName = circuitTemplate.getProductUseValueType();
 		pk.timeStamp = circuitTemplate.getTimeStamp();
 		pk.project = circuitTemplate.getProject();
-		output = circuitTemplate.output;
-		maximumOutput = circuitTemplate.maximumOutput;
+		constrainedOutput = circuitTemplate.constrainedOutput;
+		proposedOutput = circuitTemplate.proposedOutput;
 		growthRate = circuitTemplate.growthRate;
 		;
 		currentCapital = circuitTemplate.currentCapital;
@@ -122,17 +122,20 @@ public class Circuit extends Observable implements Serializable {
 		profit = circuitTemplate.profit;
 		rateOfProfit = circuitTemplate.rateOfProfit;
 	}
-	
+
 	/**
 	 * @return what type of circuit this is
-	 * TODO improve on this
+	 *         TODO improve on this
 	 */
 
-	public IndustryType industryType() {
-		if (pk.productUseValueType.equals("Consumption")) return IndustryType.NECESSITIES;
-		if (pk.productUseValueType.equals("Luxuries")) return IndustryType.LUXURIES;
-		return IndustryType.MEANSOFPRODUCTION;
+	public INDUSTRYTYPE iNDUSTRYTYPE() {
+		if (pk.productUseValueName.equals("Consumption"))
+			return INDUSTRYTYPE.NECESSITIES;
+		if (pk.productUseValueName.equals("Luxuries"))
+			return INDUSTRYTYPE.LUXURIES;
+		return INDUSTRYTYPE.MEANSOFPRODUCTION;
 	}
+
 	/**
 	 * generic selector which returns a numerical attribute of the money stock depending on the {@link Stock.ValueExpression}
 	 * 
@@ -178,7 +181,7 @@ public class Circuit extends Observable implements Serializable {
 	 * @return the UseValue that this circuit produces
 	 */
 	public UseValue getUseValue() {
-		return DataManager.useValueByPrimaryKey(pk.project, pk.timeStamp, pk.productUseValueType);
+		return DataManager.useValueByPrimaryKey(pk.project, pk.timeStamp, pk.productUseValueName);
 	}
 
 	/**
@@ -194,7 +197,7 @@ public class Circuit extends Observable implements Serializable {
 			return Double.NaN;
 		}
 		double total = 0;
-		for (Stock s : DataManager.stocksProductiveByCircuit(pk.timeStamp, pk.productUseValueType)) {
+		for (Stock s : DataManager.stocksProductiveByCircuit(pk.timeStamp, pk.productUseValueName)) {
 			total += s.get(a);
 		}
 		return total;
@@ -206,7 +209,7 @@ public class Circuit extends Observable implements Serializable {
 	 * @return the money stock that is owned by this social class.
 	 */
 	public Stock getMoneyStock() {
-		return DataManager.stockMoneyByCircuitSingle(pk.timeStamp, pk.productUseValueType);
+		return DataManager.stockMoneyByCircuitSingle(pk.timeStamp, pk.productUseValueName);
 	}
 
 	/**
@@ -215,7 +218,7 @@ public class Circuit extends Observable implements Serializable {
 	 * @return the sales stock owned by this circuit
 	 */
 	public Stock getSalesStock() {
-		return DataManager.stockSalesByCircuitSingle(pk.timeStamp, pk.productUseValueType, pk.productUseValueType);
+		return DataManager.stockSalesByCircuitSingle(pk.timeStamp, pk.productUseValueName, pk.productUseValueName);
 	}
 
 	/**
@@ -234,13 +237,13 @@ public class Circuit extends Observable implements Serializable {
 	public ReadOnlyStringWrapper wrappedString(Selector selector, Stock.ValueExpression valueExpression) {
 		switch (selector) {
 		case PRODUCTUSEVALUETYPE:
-			return new ReadOnlyStringWrapper(pk.productUseValueType);
+			return new ReadOnlyStringWrapper(pk.productUseValueName);
 		case INITIALCAPITAL:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, initialCapital));
-		case OUTPUT:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, output));
-		case MAXIMUMOUTPUT:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, maximumOutput));
+		case CONSTRAINEDOUTPUT:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, constrainedOutput));
+		case PROPOSEDOUTPUT:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, proposedOutput));
 		case GROWTHRATE:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, growthRate));
 		case MONEYSTOCK:
@@ -273,7 +276,7 @@ public class Circuit extends Observable implements Serializable {
 
 	public ReadOnlyStringWrapper wrappedString(String productiveStockName) {
 		try {
-			Stock namedStock = DataManager.stockProductiveByNameSingle(getTimeStamp(), pk.productUseValueType, productiveStockName);
+			Stock namedStock = DataManager.stockProductiveByNameSingle(getTimeStamp(), pk.productUseValueName, productiveStockName);
 			String result = String.format(ViewManager.largeNumbersFormatString, namedStock.get(TabbedTableViewer.displayAttribute));
 			return new ReadOnlyStringWrapper(result);
 		} catch (Exception e) {
@@ -299,12 +302,12 @@ public class Circuit extends Observable implements Serializable {
 		switch (selector) {
 		case PRODUCTUSEVALUETYPE:
 			return false;
-		case MAXIMUMOUTPUT:
-			return maximumOutput != comparator.maximumOutput;
+		case PROPOSEDOUTPUT:
+			return proposedOutput != comparator.proposedOutput;
 		case GROWTHRATE:
 			return growthRate != comparator.growthRate;
-		case OUTPUT:
-			return output != comparator.output;
+		case CONSTRAINEDOUTPUT:
+			return constrainedOutput != comparator.constrainedOutput;
 		case INITIALCAPITAL:
 			return initialCapital != comparator.initialCapital;
 		case RATEOFPROFIT:
@@ -329,60 +332,55 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	/**
-	 * calculates the cost of producing at level output, given the current level of productive inputs
-	 * NOTE this cannot be reduced to a simple multiple of existing stocks, because some stocks may already exist. It is thus a non-linear function of output
-	 * NOTE the 'marginal' nature of this calculation does not arise from the non-linearity of the production function itself (though in future extensions it
+	 * calculates the cost of producing at level proposedOutput, given constrainedOutput and the current level of productive inputs
+	 * NOTE this cannot be reduced to a simple multiple of existing stocks, because some stocks may already exist. It is thus a non-linear function of Output
+	 * NOTE the 'marginal' nature of this calculation doe`s not arise from the non-linearity of the production function itself (though in future extensions it
 	 * could).
 	 * It arises because some stocks already exist, so that the cost rises as a step function once the output level exceeds the required stock of each input
-	 * 
-	 * @param proposedOutput
-	 *            the proposed output level
-	 *            NOTE: the transients calculated by this procedure are not persisted and vary with different calls at different points in the circuit.
-	 *            Therefore these transients should be accessed immediately after calling this method, and no reliance should be placed on their stability.
 	 */
 
-	public void calculateOutputCosts(double proposedOutput) {
-		costOfExpansion = 0.0;
+	public void calculateOutputCosts() {
+
 		costOfMPForExpansion = 0.0;
 		costOfLPForExpansion = 0.0;
 
 		// ask each productive stock to tell us how much it would cost to increase that stock's size sufficient to produce the required output
-		Reporter.report(logger, 1, " Calculating the cost of attaining an output of %.2f",proposedOutput);
-		for (Stock s : DataManager.stocksProductiveByCircuit(Simulation.timeStampIDCurrent, pk.productUseValueType)) {
+		double proposedExpansion = proposedOutput - constrainedOutput;
+		Reporter.report(logger, 1, " Calculating the cost to industry [%s] of expanding output by %.0f to %.0f from an output of %.0f",
+				pk.productUseValueName, proposedExpansion, proposedOutput, constrainedOutput);
+		for (Stock s : DataManager.stocksProductiveByCircuit(Simulation.timeStampIDCurrent, pk.productUseValueName)) {
 			UseValue u = s.getUseValue();
 			if (u == null) {
 				Dialogues.alert(logger, "The use value [%s] does not exist", s.getUseValueName());
 			} else {
 				double coefficient = s.getCoefficient();
 				double stockNewPrice = 0;
-				double stockLevelRequired = coefficient * u.getTurnoverTime() * proposedOutput;
+				double stockLevelRequired = coefficient * u.getTurnoverTime() * proposedExpansion;
 				double stockLevelExisting = s.getQuantity();
 				double stockNewRequired = stockLevelRequired - stockLevelExisting;
 				if (stockNewRequired < 0) {
 					Reporter.report(logger, 2,
 							"  Circuit [%s] already has %.2f of productive input [%s] which is sufficient to produce at level %.2f, so incurs no extra cost",
-							pk.productUseValueType, stockLevelExisting, s.getUseValueName(), proposedOutput);
+							pk.productUseValueName, stockLevelExisting, s.getUseValueName(), proposedOutput);
 					stockNewRequired = 0;
 				} else {
-					Reporter.report(logger, 2, "  Circuit [%s] has %.2f of productive input [%s] which requires an addition of %.2f to produce at level %.2f",
-							pk.productUseValueType, stockLevelExisting, s.getUseValueName(), stockNewRequired, proposedOutput);
+					Reporter.report(logger, 2, "  Circuit [%s] has %.2f of productive input [%s] which requires an addition of %.2f to produce at level %.0f",
+							pk.productUseValueName, stockLevelExisting, s.getUseValueName(), stockNewRequired, proposedOutput);
 				}
 				stockNewPrice = stockNewRequired * u.getUnitPrice();
-				if (s.getUseValueName().equals("Labour Power")) {
+				if (s.useValueType() == USEVALUETYPE.LABOURPOWER) {
 					costOfLPForExpansion += stockNewPrice;
 				} else {
 					costOfMPForExpansion += stockNewPrice;
 				}
-				costOfExpansion += stockNewPrice;
 				Reporter.report(logger, 2,
-						"  Cost of acquiring sufficient stock of [%s] at unit price %.2f is %.2f",
-						s.getUseValueName(), u.getUnitPrice(), stockNewPrice);
-				Reporter.report(logger, 2, "  Of this, the cost of Means of Production is $%.2f and that of Labour Power is $%.2f",costOfMPForExpansion,costOfLPForExpansion);
+						"  Cost of sufficient stock of [%s] at unit price $%.2f is $%.2f of which Means of Production $%.2f and Labour Power $%.2f",
+						s.getUseValueName(), u.getUnitPrice(), stockNewPrice, costOfMPForExpansion, costOfLPForExpansion);
 			}
 		}
 		Reporter.report(logger, 1,
-				" Circuit [%s] needs to spend $%.2f on means of production and $%.2f on labour power (totalling $%.2f) for an output of %.2f ",
-				pk.productUseValueType, costOfMPForExpansion, costOfLPForExpansion, costOfExpansion, proposedOutput);
+				" Circuit [%s] would spend $%.2f on means of production and $%.2f on labour power (totalling $%.2f), \n  to expand production by %.0f and attain an output of %.0f ",
+				pk.productUseValueName, costOfMPForExpansion, costOfLPForExpansion, getCostOfExpansion(), proposedExpansion, proposedOutput);
 	}
 
 	/**
@@ -456,7 +454,7 @@ public class Circuit extends Observable implements Serializable {
 		if (s != null) {
 			s.setQuantity(quantity);
 		} else {
-			logger.error("ERROR: Circuit {} attempted to set the quantity demanded of its consumption stock, but it does not have one", pk.productUseValueType);
+			logger.error("ERROR: Circuit {} attempted to set the quantity demanded of its consumption stock, but it does not have one", pk.productUseValueName);
 		}
 	}
 
@@ -471,7 +469,7 @@ public class Circuit extends Observable implements Serializable {
 		if (s != null) {
 			s.setQuantity(quantity);
 		} else {
-			logger.error("ERROR: Circuit {} attempted to set the quantity demanded of its consumption stock, but it does not have one", pk.productUseValueType);
+			logger.error("ERROR: Circuit {} attempted to set the quantity demanded of its consumption stock, but it does not have one", pk.productUseValueName);
 		}
 	}
 
@@ -481,7 +479,7 @@ public class Circuit extends Observable implements Serializable {
 	 * @return a list of the productive stocks owned (managed) by this circuit
 	 */
 	public List<Stock> productiveStocks() {
-		return DataManager.stocksProductiveByCircuit(pk.timeStamp, pk.productUseValueType);
+		return DataManager.stocksProductiveByCircuit(pk.timeStamp, pk.productUseValueName);
 	}
 
 	/**
@@ -492,7 +490,7 @@ public class Circuit extends Observable implements Serializable {
 	 *            the name of the stock
 	 */
 	public Stock productiveStock(String name) {
-		return DataManager.stockProductiveByNameSingle(pk.timeStamp, pk.productUseValueType, name);
+		return DataManager.stockProductiveByNameSingle(pk.timeStamp, pk.productUseValueName, name);
 	}
 
 	public Integer getProject() {
@@ -508,31 +506,31 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	public String getProductUseValueType() {
-		return pk.productUseValueType;
+		return pk.productUseValueName;
 	}
 
-	public double getOutput() {
-		return output;
+	public double getConstrainedOutput() {
+		return constrainedOutput;
 	}
 
-	public void setOutput(double output) {
-		this.output = output;
+	public void setConstrainedOutput(double output) {
+		this.constrainedOutput = output;
 	}
 
 	public boolean changedOutput() {
-		return output != comparator.output;
+		return constrainedOutput != comparator.constrainedOutput;
 	}
 
-	public double getMaximumOutput() {
-		return maximumOutput;
+	public double getProposedOutput() {
+		return proposedOutput;
 	}
 
-	public void setMaximumOutput(double maximumOutput) {
-		this.maximumOutput = maximumOutput;
+	public void setProposedOutput(double maximumOutput) {
+		this.proposedOutput = maximumOutput;
 	}
 
 	public boolean changedMaximumOutput() {
-		return maximumOutput != comparator.maximumOutput;
+		return proposedOutput != comparator.proposedOutput;
 	}
 
 	@Override public int hashCode() {
@@ -558,7 +556,7 @@ public class Circuit extends Observable implements Serializable {
 	 *         TODO decide how this should be formatted
 	 */
 	@Override public String toString() {
-		return "Capital circuit called" + pk.productUseValueType;
+		return "Capital circuit called" + pk.productUseValueName;
 	}
 
 	/**
@@ -612,7 +610,7 @@ public class Circuit extends Observable implements Serializable {
 		ArrayList<String> contents = new ArrayList<>();
 		contents.add(Integer.toString(pk.timeStamp));
 		contents.add(Integer.toString(pk.project));
-		contents.add((pk.productUseValueType));
+		contents.add((pk.productUseValueName));
 		for (Stock s : productiveStocks()) {
 			contents.add(String.format("%.2f", s.getQuantity()));
 			contents.add(String.format("%.2f", s.getPrice()));
@@ -622,13 +620,13 @@ public class Circuit extends Observable implements Serializable {
 		contents.add(String.format("%.2f", getSalesQuantity()));
 		contents.add(String.format("%.2f", getSalesPrice()));
 		contents.add(String.format("%.2f", getSalesValue()));
-		contents.add(String.format("%.2f", output));
-		contents.add(String.format("%.2f", maximumOutput));
+		contents.add(String.format("%.2f", constrainedOutput));
+		contents.add(String.format("%.2f", proposedOutput));
 		return contents;
 	}
 
 	public void setComparator() {
-		this.comparator = DataManager.circuitByPrimaryKey(this.pk.project, Simulation.getTimeStampComparatorCursor(), this.pk.productUseValueType);
+		this.comparator = DataManager.circuitByPrimaryKey(this.pk.project, Simulation.getTimeStampComparatorCursor(), this.pk.productUseValueName);
 	}
 
 	/**
@@ -704,15 +702,7 @@ public class Circuit extends Observable implements Serializable {
 	 * @return the costOfExpansion
 	 */
 	public double getCostOfExpansion() {
-		return costOfExpansion;
-	}
-
-	/**
-	 * @param costOfExpansion
-	 *            the costOfExpansion to set
-	 */
-	public void setCostOfExpansion(double costOfExpansion) {
-		this.costOfExpansion = costOfExpansion;
+		return costOfMPForExpansion + costOfLPForExpansion;
 	}
 
 	/**
@@ -723,14 +713,6 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param costOfMPForExpansion
-	 *            the costOfMPForExpansion to set
-	 */
-	public void setCostOfMPForExpansion(double costOfMPForExpansion) {
-		this.costOfMPForExpansion = costOfMPForExpansion;
-	}
-
-	/**
 	 * @return the costOfLPForExpansion
 	 */
 	public double getCostOfLPForExpansion() {
@@ -738,11 +720,21 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param costOfLPForExpansion
-	 *            the costOfLPForExpansion to set
+	 * given the means of production available for investment, determine the possible level of output
+	 * and then calculate the additional cost of labour power needed to achieve this.
+	 * 
+	 * TOODO this is a rudimentary procedure written on the assumption there is only a single stock of type Means of Production.
+	 * It needs to be generalised.
+	 * 
+	 * @param surplusMeansOfProduction
+	 *            the additional Means of Production available for investment once the requirements of simple reproduction have been satisfied.
 	 */
-	public void setCostOfLPForExpansion(double costOfLPForExpansion) {
-		this.costOfLPForExpansion = costOfLPForExpansion;
+	public void computePossibleOutput(double surplusMeansOfProduction) {
+		Stock mP = productiveStock("Means of Production");
+		UseValue u = mP.getUseValue();
+		double price = u.getUnitPrice();
+		double extraStock = surplusMeansOfProduction / price;
+		proposedOutput = constrainedOutput + extraStock / mP.getCoefficient();
+		calculateOutputCosts();
 	}
-
 }

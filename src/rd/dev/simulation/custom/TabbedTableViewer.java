@@ -454,8 +454,8 @@ public class TabbedTableViewer extends VBox {
 		dynamicCircuitTable.setItems(olProvider.circuitsObservable());
 		
 		addDynamicCircuitColumn("Producer", Circuit.Selector.PRODUCTUSEVALUETYPE,null);
-		addDynamicCircuitColumn("Desired Output", Circuit.Selector.MAXIMUMOUTPUT,"maximum output.png");
-		addDynamicCircuitColumn("Constrained Output", Circuit.Selector.OUTPUT,"constrained output.png");
+		addDynamicCircuitColumn("Desired Output", Circuit.Selector.PROPOSEDOUTPUT,"maximum output.png");
+		addDynamicCircuitColumn("Constrained Output", Circuit.Selector.CONSTRAINEDOUTPUT,"constrained output.png");
 		addDynamicCircuitColumn("GrowthRate", Circuit.Selector.GROWTHRATE,"growthrate.png");
 		for (Stock s : DataManager.productiveStocks()) {
 			addDynamicCircuitProductiveStockColumn(s.getUseValueName());

@@ -210,12 +210,12 @@ public class DataManager {
 	 *            the project
 	 * @param timeStamp
 	 *            the timestamp
-	 * @param useValueType
+	 * @param useValueName
 	 *            the name of the usevalue that is produced by this circuit
-	 * @return the circuit that produces {@code useValueType}, or null if this does not exist
+	 * @return the circuit that produces {@code useValueName}, or null if this does not exist
 	 */
-	public static Circuit circuitByPrimaryKey(int project, int timeStamp, String useValueType) {
-		circuitByPrimaryKeyQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("type", useValueType);
+	public static Circuit circuitByPrimaryKey(int project, int timeStamp, String useValueName) {
+		circuitByPrimaryKeyQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("type", useValueName);
 		try {
 			return circuitByPrimaryKeyQuery.getSingleResult();
 		} catch (javax.persistence.NoResultException n) {
@@ -394,13 +394,13 @@ public class DataManager {
 	 * @param timeStamp
 	 *            the given timeStamp
 	 * 
-	 * @param useValueType
+	 * @param useValueName
 	 *            the produce that is made by the circuit
 	 * @return the single circuit that produces this product, at the currently-selected timeStamp
 	 */
-	public static Circuit circuitByProductType(int timeStamp, String useValueType) {
+	public static Circuit circuitByProductType(int timeStamp, String useValueName) {
 		circuitByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp).setParameter("type",
-				useValueType);
+				useValueName);
 		try {
 			return circuitByPrimaryKeyQuery.getSingleResult();
 		} catch (javax.persistence.NoResultException n) {

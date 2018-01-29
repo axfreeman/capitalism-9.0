@@ -1,4 +1,4 @@
-project,timeStamp,ProductUseValueType,Output,MaximumOutput,GrowthRate
+project,timeStamp,ProductUseValueName,ConstrainedOutput,ProposedOutput,GrowthRate
 4,1,Fixed,0,500,0
 4,1,Circulating,0,200,0
 4,1,Consumption,0,500,0

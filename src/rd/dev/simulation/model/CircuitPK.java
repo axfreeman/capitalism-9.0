@@ -39,15 +39,15 @@ public class CircuitPK implements Serializable {
 	static final long serialVersionUID = 001L;
 	@Basic(optional = false) @Column(name = "project") protected int project;
 	@Basic(optional = false) @Column(name = "timeStamp") protected int timeStamp;
-	@Basic(optional = false) @Column(name = "productUseValueType") protected String productUseValueType;
+	@Basic(optional = false) @Column(name = "productUseValueName") protected String productUseValueName;
 
 	public CircuitPK() {
 	}
 
-	public CircuitPK(int project, int timeStamp, String productUseValueType) {
+	public CircuitPK(int project, int timeStamp, String productUseValueName) {
 		this.project = project;
 		this.timeStamp = timeStamp;
-		this.productUseValueType = productUseValueType;
+		this.productUseValueName = productUseValueName;
 	}
 	
 	@Override
@@ -55,7 +55,7 @@ public class CircuitPK implements Serializable {
 		int hash = 0;
 		hash += (int) project;
 		hash += timeStamp;
-		hash += (productUseValueType != null ? productUseValueType.hashCode() : 0);
+		hash += (productUseValueName != null ? productUseValueName.hashCode() : 0);
 		return hash;
 	}
 
@@ -72,8 +72,8 @@ public class CircuitPK implements Serializable {
 		if (this.timeStamp != other.timeStamp) {
 			return false;
 		}
-		if ((this.productUseValueType == null && other.productUseValueType != null)
-				|| (this.productUseValueType != null && !this.productUseValueType.equals(other.productUseValueType))) {
+		if ((this.productUseValueName == null && other.productUseValueName != null)
+				|| (this.productUseValueName != null && !this.productUseValueName.equals(other.productUseValueName))) {
 			return false;
 		}
 		return true;
@@ -81,7 +81,7 @@ public class CircuitPK implements Serializable {
 
 	@Override
 	public String toString() {
-		return "demo.CapitalcircuitsPK[ project=" + project + ", timeStamp=" + timeStamp + ", productUseValueType=" + productUseValueType + " ]";
+		return "demo.CapitalcircuitsPK[ project=" + project + ", timeStamp=" + timeStamp + ", productUseValueName=" + productUseValueName + " ]";
 	}
 
 }

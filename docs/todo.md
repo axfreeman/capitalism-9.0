@@ -1,39 +1,32 @@
-# TODO 1/9/2018 4:15:09 PM 
+# TODO 1/29/2018 3:39:42 PM 
 
 ## Immediate changes
 
-Half-period simple reproduction now seems to be working.
-User Guide not updated to include the new examples
-
-## Recent Changes 
-
-Earlier changes archived, if interested see the commit immediately prior to this one.
+Projects 1-4 now working.
+This is the basic test set.
+However for real completeness we should do expanded reproduction 2 (with rising OCC)
+And ideally, Simple reproduction with Department IIa (Luxury goods)
 
 ## NEXT MAIN OBJECTIVES
 
 Update the user guide
-Complete the Distribution phase
 
 ## MINOR
 
 Need to calculate, and display, the rate of exploitation. It follows from the wage.
-Coefficients are showing in red in the stocks table
 Globals Differencing
-TreeView: when adding to period 2, previous periods should be unexpanded
 Proper shutdown.
-License, copyright and acknowledgements display check it's in all classes
 
 ## MAJOR
 
 Debts and loans; a capital account.
-Configure the name of the consumption good and perhaps workers/capitalists/labour power
 Multiple consumption goods
-Log Window should be dockable. Possibly the tables too.
+Dockable windows
 
 ## BUGS
 
 double-clicking a column to resize it provokes a fetch of a null table row
-Tree doesn’t work after restart
+Tree carries ghost of previous simulations after restart
 
 ###VALIDATION (USER DATA)
 
@@ -74,6 +67,12 @@ Some more projects: in priority order
 2. Bortkiewicz's 'counterexample' done correctly according to Marx, not Sweezy
 
 ## FIXED
+FIXED (Partly) 1/29/2018 3:43:58 PM Configure the name of the consumption good and perhaps workers/capitalists/labour power
+FIXED 1/29/2018 3:44:19 PM log window is now scrollable
+FIXED 1/29/2018 3:43:19 PM TreeView: when adding to period 2, previous periods should be unexpanded
+FIXED (more or less) 1/29/2018 3:42:45 PM License, copyright and acknowledgements display check it's in all classes
+FIXED 1/29/2018 3:42:17 PM Coefficients are showing in red in the stocks table
+FIXED 3:41:25 PM Complete the Distribution phase
 FIXED 1/2/2018 11:48:42 AM Fix the treeview Startup bug CANCEL - still not working 1/9/2018 4:18:58 PM 
 FIXED 1/1/2018 6:42:56 PM Action Buttons and TreeView were not working properly with switch projects. Is now OK
 FIXED 1/1/2018 6:43:30 PM Project selection combo box now functioning more clearly

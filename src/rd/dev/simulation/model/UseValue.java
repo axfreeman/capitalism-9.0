@@ -44,7 +44,7 @@ import rd.dev.simulation.view.ViewManager;
 @Table(name = "usevalues")
 @NamedQueries({
 		@NamedQuery(name = "UseValues.findAll", query = "SELECT u FROM UseValue u"),
-		@NamedQuery(name = "UseValues.Primary", query = "SELECT u FROM UseValue u where u.pk.project= :project AND u.pk.timeStamp= :timeStamp and u.pk.useValueType =:useValueName"),
+		@NamedQuery(name = "UseValues.Primary", query = "SELECT u FROM UseValue u where u.pk.project= :project AND u.pk.timeStamp= :timeStamp and u.pk.useValueName=:useValueName"),
 		@NamedQuery(name = "UseValues.project.timeStamp", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp"),
 		@NamedQuery(name = "UseValues.productive", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.useValueCircuitType='Capitalist'")
 })
@@ -53,7 +53,7 @@ public class UseValue extends Observable implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = LogManager.getLogger("Commodity");
 
-	// The primary key (composite key containing project, timeStamp and productUseValueType)
+	// The primary key (composite key containing project, timeStamp and productUseValueName)
 	@EmbeddedId protected UseValuePK pk;
 
 	@Column(name = "useValueCircuitType") private String useValueCircuitType; // describes the way this is produced (by capitalist production, or socially)
@@ -64,12 +64,22 @@ public class UseValue extends Observable implements Serializable {
 	@Column(name = "totalSupply") private double totalSupply;// registers the total commodities up for sale
 	@Column(name = "totalQuantity") private double totalQuantity; // bigger than total supply because it includes commodities not available for purchase
 	@Column(name = "totalDemand") private double totalDemand;
-	@Column(name = "surplus")private double surplus; // if after production there is an excess of inventory over use, it is recorded here
+	@Column(name = "surplus") private double surplus; // if after production there is an excess of inventory over use, it is recorded here
 	@Column(name = "totalValue") private double totalValue;// corresponds to total quantity; is the value of all commodities of this type
 	@Column(name = "totalPrice") private double totalPrice;// corresponds to total quantity - price of all commodities of this type
 	@Column(name = "allocationShare") private double allocationShare;// proportion of total demand that can actually be supplied
 
 	@Transient private UseValue comparator;
+
+	/**
+	 * Types of commodities, basis of a rudimentary typology system for use values
+	 * 
+	 * @author afree
+	 *
+	 */
+	public enum USEVALUETYPE {
+		LABOURPOWER, MONEY, MEANSOFPRODUCTION, NECESSITIES, LUXURIES
+	};
 
 	/**
 	 * Readable constants to refer to the methods which provide information about the persistent members of the class
@@ -97,7 +107,7 @@ public class UseValue extends Observable implements Serializable {
 
 	public void copyUseValue(UseValue useValueTemplate) {
 		this.pk.timeStamp = useValueTemplate.pk.timeStamp;
-		this.pk.useValueType = useValueTemplate.pk.useValueType;
+		this.pk.useValueName = useValueTemplate.pk.useValueName;
 		this.pk.project = useValueTemplate.pk.project;
 		this.useValueCircuitType = useValueTemplate.useValueCircuitType;
 		this.description = useValueTemplate.description;
@@ -107,7 +117,7 @@ public class UseValue extends Observable implements Serializable {
 		this.totalSupply = useValueTemplate.totalSupply;
 		this.totalQuantity = useValueTemplate.totalQuantity;
 		this.totalDemand = useValueTemplate.totalDemand;
-		this.surplus =  useValueTemplate.surplus;
+		this.surplus = useValueTemplate.surplus;
 		this.totalValue = useValueTemplate.totalValue;
 		this.totalPrice = useValueTemplate.totalPrice;
 		this.allocationShare = useValueTemplate.allocationShare;
@@ -121,10 +131,10 @@ public class UseValue extends Observable implements Serializable {
 	 */
 	public void registerSupply() {
 		totalSupply = 0.0;
-		for (Stock s : DataManager.stocksSalesByUseValue(this.pk.timeStamp, pk.useValueType)) {
+		for (Stock s : DataManager.stocksSalesByUseValue(this.pk.timeStamp, pk.useValueName)) {
 			totalSupply += s.getQuantity();
 		}
-		Reporter.report(logger, 1, "  The quantity of commodity [%s] that can be supplied from sales inventories is %.2f. ", pk.useValueType, totalSupply);
+		Reporter.report(logger, 1, "  The quantity of commodity [%s] that can be supplied from sales inventories is %.2f. ", pk.useValueName, totalSupply);
 	}
 
 	/**
@@ -136,38 +146,41 @@ public class UseValue extends Observable implements Serializable {
 	 */
 
 	public void calculateAggregates(boolean validate) {
-		double oldTotalQuantity=totalQuantity;
-		double oldTotalValue=totalValue;
-		double oldTotalPrice=totalPrice;
+		double oldTotalQuantity = totalQuantity;
+		double oldTotalValue = totalValue;
+		double oldTotalPrice = totalPrice;
 		double totalQuantity = 0;
 		double totalValue = 0;
 		double totalPrice = 0;
-		for (Stock s : DataManager.stocksByUseValue(this.pk.timeStamp, pk.useValueType)) {
+		for (Stock s : DataManager.stocksByUseValue(this.pk.timeStamp, pk.useValueName)) {
 			totalQuantity += s.getQuantity();
 			totalValue += s.getValue();
 			totalPrice += s.getPrice();
 			logger.debug(String.format("  Stock of type [%s] with name [%s] has added quantity %.2f; value %.2f, and price %.2f. ",
 					s.getStockType(), s.getCircuit(), s.getQuantity(), s.getPrice(), s.getValue()));
 		}
-		totalQuantity=Precision.round(totalQuantity, Simulation.getRoundingPrecision());
-		totalValue=Precision.round(totalValue, Simulation.getRoundingPrecision());
-		totalPrice=Precision.round(totalPrice, Simulation.getRoundingPrecision());
+		totalQuantity = Precision.round(totalQuantity, Simulation.getRoundingPrecision());
+		totalValue = Precision.round(totalValue, Simulation.getRoundingPrecision());
+		totalPrice = Precision.round(totalPrice, Simulation.getRoundingPrecision());
 		if (validate) {
-			if (totalQuantity!=getTotalQuantity()) {
-				Reporter.report(logger, 2, "  ALERT: Total quantity of [%s] (%.2f) is different from registered quantity (%.2f)", pk.useValueType,totalQuantity,oldTotalQuantity);
+			if (totalQuantity != getTotalQuantity()) {
+				Reporter.report(logger, 2, "  ALERT: Total quantity of [%s] (%.2f) is different from registered quantity (%.2f)", pk.useValueName,
+						totalQuantity, oldTotalQuantity);
 			}
-			if (totalValue!=getTotalValue()) {
-				Reporter.report(logger, 2, "  ALERT: Total value of [%s] (%.2f) is different from registered value (%.2f)", pk.useValueType,totalValue,oldTotalValue);
+			if (totalValue != getTotalValue()) {
+				Reporter.report(logger, 2, "  ALERT: Total value of [%s] (%.2f) is different from registered value (%.2f)", pk.useValueName, totalValue,
+						oldTotalValue);
 			}
-			if (totalPrice!=getTotalPrice()) {
-				Reporter.report(logger, 2, "  ALERT: Total price of [%s] (%.2f) is different from registered price (%.2f)", pk.useValueType,totalPrice,oldTotalPrice);
+			if (totalPrice != getTotalPrice()) {
+				Reporter.report(logger, 2, "  ALERT: Total price of [%s] (%.2f) is different from registered price (%.2f)", pk.useValueName, totalPrice,
+						oldTotalPrice);
 			}
 		}
 		setTotalQuantity(totalQuantity);
 		setTotalValue(totalValue);
 		setTotalPrice(totalPrice);
 		Reporter.report(logger, 2, "  Total quantity of the commodity [%s] is %.2f (value %.2f, price %.2f). ",
-				pk.useValueType, totalQuantity, totalPrice, totalValue);
+				pk.useValueName, totalQuantity, totalPrice, totalValue);
 	}
 
 	/**
@@ -203,7 +216,7 @@ public class UseValue extends Observable implements Serializable {
 		case TOTALDEMAND:
 			return totalDemand != comparator.totalDemand;
 		case SURPLUS:
-			return surplus!=comparator.surplus;
+			return surplus != comparator.surplus;
 		case TURNOVERTIME:
 			return turnoverTime != comparator.getTurnoverTime();
 		case ALLOCATIONSHARE:
@@ -227,7 +240,7 @@ public class UseValue extends Observable implements Serializable {
 	public ReadOnlyStringWrapper wrappedString(Selector selector) {
 		switch (selector) {
 		case USEVALUETYPE:
-			return new ReadOnlyStringWrapper(pk.useValueType);
+			return new ReadOnlyStringWrapper(pk.useValueName);
 		case USEVALUECIRCUITTYPE:
 			return new ReadOnlyStringWrapper(useValueCircuitType);
 		case UNITPRICE:
@@ -255,22 +268,40 @@ public class UseValue extends Observable implements Serializable {
 		}
 	}
 
-	public String toString() {
-		return String.format("[%15.15s]%14.2f%14.2f%14.2f%14.2f%14.2f%14.2f%14.2f%14.2f %14.2f",
-				pk.useValueType, totalQuantity, unitValue, unitPrice, totalValue, totalPrice, totalSupply, totalDemand, allocationShare, turnoverTime);
-	}
-
 	/**
 	 * sets a comparator use value, which comes from a different timestamp. This informs the 'change' method which
 	 * communicates to the GUI interface so it knows to colour changed magnitudes differently.
 	 */
 	public void setComparator() {
-		this.comparator = DataManager.useValueByPrimaryKey(pk.project, Simulation.getTimeStampComparatorCursor(), pk.useValueType);
+		this.comparator = DataManager.useValueByPrimaryKey(pk.project, Simulation.getTimeStampComparatorCursor(), pk.useValueName);
 	}
+
+	/**
+	 * Rudimentary typology of use values
+	 * TODO systematize this
+	 * 
+	 * @return the type of this useValue, as given by the {@code USEVALUETYPE} enum
+	 */
+
+	public USEVALUETYPE useValueType() {
+		switch (pk.useValueName) {
+		case "Consumption":
+			return USEVALUETYPE.NECESSITIES;
+		case "Money":
+			return USEVALUETYPE.MONEY;
+		case "Luxuries":
+			return USEVALUETYPE.LUXURIES;
+		case "Labour Power":
+			return USEVALUETYPE.LABOURPOWER;
+		default:
+			return USEVALUETYPE.MEANSOFPRODUCTION;
+		}
+	}
+
 	// GETTERS AND SETTERS FOR THE PERSISTENT MEMBERS
 
 	public String getUseValueType() {
-		return pk.useValueType;
+		return pk.useValueName;
 	}
 
 	public int getTimeStamp() {
@@ -373,10 +404,10 @@ public class UseValue extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param surplus the surplus to set
+	 * @param surplus
+	 *            the surplus to set
 	 */
 	public void setSurplus(double surplus) {
 		this.surplus = surplus;
 	}
-
 }

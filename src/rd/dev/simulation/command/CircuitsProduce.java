@@ -33,6 +33,7 @@ import rd.dev.simulation.model.Circuit;
 import rd.dev.simulation.model.Global;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.model.UseValue;
+import rd.dev.simulation.model.UseValue.USEVALUETYPE;
 import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.Reporter;
 
@@ -56,7 +57,7 @@ public class CircuitsProduce extends Simulation implements Command {
 			String useValueType = c.getProductUseValueType();
 			Stock salesStock = c.getSalesStock();
 			UseValue useValue = c.getUseValue();
-			double output = c.getOutput();
+			double output = c.getConstrainedOutput();
 			double valueAdded = 0;
 			Reporter.report(logger, 1, " Industry [%s] is producing output %.2f.; the melt is %.2f", useValueType, output, melt);
 			List<Stock> stocks = DataManager.stocksProductiveByCircuit(timeStampIDCurrent, useValueType);
@@ -68,7 +69,7 @@ public class CircuitsProduce extends Simulation implements Command {
 				double coefficient = s.getCoefficient();
 				double stockUsedUp = output * coefficient;
 				stockUsedUp = Precision.round(stockUsedUp, getRoundingPrecision());
-				if (s.getUseValueName().equals("Labour Power")) {
+				if (s.useValueType()==USEVALUETYPE.LABOURPOWER) {
 					valueAdded += stockUsedUp * melt;
 					Reporter.report(logger, 2, "  Labour Power will add %.2f (instrinsic %.2f)", valueAdded, stockUsedUp);
 				} else {
@@ -89,7 +90,7 @@ public class CircuitsProduce extends Simulation implements Command {
 					"  The sales stock of [%s] has grown to %.2f, its value to $%.2f (intrinsic value %.2f) and its price to $%.2f (intrinsic value %.2f)",
 					c.getProductUseValueType(), salesStock.getQuantity(), salesStock.getValue(), salesStock.getValue() / melt, salesStock.getPrice(),
 					salesStock.getPrice() / melt);
-			if (!c.getProductUseValueType().equals("Consumption")) {
+			if (c.iNDUSTRYTYPE()!=Circuit.INDUSTRYTYPE.NECESSITIES) {
 				double surplus = Precision.round(salesStock.getQuantity() - useValue.getTotalDemand(), Simulation.getRoundingPrecision());
 				Reporter.report(logger, 2, "  The surplus of production over use for [%s] was %.2f", useValue.getUseValueType(), surplus);
 				useValue.setSurplus(surplus);

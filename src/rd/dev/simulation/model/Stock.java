@@ -193,14 +193,15 @@ public class Stock extends Observable implements Serializable {
 		double newValue = value + extraValue;
 		double newPrice = price + extraPrice;
 		double newQuantity = quantity + extraQuantity;
+		
+		// a little consistency check
+		
 		if (newQuantity< -Simulation.getEpsilon()) {
-			Dialogues.alert(logger, "ERROR: STOCK OF " + pk.useValue + " HAS FALLEN BELOW ZERO. ");
-		}
-		if (newValue< -Simulation.getEpsilon()) {
-			Dialogues.alert(logger, "ERROR: VALUE OF " + pk.useValue + " HAS FALLEN BELOW ZERO. ");
-		}
-		if (newPrice< -Simulation.getEpsilon()) {
-			Dialogues.alert(logger, "ERROR: PRICE OF " + pk.useValue + " HAS FALLEN BELOW ZERO. ");
+			Dialogues.alert(logger, "Stock of " + pk.useValue + " owned by " + pk.circuit+ " has fallen below zero. ");
+		}else if (newValue< -Simulation.getEpsilon()) {
+			Dialogues.alert(logger, "Value of " + pk.useValue + " owned by " + pk.circuit+ " has fallen below zero. ");
+		}else if (newPrice< -Simulation.getEpsilon()) {
+			Dialogues.alert(logger, "Price of " + pk.useValue + " owned by " + pk.circuit+ " has fallen below zero. ");
 		}
 		quantity = newQuantity;
 		value = newValue;
@@ -372,6 +373,16 @@ public class Stock extends Observable implements Serializable {
 		default:
 			return false;
 		}
+	}
+	
+	/**
+	 * Part of primitive typology of use values
+	 * @return  the use value type of this stock
+	 */
+	
+	public UseValue.USEVALUETYPE useValueType(){
+		UseValue useValue=DataManager.useValueByName(Simulation.timeStampIDCurrent, pk.useValue);
+		return useValue.useValueType();
 	}
 
 	/**

@@ -108,7 +108,7 @@ public class Constrain extends Simulation implements Command {
 
 		List<Circuit> circuits = DataManager.circuitsAll(timeStampIDCurrent);
 		for (Circuit c : circuits) {
-			double desiredOutputLevel = c.getMaximumOutput();
+			double desiredOutputLevel = c.getProposedOutput();
 			Reporter.report(logger, 1, " Estimating supply-constrained output for industry [%s] with unconstrained output %.2f",
 					c.getProductUseValueType(), desiredOutputLevel);
 			List<Stock> managedStocks = DataManager.stocksProductiveByCircuit(timeStampIDCurrent, c.getProductUseValueType());
@@ -129,8 +129,8 @@ public class Constrain extends Simulation implements Command {
 				}
 			}
 			Reporter.report(logger, 1, " Output of [%s] has been constrained to %.2f; unconstrained output was %.2f",
-					c.getProductUseValueType(), desiredOutputLevel, c.getMaximumOutput());
-			c.setOutput(desiredOutputLevel);
+					c.getProductUseValueType(), desiredOutputLevel, c.getProposedOutput());
+			c.setConstrainedOutput(desiredOutputLevel);
 		}
 	}
 

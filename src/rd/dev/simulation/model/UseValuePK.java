@@ -14,7 +14,7 @@ public class UseValuePK implements Serializable {
 
 	@Column (name="project") protected int project;
 	@Column (name="timeStamp") protected int timeStamp;
-	@Column (name="UseValueType") protected String useValueType;
+	@Column (name="UseValueName") protected String useValueName;
 
 	protected UseValuePK() {
 	}
@@ -27,7 +27,7 @@ public class UseValuePK implements Serializable {
 			return false;
 		}
 		UseValuePK castOther = (UseValuePK) other;
-		return (this.project == castOther.project) && (this.timeStamp == castOther.timeStamp) && this.useValueType.equals(castOther.useValueType);
+		return (this.project == castOther.project) && (this.timeStamp == castOther.timeStamp) && this.useValueName.equals(castOther.useValueName);
 	}
 
 	public int hashCode() {
@@ -35,7 +35,7 @@ public class UseValuePK implements Serializable {
 		int hash = 17;
 		hash = hash * prime + this.project;
 		hash = hash * prime + this.timeStamp;
-		hash = hash * prime + this.useValueType.hashCode();
+		hash = hash * prime + this.useValueName.hashCode();
 
 		return hash;
 	}

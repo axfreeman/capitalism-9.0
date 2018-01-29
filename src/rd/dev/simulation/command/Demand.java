@@ -64,29 +64,6 @@ public class Demand extends Simulation implements Command {
 		registerSocialClassDemand();
 	}
 
-	/**
-	 * Primitive response function for the supply of Labour Power
-	 * 
-	 * @param supplyResponse
-	 *            if this is FLEXIBLE, the supply changes to match demand
-	 *            if it is FIXED,supply is unaffected by demand
-	 */
-	private void registerLabourResponse(Simulation.SupplyResponse supplyResponse) {
-		switch (supplyResponse) {
-		case FLEXIBLE:
-			SocialClass workers = DataManager.socialClassByName(timeStampIDCurrent, "Workers");
-			UseValue labourPower = DataManager.useValueByName(timeStampIDCurrent, "Labour Power");
-			double demandForLabourPower = labourPower.getTotalDemand();
-			Reporter.report(logger, 2, "  Labour Power supply has increased in response to demand. It was %.2f and is now %.2f", workers.getSalesQuantity(),
-					demandForLabourPower);
-			workers.getSalesStock().modifyTo(demandForLabourPower);
-			break;
-		case FIXED:
-			Reporter.report(logger, 2, "  Labour Power supply is unaffected by demand. ");
-			break;
-		default:
-		}
-	}
 
 	/**
 	 * Registers productive demand - the demand that arises because producers need stocks of inputs. One of the most complex methods in the simulation. Its
@@ -137,32 +114,38 @@ public class Demand extends Simulation implements Command {
 		List<Circuit> results = DataManager.circuitsAll(timeStampIDCurrent);
 		for (Circuit c : results) {
 			double totalCost = 0;
-			Reporter.report(logger, 1, " Estimating demand for industry [%s]", c.getProductUseValueType());
+			logger.debug(" Estimating demand for industry {}", c.getProductUseValueType());
 			double moneyAvailable = c.getMoneyQuantity();
-			double currentOutput = c.getMaximumOutput();
-			c.calculateOutputCosts(currentOutput);
+
+			// at this stage, proposedOutput will have been set in the preceding Accumulate phase of the past period on the basis of plausible private plans for expansion
+			// In the Constraint phase we will test to see if these private proposals are publicly possible, and if need be, constrain them according to the availability 
+			// of supply and the money in the hands of the purchasers. At this point we calculate the inputs that would be needed to achieve the proposed levels of output.
+			
+			double constrainedOutput=0;
+			double proposedOutput=c.getProposedOutput();
+			c.calculateOutputCosts(); // cost the entirety of the proposed output (by setting currentOutput to zero)
 			totalCost=c.getCostOfExpansion();
-			Reporter.report(logger, 2, "  Total cost of an output of %.2f is $%.2f and $%.2f is available.",
-					currentOutput, totalCost, moneyAvailable);
-			double constrainedOutput;
+			Reporter.report(logger, 1, " Total cost of an output of %.2f is $%.2f and $%.2f is available.",
+					proposedOutput, totalCost, moneyAvailable);
 			if (totalCost < moneyAvailable+Simulation.epsilon) {
 				Reporter.report(logger, 2, "  Output is unconstrained by cost");
-				constrainedOutput = currentOutput;
+				constrainedOutput = proposedOutput;
 			} else {
 				// TODO the code below may not work, because cost is not a linear function of output if there are pre-existing stocks
 				// the problem is that in these circumstances we will underestimate the cost.
 				
 				Reporter.report(logger, 1, " Output is constrained by cost");
-				constrainedOutput = currentOutput * moneyAvailable / totalCost;
-				c.calculateOutputCosts(constrainedOutput);
+				proposedOutput = proposedOutput * moneyAvailable / totalCost;
+				c.calculateOutputCosts();
 				double revisedTotalCost = c.getCostOfExpansion();
-				if (revisedTotalCost<moneyAvailable+Simulation.epsilon) Dialogues.alert(logger, "Constrained output is still too expensive. Code does not exist to cope with this eventuality");
+				if (revisedTotalCost<moneyAvailable+Simulation.epsilon) Dialogues.alert(logger, "There is not enough money to finance the required level of output by industry %s",c.getProductUseValueType());
 			}
 
+			c.setConstrainedOutput(constrainedOutput);
 			// now go through all the stocks again, calculating how much of each will be needed
 			// and adding this to the demand for the use value that the stock represents
 
-			Reporter.report(logger, 2, " Demand will now be set for each stock owned by industry [%s] for an output level of %.2f",
+			Reporter.report(logger, 1, " Demand will now be set for each stock owned by industry [%s] for an output level of %.2f",
 					c.getProductUseValueType(), constrainedOutput);
 
 			List<Stock> managedStocks = DataManager.stocksProductiveByCircuit(Simulation.timeStampIDCurrent,c.getProductUseValueType());
@@ -187,6 +170,36 @@ public class Demand extends Simulation implements Command {
 					u.setTotalDemand(Precision.round(newDemandForThisUseValue, roundingPrecision));
 				}
 			}
+		}
+	}
+
+	/**
+	 * Primitive response function for the supply of Labour Power
+	 * 
+	 * @param supplyResponse 
+	 * 			a per-project parameter
+	 *          if this is FLEXIBLE, the supply changes to match demand
+	 *          if it is FIXED,supply is unaffected by demand
+	 */
+	private void registerLabourResponse(Simulation.SupplyResponse supplyResponse) {
+		switch (supplyResponse) {
+		case FLEXIBLE:
+			SocialClass workers = DataManager.socialClassByName(timeStampIDCurrent, "Workers");
+			UseValue labourPower = DataManager.useValueByName(timeStampIDCurrent, "Labour Power");
+			double demandForLabourPower = labourPower.getTotalDemand();
+			Reporter.report(logger, 2, "  Labour Power supply has increased in response to demand. It was %.2f and is now %.2f", workers.getSalesQuantity(),
+					demandForLabourPower);
+			workers.getSalesStock().modifyTo(demandForLabourPower);
+			
+			// A bit of a botch. More labour power has been summoned from the reserve army than originally recorded by RegisterProductiveDemand.
+			// So we retrospectively increase the supply.
+			
+			labourPower.setTotalSupply(demandForLabourPower);
+			break;
+		case FIXED:
+			Reporter.report(logger, 2, "  Labour Power supply is unaffected by demand. ");
+			break;
+		default:
 		}
 	}
 

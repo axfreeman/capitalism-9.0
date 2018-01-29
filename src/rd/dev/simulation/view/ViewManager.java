@@ -77,6 +77,7 @@ public class ViewManager {
 	public static ContentDisplay graphicsState = ContentDisplay.TEXT_ONLY; // Whether to display graphics, text, or both
 
 	// This enum and the next two variables determine whether values, and prices, are displayed in units of money or time
+	
 	public enum DisplayAsExpression {
 		MONEY, TIME;
 	}
@@ -603,7 +604,7 @@ public class ViewManager {
 					new TimeStamp(1, Simulation.projectCurrent, period, "", -1, String.format("Period %d", period)));
 			treeRoot.getChildren().add(periodRoot);
 			if (period < periods) {
-				Reporter.report(logger, 2, "The view of period %d will be closed up because it is not the current period", period);
+				logger.debug(" The view of period {} will be closed up because it is not the current period", period);
 				periodRoot.setExpanded(false);
 			}
 		}

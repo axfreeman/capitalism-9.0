@@ -1,5 +1,12 @@
 # Capitalism 9.0 announcements
 
+## 1/29/2018 3:38:27 PM 
+
+Project 5 (Expanded Reproduction) is now working.
+Watershed.
+New Executable ('capitalism.exe')
+User Guide will now be updated to correspond to the new version.
+
 ## 1/28/2018 1:38:04 PM 
 
 Projects 1,2,3 now working.

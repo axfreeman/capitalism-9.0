@@ -31,7 +31,6 @@ import javafx.scene.control.ListView;
 import javafx.util.Callback;
 import rd.dev.simulation.Capitalism;
 import rd.dev.simulation.model.Project;
-import rd.dev.simulation.utils.Reporter;
 import rd.dev.simulation.view.ProjectCell;
 
 public class ProjectCombo extends ComboBox<Project> {

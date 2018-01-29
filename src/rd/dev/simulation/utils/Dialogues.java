@@ -74,7 +74,7 @@ public class Dialogues {
 
 		Alert alert = new Alert(AlertType.WARNING);
 		alert.setTitle("Warning");
-		alert.setHeaderText("An error occurred");
+		alert.setHeaderText("There is a problem");
 		alert.setContentText(String.format(formatString, args)+"\nConsult debug.log for details");
 
 		alert.showAndWait();
