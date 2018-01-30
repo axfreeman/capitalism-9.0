@@ -8,19 +8,19 @@ Capitalism 9.0 is an app which shows how a capitalist economy functions, provide
 
 ### The user guide
 
-	The file 'User Guide.pdf' walks you through the project, and at the same time teaches you how to use it, and what it's for.
+The file 'User Guide.pdf' walks you through the project, and at the same time teaches you how to use it, and what it's for.
 
 ### Announcements
 
-	The file 'announcements.md' contains updates on what's been done recently and the current state of the project
+The file 'announcements.md' contains updates on what's been done recently and the current state of the project. It's worth checking, especially to see if there are any surprises, whether nasty or otherwise.
 
 ### The Documents folder
 
-	The folder 'docs' contains material relating to the project - articles, spreadsheets, and a Word version of the user guide
+The folder 'docs' contains material relating to the project - articles, spreadsheets, and a Word version of the user guide. It will help you understand the theory behind the app.
 
 ### The TODO file
 	
-	The file 'todo.md' in the docs folder is a more techie guide to what's going on, what the bugs are, what's been fixed, and so on
+The file 'todo.md' in the docs folder is a more techie guide to what's going on, what the bugs are, what's been fixed, and so on. You don't have to read it unless you want to.
 
 ## How do I run it?
 
@@ -28,13 +28,13 @@ The application runs from a single Windows executable called 'capitalism.exe'. S
 
 ## What's it for?
 
-Simulations have at least four purposes. They can be used to educate, to help us understand real life, and test hypotheses about the real world by verifying if they are at least possible and capable of yielding the results we expect. In principle they can also be used to attempt predictions about what will happen in real life, but this idea is much-abused in economics, whose predictions are generally speaking inaccurate in the most important sense of this word, namely, what actually happens **qualitatively **(rather than quantitatively) is not what was predicted. The classic example is the financial crash of 2008.
+Simulations have at least four purposes. They can be used to educate, to help us understand real life, and test hypotheses about the real world by verifying if they are at least possible and capable of yielding the results we expect. In principle they can also be used to attempt predictions about what will happen in real life, but this idea is much-abused in economics, whose predictions are generally speaking inaccurate in the most important sense of this word, namely, what actually happens is not what was predicted. This is especially so for 'qualitative' predictions, of the type 'inequality will shrink' or 'there will be no financial crash'.
 
 This simulation is designed mainly for the first three purposes. A real economy is more complex, not so much because of factors that cannot be taken into account by a simulation, but because there are a very large number of agents and a very large variety of commodities and ways of producing them.
 
-This doesn't rule out using the simulation in the future to make predictions though I suspect that to be usable, the number of entities would increase so much that a strategic redesign would be called for; the issue is however in this case quantity, not quality, because the  methods would be the same as in this simple version. The main problem is thus to get the basic rules right. Most economic theories do not, because they rely on the concept of 'General Equilibrium' which, in a nutshell, means they suppose that the economy reproduces itself perfectly: it produces everything it needs, it consumes everything it produces, and so on. This leads to some important qualitative errors; not the least is that it assumes the market is perfect, so that crisis becomes impossible. Another critical weakness, related to the first, is that money plays no role in these theories.
+This doesn't rule out using the simulation in the future to make predictions, though I suspect that to be usable, the number of entities would increase so much that a strategic redesign would be called for; the issue is however in this case quantity, not quality, because the  methods would be the same as in this simple version. The main problem is thus to get the basic rules right. Most economic theories do not, because they rely on the concept of 'General Equilibrium' which, in a nutshell, means they suppose that the economy reproduces itself perfectly: it produces everything it needs, it consumes everything it produces, and so on. This leads to some important qualitative errors; not the least is that it assumes the market is perfect, so that crisis becomes impossible. Another critical weakness, related to the first, is that money plays no role in these theories.
 
-A proper dynamic simulation, which this attempts to be, makes no such assumption so it is much more general, allowing is to incorporate money and finance, and study the possible mechanisms of crisis. In particular, it allows that goods can be in short supply, or that there can  be an excess of them, that prices can  depart quite far from values, and so on. It thus breaks with what economists know as 'Say's Law' which supposes that whatever is produced must automatically be sold. This is tantamount to equilibrium, though the proof is beyond the scope of this document. The key point is that in a Say's Law economy, profits must always be invested in new production. Actually, this does not happen because, as both Marx and Keynes recognised, nay insisted, the capitalists can, and do, hoard profits in the form of money, or monetary instruments, instead of re-investing them. This is why the **qualitative** phenomena of financial crisis and depression cannot be 'simulated' in a Says's Law/Equilibrium model.
+A proper dynamic simulation, which this attempts to be, makes no such assumption so it is much more general, allowing is to incorporate money and finance, and study the possible mechanisms of crisis. In particular, it allows that goods can be in short supply, or that there can  be an excess of them, that prices can depart quite far from values, and so on. It breaks in particular with what economists know as 'Say's Law' which supposes that whatever is produced must automatically be sold. This is tantamount to equilibrium, though the proof is beyond the scope of this document. The key point is that in a Say's Law economy, profits must always be invested in new production. Actually, this does not happen because, as both Marx and Keynes recognised, nay insisted, the capitalists can, and do, hoard profits in the form of money, or monetary instruments, instead of re-investing them. This is why the **qualitative** phenomena of financial crisis and depression cannot be 'simulated' in a Says's Law/Equilibrium model.
 
 For this simulation, no assumption is made that profits are re-invested. To the contrary, the economy *reacts* to disparities between supply and demand. For example, if something is in short supply, its price will likely rise. In consequence higher profits can be made by producing it, and so capital tends to grow faster in the sector, or among the producers, that make it. This increases the supply, and the price falls.
 
@@ -42,7 +42,7 @@ The reaction may be more complicated; for example the state may intervene, or pe
 
 An early (1991, see below)  simulation  proved that an economy governed by the simple rules above 'works' in the sense that it does not simply collapse, but runs for some considerable time, albeit with fluctuations - just like a real economy - and with longterm trends that undermine it - just like a real economy.
 
-The simulation allows us to test the *reaction rules* that make this possible. It also, in principle, allows a community of game-players to experiment and play with different rules, just as with Sim-City. Thus, it can be thought of as a kind of Sim-Capitalism.
+The simulation allows us to test the *reaction rules* that make this possible. It also, in principle, allows a community of game-players to experiment and play with different rules, just as with Sim-City. You can think of it as Sim-Capitalism.
 
 At the time of this version, we have not yet provided reaction rules; we are at the stage of what I call 'flight-testing' the basic activities of allocation, trade, production and distribution, by which I mean ensuring that the basic **invariants of motion** of a dynamic economy are conformed to. When this is verified, the reaction rules will be introduced.
 
@@ -68,9 +68,13 @@ At various times, I attempted to correct this but at the same time updating the 
 
 So the simulation hasn't caught up with the theory. This is an attempt to put that right.
 
-The chief difficulty turned out to be the construction of a GUI framework so that users could easily see the results. Technology was still primitive, so the work was very time-consuming. After several attempts I constructed a Vaadin-based version which can be found in the [https://github.com/axfreeman/capitalism](https://github.com/axfreeman/capitalism "Capitalism github site for the incomplete and earlier web version").
+The chief obstacle, for many years, was constructing a visual ('GUI') interface so that users could easily see the results. Technology was still primitive, and the work was very time-consuming. After several attempts I constructed a 'Vaadin'-based version which can be found in the [https://github.com/axfreeman/capitalism](https://github.com/axfreeman/capitalism "Capitalism github site for the incomplete and earlier web version").
 
-Most of this involved a lot of learning, especially since the project was constructed from the get-go as a server-based web project, introducing many unnecessary complications. This version takes advantage of the newly emerging ([http://docs.oracle.com/javafx/2/overview/jfxpub-overview.htm](http://docs.oracle.com/javafx/2/overview/jfxpub-overview.htm "JavafX")) framework. This makes it possible to develop the simulation as a desktop application - which it was, originally. It can be later ported to the web/Android.
+Most of this involved a lot of learning, especially since the project was constructed from the get-go as a server-based web project, introducing many unnecessary complications. The learning experience can usually be forgotten (don't we all just want the prize at the end of the game) However, in this case, understanding the learning process is itself, I surmise, part of the prize. 
+
+The new version has become a venture in its own right. The technical issues addressed go beyond constructing a visual interface and take us into the realm of logical analysis. The arduous task of writing a coherent, generalisable simulation confronts the writer with the need to scrutinise, in minute detail, every single prejudice or assumption that can be skated over by writing down general formulas or citing texts. A simulation is the ultimate test of a theory; it forces the writer to discover whether the theory can even exist. Importantly, this task makes the assumptions explicit, in that they have to be embedded in computer code that is fully public and can be modified by anyone. The 'pieces' have to fit, and have to implement the rules of encapsulation, abstraction and inheritance that define the framework of every modern application and thereby form the basis of the social production of mental objects.
+
+The visual interface itself takes advantage of the newly emerging ([http://docs.oracle.com/javafx/2/overview/jfxpub-overview.htm](http://docs.oracle.com/javafx/2/overview/jfxpub-overview.htm "JavafX")) framework. This makes it possible to develop the simulation as a desktop application - which it was, originally. It can be later ported to the web/Android.
 
 This version also uses a database standard known as JPA (Java Persistence). This allows the coder (me) abstract from the myriad database platforms in existence. All queries are written in JPQL, a standard query language that is part of the JPA standard. The original version kept all its variables in memory, which allowed it to run at a reasonable speed and made it easier to write. The new version keeps all its variables in a database, which means the results can be kept to study later and to share with others. Critically, this also means that when the application is eventually ported to the web, users can share their experiments and ideas by putting the database also on the web.
 
@@ -80,7 +84,7 @@ I am continually learning, and both the standards and technology of the Java com
 
 ## What does the simulation do?
 
-When it starts up, you see a screen with a number of tables in it, and various other controls.
+When it starts up, you see a screen with a number of tables in it, and various other controls. These are all described in the user guide.
 
 The tables represent the following objects:
 
@@ -141,7 +145,7 @@ Don't read any further unless you are comfortable with steps 3 and 4 above.Most 
 ### Tech installation notes
 
 1. You need the Java Runtime environment (8 or later) and the latest JDK
-2. If you want to edit or compile the project, it works with the Eclipse IDE, the Eclipselink Plugins, and the JavaFX plugin. I haven't tried the project in other IDEs and I haven't tried a command-line build. So I'm not saying this is the only way to build it, but it's the only one I have tested
+2. If you want to edit or compile the project, it works with the Eclipse IDE, the Eclipselink Plugins, and the JavaFX plugin. I haven't tried the project in other IDEs and I haven't tried a command-line build. So I'm not saying this is the only way to build it, but it's the only one I have tested. I haven't constructed a Maven or Ant build or any of the other standard things one is supposed to do as a Java programmer. I just ploughed ahead until it worked. One day I may go back and fix all this, but there's no real reason to, if someone else can do it.
 
 ## How does it work?
 
