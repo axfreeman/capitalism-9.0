@@ -76,16 +76,23 @@ public class ViewManager {
 	public static String smallNumbersFormatString = "%1$.2f";   // Formats the display of small floating point numbers
 	public static ContentDisplay graphicsState = ContentDisplay.TEXT_ONLY; // Whether to display graphics, text, or both
 
-	// This enum and the next two variables determine whether values, and prices, are displayed in units of money or time
-	
+	// This enum and the following variables determine whether values, and prices, are displayed in units of money or time
+	// They control the 'hints' colouring of the columns and the symbols (eg '$', '#') placed before price and value magnitudes in the tables display
+
 	public enum DisplayAsExpression {
 		MONEY, TIME;
 	}
 
 	public static DisplayAsExpression valuesExpressionDisplay = DisplayAsExpression.MONEY;
 	public static DisplayAsExpression pricesExpressionDisplay = DisplayAsExpression.MONEY;
-	public static boolean displayHints=false;
-	
+	public static boolean displayHints = false;
+
+	public static String moneyExpressionSymbol = "$";
+	public static String quantityExpressionSymbol = "#";
+
+	public static String pricesExpressionSymbol = moneyExpressionSymbol;
+	public static String valuesExpressionSymbol = moneyExpressionSymbol;
+
 	private static ActionButtonsBox actionButtonsBox;
 
 	// this is the right-hand Vbox, the container within which we put the button bar, the grid pane, and the tabbed table viewer
@@ -99,10 +106,12 @@ public class ViewManager {
 	private static ProjectCombo projectCombo = null;
 
 	// these are the things that go in the simulationResultsPane
+
 	private SwitchableGraphicsGrid switchableGrid;
 	private TabbedTableViewer tabbedTableViewer = new TabbedTableViewer();
 
 	// this is the container for the action buttons
+
 	@FXML VBox controlsVBox;
 
 	// The display selection variables: tells the user which project and timestamp is being looked at
@@ -155,8 +164,8 @@ public class ViewManager {
 	}
 
 	// Initializes the controller class. This method is automatically called after the fxml file has been loaded.
-	// the launch procedure also automatically calls 'setMainApp'
-	// Since the work is done in 'setMainApp', here we do as little as possible.
+	// the launch procedure also automatically calls 'setUp'
+	// Since the work is done in 'setUp', here we do as little as possible.
 
 	@FXML private void initialize() {
 		logger.debug("Entered initialize");
@@ -164,10 +173,10 @@ public class ViewManager {
 
 	/**
 	 * Called from capitalism as part of the startup process.
-	 * Most early initialization is done here but note the button and column factories are done before this by 'Initialize' after the fxml file is
-	 * loaded. Sets up the project tables and initializes the project cursor, sets up the timeStamp table and initializes the timeStamp cursor,and populates all
-	 * the tables. Note that capitalism initializes some variables after loading (and hence after calling initialize) but before calling this method, which gets
-	 * the variables from capitalism here.
+	 * Most early initialization is done here but note that everything in the .fxml files are set up by reflection in 'Initialize' after the fxml file is
+	 * loaded. This method sets up the project tables and initializes the project cursor, sets up the timeStamp table and initializes the timeStamp cursor,
+	 * and populates all the tables. Note that the {@code Capitalism} class initializes some variables after loading (and hence after calling initialize) but
+	 * before calling this method, which gets the variables from {@code Capitalism} here.
 	 * 
 	 * @param capitalism
 	 *            the main application that created this viewManager.
@@ -199,7 +208,7 @@ public class ViewManager {
 	}
 
 	private void setTooltips() {
-		setTip(colourHintButton,"Display colour hints to indicate quantity, value and price columns");
+		setTip(colourHintButton, "Display colour hints to indicate quantity, value and price columns");
 		setTip(logButton, "Open a window displaying a step-by-step report on the simulation");
 		setTip(graphicsToggle, "Display icons instead of text labels for some of the columns, creating more space to view the results");
 		setTip(dataDumpButton, "Save the current project including its history to a directory that you choose");
@@ -324,17 +333,17 @@ public class ViewManager {
 		Reporter.report(logger, 1, "RESTART OF ENTIRE SIMULATION REQUESTED");
 		Capitalism.dataHandler.restart();// fetch all the data
 		sm.startup();// pre-process all the data
-		actionButtonsBox.setActionStateFromLabel("Accumulate");		
+		actionButtonsBox.setActionStateFromLabel("Accumulate");
 		refreshTimeStampTable();
 		refreshDisplay();
-//		capitalism.showMainWindow();// Set up the display (NOTE: this calls setMainApp and hence all the display initialization methods)
+		// capitalism.showMainWindow();// Set up the display (NOTE: this calls setMainApp and hence all the display initialization methods)
 	}
 
 	// initializes all the buttons in the bar at the top of the window.
 	// These buttons control various aspects of the visualisation, but except for the restart button, do not affect the sm.
 
 	private void initializeButtonBar() {
-		
+
 		initializeProjectCombo();
 		colourHintButton.setOnAction((event) -> {
 			toggleHints();
@@ -386,10 +395,10 @@ public class ViewManager {
 		if (displayHints) {
 			setTip(colourHintButton, "Display colour hints to indicate quantity, value and price columns");
 			colourHintButton.setText("Hints");
-			displayHints=false;
-		setTip(colourHintButton, "");
-		}else {
-			displayHints=true;
+			displayHints = false;
+			setTip(colourHintButton, "");
+		} else {
+			displayHints = true;
 			setTip(colourHintButton, "Turn off colour hints for columns");
 			colourHintButton.setText("No Hints");
 		}
@@ -443,6 +452,7 @@ public class ViewManager {
 	private void initializeTabbedTableViewer() {
 		simulationResultsPane.getChildren().add(tabbedTableViewer);
 		tabbedTableViewer.createDynamicCircuitsTable();
+
 	}
 
 	/**
@@ -493,13 +503,34 @@ public class ViewManager {
 		refreshDisplay();
 	}
 
+	/**
+	 * extract the per-project currency and quantity symbols from the globals record.
+	 * NOTE these should perhaps be in the project record not the globals record.
+	 * But if a simulation involves a currency reform, it could be in the right place after all.
+	 */
+	public void setExpressionSymbols() {
+		Global global = DataManager.getGlobal(1);
+		moneyExpressionSymbol = global.getCurrencySymbol();
+		quantityExpressionSymbol = global.getQuantitySymbol();
+		
+		//sneaky way to force the display options onto the new project
+		
+		togglePriceExpression();
+		togglePriceExpression();
+		toggleValueExpression();
+		toggleValueExpression();
+		
+	}
+
 	private void togglePriceExpression() {
 		if (pricesExpressionDisplay == DisplayAsExpression.MONEY) {
 			pricesExpressionDisplay = DisplayAsExpression.TIME;
+			pricesExpressionSymbol = quantityExpressionSymbol;
 			togglePricesExpressionButton.setText("$Prices");
 			setTip(togglePricesExpressionButton, "Display Prices as money instead of time");
 		} else {
 			pricesExpressionDisplay = DisplayAsExpression.MONEY;
+			pricesExpressionSymbol = moneyExpressionSymbol;
 			togglePricesExpressionButton.setText("#Prices");
 			setTip(togglePricesExpressionButton, "Display Prices as time instead of money");
 		}
@@ -510,10 +541,12 @@ public class ViewManager {
 	private void toggleValueExpression() {
 		if (valuesExpressionDisplay == DisplayAsExpression.MONEY) {
 			valuesExpressionDisplay = DisplayAsExpression.TIME;
+			valuesExpressionSymbol = quantityExpressionSymbol;
 			toggleValuesExpressionButton.setText("$Values");
 			setTip(toggleValuesExpressionButton, "Display Prices as money instead of time");
 		} else {
 			valuesExpressionDisplay = DisplayAsExpression.MONEY;
+			valuesExpressionSymbol = moneyExpressionSymbol;
 			toggleValuesExpressionButton.setText("#Values");
 			setTip(toggleValuesExpressionButton, "Display Prices as time instead of money");
 		}
@@ -572,6 +605,7 @@ public class ViewManager {
 		if (newValue.getProjectID() != Simulation.projectCurrent) {
 			logger.debug("Requested switch to project with ID {} and description {} ", newValue.getProjectID(), newValue.getDescription());
 			DataManager.switchProjects(newValue.getProjectID(), actionButtonsBox);
+			setExpressionSymbols();
 			refreshTimeStampTable();
 			refreshDisplay();
 		}

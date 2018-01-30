@@ -1,5 +1,10 @@
 # Capitalism 9.0 announcements
 
+## 1/30/2018 12:33:45 PM 
+
+Currency symbols added to the tables display.
+New executable
+
 ## 1/29/2018 3:38:27 PM 
 
 Project 5 (Expanded Reproduction) is now working.

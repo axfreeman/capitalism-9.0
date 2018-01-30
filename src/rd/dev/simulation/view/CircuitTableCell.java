@@ -37,49 +37,59 @@ public class CircuitTableCell extends TableCell<Circuit, String> {
 	}
 
 	@Override protected void updateItem(String item, boolean empty) {
-		int i = getIndex();
+
 		super.updateItem(item, empty);
 		if (item == null) {// this happens,it seems, when the tableRow is used for the column header
 			return;
 		}
-		Circuit circuit = getTableView().getItems().get(i);
+		Circuit circuit = getTableView().getItems().get(getIndex());
 		if (circuit == null) {
 			logger.debug(" Null Circuit");
 			return;
 		}
-		setText(item);
 		setTextFill(circuit.changed(selector, TabbedTableViewer.displayAttribute) ? Color.RED : Color.BLACK);
-		if (ViewManager.displayHints) {
-			switch (selector) {
-			case CONSTRAINEDOUTPUT:
+		switch (selector) {
+		case CONSTRAINEDOUTPUT:
+			if (ViewManager.displayHints)
 				setStyle("-fx-background-color: rgba(220,220,220,0.3)");
-				break;
-			case PROPOSEDOUTPUT:
+			setText(item);
+			break;
+		case PROPOSEDOUTPUT:
+			if (ViewManager.displayHints)
 				setStyle("-fx-background-color: rgba(220,220,220,0.3)");
-				break;
-			case PRODUCTIVESTOCKS:
-			case SALESSTOCK:
-			case MONEYSTOCK:
-				switch (TabbedTableViewer.displayAttribute) {
-				case PRICE:
+			setText(item);
+			break;
+		case PRODUCTIVESTOCKS:
+		case SALESSTOCK:
+		case MONEYSTOCK:
+			switch (TabbedTableViewer.displayAttribute) {
+			case PRICE:
+				if (ViewManager.displayHints)
 					setStyle("-fx-background-color: rgba(255,240,204,0.3)");
-					break;
-				case VALUE:
+				setText(ViewManager.pricesExpressionSymbol + item);
+				break;
+			case VALUE:
+				if (ViewManager.displayHints)
 					setStyle("-fx-background-color: rgb(255,225,225,0.3)");
-					break;
-				case QUANTITY:
+				setText(ViewManager.valuesExpressionSymbol + item);
+				break;
+			case QUANTITY:
+				if (ViewManager.displayHints)
 					setStyle("-fx-background-color: rgba(220,220,220,0.3)");
-					break;
-				}
-				break;
-			case INITIALCAPITAL:
-			case CURRENTCAPITAL:
-			case PROFIT:
-				setStyle("-fx-background-color: rgba(255,240,204,0.3)");
-				break;
-			default:
+				setText(item);
 				break;
 			}
+			break;
+		case INITIALCAPITAL:
+		case CURRENTCAPITAL:
+		case PROFIT:
+			if (ViewManager.displayHints)
+				setStyle("-fx-background-color: rgba(255,240,204,0.3)");
+			setText(ViewManager.pricesExpressionSymbol + item);
+			break;
+		default:
+			setText(item);
+			break;
 		}
 	}
 }

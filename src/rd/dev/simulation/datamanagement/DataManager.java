@@ -288,7 +288,7 @@ public class DataManager {
 	 * the single productive stock of a circuit defined by the name of the circuit, the use value it produces, for the current project and a given timeStamp
 	 * 
 	 * @param timeStamp
-	 *            the given timeStammp
+	 *            the given timeStamp
 	 * @param circuit
 	 *            the circuit to which the stock belongs
 	 * @param useValue

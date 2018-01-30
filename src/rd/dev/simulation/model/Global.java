@@ -65,6 +65,9 @@ public class Global extends Observable implements Serializable {
 	@Column(name = "TotalPrice") private double totalPrice;
 	@Column(name = "InvestmentRatio") private double investmentRatio;
 	@Column(name = "LabourSupplyResponse") private Simulation.SupplyResponse labourSupplyResponse;
+	@Column(name = "CurrencySymbol") private String currencySymbol;
+	@Column(name = "QuantitySymbol") private String quantitySymbol;
+	
 	
 	@Transient private double surplusMeansOfProduction = 0; // how much (in $) is available for investment
 	
@@ -86,6 +89,8 @@ public class Global extends Observable implements Serializable {
 		totalPrice=globalTemplate.totalPrice;
 		investmentRatio=globalTemplate.investmentRatio;
 		labourSupplyResponse=globalTemplate.labourSupplyResponse;
+		currencySymbol=globalTemplate.currencySymbol;
+		quantitySymbol=globalTemplate.quantitySymbol;
 	}
 
 	public double getRateOfExploitation() {
@@ -264,5 +269,34 @@ public class Global extends Observable implements Serializable {
 	public void setSurplusMeansOfProduction(double totalSurplusOfMeansOfProduction) {
 		this.surplusMeansOfProduction = totalSurplusOfMeansOfProduction;
 	}
+
+	/**
+	 * @return the currencySymbol
+	 */
+	public String getCurrencySymbol() {
+		return currencySymbol;
+	}
+
+	/**
+	 * @param currencySymbol the currencySymbol to set
+	 */
+	public void setCurrencySymbol(String currencySymbol) {
+		this.currencySymbol = currencySymbol;
+	}
+
+	/**
+	 * @return the quantitySymbol
+	 */
+	public String getQuantitySymbol() {
+		return quantitySymbol;
+	}
+
+	/**
+	 * @param quantitySymbol the quantitySymbol to set
+	 */
+	public void setQuantitySymbol(String quantitySymbol) {
+		this.quantitySymbol = quantitySymbol;
+	}
+	
 
 }
