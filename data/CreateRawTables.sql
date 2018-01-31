@@ -1,15 +1,21 @@
  DROP table if exists globals;
  CREATE TABLE `globals` ( `project` int default 1 not null, `timeStamp` VARCHAR (10) DEFAULT '1' not null, `RateOfExploitation` double DEFAULT NULL, `MELT` double DEFAULT NULL, initialCapital double DEFAULT NULL, currentCapital double DEFAULT NULL, profit double DEFAULT NULL, ProfitRate double DEFAULT NULL, `PopulationGrowthRate` double DEFAULT NULL, totalValue double DEFAULT 0, totalPrice double DEFAULT 0, investmentRatio double DEFAULT 0.0, labourSupplyResponse ENUM('FLEXIBLE','FIXED') DEFAULT 'FIXED', CurrencySymbol VARCHAR(10) DEFAULT '$', quantitySymbol VARCHAR(10) DEFAULT '#', Primary Key (project, timeStamp) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ 
  DROP table if exists socialClasses;
  CREATE TABLE `socialclasses` ( `project` INT DEFAULT 1 NOT NULL, `timeStamp` VARCHAR (10) DEFAULT '1' NOT NULL, `SocialClassName` VARCHAR(45) DEFAULT NULL, `Size` DOUBLE DEFAULT NULL, consumptionPerPerson double DEFAULT 0, reproductionTime double DEFAULT 1, revenue double DEFAULT 0, primary key (project, timeStamp, SocialClassName)) ENGINE=INNODB DEFAULT CHARSET=UTF8;
+ 
  DROP table if exists circuits;
  CREATE TABLE `circuits` ( `project` int default 1 not null, timeStamp VARCHAR (10) DEFAULT '1' not null, `productUseValueName` Varchar(45)not null, constrainedOutput double DEFAULT NULL, proposedOutput double DEFAULT NULL, costOfMPForExpansion double default 0, costOfLPforExpansion double default 0, GrowthRate double DEFAULT 0, InitialCapital double DEFAULT NULL, CurrentCapital double DEFAULT NULL, Profit double DEFAULT NULL, RateOfProfit double DEFAULT NULL, primary key (project, timeStamp, ProductUseValueName) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ 
  DROP table if exists stocks;
  CREATE TABLE `stocks` ( `project` int default 1 not null, `timeStamp` VARCHAR (10) DEFAULT '1' not null, OWNER varchar(45) not NULL, OWNERTYPE varchar(45) DEFAULT NULL, `usevalue` varchar(45) not NULL, `stockType` varchar(45) DEFAULT NULL, `quantity` double DEFAULT NULL, value double DEFAULT null, PRICE double DEFAULT NULL, `coefficient` double DEFAULT NULL, quantityDemanded  double DEFAULT NULL, primary key (project, timeStamp, owner, usevalue, stocktype) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ 
  DROP table if exists useValues;
- CREATE TABLE `useValues` ( `project` int default 1 not null, `timeStamp` VARCHAR (10) DEFAULT '1' not null, useValueName varchar(45) not NULL,`useValueCircuitType` varchar(45) DEFAULT NULL, `description` varchar(45) DEFAULT NULL, `unitValue` double DEFAULT NULL, `unitPrice` double DEFAULT NULL, `turnoverTime` double DEFAULT NULL, totalSupply double default NULL, totalQuantity double default NULL, totalDemand double default NULL,  surplus double DEFAULT 0, totalValue double default NULL, totalPrice double default NULL, allocationShare double default null, primary key (project, timeStamp, useValueName) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ CREATE TABLE `useValues` ( `project` int default 1 not null, `timeStamp` VARCHAR (10) DEFAULT '1' not null, useValueName varchar(45) not NULL,`useValueCircuitType` varchar(45) DEFAULT NULL, `description` varchar(45) DEFAULT NULL, `unitValue` double DEFAULT NULL, `unitPrice` double DEFAULT NULL, `turnoverTime` double DEFAULT NULL, totalSupply double default NULL, totalQuantity double default NULL, totalDemand double default NULL,  surplus double DEFAULT 0, totalValue double default NULL, totalPrice double default NULL, allocationShare double default null, useValueType ENUM('LABOURPOWER','MONEY','PRODUCTIVE','NECESSITIES','LUXURIES')DEFAULT 'UNKNOWN', primary key (project, timeStamp, useValueName) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ 
  DROP table if exists projects;
  CREATE TABLE `projects` ( `ProjectID` INT NOT NULL, `Description` VARCHAR(45) NULL, currentTimeStamp INT DEFAULT 1, currentTimeStampCursor INT DEFAULT 1, currentTimeStampComparatorCursor INT DEFAULT 1, ButtonState VARCHAR(20) DEFAULT NULL, PRIMARY KEY (`ProjectID`));
+ 
  DROP table if exists timeStamps;
  CREATE TABLE timeStamps (`timeStampID` int Default 1 NOT NULL, `projectFK` INT default 1 NOT NULL, period INT DEFAULT NULL,superState VARCHAR(45) default NULL, COMPARATORTIMESTAMPID INT DEFAULT 1, `Description` VARCHAR(30) default NULL, PRIMARY KEY (`timeStampID`,projectFK));
  

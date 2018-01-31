@@ -94,6 +94,7 @@ public class TabbedTableViewer extends VBox {
 	// The UseValues table
 
 	@FXML private TableView<UseValue> useValuesTable;
+	@FXML private TableColumn<UseValue, String> useValueNameColumn;
 	@FXML private TableColumn<UseValue, String> useValueTypeColumn;
 	@FXML private TableColumn<UseValue, String> useValueCircuitTypeColumn;
 	@FXML private TableColumn<UseValue, String> useValueUnitValueColumn;
@@ -321,6 +322,7 @@ public class TabbedTableViewer extends VBox {
 	 */
 	public void populateUseValuesViewTable() {
 		useValuesTable.setItems(olProvider.useValuesObservable());
+		makeUseValueColumn(useValueNameColumn, UseValue.Selector.USEVALUENAME);
 		makeUseValueColumn(useValueTypeColumn, UseValue.Selector.USEVALUETYPE);
 		makeUseValueColumn(useValueTotalValueColumn, UseValue.Selector.TOTALVALUE);
 		makeUseValueColumn(useValueTotalPriceColumn, UseValue.Selector.TOTALPRICE);

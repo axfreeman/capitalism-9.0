@@ -92,7 +92,7 @@ public class CircuitsProduce extends Simulation implements Command {
 					salesStock.getPrice() / melt);
 			if (c.iNDUSTRYTYPE()!=Circuit.INDUSTRYTYPE.NECESSITIES) {
 				double surplus = Precision.round(salesStock.getQuantity() - useValue.getTotalDemand(), Simulation.getRoundingPrecision());
-				Reporter.report(logger, 2, "  The surplus of production over use for [%s] was %.2f", useValue.getUseValueType(), surplus);
+				Reporter.report(logger, 2, "  The surplus of production over use for [%s] was %.2f", useValue.getUseValueName(), surplus);
 				useValue.setSurplus(surplus);
 			}else {
 				Reporter.report(logger, 2, "  The surplus of consumer goods has been set to zero, because they are not used in production", 0);
@@ -101,8 +101,7 @@ public class CircuitsProduce extends Simulation implements Command {
 
 			// TODO has to be more sophisticated if we allow multiple producers of the same use value
 		}
-
-		// DO NOT recalculate the use value aggregates from the stocks, because the stocks are out of sync at this point
-		// therefore, don't do this: calculateAggregates(true);
+		Reporter.report(logger, 2, "NOTE THAT TOTAL VALUE AND PRICE ARE TEMPORARILY REPORTED BELOW THEIR TRUE LEVEL UNTIL LABOUR POWER HAS REGENERATED");
+		calculateUseValueAggregates(false);
 	}
 }

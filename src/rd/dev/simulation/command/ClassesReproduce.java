@@ -49,8 +49,11 @@ public class ClassesReproduce extends Simulation implements Command {
 	public void execute() {
 		Reporter.report(logger, 0, "REPRODUCE CLASSES");
 		advanceOneStep(ActionStates.C_P_ClassesReproduce.getText(), ActionStates.C_P_Produce.getText());
+		
+// dump the code below when we are sure it is not needed		
 //		UseValue consumptionUseValue=DataManager.useValueOfConsumptionGoods(timeStampIDCurrent);
 //		double priceOfConsumptionGoods=consumptionUseValue.getUnitPrice();
+
 		Global global = DataManager.getGlobal(Simulation.timeStampIDCurrent);
 		double melt = global.getMelt();
 		List<SocialClass> socialClasses = DataManager.socialClassesAll(timeStampIDCurrent);
@@ -95,5 +98,12 @@ public class ClassesReproduce extends Simulation implements Command {
 			Reporter.report(logger, 2, "  Consumption stock of class [%s] reduced by consuming %.2f from %.2f to %.2f",
 					sc.getSocialClassName(), quantityConsumed, existingStock,sc.getConsumptionQuantity());
 		}
+
+		// recalculate the use value aggregates from the stocks, because this does not happen automatically
+		// (it could, but there would be a cost and it would open the door to bugs arising from failures to update usevalues following a change in stocks)
+
+		calculateUseValueAggregates(true);
+
+
 	}
 }

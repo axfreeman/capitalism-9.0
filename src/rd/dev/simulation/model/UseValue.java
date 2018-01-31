@@ -46,7 +46,8 @@ import rd.dev.simulation.view.ViewManager;
 		@NamedQuery(name = "UseValues.findAll", query = "SELECT u FROM UseValue u"),
 		@NamedQuery(name = "UseValues.Primary", query = "SELECT u FROM UseValue u where u.pk.project= :project AND u.pk.timeStamp= :timeStamp and u.pk.useValueName=:useValueName"),
 		@NamedQuery(name = "UseValues.project.timeStamp", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp"),
-		@NamedQuery(name = "UseValues.productive", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.useValueCircuitType='Capitalist'")
+		@NamedQuery(name = "UseValues.productive", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.useValueCircuitType='Capitalist'"),
+		@NamedQuery(name = "UseValueType", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.useValueType=:useValueType")
 })
 @Embeddable
 public class UseValue extends Observable implements Serializable {
@@ -68,7 +69,7 @@ public class UseValue extends Observable implements Serializable {
 	@Column(name = "totalValue") private double totalValue;// corresponds to total quantity; is the value of all commodities of this type
 	@Column(name = "totalPrice") private double totalPrice;// corresponds to total quantity - price of all commodities of this type
 	@Column(name = "allocationShare") private double allocationShare;// proportion of total demand that can actually be supplied
-
+	@Column(name = "useValueType") private USEVALUETYPE useValueType;// see enum USEVALUENAME for list of possible types
 	@Transient private UseValue comparator;
 
 	/**
@@ -78,14 +79,27 @@ public class UseValue extends Observable implements Serializable {
 	 *
 	 */
 	public enum USEVALUETYPE {
-		LABOURPOWER, MONEY, MEANSOFPRODUCTION, NECESSITIES, LUXURIES
+		LABOURPOWER("Labour Power"), MONEY("Money"), PRODUCTIVE("Productive"), NECESSITIES("Necessities"), LUXURIES("Luxuries");
+		String text;
+
+		USEVALUETYPE(String text) {
+			this.text = text;
+		}
+
+		/**
+		 * @return the text associated with this type - normally, so it can be displayed for the user
+		 */
+
+		public String getText() {
+			return text;
+		}
 	};
 
 	/**
 	 * Readable constants to refer to the methods which provide information about the persistent members of the class
 	 */
 	public enum Selector {
-		USEVALUETYPE, USEVALUECIRCUITTYPE, TURNOVERTIME, UNITVALUE, UNITPRICE, TOTALSUPPLY, TOTALQUANTITY, TOTALDEMAND, SURPLUS, TOTALVALUE, TOTALPRICE, ALLOCATIONSHARE
+		USEVALUENAME, USEVALUECIRCUITTYPE, TURNOVERTIME, UNITVALUE, UNITPRICE, TOTALSUPPLY, TOTALQUANTITY, TOTALDEMAND, SURPLUS, TOTALVALUE, TOTALPRICE, ALLOCATIONSHARE, USEVALUETYPE
 	}
 
 	/**
@@ -121,6 +135,7 @@ public class UseValue extends Observable implements Serializable {
 		this.totalValue = useValueTemplate.totalValue;
 		this.totalPrice = useValueTemplate.totalPrice;
 		this.allocationShare = useValueTemplate.allocationShare;
+		this.useValueType = useValueTemplate.useValueType;
 	}
 
 	/**
@@ -197,7 +212,7 @@ public class UseValue extends Observable implements Serializable {
 
 	public boolean changed(Selector selector) {
 		switch (selector) {
-		case USEVALUETYPE:
+		case USEVALUENAME:
 			return false;
 		case USEVALUECIRCUITTYPE:
 			return false;
@@ -239,7 +254,7 @@ public class UseValue extends Observable implements Serializable {
 
 	public ReadOnlyStringWrapper wrappedString(Selector selector) {
 		switch (selector) {
-		case USEVALUETYPE:
+		case USEVALUENAME:
 			return new ReadOnlyStringWrapper(pk.useValueName);
 		case USEVALUECIRCUITTYPE:
 			return new ReadOnlyStringWrapper(useValueCircuitType);
@@ -263,6 +278,8 @@ public class UseValue extends Observable implements Serializable {
 			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, turnoverTime));
 		case ALLOCATIONSHARE:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, allocationShare));
+		case USEVALUETYPE:
+			return new ReadOnlyStringWrapper(useValueType.text);
 		default:
 			return null;
 		}
@@ -278,29 +295,17 @@ public class UseValue extends Observable implements Serializable {
 
 	/**
 	 * Rudimentary typology of use values
-	 * TODO systematize this
 	 * 
-	 * @return the type of this useValue, as given by the {@code USEVALUETYPE} enum
+	 * @return the type of this useValue, as given by the {@code USEVALUENAME} enum
 	 */
 
-	public USEVALUETYPE useValueType() {
-		switch (pk.useValueName) {
-		case "Consumption":
-			return USEVALUETYPE.NECESSITIES;
-		case "Money":
-			return USEVALUETYPE.MONEY;
-		case "Luxuries":
-			return USEVALUETYPE.LUXURIES;
-		case "Labour Power":
-			return USEVALUETYPE.LABOURPOWER;
-		default:
-			return USEVALUETYPE.MEANSOFPRODUCTION;
-		}
+	public USEVALUETYPE getUseValueType() {
+		return useValueType;
 	}
 
 	// GETTERS AND SETTERS FOR THE PERSISTENT MEMBERS
 
-	public String getUseValueType() {
+	public String getUseValueName() {
 		return pk.useValueName;
 	}
 

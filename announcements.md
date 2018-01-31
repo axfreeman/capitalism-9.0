@@ -1,5 +1,10 @@
 # Capitalism 9.0 announcements
 
+## 1/31/2018 9:52:57 AM 
+
+Important corrections to the MELT calculation and to 'Consequences' action.
+In preparation for transformation of values into prices of production.
+
 ## 1/30/2018 12:33:45 PM 
 
 Currency symbols added to the tables display.

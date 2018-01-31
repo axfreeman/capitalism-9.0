@@ -20,7 +20,8 @@
 						<children>
 							<TableView fx:id="useValuesTable" prefHeight="195.0" prefWidth="700.0">
 								<columns>
-									<TableColumn fx:id="useValueTypeColumn" prefWidth="120.0" text="Commodity" />
+									<TableColumn fx:id="useValueNameColumn" prefWidth="120.0" text="Commodity" />
+                           <TableColumn fx:id="useValueTypeColumn" prefWidth="75.0" text="Type" />
 									<TableColumn fx:id="useValueTotalQuantityColumn" prefWidth="75.0" styleClass="table-column-right" text="Quantity">
 										<graphic>
 											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">

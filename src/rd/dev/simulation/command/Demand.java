@@ -185,7 +185,8 @@ public class Demand extends Simulation implements Command {
 		switch (supplyResponse) {
 		case FLEXIBLE:
 			SocialClass workers = DataManager.socialClassByName(timeStampIDCurrent, "Workers");
-			UseValue labourPower = DataManager.useValueByName(timeStampIDCurrent, "Labour Power");
+//			UseValue labourPower = DataManager.useValueByName(timeStampIDCurrent, "Labour Power");
+			UseValue labourPower=DataManager.useValueOfType(timeStampIDCurrent, UseValue.USEVALUETYPE.LABOURPOWER);
 			double demandForLabourPower = labourPower.getTotalDemand();
 			Reporter.report(logger, 2, "  Labour Power supply has increased in response to demand. It was %.2f and is now %.2f", workers.getSalesQuantity(),
 					demandForLabourPower);

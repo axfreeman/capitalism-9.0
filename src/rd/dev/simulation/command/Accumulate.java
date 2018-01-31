@@ -74,9 +74,9 @@ public class Accumulate extends Simulation implements Command {
 		Reporter.report(logger, 1, " Calculating the surplus of means of production available for expansion");
 		double surplusMeansOfProduction = 0.0;
 		for (UseValue u : DataManager.useValuesAll(timeStampIDCurrent)) {
-			if (u.useValueType() != (UseValue.USEVALUETYPE.NECESSITIES)) {
+			if (u.getUseValueType() != (UseValue.USEVALUETYPE.NECESSITIES)) {
 				double thisSurplusMeansOfProduction = Precision.round(u.getSurplus() * u.getUnitPrice(), Simulation.roundingPrecision);
-				Reporter.report(logger, 2, "  The surplus of commodity [%s] is %.2f and its price is $%.2f", u.getUseValueType(), u.getSurplus(),
+				Reporter.report(logger, 2, "  The surplus of commodity [%s] is %.2f and its price is $%.2f", u.getUseValueName(), u.getSurplus(),
 						thisSurplusMeansOfProduction);
 				surplusMeansOfProduction += thisSurplusMeansOfProduction;
 			}

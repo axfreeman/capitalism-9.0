@@ -170,7 +170,7 @@ public class Trade extends Simulation implements Command {
 	 *            the amount to transfer
 	 */
 	public void transferStock(Stock from, Stock to, double quantityTransferred) throws RuntimeException {
-		UseValue useValue = DataManager.useValueByName(timeStampIDCurrent, from.getUseValueName());
+		UseValue useValue = from.getUseValue();
 		if (quantityTransferred == 0) {
 			return;			// Nothing to transfer
 		}

@@ -148,7 +148,7 @@ public class Constrain extends Simulation implements Command {
 			double totalSupply = u.getTotalSupply();
 			double allocationShare = totalSupply / totalDemand;
 			allocationShare = (allocationShare > 1 ? 1 : allocationShare);
-			Reporter.report(logger, 1, " Allocation share for commodity [%s] is %.2f", u.getUseValueType(), allocationShare);
+			Reporter.report(logger, 1, " Allocation share for commodity [%s] is %.2f", u.getUseValueName(), allocationShare);
 			u.setAllocationShare(allocationShare);
 		}
 	}

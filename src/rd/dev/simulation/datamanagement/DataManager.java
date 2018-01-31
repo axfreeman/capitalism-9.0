@@ -97,6 +97,8 @@ public class DataManager {
 	
 	// specific queries for other types
 	protected static TypedQuery<UseValue> useValuesProductiveQuery;
+	protected static TypedQuery<UseValue> useValuesByTypeQuery;
+	
 	protected static TypedQuery<TimeStamp> timeStampSuperStatesQuery;
 	protected static TypedQuery<TimeStamp> timeStampsAllQuery;
 
@@ -152,6 +154,7 @@ public class DataManager {
 		stocksSourcesOfDemandQuery = stocksEntityManager.createNamedQuery("Stocks.project.timeStamp.sourcesOfDemand", Stock.class);
 		stocksProductiveByCircuitQuery = stocksEntityManager.createNamedQuery("Stocks.project.timeStamp.circuit.productive", Stock.class);
 		useValuesProductiveQuery = useValueEntityManager.createNamedQuery("UseValues.productive", UseValue.class);
+		useValuesByTypeQuery = useValueEntityManager.createNamedQuery("UseValueType", UseValue.class);
 
 		// Used in ObservableListProvider alone
 		stocksByStockTypeQuery = stocksEntityManager.createNamedQuery("Stocks.project.timeStamp.stockType", Stock.class);
@@ -530,6 +533,31 @@ public class DataManager {
 	public static List<UseValue> useValuesProductive(int timeStamp) {
 		useValuesProductiveQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
 		return useValuesProductiveQuery.getResultList();
+	}
+	
+	/**
+	 * a list of all circuits of the given type and the given timeStamp
+	 * @param timeStamp
+	 *            the given timeStamp
+	 * @param useValueType
+	 * 			the type of the UseValue (LABOURPOWER, MONEY, PRODUCTIVE, etc)
+	 * @return a list of circuits at the latest timeStamp that has been persisted.
+	 * 
+	 */
+	public static List<UseValue> useValuesOfType(int timeStamp,UseValue.USEVALUETYPE useValueType) {
+		useValuesByTypeQuery.setParameter("project", Simulation.projectCurrent);
+		useValuesByTypeQuery.setParameter("timeStamp", timeStamp);
+		useValuesByTypeQuery.setParameter("useValueType", useValueType);
+		return useValuesByTypeQuery.getResultList();
+	}
+	/**
+	 * the topmost useValue of the given type
+	 * legacy method for the places where we assume a single use value of a particular type, eg Labour Power
+	 * TODO phase this out
+	 */
+	public static UseValue useValueOfType(int timeStamp, UseValue.USEVALUETYPE useValueType) {
+		List<UseValue> useValues=useValuesOfType(timeStamp, useValueType);
+		return useValues.get(0);
 	}
 
 	/**

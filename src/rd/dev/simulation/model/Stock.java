@@ -381,8 +381,7 @@ public class Stock extends Observable implements Serializable {
 	 */
 	
 	public UseValue.USEVALUETYPE useValueType(){
-		UseValue useValue=DataManager.useValueByName(Simulation.timeStampIDCurrent, pk.useValue);
-		return useValue.useValueType();
+		return getUseValue().getUseValueType();
 	}
 
 	/**

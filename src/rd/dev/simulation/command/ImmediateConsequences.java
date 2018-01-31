@@ -22,6 +22,7 @@ package rd.dev.simulation.command;
 
 import java.util.List;
 
+import org.apache.commons.math3.util.Precision;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -32,6 +33,7 @@ import rd.dev.simulation.model.Circuit;
 import rd.dev.simulation.model.Global;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.model.UseValue;
+import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.Reporter;
 
 public class ImmediateConsequences extends Simulation implements Command {
@@ -44,79 +46,71 @@ public class ImmediateConsequences extends Simulation implements Command {
 	 * TODO CHECK INVARIANTS AT THIS POINT?
 	 */
 	public void execute() {
-		Reporter.report(logger, 0, "VALIDATE STOCK AND COMMODITY AGGREGATES");
-		// recalculate the use value aggregates from the stocks, because this does not happen automatically
-		// (it could, but there would be a cost and it would open the door to bugs arising from failures to update usevalues following a change in stocks)
-		calculateUseValueAggregates(true);
-
-		Reporter.report(logger, 0, "RECALCULATE UNIT VALUES AND PRICES");
+		Reporter.report(logger, 0, "RECOMPUTE THE MELT, UNIT VALUES AND PRICES, AND HENCE THE MONETARY EXPRESSION OF TOTAL VALUE");
 		advanceOneStep(ActionStates.C_P_ImmediateConsequences.getText(), ActionStates.C_P_Produce.getText());
+
+		Reporter.report(logger, 0, "VALIDATE STOCK AND COMMODITY AGGREGATES");
+
+		// TODO: the value of money has to be dealt with properly.
+		// for now, deal with by exempting money
+
+		// A little consistency check
+
 		double globalTotalValue = 0.0;
 		double globalTotalPrice = 0.0;
 		Global global = DataManager.getGlobal(timeStampIDCurrent);
 		List<UseValue> useValues = DataManager.useValuesAll(timeStampIDCurrent);
 
-		// Note; the following step is nothing to do with price dynamics but corrects for an artefact of the simulation.
-		// Because prices are calculated serially, for each branch of production independent of the others, we end up with
-		// a price that may differ from value. Here, we merely correct for this error
-		// in the revenue and distribution stages, we will introduce price dynamics, and this will require us to recalculat the MELT
-		// Hopefully this clears up a fundamental confusion in earlier stages of this simulation
-		// but not, interestingly enough, the 1992 simulation.
-
-		// First, reset all unit values on the basis of the total value and total quantity of this commodity in existence
-		// (at the same time, record the total value and total price in the system, in preparation for the next step)
-
-		// TODO: the value of money has to be dealt with properly. 
-		// for now, deal with by exempting money
 		for (UseValue u : useValues) {
-			Reporter.report(logger, 1, "Use value [%s]", u.getUseValueType());
-			Reporter.report(logger, 2, "Unit value was %.2f, and unit price was %.2f", u.getUnitValue(), u.getUnitPrice());
-			double quantity = u.getTotalQuantity();
-			double value = u.getTotalValue();
-			double price = u.getTotalPrice();
-			Reporter.report(logger, 2, "Total value was %.2f, and total price was %.2f", value, price);
-			double newUnitValue = value / quantity;
-			Reporter.report(logger, 2, "Unit value will be reset to %.2f", newUnitValue);
-			u.setUnitValue(newUnitValue);
-			if (!u.getUseValueType().equals("Money")) {
-				globalTotalValue += value;
-				globalTotalPrice += price;
-			}else {
-				Reporter.report(logger, 2, "Note: Code to adjust the value of money not yet written");
-			}
+			Reporter.report(logger, 1, "Commodity [%s]", u.getUseValueName());
+			Reporter.report(logger, 2, "Total value is %.2f, and total price is %.2f", u.getTotalValue(), u.getTotalPrice());
+			globalTotalValue += u.getTotalValue();
+			globalTotalPrice += u.getTotalPrice();
 		}
-		double adjustmentFactor = globalTotalValue / globalTotalPrice;
-		global.setTotalPrice(globalTotalValue);
-		Reporter.report(logger, 1, "Global total value was %.2f, and total price was %.2f; all prices will now be scaled down by %.2f",
-				globalTotalValue, globalTotalPrice, adjustmentFactor);
-		Reporter.report(logger, 2, "NOTE: this is to correct for an artefact of the simulation and has no theoretical significance");
-		Reporter.report(logger, 2, "As recorded, value was %.2f, and price was %.2f. These should equal the last report line", global.getTotalValue(),
-				global.getTotalPrice());
+		Reporter.report(logger, 1, "Global total value is %.2f, and total price is %.2f", globalTotalValue, globalTotalPrice);
 
-		// now, reset unit prices so that total price = total value
-		// NOTE this is the extrinsic (monetary) expression that is being reset
-		// We cannot deal with the intrinsic (labour time) expression yet because we have not dealt with the price dynamics
-
-		for (UseValue u : useValues) {
-			if (!u.getUseValueType().equals("Money")) {
-				double adjustedUnitPrice = u.getUnitPrice() * adjustmentFactor;
-				Reporter.report(logger, 2, "The unit price of [%s] will be set to %.2f", u.getUseValueType(), adjustedUnitPrice);
-				u.setUnitPrice(adjustedUnitPrice);
-			}else {
-				Reporter.report(logger, 2, "Note: Code to adjust the value of money not yet written");
-			}
-		}
-
-		// recalculate the values and prices of each stock on the basis of the new unit values and prices
-		stockValuesRecalculate();
-
-		// and recalculate the values and prices of the use values on the basis of the stock total values and prices we just re-calcualtex
-		calculateUseValueAggregates(false);
+		logger.debug("Recorded global total value is %.2f, and calculated total value is %.2f", global.getTotalValue(), globalTotalValue);
+		logger.debug("Recorded global total price is %.2f, and calculated total price is %.2f", global.getTotalPrice(), globalTotalPrice);
 		
-		// finally, calculate the profits that resulted from the combination of production and revaluation.
-		// NOTE these are the unmodified profits, before any equalization of profit rates or indeed,
-		// any movement of profit rates caused by market operation and price formation.
-		calculateProfits();
+		if (globalTotalValue != global.getTotalValue())
+			Dialogues.alert(logger, "The computed global total value is out of sync with recorded total value");
+		if (globalTotalPrice != global.getTotalPrice())
+			Dialogues.alert(logger, "The computed global total price is is out of sync with recorded total price");
+
+		// Reset the MELT.
+		// NOTE: values and prices are recorded as a monetary expression. Therefore, if the MELT changes, values also have to change
+
+		double oldMelt = global.getMelt();
+		double adjustmentFactor = globalTotalPrice / globalTotalValue;
+		double newMelt = oldMelt * (adjustmentFactor);
+
+		Reporter.report(logger, 1, "MELT was %.2f and will be reset to %.2f", oldMelt, newMelt);
+		global.setMelt(newMelt);
+
+		// Reset all unit values on the basis of the total value and total quantity of this commodity in existence
+
+		for (UseValue u : useValues) {
+			if (u.getUseValueType() != UseValue.USEVALUETYPE.MONEY) {
+				double quantity = u.getTotalQuantity();
+				double newUnitValue = Precision.round(adjustmentFactor * u.getTotalValue() / quantity, Simulation.roundingPrecision);
+				Reporter.report(logger, 2, "The unit value of commodity [%s] was %.2f, and will be reset to %.2f", u.getUseValueName(),u.getUnitValue(), newUnitValue);
+				u.setUnitValue(newUnitValue);
+			}
+
+			// recalculate the values and prices of each stock on the basis of the new unit values and prices
+
+			stockValuesRecalculate();
+
+			// and recalculate the values and prices of the use values on the basis of the stock total values and prices we just re-calcualtex
+
+			calculateUseValueAggregates(false);
+
+			// finally, calculate the profits that resulted from the combination of production and revaluation.
+			// NOTE these are the unmodified profits, before any equalization of profit rates or indeed,
+			// any movement of profit rates caused by market operation and price formation.
+
+			calculateProfits();
+		}
 	}
 
 	/**
@@ -127,7 +121,7 @@ public class ImmediateConsequences extends Simulation implements Command {
 			s.reCalculateStockTotalValuesAndPrices();
 		}
 	}
-	
+
 	private void calculateProfits() {
 		Global global = DataManager.getGlobal(timeStampIDCurrent);
 		double globalProfit = 0.0;
@@ -153,6 +147,5 @@ public class ImmediateConsequences extends Simulation implements Command {
 		Reporter.report(logger, 1, "Total profit %.2f, initial capital %.2f, global profit rate %.2f",
 				globalProfit, globalInitialCapital, globalProfit / globalInitialCapital);
 	}
-
 
 }

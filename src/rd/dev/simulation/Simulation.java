@@ -176,7 +176,7 @@ public class Simulation {
 			if (listedValue != calculatedValue) {
 				logger.error("ERROR: listed price is {} and total price is {}", listedValue, calculatedValue);
 			} else {
-				logger.debug("listed price of {} matches calculated price at  {}", u.getUseValueType(), calculatedValue);
+				logger.debug("listed price of {} matches calculated price at  {}", u.getUseValueName(), calculatedValue);
 			}
 		}
 	}
@@ -243,7 +243,7 @@ public class Simulation {
 		UseValue newUseValue;
 		logger.debug("  Scanning existing use values of which there are " + results.size());
 		for (UseValue u : results) {
-			logger.debug(String.format("  Persisting the use value [%s]", u.getUseValueType()));
+			logger.debug(String.format("  Persisting the use value [%s]", u.getUseValueName()));
 			newUseValue = new UseValue();
 			newUseValue.copyUseValue(u);
 			newUseValue.setTimeStamp(timeStampIDCurrent);
