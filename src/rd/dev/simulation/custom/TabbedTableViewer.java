@@ -107,6 +107,8 @@ public class TabbedTableViewer extends VBox {
 	@FXML private TableColumn<UseValue, String> useValueTotalValueColumn;
 	@FXML private TableColumn<UseValue, String> useValueTotalPriceColumn;
 	@FXML private TableColumn<UseValue, String> useValueAllocationShareColumn;
+	@FXML private TableColumn<UseValue, String> useValueCapitalColumn;
+	@FXML private TableColumn<UseValue, String> useValueSurplusValueColumn;
 
 	// the Circuit Table and associated columns
 
@@ -334,6 +336,8 @@ public class TabbedTableViewer extends VBox {
 		makeUseValueColumn(useValueTotalDemandColumn, UseValue.Selector.TOTALDEMAND);
 		makeUseValueColumn(useValueSurplusColumn, UseValue.Selector.SURPLUS);
 		makeUseValueColumn(useValueAllocationShareColumn, UseValue.Selector.ALLOCATIONSHARE);
+		makeUseValueColumn(useValueCapitalColumn, UseValue.Selector.CAPITAL);
+		makeUseValueColumn(useValueSurplusValueColumn, UseValue.Selector.SURPLUSVALUE);
 	}
 
 	private void makeCircuitColumn(TableColumn<Circuit, String> column, Circuit.Selector selector) {

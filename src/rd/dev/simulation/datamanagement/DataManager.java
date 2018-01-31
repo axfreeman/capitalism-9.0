@@ -40,6 +40,7 @@ import rd.dev.simulation.model.SocialClass;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.model.TimeStamp;
 import rd.dev.simulation.model.UseValue;
+import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.Reporter;
 
 // TODO the namespace has become somewhat chaotic. Rename consistently, especially with regard to the primary key queries
@@ -66,45 +67,45 @@ public class DataManager {
 	protected static EntityManager globalEntityManager;
 	protected static EntityManager stocksEntityManager;
 
-	// the Named Queries
-	
 	// TimeStamp and Project queries
-	protected static TypedQuery<Project> projectAllQuery;
 	protected static TypedQuery<TimeStamp> timeStampsAllByProjectQuery;
 	protected static TypedQuery<TimeStamp> timeStampStatesQuery;
-	
-	// select single entities by primary key
-	protected static TypedQuery<Stock> stockByPrimaryKeyQuery;
 	protected static TypedQuery<TimeStamp> timeStampByPrimarykeyQuery;
 	protected static TypedQuery<Project> projectByPrimaryKeyQuery;
-	protected static TypedQuery<UseValue> useValueByPrimaryKeyQuery;
-	protected static TypedQuery<Circuit> circuitByPrimaryKeyQuery;
-	protected static TypedQuery<SocialClass> socialClassByPrimaryKeyQuery;
-	
-	// select a list of current entities
-	protected static TypedQuery<Stock> stocksBasicQuery;
-	protected static TypedQuery<UseValue> useValueBasicQuery;
-	protected static TypedQuery<Circuit> circuitBasicQuery;
-	protected static TypedQuery<SocialClass> socialClassBasicQuery;
+	protected static TypedQuery<Project> projectAllQuery;
+	protected static TypedQuery<TimeStamp> timeStampSuperStatesQuery;
+	protected static TypedQuery<TimeStamp> timeStampsAllQuery;
+
+	// global queries
 	protected static TypedQuery<Global> globalBasicQuery;
-	
-	// specific stock queries
+
+	// stock queries
+	protected static TypedQuery<Stock> stockByPrimaryKeyQuery;
+	protected static TypedQuery<Stock> stocksBasicQuery;
 	protected static TypedQuery<Stock> stocksByUseValueQuery;
 	protected static TypedQuery<Stock> stocksSalesQuery;
 	protected static TypedQuery<Stock> stocksProductiveByCircuitQuery;
 	protected static TypedQuery<Stock> stocksSourcesOfDemandQuery;
 	protected static TypedQuery<Stock> stocksByStockTypeQuery;
-	
-	// specific queries for other types
+
+	// use value queries
+	protected static TypedQuery<UseValue> useValueByPrimaryKeyQuery;
+	protected static TypedQuery<UseValue> useValueBasicQuery;
 	protected static TypedQuery<UseValue> useValuesProductiveQuery;
 	protected static TypedQuery<UseValue> useValuesByTypeQuery;
-	
-	protected static TypedQuery<TimeStamp> timeStampSuperStatesQuery;
-	protected static TypedQuery<TimeStamp> timeStampsAllQuery;
+
+	// circuit queries
+	protected static TypedQuery<Circuit> circuitByPrimaryKeyQuery;
+	protected static TypedQuery<Circuit> circuitBasicQuery;
+	protected static TypedQuery<Circuit> circuitByUseValueQuery;
+
+	// social class queries
+	protected static TypedQuery<SocialClass> socialClassByPrimaryKeyQuery;
+	protected static TypedQuery<SocialClass> socialClassBasicQuery;
 
 	public DataManager() {
-			}
-	
+	}
+
 	/**
 	 * startup
 	 * initialises all the entityManagers and queries, once for all
@@ -125,41 +126,62 @@ public class DataManager {
 
 		// create named queries which are used to retrieve and update the persistent data types.
 
-		// timeStamp and Project queries
-		projectAllQuery = projectEntityManager.createNamedQuery("Project.findAll", Project.class);
+		// timestamp queries
 		timeStampsAllByProjectQuery = timeStampEntityManager.createNamedQuery("timeStamp.project", TimeStamp.class);
-//		timeStampStatesQuery=timeStampEntityManager.createNamedQuery("project.state", TimeStamp.class);
-		
 		timeStampSuperStatesQuery = timeStampEntityManager.createNamedQuery("superStates", TimeStamp.class);
 		timeStampsAllQuery = timeStampEntityManager.createNamedQuery("timeStamp.project", TimeStamp.class);
-
-		// queries that return a single entity identified by the primary key
-		stockByPrimaryKeyQuery = stocksEntityManager.createNamedQuery("Stocks.Primary", Stock.class);
-		useValueByPrimaryKeyQuery = useValueEntityManager.createNamedQuery("UseValues.Primary", UseValue.class);
-		circuitByPrimaryKeyQuery = circuitEntityManager.createNamedQuery("Circuits.project.PrimaryKey", Circuit.class);
-		socialClassByPrimaryKeyQuery = socialClassEntityManager.createNamedQuery("SocialClass.PrimaryKey", SocialClass.class);
-		projectByPrimaryKeyQuery = projectEntityManager.createNamedQuery("Project.findOne", Project.class);
 		timeStampByPrimarykeyQuery = timeStampEntityManager.createNamedQuery("timeStamp.project.timeStamp", TimeStamp.class);
 
-		// queries that require only the project and timeStamp
-		stocksBasicQuery = stocksEntityManager.createNamedQuery("Stocks.basic", Stock.class);
-		useValueBasicQuery = useValueEntityManager.createNamedQuery("UseValues.project.timeStamp", UseValue.class);
-		circuitBasicQuery = circuitEntityManager.createNamedQuery("Circuits.project.timeStamp", Circuit.class);
-		socialClassBasicQuery = socialClassEntityManager.createNamedQuery("SocialClass.project.timeStamp", SocialClass.class);
+		// global queries
 		globalBasicQuery = globalEntityManager.createNamedQuery("globals.project.timeStamp", Global.class);
 
-		// other, specific-purpose queries
+		// project queries
+		projectAllQuery = projectEntityManager.createNamedQuery("Project.findAll", Project.class);
+		projectByPrimaryKeyQuery = projectEntityManager.createNamedQuery("Project.findOne", Project.class);
+
+		// stock queries
+		stockByPrimaryKeyQuery = stocksEntityManager.createNamedQuery("Stocks.Primary", Stock.class);
+		stocksBasicQuery = stocksEntityManager.createNamedQuery("Stocks.basic", Stock.class);
 		stocksByUseValueQuery = stocksEntityManager.createNamedQuery("Stocks.project.timeStamp.useValue", Stock.class);
 		stocksSalesQuery = stocksEntityManager.createNamedQuery("Stocks.sales", Stock.class);
 		stocksSourcesOfDemandQuery = stocksEntityManager.createNamedQuery("Stocks.project.timeStamp.sourcesOfDemand", Stock.class);
 		stocksProductiveByCircuitQuery = stocksEntityManager.createNamedQuery("Stocks.project.timeStamp.circuit.productive", Stock.class);
+		stocksByStockTypeQuery = stocksEntityManager.createNamedQuery("Stocks.project.timeStamp.stockType", Stock.class);
+
+		// use value queries
+		useValueByPrimaryKeyQuery = useValueEntityManager.createNamedQuery("UseValues.Primary", UseValue.class);
+		useValueBasicQuery = useValueEntityManager.createNamedQuery("UseValues.project.timeStamp", UseValue.class);
 		useValuesProductiveQuery = useValueEntityManager.createNamedQuery("UseValues.productive", UseValue.class);
 		useValuesByTypeQuery = useValueEntityManager.createNamedQuery("UseValueType", UseValue.class);
 
-		// Used in ObservableListProvider alone
-		stocksByStockTypeQuery = stocksEntityManager.createNamedQuery("Stocks.project.timeStamp.stockType", Stock.class);
+		// circuit queries
+		circuitByPrimaryKeyQuery = circuitEntityManager.createNamedQuery("Primary", Circuit.class);
+		circuitBasicQuery = circuitEntityManager.createNamedQuery("Basic", Circuit.class);
+		circuitByUseValueQuery = circuitEntityManager.createNamedQuery("UseValue", Circuit.class);
+
+		// social class queries
+		socialClassByPrimaryKeyQuery = socialClassEntityManager.createNamedQuery("SocialClass.PrimaryKey", SocialClass.class);
+		socialClassBasicQuery = socialClassEntityManager.createNamedQuery("SocialClass.project.timeStamp", SocialClass.class);
 	}
-	// QUERIES RETURNING SINGLE RESULTS THAT DEPEND ON THE PROJECT AS WELL AS THE TIMESTAMP
+	// GLOBAL QUERIES
+
+	/**
+	 * retrieve the global record at the given timeStamp and return it to the caller
+	 * 
+	 * @return the global record for the current project and the given timeStamp, null if it does not exist (which is an error)
+	 * @param timeStamp
+	 *            the timeStamp for which this global is required
+	 */
+	public static Global getGlobal(int timeStamp) {
+		globalBasicQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
+		try {
+			return globalBasicQuery.getSingleResult();
+		} catch (javax.persistence.NoResultException e) {
+			return null;// because this query throws a fit if it doesn't find anything
+		}
+	}
+
+	// STOCK QUERIES
 
 	/**
 	 * get the single stock with the primary key given by all the parameters
@@ -187,85 +209,6 @@ public class DataManager {
 	}
 
 	/**
-	 * get the single usevalue with the primary key given by all the parameters, including the timeStamp
-	 * 
-	 * @param project
-	 *            the given project
-	 * @param timeStamp
-	 *            the timeStamp to report on
-	 * @param useValueName
-	 *            the given UseValueName
-	 * @return the single UseValue given by this primary key, null if it does not exist
-	 */
-	public static UseValue useValueByPrimaryKey(int project, int timeStamp, String useValueName) {
-		useValueByPrimaryKeyQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("useValueName", useValueName);
-		try {
-			return useValueByPrimaryKeyQuery.getSingleResult();
-		} catch (NoResultException r) {
-			return null;
-		}
-	}
-
-	/**
-	 * the circuit that produces a given usevalue, for the current project and a given timeStamp (that may differ from the current timeStamp)
-	 * 
-	 * @param project
-	 *            the project
-	 * @param timeStamp
-	 *            the timestamp
-	 * @param useValueName
-	 *            the name of the usevalue that is produced by this circuit
-	 * @return the circuit that produces {@code useValueName}, or null if this does not exist
-	 */
-	public static Circuit circuitByPrimaryKey(int project, int timeStamp, String useValueName) {
-		circuitByPrimaryKeyQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("type", useValueName);
-		try {
-			return circuitByPrimaryKeyQuery.getSingleResult();
-		} catch (javax.persistence.NoResultException n) {
-			return null;// getSingleResult does not return null if it fails; instead, it throws a fit
-		}
-	}
-
-	/**
-	 * Get a single social class defined by its primary key, including a timeStamp that may differ from the current timeStamp
-	 * 
-	 * @param socialClassName
-	 *            the name of the social Class in the primary key
-	 * @param project
-	 *            the project in the primary key
-	 * @param timeStamp
-	 *            the timeStamp in the primary key
-	 * @return the single social class with the name socialClassName, for the given project and timeStamp
-	 */
-
-	public static SocialClass socialClassByPrimaryKey(int project, int timeStamp, String socialClassName) {
-		socialClassByPrimaryKeyQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("socialClassName", socialClassName);
-		try {
-			return socialClassByPrimaryKeyQuery.getSingleResult();
-		} catch (javax.persistence.NoResultException e) {
-			return null;// because this query throws a fit if it doesn't find anything
-		}
-	}
-
-	// QUERIES THAT RETURN A SINGLE RESULT APPLYING ONLY TO THE CURRENT PROJECT
-
-	/**
-	 * retrieve the global record at the given timeStamp and return it to the caller
-	 * 
-	 * @return the global record for the current project and the given timeStamp, null if it does not exist (which is an error)
-	 * @param timeStamp
-	 *            the timeStamp for which this global is required
-	 */
-	public static Global getGlobal(int timeStamp) {
-		globalBasicQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
-		try {
-			return globalBasicQuery.getSingleResult();
-		} catch (javax.persistence.NoResultException e) {
-			return null;// because this query throws a fit if it doesn't find anything
-		}
-	}
-
-	/**
 	 * the single sales stock of a circuit defined by the name of the circuit and the use value it produces, for the current project and a given timeStamp
 	 * 
 	 * @param timeStamp
@@ -285,8 +228,7 @@ public class DataManager {
 			return null;// because this query throws a fit if it doesn't find anything
 		}
 	}
-	
-	
+
 	/**
 	 * the single productive stock of a circuit defined by the name of the circuit, the use value it produces, for the current project and a given timeStamp
 	 * 
@@ -307,7 +249,7 @@ public class DataManager {
 			return null;// because this query throws a fit if it doesn't find anything
 		}
 	}
-	
+
 	/**
 	 * the money stock of a Circuit defined by the name of the circuit and the use value it produces, for the current project and a given timeStamp
 	 * 
@@ -347,91 +289,20 @@ public class DataManager {
 			return null;// because this query throws a fit if it doesn't find anything
 		}
 	}
-	
-	public static List<Stock> productiveStocks(){
-		//TODO this assumes no additional inputs are added as the simulation progresses (uses timeStamp 1)
+
+	/**
+	 * a list of all produtive stocks at the current project and a given timeStamp
+	 * 
+	 * @param timeStamp
+	 *            the given timeStamp
+	 * 
+	 * @return a list of stocks at the current project and timeStamp
+	 */
+
+	public static List<Stock> productiveStocks() {
+		// TODO this assumes no additional inputs are added as the simulation progresses (uses timeStamp 1)
 		return circuitByProductType(1, "Consumption").productiveStocks();
 	}
-	
-	/**
-	 * retrieve a UseValue by its name for the current project and a given timestamp
-	 * 
-	 * @param timeStamp
-	 *            the given timeStamp
-	 * 
-	 * @param useValueName
-	 *            the name of the use value
-	 * @return the useValue entity whose name is useValueName, unless it doesn't exist, in which case null
-	 */
-	public static UseValue useValueByName(int timeStamp, String useValueName) {
-		useValueByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp).setParameter("useValueName",
-				useValueName);
-		try {
-			return useValueByPrimaryKeyQuery.getSingleResult();
-		} catch (NoResultException r) {
-			return null;
-		}
-	}
-
-	/**
-	 * the useValue of Consumption goods for the current project and a given timeStamp
-	 * 
-	 * @param timeStamp
-	 *            the given timeStamp
-	 * @return the unique use Value of consumption goods or null if it doesn't exist
-	 */
-	public static UseValue useValueOfConsumptionGoods(int timeStamp) {
-		useValueByPrimaryKeyQuery.setParameter("timeStamp", timeStamp).setParameter("project", Simulation.projectCurrent)
-				.setParameter("useValueName", "Consumption");
-		try {
-			return useValueByPrimaryKeyQuery.getSingleResult();
-		} catch (NoResultException r) {
-			return null;
-		}
-	}
-
-	/**
-	 * retrieve the single circuit that produces a named use value for the current project and at a given timeStamp.
-	 * TODO Note that in general, we must allow for a named use value to be produced by more than one circuit
-	 * 
-	 * @param timeStamp
-	 *            the given timeStamp
-	 * 
-	 * @param useValueName
-	 *            the produce that is made by the circuit
-	 * @return the single circuit that produces this product, at the currently-selected timeStamp
-	 */
-	public static Circuit circuitByProductType(int timeStamp, String useValueName) {
-		circuitByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp).setParameter("type",
-				useValueName);
-		try {
-			return circuitByPrimaryKeyQuery.getSingleResult();
-		} catch (javax.persistence.NoResultException n) {
-			return null;// getSingleResult does not return null if it fails; instead, it throws a fit
-		}
-	}
-
-	/**
-	 * a named social class for the current project and a given timeStamp.
-	 * 
-	 * @param timeStamp
-	 *            the given timeStamp
-	 * 
-	 * @param socialClassName
-	 *            the name of the social Class
-	 * @return the single social class with the name socialClassName, for the given project and timeStamp
-	 */
-	public static SocialClass socialClassByName(int timeStamp, String socialClassName) {
-		socialClassByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp)
-				.setParameter("socialClassName", socialClassName);
-		try {
-			return socialClassByPrimaryKeyQuery.getSingleResult();
-		} catch (NoResultException r) {
-			return null;
-		}
-	}
-
-	// QUERIES RETURNING A LIST THAT DEPENDS ON THE TIMESTAMP THOUGH APPLYING ONLY TO THE CURRENT PROJECT
 
 	/**
 	 * a list of all stocks at the current project and a given timeStamp
@@ -509,6 +380,65 @@ public class DataManager {
 		return stocksSalesQuery.getResultList();
 	}
 
+	// USE VALUE QUERIES
+
+	/**
+	 * get the single usevalue with the primary key given by all the parameters, including the timeStamp
+	 * 
+	 * @param project
+	 *            the given project
+	 * @param timeStamp
+	 *            the timeStamp to report on
+	 * @param useValueName
+	 *            the given UseValueName
+	 * @return the single UseValue given by this primary key, null if it does not exist
+	 */
+	public static UseValue useValueByPrimaryKey(int project, int timeStamp, String useValueName) {
+		useValueByPrimaryKeyQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("useValueName", useValueName);
+		try {
+			return useValueByPrimaryKeyQuery.getSingleResult();
+		} catch (NoResultException r) {
+			return null;
+		}
+	}
+
+	/**
+	 * retrieve a UseValue by its name for the current project and a given timestamp
+	 * 
+	 * @param timeStamp
+	 *            the given timeStamp
+	 * 
+	 * @param useValueName
+	 *            the name of the use value
+	 * @return the useValue entity whose name is useValueName, unless it doesn't exist, in which case null
+	 */
+	public static UseValue useValueByName(int timeStamp, String useValueName) {
+		useValueByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp).setParameter("useValueName",
+				useValueName);
+		try {
+			return useValueByPrimaryKeyQuery.getSingleResult();
+		} catch (NoResultException r) {
+			return null;
+		}
+	}
+
+	/**
+	 * the useValue of Consumption goods for the current project and a given timeStamp
+	 * 
+	 * @param timeStamp
+	 *            the given timeStamp
+	 * @return the unique use Value of consumption goods or null if it doesn't exist
+	 */
+	public static UseValue useValueOfConsumptionGoods(int timeStamp) {
+		useValueByPrimaryKeyQuery.setParameter("timeStamp", timeStamp).setParameter("project", Simulation.projectCurrent)
+				.setParameter("useValueName", "Consumption");
+		try {
+			return useValueByPrimaryKeyQuery.getSingleResult();
+		} catch (NoResultException r) {
+			return null;
+		}
+	}
+
 	/**
 	 * a list of all use values at the current project and for a given timeStamp
 	 * 
@@ -534,30 +464,75 @@ public class DataManager {
 		useValuesProductiveQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
 		return useValuesProductiveQuery.getResultList();
 	}
-	
+
 	/**
-	 * a list of all circuits of the given type and the given timeStamp
+	 * a list of all use values of the given type and the given timeStamp
+	 * 
 	 * @param timeStamp
 	 *            the given timeStamp
 	 * @param useValueType
-	 * 			the type of the UseValue (LABOURPOWER, MONEY, PRODUCTIVE, etc)
+	 *            the type of the UseValue (LABOURPOWER, MONEY, PRODUCTIVE, etc)
 	 * @return a list of circuits at the latest timeStamp that has been persisted.
 	 * 
 	 */
-	public static List<UseValue> useValuesOfType(int timeStamp,UseValue.USEVALUETYPE useValueType) {
+	public static List<UseValue> useValuesOfType(int timeStamp, UseValue.USEVALUETYPE useValueType) {
 		useValuesByTypeQuery.setParameter("project", Simulation.projectCurrent);
 		useValuesByTypeQuery.setParameter("timeStamp", timeStamp);
 		useValuesByTypeQuery.setParameter("useValueType", useValueType);
 		return useValuesByTypeQuery.getResultList();
 	}
+
 	/**
 	 * the topmost useValue of the given type
 	 * legacy method for the places where we assume a single use value of a particular type, eg Labour Power
 	 * TODO phase this out
 	 */
 	public static UseValue useValueOfType(int timeStamp, UseValue.USEVALUETYPE useValueType) {
-		List<UseValue> useValues=useValuesOfType(timeStamp, useValueType);
+		List<UseValue> useValues = useValuesOfType(timeStamp, useValueType);
 		return useValues.get(0);
+	}
+
+	// CIRCUIT QUERIES
+
+	/**
+	 * the circuit that produces a given usevalue, for the current project and a given timeStamp (that may differ from the current timeStamp)
+	 * 
+	 * @param project
+	 *            the project
+	 * @param timeStamp
+	 *            the timestamp
+	 * @param useValueName
+	 *            the name of the usevalue that is produced by this circuit
+	 * @return the circuit that produces {@code useValueName}, or null if this does not exist
+	 */
+	public static Circuit circuitByPrimaryKey(int project, int timeStamp, String useValueName) {
+		circuitByPrimaryKeyQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("type", useValueName);
+		try {
+			return circuitByPrimaryKeyQuery.getSingleResult();
+		} catch (javax.persistence.NoResultException n) {
+			return null;// getSingleResult does not return null if it fails; instead, it throws a fit
+		}
+	}
+
+	/**
+	 * retrieve the single circuit that produces a named use value for the current project and at a given timeStamp.
+	 * TODO Note that in general, we must allow for a named use value to be produced by more than one circuit
+	 * 
+	 * @param timeStamp
+	 *            the given timeStamp
+	 * 
+	 * @param useValueName
+	 *            the produce that is made by the circuit
+	 * @return the single circuit that produces this product, at the currently-selected timeStamp
+	 */
+	public static Circuit circuitByProductType(int timeStamp, String useValueName) {
+		circuitByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp).setParameter("type",
+				useValueName);
+		try {
+			return circuitByPrimaryKeyQuery.getSingleResult();
+		} catch (javax.persistence.NoResultException n) {
+			return null;// getSingleResult does not return null if it fails; instead, it throws a fit
+		}
 	}
 
 	/**
@@ -571,6 +546,64 @@ public class DataManager {
 	public static List<Circuit> circuitsAll(int timeStamp) {
 		circuitBasicQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
 		return circuitBasicQuery.getResultList();
+	}
+
+	/**
+	 * a list of circuits, for the current project and the given timeStamp, that produce a given use value
+	 * 
+	 * @param timeStamp
+	 *            the given timeStamp
+	 * 
+	 * @param useValueName
+	 *            the name of the use value that these circuits produce
+	 * @return a list of circuits which produce the given use value at the latest timeStamp that has been persisted.
+	 */
+	public static List<Circuit> circuitsByUseUseValue(int timeStamp, String useValueName) {
+		circuitByUseValueQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp).setParameter("productUseValueName", useValueName);
+		return circuitByUseValueQuery.getResultList();
+	}
+
+	// SOCIAL CLASS QUERIES
+
+	/**
+	 * Get a single social class defined by its primary key, including a timeStamp that may differ from the current timeStamp
+	 * 
+	 * @param socialClassName
+	 *            the name of the social Class in the primary key
+	 * @param project
+	 *            the project in the primary key
+	 * @param timeStamp
+	 *            the timeStamp in the primary key
+	 * @return the single social class with the name socialClassName, for the given project and timeStamp
+	 */
+
+	public static SocialClass socialClassByPrimaryKey(int project, int timeStamp, String socialClassName) {
+		socialClassByPrimaryKeyQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("socialClassName", socialClassName);
+		try {
+			return socialClassByPrimaryKeyQuery.getSingleResult();
+		} catch (javax.persistence.NoResultException e) {
+			return null;// because this query throws a fit if it doesn't find anything
+		}
+	}
+
+	/**
+	 * a named social class for the current project and a given timeStamp.
+	 * 
+	 * @param timeStamp
+	 *            the given timeStamp
+	 * 
+	 * @param socialClassName
+	 *            the name of the social Class
+	 * @return the single social class with the name socialClassName, for the given project and timeStamp
+	 */
+	public static SocialClass socialClassByName(int timeStamp, String socialClassName) {
+		socialClassByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp)
+				.setParameter("socialClassName", socialClassName);
+		try {
+			return socialClassByPrimaryKeyQuery.getSingleResult();
+		} catch (NoResultException r) {
+			return null;
+		}
 	}
 
 	/**
@@ -613,6 +646,10 @@ public class DataManager {
 		// record the current timeStamp, timeStampDisplayCursor and buttonState in the current project record, and persist it to the database
 
 		Project thisProject = Capitalism.selectionsProvider.projectSingle(Simulation.projectCurrent);
+		if ((thisProject.getPriceDynamics() == Project.PRICEDYNAMICS.DYNAMIC) || (thisProject.getPriceDynamics() == Project.PRICEDYNAMICS.EQUALISE)) {
+			Dialogues.alert(logger, "Sorry, the Dynamic and Equalise options for price dynamics are not ready yet");
+			return;
+		}
 		projectEntityManager.getTransaction().begin();
 
 		thisProject.setTimeStamp(Simulation.timeStampIDCurrent);
@@ -625,18 +662,19 @@ public class DataManager {
 		// retrieve the selected project record, and copy its timeStamp and its timeStampDisplayCursor into the simulation timeStamp and timeStampDisplayCursor
 
 		Project newProject = Capitalism.selectionsProvider.projectSingle(newProjectID);
-		Simulation.timeStampIDCurrent=newProject.getTimeStamp();
-		Simulation.timeStampDisplayCursor=newProject.getTimeStampDisplayCursor();
+		Simulation.timeStampIDCurrent = newProject.getTimeStamp();
+		Simulation.timeStampDisplayCursor = newProject.getTimeStampDisplayCursor();
 		Simulation.setTimeStampComparatorCursor(newProject.getTimeStampComparatorCursor());
 		actionButtonsBox.setActionStateFromLabel(newProject.getButtonState());
-		Simulation.projectCurrent=newProjectID;
-		Reporter.report(logger, 0, "SWITCH TO PROJECT %s (%s)", newProjectID,newProject.getDescription());
+		Simulation.projectCurrent = newProjectID;
+		Reporter.report(logger, 0, "SWITCH TO PROJECT %s (%s)", newProjectID, newProject.getDescription());
 	}
-	
+
 	/**
 	 * for all persistent entities at the given timeStamp, set comparators that refer to the timeStampComparatorCursor
 	 * 
-	 * @param timeStampID all persistent records at this timeStampID will be given comparators equal to the timeStampComparatorCursor
+	 * @param timeStampID
+	 *            all persistent records at this timeStampID will be given comparators equal to the timeStampComparatorCursor
 	 */
 
 	public static void setComparators(int timeStampID) {
@@ -653,7 +691,6 @@ public class DataManager {
 			sc.setComparator();
 		}
 	}
-
 
 	// NON-QUERY GETTERS AND SETTERS
 

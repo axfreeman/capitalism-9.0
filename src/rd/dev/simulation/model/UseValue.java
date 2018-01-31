@@ -58,6 +58,7 @@ public class UseValue extends Observable implements Serializable {
 	@EmbeddedId protected UseValuePK pk;
 
 	@Column(name = "useValueCircuitType") private String useValueCircuitType; // describes the way this is produced (by capitalist production, or socially)
+	@Column(name = "useValueType") private USEVALUETYPE useValueType;// see enum USEVALUENAME for list of possible types
 	@Column(name = "description") private String description; // TODO redundant, eliminate at some point
 	@Column(name = "turnoverTime") private double turnoverTime;
 	@Column(name = "unitValue") private double unitValue;
@@ -65,11 +66,13 @@ public class UseValue extends Observable implements Serializable {
 	@Column(name = "totalSupply") private double totalSupply;// registers the total commodities up for sale
 	@Column(name = "totalQuantity") private double totalQuantity; // bigger than total supply because it includes commodities not available for purchase
 	@Column(name = "totalDemand") private double totalDemand;
-	@Column(name = "surplus") private double surplus; // if after production there is an excess of inventory over use, it is recorded here
+	@Column(name = "surplusProduct") private double surplusProduct; // if after production there is an excess of inventory over use, it is recorded here
 	@Column(name = "totalValue") private double totalValue;// corresponds to total quantity; is the value of all commodities of this type
 	@Column(name = "totalPrice") private double totalPrice;// corresponds to total quantity - price of all commodities of this type
 	@Column(name = "allocationShare") private double allocationShare;// proportion of total demand that can actually be supplied
-	@Column(name = "useValueType") private USEVALUETYPE useValueType;// see enum USEVALUENAME for list of possible types
+	@Column(name = "surplusValue") private double surplusValue;// total surplusValue of enterprises in this sector
+	@Column(name = "capital") private double capital;// total capital of enterprises in this sector
+
 	@Transient private UseValue comparator;
 
 	/**
@@ -99,7 +102,7 @@ public class UseValue extends Observable implements Serializable {
 	 * Readable constants to refer to the methods which provide information about the persistent members of the class
 	 */
 	public enum Selector {
-		USEVALUENAME, USEVALUECIRCUITTYPE, TURNOVERTIME, UNITVALUE, UNITPRICE, TOTALSUPPLY, TOTALQUANTITY, TOTALDEMAND, SURPLUS, TOTALVALUE, TOTALPRICE, ALLOCATIONSHARE, USEVALUETYPE
+		USEVALUENAME, USEVALUECIRCUITTYPE, TURNOVERTIME, UNITVALUE, UNITPRICE, TOTALSUPPLY, TOTALQUANTITY, TOTALDEMAND, SURPLUS, TOTALVALUE, TOTALPRICE, ALLOCATIONSHARE, USEVALUETYPE, CAPITAL, SURPLUSVALUE
 	}
 
 	/**
@@ -131,11 +134,13 @@ public class UseValue extends Observable implements Serializable {
 		this.totalSupply = useValueTemplate.totalSupply;
 		this.totalQuantity = useValueTemplate.totalQuantity;
 		this.totalDemand = useValueTemplate.totalDemand;
-		this.surplus = useValueTemplate.surplus;
+		this.surplusProduct = useValueTemplate.surplusProduct;
 		this.totalValue = useValueTemplate.totalValue;
 		this.totalPrice = useValueTemplate.totalPrice;
 		this.allocationShare = useValueTemplate.allocationShare;
 		this.useValueType = useValueTemplate.useValueType;
+		this.capital=useValueTemplate.capital;
+		this.surplusValue=useValueTemplate.surplusValue;
 	}
 
 	/**
@@ -231,11 +236,15 @@ public class UseValue extends Observable implements Serializable {
 		case TOTALDEMAND:
 			return totalDemand != comparator.totalDemand;
 		case SURPLUS:
-			return surplus != comparator.surplus;
+			return surplusProduct != comparator.surplusProduct;
 		case TURNOVERTIME:
 			return turnoverTime != comparator.getTurnoverTime();
 		case ALLOCATIONSHARE:
 			return allocationShare != comparator.allocationShare;
+		case CAPITAL:
+			return capital!=comparator.capital;
+		case SURPLUSVALUE:
+			return surplusValue!=comparator.surplusValue;
 		default:
 			return false;
 		}
@@ -273,13 +282,17 @@ public class UseValue extends Observable implements Serializable {
 		case TOTALDEMAND:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalDemand));
 		case SURPLUS:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, surplus));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, surplusProduct));
 		case TURNOVERTIME:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, turnoverTime));
 		case ALLOCATIONSHARE:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, allocationShare));
 		case USEVALUETYPE:
 			return new ReadOnlyStringWrapper(useValueType.text);
+		case CAPITAL:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, capital));
+		case SURPLUSVALUE:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, surplusValue));			
 		default:
 			return null;
 		}
@@ -402,17 +415,46 @@ public class UseValue extends Observable implements Serializable {
 	}
 
 	/**
-	 * @return the surplus
+	 * @return the surplusProduct
 	 */
-	public double getSurplus() {
-		return surplus;
+	public double getSurplusProduct() {
+		return surplusProduct;
 	}
 
 	/**
-	 * @param surplus
-	 *            the surplus to set
+	 * @param surplusProduct
+	 *            the surplusProduct to set
 	 */
-	public void setSurplus(double surplus) {
-		this.surplus = surplus;
+	public void setSurplusProduct(double surplus) {
+		this.surplusProduct = surplus;
 	}
+
+	/**
+	 * @return the surplusValue
+	 */
+	public double getSurplusValue() {
+		return surplusValue;
+	}
+
+	/**
+	 * @param surplusValue the surplusValue to set
+	 */
+	public void setSurplusValue(double surplusValue) {
+		this.surplusValue = surplusValue;
+	}
+
+	/**
+	 * @return the capital
+	 */
+	public double getCapital() {
+		return capital;
+	}
+
+	/**
+	 * @param capital the capital to set
+	 */
+	public void setCapital(double capital) {
+		this.capital = capital;
+	}
+	
 }

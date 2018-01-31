@@ -94,18 +94,6 @@
 											</ImageView>
 										</graphic>
 									</TableColumn>
-									<TableColumn fx:id="useValueSurplusColumn" prefWidth="75.0" styleClass="table-column-right" text="Surplus">
-
-										<graphic>
-											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-												<image>
-													<Image url="surplus.png" />
-												</image>
-											</ImageView>
-										</graphic>
-
-										
-										</TableColumn>
 									<TableColumn fx:id="useValueAllocationShareColumn" prefWidth="75.0" styleClass="table-column-right" text="Share">
 										<graphic>
 											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
@@ -115,6 +103,34 @@
 											</ImageView>
 										</graphic>
 									</TableColumn>
+									<TableColumn fx:id="useValueSurplusColumn" prefWidth="75.0" styleClass="table-column-right" text="Surplus">
+
+      										<graphic>
+											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+												<image>
+													<Image url="surplus.png" />
+												</image>
+											</ImageView>
+										</graphic>
+
+      										
+      										</TableColumn>
+                           <TableColumn fx:id="useValueCapitalColumn" prefWidth="75.0" styleClass="table-column-right" text="Capital">
+                              <graphic>
+                                 <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                       <Image url="@../../../../../img/capital%20%202.png" />
+                                    </image>
+                                 </ImageView>
+                              </graphic></TableColumn>
+                           <TableColumn fx:id="useValueSurplusValueColumn" prefWidth="75.0" styleClass="table-column-right" text="Profit">
+                              <graphic>
+                                 <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                       <Image url="@../../../../../img/profit.png" />
+                                    </image>
+                                 </ImageView>
+                              </graphic></TableColumn>
 								</columns>
 								<columnResizePolicy>
 									<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

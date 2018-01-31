@@ -67,6 +67,8 @@ public class UseValueTableCell extends TableCell<UseValue, String> {
 			break;
 		case UNITPRICE:
 		case TOTALPRICE:
+		case CAPITAL:
+		case SURPLUSVALUE:
 			if (ViewManager.displayHints)
 				setStyle("-fx-background-color: rgba(255,240,204,0.3)");
 			item = ViewManager.pricesExpressionSymbol+ item;

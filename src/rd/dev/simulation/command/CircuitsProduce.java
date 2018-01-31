@@ -93,10 +93,10 @@ public class CircuitsProduce extends Simulation implements Command {
 			if (c.iNDUSTRYTYPE()!=Circuit.INDUSTRYTYPE.NECESSITIES) {
 				double surplus = Precision.round(salesStock.getQuantity() - useValue.getTotalDemand(), Simulation.getRoundingPrecision());
 				Reporter.report(logger, 2, "  The surplus of production over use for [%s] was %.2f", useValue.getUseValueName(), surplus);
-				useValue.setSurplus(surplus);
+				useValue.setSurplusProduct(surplus);
 			}else {
 				Reporter.report(logger, 2, "  The surplus of consumer goods has been set to zero, because they are not used in production", 0);
-				useValue.setSurplus(0);// just in case...
+				useValue.setSurplusProduct(0);// just in case...
 			}
 
 			// TODO has to be more sophisticated if we allow multiple producers of the same use value

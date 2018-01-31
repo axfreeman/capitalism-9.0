@@ -1,5 +1,10 @@
 # Capitalism 9.0 announcements
 
+## 1/31/2018 5:47:04 PM 
+
+Code for price dynamics added, dealing with profit rate equalization.
+Not fully working yet; hence no new executable
+
 ## 1/31/2018 9:52:57 AM 
 
 Important corrections to the MELT calculation and to 'Consequences' action.

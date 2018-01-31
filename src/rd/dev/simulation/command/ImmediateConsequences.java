@@ -26,11 +26,13 @@ import org.apache.commons.math3.util.Precision;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import rd.dev.simulation.Capitalism;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.ActionStates;
 import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.Circuit;
 import rd.dev.simulation.model.Global;
+import rd.dev.simulation.model.Project;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.model.UseValue;
 import rd.dev.simulation.utils.Dialogues;
@@ -38,6 +40,7 @@ import rd.dev.simulation.utils.Reporter;
 
 public class ImmediateConsequences extends Simulation implements Command {
 	private static final Logger logger = LogManager.getLogger(ImmediateConsequences.class);
+	Project currentProject=null;
 
 	/**
 	 * Calculate the unit value and price of each use value.
@@ -46,9 +49,10 @@ public class ImmediateConsequences extends Simulation implements Command {
 	 * TODO CHECK INVARIANTS AT THIS POINT?
 	 */
 	public void execute() {
+		currentProject=Capitalism.selectionsProvider.projectSingle(projectCurrent);		
 		Reporter.report(logger, 0, "RECOMPUTE THE MELT, UNIT VALUES AND PRICES, AND HENCE THE MONETARY EXPRESSION OF TOTAL VALUE");
+		Reporter.report(logger, 0, "Price dynamics are set to %s ", currentProject.getPriceDynamics());
 		advanceOneStep(ActionStates.C_P_ImmediateConsequences.getText(), ActionStates.C_P_Produce.getText());
-
 		Reporter.report(logger, 0, "VALIDATE STOCK AND COMMODITY AGGREGATES");
 
 		// TODO: the value of money has to be dealt with properly.
@@ -77,6 +81,8 @@ public class ImmediateConsequences extends Simulation implements Command {
 		if (globalTotalPrice != global.getTotalPrice())
 			Dialogues.alert(logger, "The computed global total price is is out of sync with recorded total price");
 
+		adjustPrices();
+		
 		// Reset the MELT.
 		// NOTE: values and prices are recorded as a monetary expression. Therefore, if the MELT changes, values also have to change
 
@@ -112,6 +118,37 @@ public class ImmediateConsequences extends Simulation implements Command {
 			calculateProfits();
 		}
 	}
+	
+	/**
+	 * adjust prices, depending on the setting of the price dynamics in the current project
+	 */
+
+	private void adjustPrices() {
+		switch(currentProject.getPriceDynamics()) {
+		case SIMPLE:
+			// for the simple case do nothing
+			return;
+		case DYNAMIC:
+			Dialogues.alert(logger, "Dynamic price adjustment not available yet, sorry");
+		case EQUALISE:
+			Reporter.report(logger, 1, "Setting prices to equalise profit rates");
+			Global global =DataManager.getGlobal(timeStampIDCurrent);
+			Reporter.report(logger, 1, "Average Profit Rate is %.2f", global.getProfitRate());
+
+			// there may be more than one producer of the same commodity.
+			// we can only set the profit rate for the sector as a whole,which means we work from the per-useValue profit rates
+	
+			for (UseValue u:DataManager.useValuesProductive(timeStampIDCurrent)) {
+				Reporter.report(logger, 1, "Setting profit-equalizing price for use value [%s]", u.getUseValueName());
+				for (Circuit c:DataManager.circuitsByUseUseValue(timeStampIDCurrent, u.getUseValueName())) {
+					Reporter.report(logger, 2, " Note: circuit %s is produces this use value", c.getProductUseValueType());
+				}
+				double newUnitPrice=u.getCapital()*(1+global.getProfitRate())/u.getTotalQuantity();
+				Reporter.report(logger, 2, "  Unit price changed from %.2f to %.2f", u.getUnitPrice(),newUnitPrice);
+				u.setUnitPrice(newUnitPrice);
+			}
+		}
+	}
 
 	/**
 	 * when unit values and prices change, the stocks have to be told to recalculate their total price and total value
@@ -127,10 +164,22 @@ public class ImmediateConsequences extends Simulation implements Command {
 		double globalProfit = 0.0;
 		double globalInitialCapital = 0.0;
 		double globalCurrentCapital = 0.0;
+		
+		// initialise the capitals and sv of each use value
+		// we are going to set the both to be the total of the circuits that produce this useValue
+		
+		for (UseValue u:DataManager.useValuesAll(timeStampIDCurrent)) {
+			u.setCapital(0);
+			u.setSurplusValue(0);
+		}
+
 		Reporter.report(logger, 1, " Calculate profits and profit rates");
 		for (Circuit c : DataManager.circuitsAll(timeStampIDCurrent)) {
+			UseValue useValue=c.getUseValue();
+			useValue.setCapital(useValue.getCapital()+c.getInitialCapital());
 			c.calculateCurrentCapital();
 			double profit = c.getCurrentCapital() - c.getInitialCapital();
+			useValue.setSurplusValue(useValue.getSurplusValue()+profit);
 			globalInitialCapital += c.getInitialCapital();
 			globalCurrentCapital += c.getCurrentCapital();
 			globalProfit += profit;
@@ -147,5 +196,4 @@ public class ImmediateConsequences extends Simulation implements Command {
 		Reporter.report(logger, 1, "Total profit %.2f, initial capital %.2f, global profit rate %.2f",
 				globalProfit, globalInitialCapital, globalProfit / globalInitialCapital);
 	}
-
 }

@@ -15,6 +15,22 @@ PROJECT,TIMESTAMP,OWNER,OWNERTYPE,USEVALUE,STOCKTYPE,QUANTITY,COEFFICIENT,QUANTI
 1,1,Workers,Class,Money,Money,1500,0,0
 1,1,Workers,Class,Labour Power,Sales,1500,0,0
 1,1,Workers,Class,Consumption,Consumption,0,0,0
+6,1,Capitalists,Class,Labour Power,Sales,0,0,0
+6,1,Capitalists,Class,Consumption,Consumption,0,0,0
+6,1,Capitalists,Class,Money,Money,1500,0,0
+6,1,Consumption,Branch,Means of Production,Productive,0,0.666666667,0
+6,1,Consumption,Branch,Labour Power,Productive,0,0.333333333,0
+6,1,Consumption,Branch,Money,Money,3000,0,0
+6,1,Consumption,Branch,Consumption,Sales,3000,0,0
+6,1,Consumption,Branch,Consumption,Productive,0,0,0
+6,1,Means of Production,Branch,Money,Money,6000,0,0
+6,1,Means of Production,Branch,Consumption,Productive,0,0,0
+6,1,Means of Production,Branch,Means of Production,Sales,6000,0,0
+6,1,Means of Production,Branch,Labour Power,Productive,0,0.333333333,0
+6,1,Means of Production,Branch,Means of Production,Productive,0,0.666666667,0
+6,1,Workers,Class,Money,Money,1500,0,0
+6,1,Workers,Class,Labour Power,Sales,1500,0,0
+6,1,Workers,Class,Consumption,Consumption,0,0,0
 2,1,Capitalists,Class,Consumption,Consumption,0,0,0
 2,1,Capitalists,Class,Labour Power,Sales,0,0,0
 2,1,Capitalists,Class,Money,Money,1500,0,0

@@ -1,5 +1,6 @@
 project,timeStamp,RateOfExploitation,MELT,Profit,ProfitRate,PopulationGrowthRate,totalValue,totalPrice,InvestmentRatio,LabourSupplyResponse,CurrencySymbol,QuantitySymbol
 1,1,0.5,1,0,0,0,0,0,0,FIXED,$,#
+6,1,0.5,1,0,0,0,0,0,0,FIXED,$,#
 3,1,0.5,1,0,0,0,0,0,0,FIXED,$,#
 2,1,0.5,0.5,0,0,0,0,0,0,FIXED,$,#
 4,1,0.5,0.5,0,0,0.01,0,0,0,FIXED,$,#

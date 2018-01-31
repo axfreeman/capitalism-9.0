@@ -1,6 +1,7 @@
-ProjectID,description
-4,Three-sector
-1,Simple Reproduction
-3,SR with halved period
-2,SR with lower MELT
-5,Expanded Reproduction
+ProjectID,description,PriceDynamics
+4,Three-sector,DYNAMIC
+6,SR with equalisation,EQUALISE
+1,Simple Reproduction,SIMPLE
+3,SR with halved period,SIMPLE
+2,SR with lower MELT,SIMPLE
+5,Expanded Reproduction,SIMPLE

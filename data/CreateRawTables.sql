@@ -11,10 +11,10 @@
  CREATE TABLE `stocks` ( `project` int default 1 not null, `timeStamp` VARCHAR (10) DEFAULT '1' not null, OWNER varchar(45) not NULL, OWNERTYPE varchar(45) DEFAULT NULL, `usevalue` varchar(45) not NULL, `stockType` varchar(45) DEFAULT NULL, `quantity` double DEFAULT NULL, value double DEFAULT null, PRICE double DEFAULT NULL, `coefficient` double DEFAULT NULL, quantityDemanded  double DEFAULT NULL, primary key (project, timeStamp, owner, usevalue, stocktype) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
  
  DROP table if exists useValues;
- CREATE TABLE `useValues` ( `project` int default 1 not null, `timeStamp` VARCHAR (10) DEFAULT '1' not null, useValueName varchar(45) not NULL,`useValueCircuitType` varchar(45) DEFAULT NULL, `description` varchar(45) DEFAULT NULL, `unitValue` double DEFAULT NULL, `unitPrice` double DEFAULT NULL, `turnoverTime` double DEFAULT NULL, totalSupply double default NULL, totalQuantity double default NULL, totalDemand double default NULL,  surplus double DEFAULT 0, totalValue double default NULL, totalPrice double default NULL, allocationShare double default null, useValueType ENUM('LABOURPOWER','MONEY','PRODUCTIVE','NECESSITIES','LUXURIES')DEFAULT 'UNKNOWN', primary key (project, timeStamp, useValueName) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ CREATE TABLE `useValues` ( `project` int default 1 not null, `timeStamp` VARCHAR (10) DEFAULT '1' not null, useValueName varchar(45) not NULL,`useValueCircuitType` varchar(45) DEFAULT NULL, `description` varchar(45) DEFAULT NULL, `unitValue` double DEFAULT NULL, `unitPrice` double DEFAULT NULL, `turnoverTime` double DEFAULT NULL, totalSupply double default NULL, totalQuantity double default NULL, totalDemand double default NULL,  surplusProduct double DEFAULT 0, totalValue double default NULL, totalPrice double default NULL, allocationShare double default null, useValueType ENUM('LABOURPOWER','MONEY','PRODUCTIVE','NECESSITIES','LUXURIES')DEFAULT 'UNKNOWN', capital double default 0, surplusValue double default 0, primary key (project, timeStamp, useValueName) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
  
  DROP table if exists projects;
- CREATE TABLE `projects` ( `ProjectID` INT NOT NULL, `Description` VARCHAR(45) NULL, currentTimeStamp INT DEFAULT 1, currentTimeStampCursor INT DEFAULT 1, currentTimeStampComparatorCursor INT DEFAULT 1, ButtonState VARCHAR(20) DEFAULT NULL, PRIMARY KEY (`ProjectID`));
+ CREATE TABLE `projects` ( `ProjectID` INT NOT NULL, `Description` VARCHAR(45) NULL, priceDynamics ENUM('SIMPLE','EQUALISE','DYNAMIC') DEFAULT 'SIMPLE',currentTimeStamp INT DEFAULT 1, currentTimeStampCursor INT DEFAULT 1, currentTimeStampComparatorCursor INT DEFAULT 1, ButtonState VARCHAR(20) DEFAULT NULL, PRIMARY KEY (`ProjectID`));
  
  DROP table if exists timeStamps;
  CREATE TABLE timeStamps (`timeStampID` int Default 1 NOT NULL, `projectFK` INT default 1 NOT NULL, period INT DEFAULT NULL,superState VARCHAR(45) default NULL, COMPARATORTIMESTAMPID INT DEFAULT 1, `Description` VARCHAR(30) default NULL, PRIMARY KEY (`timeStampID`,projectFK));
@@ -25,7 +25,7 @@
  insert into useValues select * from CSVREAD('~/Documents/Capsim/data/useValues.csv');
 
  INSERT INTO timestamps (timeStampID, projectFK, PERIOD,superState, COMPARATORTIMESTAMPID, Description) SELECT TIMESTAMPID, PROJECTFK, PERIOD, SUPERSTATE, COMPARATORTIMESTAMPID, DESCRIPTION FROM CSVREAD('~/Documents/Capsim/data/timeStamps.csv');
- insert into projects (ProjectID, Description) select ProjectID, Description  from CSVREAD('~/Documents/Capsim/data/projects.csv');
+ insert into projects (ProjectID, Description,priceDynamics) select ProjectID, Description,priceDynamics  from CSVREAD('~/Documents/Capsim/data/projects.csv');
  update projects set currentTimeStamp =1 where ProjectID=1;
  update projects set currentTimeStampCursor =1 where ProjectID=1;
 

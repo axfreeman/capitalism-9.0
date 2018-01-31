@@ -11,7 +11,10 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
+import rd.dev.simulation.Capitalism;
+import rd.dev.simulation.Simulation;
 import rd.dev.simulation.model.Global;
+import rd.dev.simulation.model.Project;
 import rd.dev.simulation.view.ViewManager;
 
 /**
@@ -53,7 +56,7 @@ public class SwitchableGraphicsGrid extends AnchorPane {
 		addLabel(1, 1, "Total Price");
 		addLabel(1, 2, "MELT");
 		addLabel(1, 3, "Population Growth Rate");
-		addLabel(0, 4, "Investment Ratio");
+		addLabel(0, 4, "Price Dynamics");
 		addLabel(1, 4, "Labour Supply Response");
 	}
 
@@ -96,6 +99,7 @@ public class SwitchableGraphicsGrid extends AnchorPane {
 	 *            the persistent Global that is used to get the numeric values
 	 */
 	public void populate(String floatFormatString, Global global) {
+		Project currentProject=Capitalism.selectionsProvider.projectSingle(Simulation.projectCurrent);
 		setNumericLabel(ViewManager.largeNumbersFormatString, "Initial Capital",
 				ViewManager.valueExpression(global.getInitialCapital(), ViewManager.valuesExpressionDisplay));
 		setNumericLabel(ViewManager.largeNumbersFormatString, "Current Capital",
@@ -108,7 +112,7 @@ public class SwitchableGraphicsGrid extends AnchorPane {
 		setNumericLabel(ViewManager.smallNumbersFormatString, "Profit Rate", global.getProfitRate());
 		setNumericLabel(ViewManager.smallNumbersFormatString, "MELT", global.getMelt());
 		setNumericLabel(ViewManager.smallNumbersFormatString, "Population Growth Rate", global.getPopulationGrowthRate());
-		setNumericLabel(ViewManager.smallNumbersFormatString, "Investment Ratio", global.getInvestmentRatio());
+		setTextLabel(currentProject.getPriceDynamics().getText(),"Price Dynamics");
 		setTextLabel(global.getLabourSupplyResponse().toString(),"Labour Supply Response");
 	}
 
