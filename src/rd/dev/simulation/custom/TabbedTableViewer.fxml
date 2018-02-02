@@ -21,48 +21,12 @@
 							<TableView fx:id="useValuesTable" prefHeight="195.0" prefWidth="700.0">
 								<columns>
 									<TableColumn fx:id="useValueNameColumn" prefWidth="120.0" text="Commodity" />
-                           <TableColumn fx:id="useValueTypeColumn" prefWidth="75.0" text="Type" />
+									<TableColumn fx:id="useValueTypeColumn" prefWidth="75.0" text="Type" />
 									<TableColumn fx:id="useValueTotalQuantityColumn" prefWidth="75.0" styleClass="table-column-right" text="Quantity">
 										<graphic>
 											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
 												<image>
 													<Image url="Quantity.png" />
-												</image>
-											</ImageView>
-										</graphic>
-									</TableColumn>
-									<TableColumn fx:id="useValueTotalValueColumn" prefWidth="75.0" styleClass="table-column-right" text="Value">
-										<graphic>
-											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-												<image>
-													<Image url="Value.png" />
-												</image>
-											</ImageView>
-										</graphic>
-									</TableColumn>
-									<TableColumn fx:id="useValueTotalPriceColumn" prefWidth="75.0" styleClass="table-column-right" text="Price">
-										<graphic>
-											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-												<image>
-													<Image url="price.png" />
-												</image>
-											</ImageView>
-										</graphic>
-									</TableColumn>
-									<TableColumn fx:id="useValueUnitValueColumn" prefWidth="75.0" styleClass="table-column-right" text="Unit Value">
-										<graphic>
-											<ImageView fitHeight="20.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
-												<image>
-													<Image url="unitValueTransparent.png" />
-												</image>
-											</ImageView>
-										</graphic>
-									</TableColumn>
-									<TableColumn fx:id="useValueUnitPriceColumn" prefWidth="75.0" styleClass="table-column-right" text="Unit Price">
-										<graphic>
-											<ImageView fitHeight="20.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
-												<image>
-													<Image url="unitPrice.png" />
 												</image>
 											</ImageView>
 										</graphic>
@@ -76,61 +40,111 @@
 											</ImageView>
 										</graphic>
 									</TableColumn>
-									<TableColumn fx:id="useValueTotalSupplyColumn" prefWidth="75.0" styleClass="table-column-right" text="Supply">
-										<graphic>
-											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-												<image>
-													<Image url="supply.png" />
-												</image>
-											</ImageView>
-										</graphic>
-									</TableColumn>
-									<TableColumn fx:id="useValueTotalDemandColumn" prefWidth="75.0" styleClass="table-column-right" text="Demand">
-										<graphic>
-											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-												<image>
-													<Image url="demand.png" />
-												</image>
-											</ImageView>
-										</graphic>
-									</TableColumn>
-									<TableColumn fx:id="useValueAllocationShareColumn" prefWidth="75.0" styleClass="table-column-right" text="Share">
-										<graphic>
-											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-												<image>
-													<Image url="Allocation.png" />
-												</image>
-											</ImageView>
-										</graphic>
-									</TableColumn>
-									<TableColumn fx:id="useValueSurplusColumn" prefWidth="75.0" styleClass="table-column-right" text="Surplus">
-
+                           <TableColumn prefWidth="75.0" text="Values and Prices">
+                              <columns>
+      									<TableColumn fx:id="useValueUnitValueColumn" prefWidth="75.0" styleClass="table-column-right" text="Unit Value">
       										<graphic>
-											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-												<image>
-													<Image url="surplus.png" />
-												</image>
-											</ImageView>
-										</graphic>
-
-      										
-      										</TableColumn>
-                           <TableColumn fx:id="useValueCapitalColumn" prefWidth="75.0" styleClass="table-column-right" text="Capital">
-                              <graphic>
-                                 <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
-                                    <image>
-                                       <Image url="@../../../../../img/capital%20%202.png" />
-                                    </image>
-                                 </ImageView>
-                              </graphic></TableColumn>
-                           <TableColumn fx:id="useValueSurplusValueColumn" prefWidth="75.0" styleClass="table-column-right" text="Profit">
-                              <graphic>
-                                 <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
-                                    <image>
-                                       <Image url="@../../../../../img/profit.png" />
-                                    </image>
-                                 </ImageView>
-                              </graphic></TableColumn>
+      											<ImageView fitHeight="20.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
+      												<image>
+      													<Image url="unitValueTransparent.png" />
+      												</image>
+      											</ImageView>
+      										</graphic>
+      									</TableColumn>
+      									<TableColumn fx:id="useValueTotalPriceColumn" prefWidth="75.0" styleClass="table-column-right" text="Price">
+      										<graphic>
+      											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+      												<image>
+      													<Image url="price.png" />
+      												</image>
+      											</ImageView>
+      										</graphic>
+      									</TableColumn>
+      									<TableColumn fx:id="useValueTotalValueColumn" prefWidth="75.0" styleClass="table-column-right" text="Value">
+      										<graphic>
+      											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+      												<image>
+      													<Image url="Value.png" />
+      												</image>
+      											</ImageView>
+      										</graphic>
+      									</TableColumn>
+      									<TableColumn fx:id="useValueUnitPriceColumn" prefWidth="75.0" styleClass="table-column-right" text="Unit Price">
+      										<graphic>
+      											<ImageView fitHeight="20.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
+      												<image>
+      													<Image url="unitPrice.png" />
+      												</image>
+      											</ImageView>
+      										</graphic>
+      									</TableColumn>
+                              </columns>
+                           </TableColumn>
+                           <TableColumn prefWidth="75.0" text="Demand and Supply">
+                              <columns>
+      									<TableColumn fx:id="useValueTotalDemandColumn" prefWidth="75.0" styleClass="table-column-right" text="Demand">
+      										<graphic>
+      											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+      												<image>
+      													<Image url="demand.png" />
+      												</image>
+      											</ImageView>
+      										</graphic>
+      									</TableColumn>
+      									<TableColumn fx:id="useValueTotalSupplyColumn" prefWidth="75.0" styleClass="table-column-right" text="Supply">
+      										<graphic>
+      											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+      												<image>
+      													<Image url="supply.png" />
+      												</image>
+      											</ImageView>
+      										</graphic>
+      									</TableColumn>
+      									<TableColumn fx:id="useValueAllocationShareColumn" prefWidth="75.0" styleClass="table-column-right" text="Share">
+      										<graphic>
+      											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+      												<image>
+      													<Image url="Allocation.png" />
+      												</image>
+      											</ImageView>
+      										</graphic>
+      									</TableColumn>
+                              </columns>
+                           </TableColumn>
+                           <TableColumn prefWidth="75.0" text="Capital and Profit">
+                              <columns>
+      									<TableColumn fx:id="useValueCapitalColumn" prefWidth="75.0" styleClass="table-column-right" text="Capital">
+      										<graphic>
+      											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+      												<image>
+      													<Image url="@../../../../../img/capital%20%202.png" />
+      												</image>
+      											</ImageView>
+      										</graphic>
+      									</TableColumn>
+      									<TableColumn fx:id="useValueSurplusColumn" prefWidth="75.0" styleClass="table-column-right" text="Surplus">
+      
+      										<graphic>
+      											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+      												<image>
+      													<Image url="surplus.png" />
+      												</image>
+      											</ImageView>
+      										</graphic>
+      
+      
+      									</TableColumn>
+      									<TableColumn fx:id="useValueSurplusValueColumn" prefWidth="75.0" styleClass="table-column-right" text="Profit">
+      										<graphic>
+      											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+      												<image>
+      													<Image url="@../../../../../img/profit.png" />
+      												</image>
+      											</ImageView>
+      										</graphic>
+      									</TableColumn>
+                              </columns>
+                           </TableColumn>
 								</columns>
 								<columnResizePolicy>
 									<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

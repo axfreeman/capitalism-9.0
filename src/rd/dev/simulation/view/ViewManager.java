@@ -375,16 +375,8 @@ public class ViewManager {
 		});
 
 		graphicsToggle.setOnAction((event) -> {
-			tabbedTableViewer.switchHeaderDisplay();
+			tabbedTableViewer.switchHeaderDisplays();
 		});
-		// initialize so start state is text only
-
-		graphicsState = ContentDisplay.GRAPHIC_ONLY;
-		tabbedTableViewer.switchHeaderDisplay();
-
-		// start off displaying prices
-
-		tabbedTableViewer.setDisplayAttribute(Stock.ValueExpression.PRICE);
 	}
 
 	/**
@@ -451,8 +443,6 @@ public class ViewManager {
 
 	private void initializeTabbedTableViewer() {
 		simulationResultsPane.getChildren().add(tabbedTableViewer);
-		tabbedTableViewer.createDynamicCircuitsTable();
-
 	}
 
 	/**
@@ -512,14 +502,14 @@ public class ViewManager {
 		Global global = DataManager.getGlobal(1);
 		moneyExpressionSymbol = global.getCurrencySymbol();
 		quantityExpressionSymbol = global.getQuantitySymbol();
-		
-		//sneaky way to force the display options onto the new project
-		
+
+		// sneaky way to force the display options onto the new project
+
 		togglePriceExpression();
 		togglePriceExpression();
 		toggleValueExpression();
 		toggleValueExpression();
-		
+
 	}
 
 	private void togglePriceExpression() {
@@ -705,14 +695,7 @@ public class ViewManager {
 		logger.debug(String.format("Refresh Display with project %d, timestamp %d and comparator %d",
 				currentProject, Simulation.timeStampDisplayCursor, Simulation.getTimeStampComparatorCursor()));
 
-		tabbedTableViewer.populateUseValuesViewTable();
-		tabbedTableViewer.populateProductiveStocksViewTable();
-		tabbedTableViewer.populateMoneyStocksViewTable();
-		tabbedTableViewer.populateSalesStocksViewTable();
-		tabbedTableViewer.populateConsumptionStocksViewTable();
-		tabbedTableViewer.populateCircuitsViewTable();
-		tabbedTableViewer.populateSocialClassesViewTable();
+		tabbedTableViewer.rePopulateTabbedTables();
 		populateGlobalsGrid();
-		tabbedTableViewer.createDynamicCircuitsTable();
 	}
 }

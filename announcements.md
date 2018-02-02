@@ -1,5 +1,9 @@
 # Capitalism 9.0 announcements
 
+## 2/2/2018 3:55:22 PM 
+
+Graphic display now fully working
+
 ## 1/31/2018 5:47:04 PM 
 
 Code for price dynamics added, dealing with profit rate equalization.

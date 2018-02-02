@@ -291,16 +291,15 @@ public class DataManager {
 	}
 
 	/**
-	 * a list of all produtive stocks at the current project and a given timeStamp
-	 * 
-	 * @param timeStamp
-	 *            the given timeStamp
-	 * 
+	 * a list of all produtive stocks at the current project and timeStamp.
+	 * uses the "Consumption" circuit purely to pick up the productive stocks, since these have the same names for all circuits
+	 * TODO this assumes no additional inputs are added as the simulation progresses (uses timeStamp 1)
+
 	 * @return a list of stocks at the current project and timeStamp
 	 */
 
 	public static List<Stock> productiveStocks() {
-		// TODO this assumes no additional inputs are added as the simulation progresses (uses timeStamp 1)
+
 		return circuitByProductType(1, "Consumption").productiveStocks();
 	}
 
@@ -486,6 +485,11 @@ public class DataManager {
 	 * the topmost useValue of the given type
 	 * legacy method for the places where we assume a single use value of a particular type, eg Labour Power
 	 * TODO phase this out
+	 * @param timeStamp
+	 * 	the given timeStamp
+	 * @param useValueType
+	 * the given USEVALUETYPE
+	 * @return the topMost useValue of this type
 	 */
 	public static UseValue useValueOfType(int timeStamp, UseValue.USEVALUETYPE useValueType) {
 		List<UseValue> useValues = useValuesOfType(timeStamp, useValueType);

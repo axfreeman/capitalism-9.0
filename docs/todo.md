@@ -1,15 +1,18 @@
-# TODO 1/29/2018 3:39:42 PM 
+# TODO 2/2/2018 3:45:18 PM 
 
-## Immediate changes
+## 2/2/2018 3:46:21 PM 
+
+Major overhaul of tabbedTableDisplay
+now working as I think this kind of thing is intended to work.
+(though it is not editable)
+
+
+## 2/2/2018 3:45:31 PM 
 
 Projects 1-4 now working.
 This is the basic test set.
 However for real completeness we should do expanded reproduction 2 (with rising OCC)
 And ideally, Simple reproduction with Department IIa (Luxury goods)
-
-## NEXT MAIN OBJECTIVES
-
-Update the user guide
 
 ## MINOR
 
@@ -25,7 +28,6 @@ Dockable windows
 
 ## BUGS
 
-double-clicking a column to resize it provokes a fetch of a null table row
 Tree carries ghost of previous simulations after restart
 
 ###VALIDATION (USER DATA)
@@ -67,6 +69,8 @@ Some more projects: in priority order
 2. Bortkiewicz's 'counterexample' done correctly according to Marx, not Sweezy
 
 ## FIXED
+GONE 2/2/2018 3:46:00 PM double-clicking a column to resize it provokes a fetch of a null table row
+FIXED 2/2/2018 3:44:35 PM graphics switching finally sorted, plus consistent loading of tables without redrawing 
 FIXED (Partly) 1/29/2018 3:43:58 PM Configure the name of the consumption good and perhaps workers/capitalists/labour power
 FIXED 1/29/2018 3:44:19 PM log window is now scrollable
 FIXED 1/29/2018 3:43:19 PM TreeView: when adding to period 2, previous periods should be unexpanded

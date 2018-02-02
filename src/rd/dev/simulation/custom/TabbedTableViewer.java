@@ -21,20 +21,17 @@
 package rd.dev.simulation.custom;
 
 import java.io.IOException;
+import java.util.ArrayList;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.control.ContentDisplay;
-import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.Tooltip;
-import javafx.scene.image.ImageView;
 import javafx.scene.control.TableCell;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
 import javafx.util.Callback;
 import rd.dev.simulation.Capitalism;
 import rd.dev.simulation.datamanagement.DataManager;
@@ -53,7 +50,7 @@ import rd.dev.simulation.view.ViewManager;
 public class TabbedTableViewer extends VBox {
 	static final Logger logger = LogManager.getLogger("TableViewer");
 	private ObservableListProvider olProvider = Capitalism.olProvider;
-	
+
 	// selects whether to display quantities, values or prices, where appropriate
 
 	public static Stock.ValueExpression displayAttribute = Stock.ValueExpression.PRICE;
@@ -93,7 +90,7 @@ public class TabbedTableViewer extends VBox {
 
 	// The UseValues table
 
-	@FXML private TableView<UseValue> useValuesTable;
+	@FXML protected TableView<UseValue> useValuesTable;
 	@FXML private TableColumn<UseValue, String> useValueNameColumn;
 	@FXML private TableColumn<UseValue, String> useValueTypeColumn;
 	@FXML private TableColumn<UseValue, String> useValueCircuitTypeColumn;
@@ -140,6 +137,12 @@ public class TabbedTableViewer extends VBox {
 	@FXML private TableColumn<SocialClass, String> socialClassRevenueColumn;
 
 	/**
+	 * a simple static list of all the tables, so utilities can get at them
+	 */
+
+	private ArrayList<TableView<?>> tabbedTables = new ArrayList<TableView<?>>();
+
+	/**
 	 * Custom control handles the main ViewTables
 	 */
 	public TabbedTableViewer() {
@@ -152,102 +155,39 @@ public class TabbedTableViewer extends VBox {
 			throw new RuntimeException(exception);
 		}
 		setTooltips();
-		doctorColumnHeaders(circuitsTable);
-		doctorColumnHeaders(useValuesTable);
-		doctorColumnHeaders(socialClassesTable);
+		ViewManager.graphicsState = ContentDisplay.TEXT_ONLY;		// initialize so start state is text only
+		setDisplayAttribute(Stock.ValueExpression.PRICE);			// start off displaying prices
+
+		populateProductiveStocksViewTable();
+		populateMoneyStocksViewTable();
+		populateSalesStocksViewTable();
+		populateConsumptionStocksViewTable();
+		populateSocialClassesViewTable();
+		populateUseValuesViewTable();
+		populateCircuitsViewTable();
+
+		createDynamicCircuitsTable();		// Dynamic table columns are defined from the data so it is constructed programmatically
+
+		tabbedTables.add(productiveStockTable);
+		tabbedTables.add(moneyStockTable);
+		tabbedTables.add(salesStockTable);
+		tabbedTables.add(salesStockTable);
+		tabbedTables.add(consumptionStockTable);
+		tabbedTables.add(useValuesTable);
+		tabbedTables.add(circuitsTable);
+		tabbedTables.add(socialClassesTable);
+		tabbedTables.add(dynamicCircuitTable);
+
+		TableUtilities.doctorColumnHeaders(tabbedTables);  // doctor all the tables so the graphics can be switched
 	}
 
-	private void setTooltips() {
-		setTip(useValuesTable, "A commodity is anything that that society makes use of, and has established a quantitative measure for");
-		setTip(circuitsTable, "A producer is a business, or group of businesses, who make one commodity with similar technologies. \n"
+	public void setTooltips() {
+		TableUtilities.setTip(useValuesTable, "A commodity is anything that that society makes use of, and has established a quantitative measure for");
+		TableUtilities.setTip(circuitsTable, "A producer is a business, or group of businesses, who make one commodity with similar technologies. \n"
 				+ "Two producers can make the same commodity, but would normally be distinguished apart because their technology differs."
 				+ "\nThis can help study the effect of technological change");
-		setTip(socialClassesTable,
+		TableUtilities.setTip(socialClassesTable,
 				"A social class is a group of people with the same source of revenue, defined by the type of property that they specialise in");
-	}
-
-	private void setTip(TableView<?> tableView, String text) {
-		Tooltip tip = new Tooltip();
-		tip.setText(text);
-		tip.setFont(new Font(15));
-		tableView.setTooltip(tip);
-	}
-
-	/**
-	 * Replace a column header with a custom header whose display can be modified. Only do this if the column already has an embedded graphic
-	 * 
-	 * @param column
-	 *            the column to be doctored
-	 */
-	private void doctorColumnHeader(TableColumn<?, ?> column) {
-		Node columnGraphic = column.getGraphic();
-		if (columnGraphic == null)
-			return;
-
-		// Use jewelsea's method. Replace both text and graphic with a text, containing the text and the graphic
-		// this gives more flexibility, because a Label has more functionality (such as switching between text and graphic display)
-
-		Label label = new Label();
-		label.setText(column.getText());
-		label.setGraphic(columnGraphic);
-		column.setGraphic(label);
-		column.setText("");
-		label.setTooltip(new Tooltip(label.getText())); // TODO this doesn't seem to work if there is a table tooltip active
-		label.toFront();								// this doesn't have any effect on the tooltip either - needs to be investigated
-		column.setUserData("HasGraphic"); 				// tells us that the heading has been doctored
-	}
-
-	/**
-	 * replace all column headers in a table with custom headers whose display can be modified
-	 * 
-	 * @param tableView
-	 *            the table whose columns are to be doctored
-	 */
-	private void doctorColumnHeaders(TableView<?> tableView) {
-		for (TableColumn<?, ?> column : tableView.getColumns()) {
-			doctorColumnHeader(column);
-		}
-	}
-
-	/**
-	 * flip the given table over so that its columnns display either graphics or text depending on the state of {@link ViewManager#graphicsState}. Columns that
-	 * never had a graphic in the first place are unaffected
-	 * 
-	 * @param tableView
-	 *            the table to be flipped
-	 */
-	public void switchTableDisplay(TableView<?> tableView) {
-		for (TableColumn<?, ?> column : tableView.getColumns()) {
-			if ("HasGraphic".equals(column.getUserData())) {
-				Label columnlabel = (Label) column.getGraphic();
-				columnlabel.setContentDisplay(ViewManager.graphicsState);
-			}
-		}
-	}
-
-	/**
-	 * Set all columns in the viewer to display a graphic only, if the graphic has been set. This will only work for those columns which have been 'doctored'
-	 * using {@link TabbedTableViewer#doctorColumnHeader(TableColumn)}. It applies to all doctored tables - individual tables are not(at present) singled out.
-	 * <p>
-	 * NOTE; the option text and graphics is not an option in the enum {@link ViewManager#graphicsState}, but we could possibly achieve the effect by
-	 * 'undoctoring' the column headers.
-	 * 
-	 */
-	public void switchHeaderDisplay() {
-		switch (ViewManager.graphicsState) {
-		case TEXT_ONLY:
-			ViewManager.graphicsState = ContentDisplay.GRAPHIC_ONLY;
-			break;
-		case GRAPHIC_ONLY:
-			ViewManager.graphicsState = ContentDisplay.TEXT_ONLY;
-			break;
-		default:
-			ViewManager.graphicsState = ContentDisplay.TEXT_ONLY;
-		}
-		switchTableDisplay(circuitsTable);
-		switchTableDisplay(useValuesTable);
-		switchTableDisplay(socialClassesTable);
-		switchTableDisplay(dynamicCircuitTable);
 	}
 
 	private void makeStockColumn(TableColumn<Stock, String> column, Stock.Selector selector) {
@@ -263,7 +203,6 @@ public class TabbedTableViewer extends VBox {
 	 * Initialize the Productive Stocks tableView and cellFactories
 	 */
 	public void populateProductiveStocksViewTable() {
-		productiveStockTable.setItems(olProvider.stocksByStockTypeObservable("Productive"));
 		makeStockColumn(productiveStockCircuitColumn, Stock.Selector.CIRCUIT);
 		makeStockColumn(productiveStockUseValueColumn, Stock.Selector.USEVALUE);
 		makeStockColumn(productiveStockQuantityColumn, Stock.Selector.QUANTITY);
@@ -277,7 +216,6 @@ public class TabbedTableViewer extends VBox {
 	 * Initialize the Money Stocks tableView and cellFactories
 	 */
 	public void populateMoneyStocksViewTable() {
-		moneyStockTable.setItems(olProvider.stocksByStockTypeObservable("Money"));
 		makeStockColumn(moneyOwnerTypeColumn, Stock.Selector.OWNERTYPE);
 		makeStockColumn(moneyStockOwnerColumn, Stock.Selector.CIRCUIT);
 		makeStockColumn(moneyStockQuantityColumn, Stock.Selector.QUANTITY);
@@ -289,7 +227,6 @@ public class TabbedTableViewer extends VBox {
 	 * Initialize the Sales Stocks tableView and cellFactories
 	 */
 	public void populateSalesStocksViewTable() {
-		salesStockTable.setItems(olProvider.stocksByStockTypeObservable("Sales"));
 		makeStockColumn(salesStockOwnerTypeColumn, Stock.Selector.OWNERTYPE);
 		makeStockColumn(salesStockOwnerColumn, Stock.Selector.CIRCUIT);
 		makeStockColumn(salesStockUseValueColumn, Stock.Selector.USEVALUE);
@@ -302,7 +239,6 @@ public class TabbedTableViewer extends VBox {
 	 * Initialize the Consumption Stocks tableView and cellFactories
 	 */
 	public void populateConsumptionStocksViewTable() {
-		consumptionStockTable.setItems(olProvider.stocksByStockTypeObservable("Consumption"));
 		makeStockColumn(consumptionStockSocialClassColumn, Stock.Selector.CIRCUIT);
 		makeStockColumn(consumptionStockQuantityColumn, Stock.Selector.QUANTITY);
 		makeStockColumn(consumptionStockValueColumn, Stock.Selector.VALUE);
@@ -323,7 +259,6 @@ public class TabbedTableViewer extends VBox {
 	 * Initialize the UseValues tableView and cellFactories
 	 */
 	public void populateUseValuesViewTable() {
-		useValuesTable.setItems(olProvider.useValuesObservable());
 		makeUseValueColumn(useValueNameColumn, UseValue.Selector.USEVALUENAME);
 		makeUseValueColumn(useValueTypeColumn, UseValue.Selector.USEVALUETYPE);
 		makeUseValueColumn(useValueTotalValueColumn, UseValue.Selector.TOTALVALUE);
@@ -338,6 +273,7 @@ public class TabbedTableViewer extends VBox {
 		makeUseValueColumn(useValueAllocationShareColumn, UseValue.Selector.ALLOCATIONSHARE);
 		makeUseValueColumn(useValueCapitalColumn, UseValue.Selector.CAPITAL);
 		makeUseValueColumn(useValueSurplusValueColumn, UseValue.Selector.SURPLUSVALUE);
+		useValuesTable.setItems(olProvider.useValuesObservable());
 	}
 
 	private void makeCircuitColumn(TableColumn<Circuit, String> column, Circuit.Selector selector) {
@@ -353,7 +289,6 @@ public class TabbedTableViewer extends VBox {
 	 * Initialize the Circuits tableView and cellFactories
 	 */
 	public void populateCircuitsViewTable() {
-		circuitsTable.setItems(olProvider.circuitsObservable());
 		makeCircuitColumn(circuitUseValueTypeColumn, Circuit.Selector.PRODUCTUSEVALUETYPE);
 		makeCircuitColumn(circuitInitialCapitalColumn, Circuit.Selector.INITIALCAPITAL);
 		makeCircuitColumn(circuitSalesColumn, Circuit.Selector.SALESSTOCK);
@@ -377,7 +312,6 @@ public class TabbedTableViewer extends VBox {
 	 * Initialize the Social Classes tableView and cellFactories
 	 */
 	public void populateSocialClassesViewTable() {
-		socialClassesTable.setItems(olProvider.socialClassesObservable());
 		makeSocialClassColumn(socialClassNameColumn, SocialClass.Selector.SOCIALCLASSNAME);
 		makeSocialClassColumn(socialClassSalesStockColumn, SocialClass.Selector.SALES);
 		makeSocialClassColumn(socialClassConsumptionGoodsColumn, SocialClass.Selector.CONSUMPTIONSTOCKS);
@@ -388,7 +322,7 @@ public class TabbedTableViewer extends VBox {
 		makeSocialClassColumn(socialClassSizeColumn, SocialClass.Selector.SIZE);
 	}
 
-	private void addDynamicCircuitColumn(String columnName, Circuit.Selector selector,String imageURL) {
+	private void addDynamicCircuitColumn(String columnName, Circuit.Selector selector, String imageURL) {
 		TableColumn<Circuit, String> newColumn = new TableColumn<Circuit, String>(columnName);
 		newColumn.setCellFactory(new Callback<TableColumn<Circuit, String>, TableCell<Circuit, String>>() {
 			@Override public TableCell<Circuit, String> call(TableColumn<Circuit, String> col) {
@@ -397,16 +331,7 @@ public class TabbedTableViewer extends VBox {
 		});
 		newColumn.setCellValueFactory(cellData -> cellData.getValue().wrappedString(selector, TabbedTableViewer.displayAttribute));
 		newColumn.getStyleClass().add("table-column-right");
-		if (imageURL!=null) {
-			Label label =new Label(columnName);
-			newColumn.setGraphic(label);
-			ImageView image=new ImageView(imageURL);
-			image.setFitWidth(20);
-			image.setFitHeight(20);
-			label.setGraphic(image);
-			newColumn.setText("");
-			newColumn.setUserData("HasGraphic"); 				// tells us the heading has been doctored
-		}
+		TableUtilities.addGraphicToColummnHeader(newColumn, imageURL);
 		dynamicCircuitTable.getColumns().add(newColumn);
 	}
 
@@ -419,53 +344,54 @@ public class TabbedTableViewer extends VBox {
 		});
 		newColumn.setCellValueFactory(cellData -> cellData.getValue().wrappedString(productiveStockName));
 		newColumn.getStyleClass().add("table-column-right");
-		
-		//a bit of a botch here to put images in place for externally-supplied names
-		//TODO allow the user to supply the image
-		
+
+		// a bit of a botch here to put images in place for externally-supplied names
+		// TODO allow the user to supply the image
+
 		if (productiveStockName.equals("Labour Power")) {
-			Label label =new Label(productiveStockName);
-			newColumn.setGraphic(label);
-			ImageView image=new ImageView("labourPower.png");
-			image.setFitWidth(20);
-			image.setFitHeight(20);
-			label.setGraphic(image);
-			newColumn.setText("");
-			newColumn.setUserData("HasGraphic"); 				// tells us the heading has been doctored
-		}		if (productiveStockName.equals("Consumption")) {
-			Label label =new Label("Necessities");
-			newColumn.setGraphic(label);
-			ImageView image=new ImageView("necessities.png");
-			image.setFitWidth(20);
-			image.setFitHeight(20);
-			label.setGraphic(image);
-			newColumn.setText("");
-			newColumn.setUserData("HasGraphic"); 				// tells us the heading has been doctored
+			TableUtilities.addGraphicToColummnHeader(newColumn, "labourPower.png");
+		}
+		if (productiveStockName.equals("Consumption")) {
+			TableUtilities.addGraphicToColummnHeader(newColumn, "necessities.png");
 		}
 		if (productiveStockName.equals("Means of Production")) {
-			Label label =new Label("Means of Production");
-			newColumn.setGraphic(label);
-			ImageView image=new ImageView("Means of Production.png");
-			image.setFitWidth(20);
-			image.setFitHeight(20);
-			label.setGraphic(image);
-			newColumn.setText("");
-			newColumn.setUserData("HasGraphic"); 				// tells us the heading has been doctored
+			TableUtilities.addGraphicToColummnHeader(newColumn, "Means of Production.png");
 		}
 		dynamicCircuitTable.getColumns().add(newColumn);
 	}
 
-	public void createDynamicCircuitsTable() {
-		dynamicCircuitTable.getColumns().clear();
-		dynamicCircuitTable.setItems(olProvider.circuitsObservable());
-		
-		addDynamicCircuitColumn("Producer", Circuit.Selector.PRODUCTUSEVALUETYPE,null);
-		addDynamicCircuitColumn("Desired Output", Circuit.Selector.PROPOSEDOUTPUT,"maximum output.png");
-		addDynamicCircuitColumn("Constrained Output", Circuit.Selector.CONSTRAINEDOUTPUT,"constrained output.png");
-		addDynamicCircuitColumn("GrowthRate", Circuit.Selector.GROWTHRATE,"growthrate.png");
+	private void createDynamicCircuitsTable() {
+		addDynamicCircuitColumn("Producer", Circuit.Selector.PRODUCTUSEVALUETYPE, null);
+		addDynamicCircuitColumn("Desired Output", Circuit.Selector.PROPOSEDOUTPUT, "maximum output.png");
+		addDynamicCircuitColumn("Constrained Output", Circuit.Selector.CONSTRAINEDOUTPUT, "constrained output.png");
+		addDynamicCircuitColumn("GrowthRate", Circuit.Selector.GROWTHRATE, "growthrate.png");
 		for (Stock s : DataManager.productiveStocks()) {
 			addDynamicCircuitProductiveStockColumn(s.getUseValueName());
 		}
+	}
+
+	/**
+	 * refresh all the tabbed tables
+	 * 
+	 */
+
+	public void rePopulateTabbedTables() {
+		productiveStockTable.setItems(olProvider.stocksByStockTypeObservable("Productive"));
+		moneyStockTable.setItems(olProvider.stocksByStockTypeObservable("Money"));
+		salesStockTable.setItems(olProvider.stocksByStockTypeObservable("Sales"));
+		consumptionStockTable.setItems(olProvider.stocksByStockTypeObservable("Consumption"));
+		useValuesTable.setItems(olProvider.useValuesObservable());
+		circuitsTable.setItems(olProvider.circuitsObservable());
+		socialClassesTable.setItems(olProvider.socialClassesObservable());
+		dynamicCircuitTable.setItems(olProvider.circuitsObservable());
+	}
+
+	/**
+	 * switch the header displays (between graphics and text) for all our tables
+	 */
+
+	public void switchHeaderDisplays() {
+		TableUtilities.switchHeaderDisplays(tabbedTables);
 	}
 
 	/**
@@ -477,33 +403,10 @@ public class TabbedTableViewer extends VBox {
 	}
 
 	/**
-	 * @return the useValuesTable
+	 * @return an array of all the tables, so the utilities and other providers can service the objects in them
 	 */
-	public TableView<UseValue> getUseValuesTable() {
-		return useValuesTable;
-	}
-
-	/**
-	 * @param useValuesTable
-	 *            the useValuesTable to set
-	 */
-	public void setUseValuesTable(TableView<UseValue> useValuesTable) {
-		this.useValuesTable = useValuesTable;
-	}
-
-	/**
-	 * @return the circuitsTable
-	 */
-	public TableView<Circuit> getCircuitsTable() {
-		return circuitsTable;
-	}
-
-	/**
-	 * @param circuitsTable
-	 *            the circuitsTable to set
-	 */
-	public void setCircuitsTable(TableView<Circuit> circuitsTable) {
-		this.circuitsTable = circuitsTable;
+	public ArrayList<TableView<?>> getTabbedTables() {
+		return tabbedTables;
 	}
 
 }

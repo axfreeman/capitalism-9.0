@@ -422,8 +422,8 @@ public class UseValue extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param surplusProduct
-	 *            the surplusProduct to set
+	 * @param surplus
+	 *            the surplus to set
 	 */
 	public void setSurplusProduct(double surplus) {
 		this.surplusProduct = surplus;
