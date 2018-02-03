@@ -22,15 +22,23 @@ package rd.dev.simulation.custom;
 
 import java.util.ArrayList;
 
-import com.sun.org.apache.xml.internal.resolver.readers.DOMCatalogReader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.text.Font;
 import rd.dev.simulation.view.ViewManager;
 
@@ -39,6 +47,54 @@ import rd.dev.simulation.view.ViewManager;
  *
  */
 public class TableUtilities {
+	static final Logger logger = LogManager.getLogger("TableUtilities");
+
+	/**
+	 * Skeleton method to add a context menu to a table: not used at present
+	 * 
+	 * @param table
+	 *            the table to add the context menu to
+	 */
+
+	public static void createTableContextMenu(TableView<?> table) {
+		ContextMenu contextMenu = new ContextMenu();
+
+		EventHandler<ContextMenuEvent> eventHandler = new EventHandler<ContextMenuEvent>() {
+			@Override public void handle(ContextMenuEvent e) {
+				logger.debug("Context menu selected");
+				contextMenu.show(table, e.getScreenX(), e.getSceneY());
+			}
+		};
+
+		table.setOnContextMenuRequested(eventHandler);
+
+		MenuItem item1 = new MenuItem("Item 1");
+		item1.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override public void handle(ActionEvent event) {
+				logger.debug("Context menu item 1 selected");
+			}
+		});
+		MenuItem item2 = new MenuItem("Item 2");
+		item2.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override public void handle(ActionEvent event) {
+				logger.debug("Context menu item 2 selected");
+			}
+		});
+
+		// Add MenuItem to ContextMenu
+		contextMenu.getItems().addAll(item1, item2);
+	}
+
+	
+	/**
+	 * Hide all the columns in a supercolumn but keep them so they can be restored
+	 */
+
+	public void hideColumns(TableColumn<?, ?> superColumn) {
+
+	}
 
 	/**
 	 * add the specified tooltip to the specified table
@@ -84,28 +140,74 @@ public class TableUtilities {
 	static void doctorColumnHeaders(ArrayList<TableView<?>> tableViews) {
 		for (TableView<?> tableView : tableViews) {
 			for (TableColumn<?, ?> column : tableView.getColumns()) {
-				doctorOneColumnHeader(column);
+				if (column.getColumns().size() == 0) {
+					// only doctor the column if it is not a superColumn
+				}
 				for (TableColumn<?, ?> subColumn : column.getColumns()) {
-					doctorOneColumnHeader(subColumn);
+					doctorSubColumnHeader(subColumn);
 				}
 			}
 		}
 	}
 
 	/**
-	 * Replace one column header with a custom header whose display can be modified to show graphics
+	 * experimental method.
+	 * make supercolumn headers clickable so user can control what they display
+	 * 
+	 * @param superColumn
+	 *            the column whose header is to be modified
+	 */
+
+	public static void setSuperColumnHandler(TableColumn<?, ?> superColumn, TableColumn<?, ?> showColumn) {
+		EventHandler<MouseEvent> eventHandler = new EventHandler<MouseEvent>() {
+			@Override public void handle(MouseEvent e) {
+				// make sure it was a double-click
+				if (e.getButton() != MouseButton.PRIMARY)
+					return;
+				if (e.getClickCount() != 2)
+					return;
+				// toggle display of all or only the minimal subColumns
+				switch ((String) superColumn.getUserData()) {
+				case "Maximised":
+					logger.debug("User minimised the column {}", superColumn.getText());
+					superColumn.setUserData("Minimised");
+					for (TableColumn<?, ?> subColumn : superColumn.getColumns()) {
+						subColumn.setVisible(false);
+					}
+					showColumn.setVisible(true);
+					break;
+				case "Minimised":
+					logger.debug("User maximised the column {}", superColumn.getText());
+					for (TableColumn<?, ?> subColumn : superColumn.getColumns()) {
+						subColumn.setVisible(true);
+					}
+					superColumn.setUserData("Maximised");
+					break;
+				default:
+					break;
+				}
+			}
+		};
+		Label label = new Label();
+		label.setText(superColumn.getText());
+		superColumn.setGraphic(label);
+		superColumn.setText("");
+		label.addEventHandler(MouseEvent.MOUSE_CLICKED, eventHandler);
+		superColumn.setUserData("Maximised");
+	}
+
+	/**
+	 * Replace one column header with a custom header whose display can be modified to show graphics.
+	 * Use jewelsea's method. Replace the graphic with a label, containing the text and the graphic.
+	 * This gives more flexibility, because a Label has more functionality (such as switching between text and graphic display).
 	 * 
 	 * @param column
 	 *            the column whose header is to be modified
 	 */
 
-	public static void doctorOneColumnHeader(TableColumn<?, ?> column) {
+	public static void doctorSubColumnHeader(TableColumn<?, ?> column) {
 		Node columnGraphic = column.getGraphic();
 		if (columnGraphic != null) {
-
-			// Use jewelsea's method. Replace the graphic with a label, containing the text and the graphic
-			// this gives more flexibility, because a Label has more functionality (such as switching between text and graphic display)
-
 			Label label = new Label();
 			label.setText(column.getText());
 			label.setGraphic(columnGraphic);

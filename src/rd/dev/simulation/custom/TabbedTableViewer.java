@@ -22,7 +22,6 @@ package rd.dev.simulation.custom;
 
 import java.io.IOException;
 import java.util.ArrayList;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import javafx.fxml.FXML;
@@ -106,6 +105,14 @@ public class TabbedTableViewer extends VBox {
 	@FXML private TableColumn<UseValue, String> useValueAllocationShareColumn;
 	@FXML private TableColumn<UseValue, String> useValueCapitalColumn;
 	@FXML private TableColumn<UseValue, String> useValueSurplusValueColumn;
+	
+	@FXML private TableColumn<UseValue,String> useValueDemandSupplySuperColumn;
+	@FXML private TableColumn<UseValue,String> useValueCapitalProfitSuperColumn;
+	@FXML private TableColumn<UseValue,String> useValueValuePriceSuperColumn;
+
+	// a static list of the suppressible columns (see TableUtilities.ContextMenu)
+
+	ArrayList<TableColumn<?, ?>> useValueSuppressibleColumns = new ArrayList<TableColumn<?, ?>>();
 
 	// the Circuit Table and associated columns
 
@@ -140,7 +147,7 @@ public class TabbedTableViewer extends VBox {
 	 * a simple static list of all the tables, so utilities can get at them
 	 */
 
-	private ArrayList<TableView<?>> tabbedTables = new ArrayList<TableView<?>>();
+	private static ArrayList<TableView<?>> tabbedTables = new ArrayList<TableView<?>>();
 
 	/**
 	 * Custom control handles the main ViewTables
@@ -154,19 +161,20 @@ public class TabbedTableViewer extends VBox {
 		} catch (IOException exception) {
 			throw new RuntimeException(exception);
 		}
+
 		setTooltips();
 		ViewManager.graphicsState = ContentDisplay.TEXT_ONLY;		// initialize so start state is text only
 		setDisplayAttribute(Stock.ValueExpression.PRICE);			// start off displaying prices
 
-		populateProductiveStocksViewTable();
-		populateMoneyStocksViewTable();
-		populateSalesStocksViewTable();
-		populateConsumptionStocksViewTable();
-		populateSocialClassesViewTable();
-		populateUseValuesViewTable();
-		populateCircuitsViewTable();
+		makeProductiveStocksViewTable();
+		makeMoneyStocksViewTable();
+		makeSalesStocksViewTable();
+		makeConsumptionStocksViewTable();
+		makeSocialClassesViewTable();
+		makeUseValuesViewTable();
+		makeCircuitsViewTable();
 
-		createDynamicCircuitsTable();		// Dynamic table columns are defined from the data so it is constructed programmatically
+		makeDynamicCircuitsTable();		// Dynamic table columns are defined from the data so it is constructed programmatically
 
 		tabbedTables.add(productiveStockTable);
 		tabbedTables.add(moneyStockTable);
@@ -177,8 +185,10 @@ public class TabbedTableViewer extends VBox {
 		tabbedTables.add(circuitsTable);
 		tabbedTables.add(socialClassesTable);
 		tabbedTables.add(dynamicCircuitTable);
-
 		TableUtilities.doctorColumnHeaders(tabbedTables);  // doctor all the tables so the graphics can be switched
+		TableUtilities.setSuperColumnHandler(useValueValuePriceSuperColumn,useValueTotalPriceColumn);
+		TableUtilities.setSuperColumnHandler(useValueDemandSupplySuperColumn,useValueAllocationShareColumn);
+		TableUtilities.setSuperColumnHandler(useValueCapitalProfitSuperColumn,useValueSurplusValueColumn);
 	}
 
 	public void setTooltips() {
@@ -202,7 +212,7 @@ public class TabbedTableViewer extends VBox {
 	/**
 	 * Initialize the Productive Stocks tableView and cellFactories
 	 */
-	public void populateProductiveStocksViewTable() {
+	public void makeProductiveStocksViewTable() {
 		makeStockColumn(productiveStockCircuitColumn, Stock.Selector.CIRCUIT);
 		makeStockColumn(productiveStockUseValueColumn, Stock.Selector.USEVALUE);
 		makeStockColumn(productiveStockQuantityColumn, Stock.Selector.QUANTITY);
@@ -215,7 +225,7 @@ public class TabbedTableViewer extends VBox {
 	/**
 	 * Initialize the Money Stocks tableView and cellFactories
 	 */
-	public void populateMoneyStocksViewTable() {
+	public void makeMoneyStocksViewTable() {
 		makeStockColumn(moneyOwnerTypeColumn, Stock.Selector.OWNERTYPE);
 		makeStockColumn(moneyStockOwnerColumn, Stock.Selector.CIRCUIT);
 		makeStockColumn(moneyStockQuantityColumn, Stock.Selector.QUANTITY);
@@ -226,7 +236,7 @@ public class TabbedTableViewer extends VBox {
 	/**
 	 * Initialize the Sales Stocks tableView and cellFactories
 	 */
-	public void populateSalesStocksViewTable() {
+	public void makeSalesStocksViewTable() {
 		makeStockColumn(salesStockOwnerTypeColumn, Stock.Selector.OWNERTYPE);
 		makeStockColumn(salesStockOwnerColumn, Stock.Selector.CIRCUIT);
 		makeStockColumn(salesStockUseValueColumn, Stock.Selector.USEVALUE);
@@ -238,7 +248,7 @@ public class TabbedTableViewer extends VBox {
 	/**
 	 * Initialize the Consumption Stocks tableView and cellFactories
 	 */
-	public void populateConsumptionStocksViewTable() {
+	public void makeConsumptionStocksViewTable() {
 		makeStockColumn(consumptionStockSocialClassColumn, Stock.Selector.CIRCUIT);
 		makeStockColumn(consumptionStockQuantityColumn, Stock.Selector.QUANTITY);
 		makeStockColumn(consumptionStockValueColumn, Stock.Selector.VALUE);
@@ -258,7 +268,7 @@ public class TabbedTableViewer extends VBox {
 	/**
 	 * Initialize the UseValues tableView and cellFactories
 	 */
-	public void populateUseValuesViewTable() {
+	public void makeUseValuesViewTable() {
 		makeUseValueColumn(useValueNameColumn, UseValue.Selector.USEVALUENAME);
 		makeUseValueColumn(useValueTypeColumn, UseValue.Selector.USEVALUETYPE);
 		makeUseValueColumn(useValueTotalValueColumn, UseValue.Selector.TOTALVALUE);
@@ -273,7 +283,12 @@ public class TabbedTableViewer extends VBox {
 		makeUseValueColumn(useValueAllocationShareColumn, UseValue.Selector.ALLOCATIONSHARE);
 		makeUseValueColumn(useValueCapitalColumn, UseValue.Selector.CAPITAL);
 		makeUseValueColumn(useValueSurplusValueColumn, UseValue.Selector.SURPLUSVALUE);
-		useValuesTable.setItems(olProvider.useValuesObservable());
+
+		useValueSuppressibleColumns.add(useValueTotalDemandColumn);
+		useValueSuppressibleColumns.add(useValueTotalSupplyColumn);
+
+//		TableUtilities.createTableContextMenu(useValuesTable);
+//		TableUtilities.createSuperColumnHandler(useValueValuePriceSuperColumn);
 	}
 
 	private void makeCircuitColumn(TableColumn<Circuit, String> column, Circuit.Selector selector) {
@@ -288,7 +303,7 @@ public class TabbedTableViewer extends VBox {
 	/**
 	 * Initialize the Circuits tableView and cellFactories
 	 */
-	public void populateCircuitsViewTable() {
+	public void makeCircuitsViewTable() {
 		makeCircuitColumn(circuitUseValueTypeColumn, Circuit.Selector.PRODUCTUSEVALUETYPE);
 		makeCircuitColumn(circuitInitialCapitalColumn, Circuit.Selector.INITIALCAPITAL);
 		makeCircuitColumn(circuitSalesColumn, Circuit.Selector.SALESSTOCK);
@@ -311,7 +326,7 @@ public class TabbedTableViewer extends VBox {
 	/**
 	 * Initialize the Social Classes tableView and cellFactories
 	 */
-	public void populateSocialClassesViewTable() {
+	public void makeSocialClassesViewTable() {
 		makeSocialClassColumn(socialClassNameColumn, SocialClass.Selector.SOCIALCLASSNAME);
 		makeSocialClassColumn(socialClassSalesStockColumn, SocialClass.Selector.SALES);
 		makeSocialClassColumn(socialClassConsumptionGoodsColumn, SocialClass.Selector.CONSUMPTIONSTOCKS);
@@ -360,7 +375,7 @@ public class TabbedTableViewer extends VBox {
 		dynamicCircuitTable.getColumns().add(newColumn);
 	}
 
-	private void createDynamicCircuitsTable() {
+	private void makeDynamicCircuitsTable() {
 		addDynamicCircuitColumn("Producer", Circuit.Selector.PRODUCTUSEVALUETYPE, null);
 		addDynamicCircuitColumn("Desired Output", Circuit.Selector.PROPOSEDOUTPUT, "maximum output.png");
 		addDynamicCircuitColumn("Constrained Output", Circuit.Selector.CONSTRAINEDOUTPUT, "constrained output.png");
@@ -375,7 +390,7 @@ public class TabbedTableViewer extends VBox {
 	 * 
 	 */
 
-	public void rePopulateTabbedTables() {
+	public void populateTabbedTables() {
 		productiveStockTable.setItems(olProvider.stocksByStockTypeObservable("Productive"));
 		moneyStockTable.setItems(olProvider.stocksByStockTypeObservable("Money"));
 		salesStockTable.setItems(olProvider.stocksByStockTypeObservable("Sales"));
@@ -384,6 +399,18 @@ public class TabbedTableViewer extends VBox {
 		circuitsTable.setItems(olProvider.circuitsObservable());
 		socialClassesTable.setItems(olProvider.socialClassesObservable());
 		dynamicCircuitTable.setItems(olProvider.circuitsObservable());
+	}
+
+	/**
+	 * we have to force a refresh of the display because if the data has not changed, it may not be observed by the table
+	 * see https://stackoverflow.com/questions/11065140/javafx-2-1-tableview-refresh-items
+	 * i have kept this method separate from {@code populateTabbedTables()} because the issue merits further study.
+	 */
+
+	public void refreshTables() {
+		for (TableView<?>table:tabbedTables) {
+			table.refresh();
+		}
 	}
 
 	/**
@@ -409,4 +436,10 @@ public class TabbedTableViewer extends VBox {
 		return tabbedTables;
 	}
 
+	/**
+	 * @return the useValuesTable
+	 */
+	public TableView<UseValue> getUseValuesTable() {
+		return useValuesTable;
+	}
 }

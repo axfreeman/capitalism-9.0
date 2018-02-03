@@ -140,7 +140,7 @@ public class ImmediateConsequences extends Simulation implements Command {
 	
 			for (UseValue u:DataManager.useValuesProductive(timeStampIDCurrent)) {
 				Reporter.report(logger, 1, "Setting profit-equalizing price for use value [%s]", u.getUseValueName());
-				for (Circuit c:DataManager.circuitsByUseUseValue(timeStampIDCurrent, u.getUseValueName())) {
+				for (Circuit c:DataManager.circuitsByProductUseValue(u.getUseValueName())) {
 					Reporter.report(logger, 2, " Note: circuit %s is produces this use value", c.getProductUseValueType());
 				}
 				double newUnitPrice=u.getCapital()*(1+global.getProfitRate())/u.getTotalQuantity();
@@ -174,7 +174,7 @@ public class ImmediateConsequences extends Simulation implements Command {
 		}
 
 		Reporter.report(logger, 1, " Calculate profits and profit rates");
-		for (Circuit c : DataManager.circuitsAll(timeStampIDCurrent)) {
+		for (Circuit c : DataManager.circuitsAll()) {
 			UseValue useValue=c.getUseValue();
 			useValue.setCapital(useValue.getCapital()+c.getInitialCapital());
 			c.calculateCurrentCapital();

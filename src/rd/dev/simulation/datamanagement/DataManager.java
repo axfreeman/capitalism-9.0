@@ -95,9 +95,8 @@ public class DataManager {
 	protected static TypedQuery<UseValue> useValuesByTypeQuery;
 
 	// circuit queries
-	protected static TypedQuery<Circuit> circuitByPrimaryKeyQuery;
+	protected static TypedQuery<Circuit> circuitPrimaryQuery;
 	protected static TypedQuery<Circuit> circuitBasicQuery;
-	protected static TypedQuery<Circuit> circuitByUseValueQuery;
 
 	// social class queries
 	protected static TypedQuery<SocialClass> socialClassByPrimaryKeyQuery;
@@ -155,9 +154,8 @@ public class DataManager {
 		useValuesByTypeQuery = useValueEntityManager.createNamedQuery("UseValueType", UseValue.class);
 
 		// circuit queries
-		circuitByPrimaryKeyQuery = circuitEntityManager.createNamedQuery("Primary", Circuit.class);
+		circuitPrimaryQuery = circuitEntityManager.createNamedQuery("Primary", Circuit.class);
 		circuitBasicQuery = circuitEntityManager.createNamedQuery("Basic", Circuit.class);
-		circuitByUseValueQuery = circuitEntityManager.createNamedQuery("UseValue", Circuit.class);
 
 		// social class queries
 		socialClassByPrimaryKeyQuery = socialClassEntityManager.createNamedQuery("SocialClass.PrimaryKey", SocialClass.class);
@@ -293,14 +291,12 @@ public class DataManager {
 	/**
 	 * a list of all produtive stocks at the current project and timeStamp.
 	 * uses the "Consumption" circuit purely to pick up the productive stocks, since these have the same names for all circuits
-	 * TODO this assumes no additional inputs are added as the simulation progresses (uses timeStamp 1)
 
 	 * @return a list of stocks at the current project and timeStamp
 	 */
 
 	public static List<Stock> productiveStocks() {
-
-		return circuitByProductType(1, "Consumption").productiveStocks();
+		return circuitByProductUseValue("Consumption").productiveStocks();
 	}
 
 	/**
@@ -499,7 +495,7 @@ public class DataManager {
 	// CIRCUIT QUERIES
 
 	/**
-	 * the circuit that produces a given usevalue, for the current project and a given timeStamp (that may differ from the current timeStamp)
+	 * the circuit that produces a given usevalue, for the current project and a given timeStamp. This is also the primary key of the circuit entity
 	 * 
 	 * @param project
 	 *            the project
@@ -510,42 +506,28 @@ public class DataManager {
 	 * @return the circuit that produces {@code useValueName}, or null if this does not exist
 	 */
 	public static Circuit circuitByPrimaryKey(int project, int timeStamp, String useValueName) {
-		circuitByPrimaryKeyQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("type", useValueName);
+		circuitPrimaryQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("productUseValueName", useValueName);
 		try {
-			return circuitByPrimaryKeyQuery.getSingleResult();
+			return circuitPrimaryQuery.getSingleResult();
 		} catch (javax.persistence.NoResultException n) {
 			return null;// getSingleResult does not return null if it fails; instead, it throws a fit
 		}
 	}
 
 	/**
-	 * retrieve the single circuit that produces a named use value for the current project and at a given timeStamp.
-	 * TODO Note that in general, we must allow for a named use value to be produced by more than one circuit
+	 * a list of circuits, for the current project and timeStamp
 	 * 
-	 * @param timeStamp
-	 *            the given timeStamp
-	 * 
-	 * @param useValueName
-	 *            the produce that is made by the circuit
-	 * @return the single circuit that produces this product, at the currently-selected timeStamp
+	 * @return a list of circuits for the current project at the latest timeStamp that has been persisted.
 	 */
-	public static Circuit circuitByProductType(int timeStamp, String useValueName) {
-		circuitByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp).setParameter("type",
-				useValueName);
-		try {
-			return circuitByPrimaryKeyQuery.getSingleResult();
-		} catch (javax.persistence.NoResultException n) {
-			return null;// getSingleResult does not return null if it fails; instead, it throws a fit
-		}
+	public static List<Circuit> circuitsAll() {
+		circuitBasicQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
+		return circuitBasicQuery.getResultList();
 	}
 
 	/**
 	 * a list of circuits, for the current project and the given timeStamp
 	 * 
-	 * @param timeStamp
-	 *            the given timeStamp
-	 * 
-	 * @return a list of circuits at the latest timeStamp that has been persisted.
+	 * @return a list of circuits for the current project at the specified timeStamp (which should, in general, be different from the currentTimeStamp)
 	 */
 	public static List<Circuit> circuitsAll(int timeStamp) {
 		circuitBasicQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
@@ -553,7 +535,7 @@ public class DataManager {
 	}
 
 	/**
-	 * a list of circuits, for the current project and the given timeStamp, that produce a given use value
+	 * a list of circuits, for the current project and the current timeStamp, that produce a given use value
 	 * 
 	 * @param timeStamp
 	 *            the given timeStamp
@@ -562,10 +544,28 @@ public class DataManager {
 	 *            the name of the use value that these circuits produce
 	 * @return a list of circuits which produce the given use value at the latest timeStamp that has been persisted.
 	 */
-	public static List<Circuit> circuitsByUseUseValue(int timeStamp, String useValueName) {
-		circuitByUseValueQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp).setParameter("productUseValueName", useValueName);
-		return circuitByUseValueQuery.getResultList();
+	public static List<Circuit> circuitsByProductUseValue(String useValueName) {
+		circuitPrimaryQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent).setParameter("productUseValueName", useValueName);
+		return circuitPrimaryQuery.getResultList();
 	}
+
+	/**
+	 * retrieve the topmost circuit that produces a named use value for the current project and at a given timeStamp.
+	 * TODO Note that in general, we must allow for a named use value to be produced by more than one circuit.
+	 * This method should therefore be phased out.
+	 * 
+	 * @param timeStamp
+	 *            the given timeStamp
+	 * 
+	 * @param useValueName
+	 *            the produce that is made by the circuit
+	 * @return the single circuit that produces this product, at the currently-selected timeStamp
+	 */
+	public static Circuit circuitByProductUseValue(String useValueName) {
+		List<Circuit> circuits=circuitsByProductUseValue(useValueName);
+		return circuits.get(0);
+	}
+
 
 	// SOCIAL CLASS QUERIES
 

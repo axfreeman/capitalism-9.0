@@ -40,7 +40,7 @@
 											</ImageView>
 										</graphic>
 									</TableColumn>
-                           <TableColumn prefWidth="75.0" text="Values and Prices">
+                           <TableColumn fx:id="useValueValuePriceSuperColumn" prefWidth="75.0" text="Values and Prices">
                               <columns>
       									<TableColumn fx:id="useValueUnitValueColumn" prefWidth="75.0" styleClass="table-column-right" text="Unit Value">
       										<graphic>
@@ -79,8 +79,15 @@
       										</graphic>
       									</TableColumn>
                               </columns>
+                              <graphic>
+                                 <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                                    <image>
+                                       <Image url="@../../../../../img/surplus.png" />
+                                    </image>
+                                 </ImageView>
+                              </graphic>
                            </TableColumn>
-                           <TableColumn prefWidth="75.0" text="Demand and Supply">
+                           <TableColumn fx:id="useValueDemandSupplySuperColumn" prefWidth="75.0" text="Demand and Supply">
                               <columns>
       									<TableColumn fx:id="useValueTotalDemandColumn" prefWidth="75.0" styleClass="table-column-right" text="Demand">
       										<graphic>
@@ -111,7 +118,7 @@
       									</TableColumn>
                               </columns>
                            </TableColumn>
-                           <TableColumn prefWidth="75.0" text="Capital and Profit">
+                           <TableColumn fx:id="useValueCapitalProfitSuperColumn" prefWidth="75.0" text="Capital and Profit">
                               <columns>
       									<TableColumn fx:id="useValueCapitalColumn" prefWidth="75.0" styleClass="table-column-right" text="Capital">
       										<graphic>

@@ -120,7 +120,7 @@ public class Accumulate extends Simulation implements Command {
 
 			// in this case, allocate funds to finance proposed growth
 
-			for (Circuit c : DataManager.circuitsAll(timeStampIDCurrent)) {
+			for (Circuit c : DataManager.circuitsAll()) {
 				if (c.iNDUSTRYTYPE() == type) {
 					double proposedOutput = c.getConstrainedOutput() * (1 + c.getGrowthRate());
 					c.setProposedOutput(proposedOutput);
@@ -137,7 +137,7 @@ public class Accumulate extends Simulation implements Command {
 
 			// In this case, allocate all remaining funds to expansion and adjust output accordingly
 
-			for (Circuit c : DataManager.circuitsAll(timeStampIDCurrent)) {
+			for (Circuit c : DataManager.circuitsAll()) {
 				if (c.iNDUSTRYTYPE() == type) {
 					c.computePossibleOutput(global.getSurplusMeansOfProduction());
 					fundsAllocated = c.getCostOfExpansion();

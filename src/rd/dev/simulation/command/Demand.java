@@ -92,16 +92,12 @@ public class Demand extends Simulation implements Command {
 	public void registerProductiveDemand() {
 		Reporter.report(logger, 0, "REGISTER PRODUCTIVE DEMAND");
 
-		// First, set demand to zero for all use values
+		// First, set demand to zero for all use values and all stocks
 
 		List<UseValue> allUseValues = DataManager.useValuesAll(timeStampIDCurrent);
 		for (UseValue u : allUseValues) {
 			u.setTotalDemand(0);
 		}
-
-		// Next, just in case, set demand to zero for all stocks
-		// TODO is this necessary?
-
 		List<Stock> allStocks = DataManager.stocksAll(timeStampIDCurrent);
 		for (Stock s : allStocks) {
 			s.setQuantityDemanded(0);
@@ -111,7 +107,7 @@ public class Demand extends Simulation implements Command {
 		// NOTE: social class demand for consumption goods is calculated separately
 		// in SocialClass.registerDemand() which is called immediately after this
 
-		List<Circuit> results = DataManager.circuitsAll(timeStampIDCurrent);
+		List<Circuit> results = DataManager.circuitsAll();
 		for (Circuit c : results) {
 			double totalCost = 0;
 			logger.debug(" Estimating demand for industry {}", c.getProductUseValueType());
@@ -123,14 +119,23 @@ public class Demand extends Simulation implements Command {
 			
 			double constrainedOutput=0;
 			double proposedOutput=c.getProposedOutput();
-			c.calculateOutputCosts(); // cost the entirety of the proposed output (by setting currentOutput to zero)
+			
+			// cost the entirety of the proposed output (by setting currentOutput to zero)
+			
+			c.calculateOutputCosts(); 
 			totalCost=c.getCostOfExpansion();
+			
+			
 			Reporter.report(logger, 1, " Total cost of an output of %.2f is $%.2f and $%.2f is available.",
 					proposedOutput, totalCost, moneyAvailable);
+			
+			// check for monetary constraints
+			
 			if (totalCost < moneyAvailable+Simulation.epsilon) {
 				Reporter.report(logger, 2, "  Output is unconstrained by cost");
 				constrainedOutput = proposedOutput;
 			} else {
+
 				// TODO the code below may not work, because cost is not a linear function of output if there are pre-existing stocks
 				// the problem is that in these circumstances we will underestimate the cost.
 				
@@ -142,6 +147,7 @@ public class Demand extends Simulation implements Command {
 			}
 
 			c.setConstrainedOutput(constrainedOutput);
+			
 			// now go through all the stocks again, calculating how much of each will be needed
 			// and adding this to the demand for the use value that the stock represents
 

@@ -57,7 +57,7 @@ public class Revenue extends Simulation implements Command {
 	private void allocateProfits() {
 		SocialClass capitalists = DataManager.socialClassByName(timeStampIDCurrent, "Capitalists");
 		double capitalistRevenue=0.0;
-		for (Circuit c : DataManager.circuitsAll(timeStampIDCurrent)) {
+		for (Circuit c : DataManager.circuitsAll()) {
 			double profit = c.getProfit();
 
 			// transfer all profits to the capitalist class. In the Accumulate phase, part of this revenue

@@ -364,7 +364,7 @@ public class Simulation {
 	protected void setCapitals() {
 		Global global = DataManager.getGlobal(Simulation.timeStampIDCurrent);
 		double globalInitialCapital=0.0;
-		for (Circuit c : DataManager.circuitsAll(timeStampIDCurrent)) {
+		for (Circuit c : DataManager.circuitsAll()) {
 			c.calculateCurrentCapital();
 			double initialCapital = c.getCurrentCapital();
 			Reporter.report(logger, 2, "  The initial capital of the industry[%s] is now $%.2f (intrinsic %.2f)", c.getProductUseValueType(),initialCapital,initialCapital/global.getMelt());

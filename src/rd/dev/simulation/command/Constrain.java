@@ -106,7 +106,7 @@ public class Constrain extends Simulation implements Command {
 	public void constrainOutput() {
 		Reporter.report(logger, 1, " Adjusting the output of each industry");
 
-		List<Circuit> circuits = DataManager.circuitsAll(timeStampIDCurrent);
+		List<Circuit> circuits = DataManager.circuitsAll();
 		for (Circuit c : circuits) {
 			double desiredOutputLevel = c.getProposedOutput();
 			Reporter.report(logger, 1, " Estimating supply-constrained output for industry [%s] with unconstrained output %.2f",

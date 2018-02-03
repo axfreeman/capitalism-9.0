@@ -108,7 +108,7 @@ public class ViewManager {
 	// these are the things that go in the simulationResultsPane
 
 	private SwitchableGraphicsGrid switchableGrid;
-	private TabbedTableViewer tabbedTableViewer = new TabbedTableViewer();
+	private static TabbedTableViewer tabbedTableViewer;
 
 	// this is the container for the action buttons
 
@@ -169,6 +169,7 @@ public class ViewManager {
 
 	@FXML private void initialize() {
 		logger.debug("Entered initialize");
+		tabbedTableViewer = new TabbedTableViewer();
 	}
 
 	/**
@@ -695,7 +696,19 @@ public class ViewManager {
 		logger.debug(String.format("Refresh Display with project %d, timestamp %d and comparator %d",
 				currentProject, Simulation.timeStampDisplayCursor, Simulation.getTimeStampComparatorCursor()));
 
-		tabbedTableViewer.rePopulateTabbedTables();
+		tabbedTableViewer.populateTabbedTables();
+		
+		// we have to force a refresh of the display because if the data has not changed
+		// see https://stackoverflow.com/questions/11065140/javafx-2-1-tableview-refresh-items
+		
+		tabbedTableViewer.refreshTables();
 		populateGlobalsGrid();
+	}
+
+	/**
+	 * @return the tabbedTableViewer
+	 */
+	public static TabbedTableViewer getTabbedTableViewer() {
+		return tabbedTableViewer;
 	}
 }

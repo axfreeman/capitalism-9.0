@@ -63,7 +63,7 @@ public class Trade extends Simulation implements Command {
 	 * each productive circuit purchases the stocks that it needs
 	 */
 	private void productivePurchasesTrade() {
-		List<Circuit> circuits = DataManager.circuitsAll(timeStampIDCurrent);
+		List<Circuit> circuits = DataManager.circuitsAll();
 		Reporter.report(logger, 1, " Industries will now purchase the stocks they need. There are %d of them", circuits.size());
 
 		for (Circuit buyer : circuits) {
@@ -93,7 +93,7 @@ public class Trade extends Simulation implements Command {
 					sellerMoneyStock = workers.getMoneyStock();
 					sellerSalesStock = workers.getSalesStock();
 				} else {
-					Circuit seller = DataManager.circuitByProductType(timeStampIDCurrent, useValueName);
+					Circuit seller = DataManager.circuitByProductUseValue(useValueName);
 					sellerMoneyStock = seller.getMoneyStock();
 					sellerSalesStock = seller.getSalesStock();
 				}
@@ -118,7 +118,7 @@ public class Trade extends Simulation implements Command {
 			String buyerName = buyer.getSocialClassName();
 			Reporter.report(logger, 2, "  Purchasing for the social class [%s]", buyerName);
 			UseValue consumptionUseValue = DataManager.useValueByName(timeStampIDCurrent, "Consumption");
-			Circuit seller = DataManager.circuitByProductType(timeStampIDCurrent, "Consumption");
+			Circuit seller = DataManager.circuitByProductUseValue("Consumption");
 			if (seller == null) {
 				Dialogues.alert(logger, "NOBODY IS SELLING CONSUMPTION GOODS ");
 				break;

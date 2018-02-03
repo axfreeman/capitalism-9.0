@@ -52,7 +52,7 @@ public class CircuitsProduce extends Simulation implements Command {
 		advanceOneStep(ActionStates.C_P_CircuitsProduce.getText(), ActionStates.C_P_Produce.getText());
 		Global global = DataManager.getGlobal(timeStampIDCurrent);
 		double melt = global.getMelt();
-		List<Circuit> circuits = DataManager.circuitsAll(timeStampIDCurrent);
+		List<Circuit> circuits = DataManager.circuitsAll();
 		for (Circuit c : circuits) {
 			String useValueType = c.getProductUseValueType();
 			Stock salesStock = c.getSalesStock();

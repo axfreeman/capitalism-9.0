@@ -50,8 +50,7 @@ import rd.dev.simulation.view.ViewManager;
 @Table(name = "circuits")
 @NamedQueries({
 		@NamedQuery(name = "Basic", query = "Select c from Circuit c where c.pk.project = :project and c.pk.timeStamp = :timeStamp"),
-		@NamedQuery(name = "UseValue", query = "Select c from Circuit c where c.pk.project = :project and c.pk.timeStamp = :timeStamp and c.pk.productUseValueName= :productUseValueName"),
-		@NamedQuery(name = "Primary", query = "Select c from Circuit c where c.pk.project= :project and c.pk.timeStamp = :timeStamp and c.pk.productUseValueName= :type")
+		@NamedQuery(name = "Primary", query = "Select c from Circuit c where c.pk.project= :project and c.pk.timeStamp = :timeStamp and c.pk.productUseValueName= :productUseValueName")
 })
 
 @XmlRootElement
