@@ -131,11 +131,14 @@ public class TableUtilities {
 	static void doctorColumnHeaders(ArrayList<TableView<?>> tableViews) {
 		for (TableView<?> tableView : tableViews) {
 			for (TableColumn<?, ?> column : tableView.getColumns()) {
+				// doctor the column if it is not a superColumn
+				// otherwise doctor its subcolumns
 				if (column.getColumns().size() == 0) {
-					// only doctor the column if it is not a superColumn
-				}
-				for (TableColumn<?, ?> subColumn : column.getColumns()) {
-					doctorSubColumnHeader(subColumn);
+					doctorColumnHeader(column);
+				} else {
+					for (TableColumn<?, ?> subColumn : column.getColumns()) {
+						doctorColumnHeader(subColumn);
+					}
 				}
 			}
 		}
@@ -199,7 +202,7 @@ public class TableUtilities {
 	 *            the column whose header is to be modified
 	 */
 
-	public static void doctorSubColumnHeader(TableColumn<?, ?> column) {
+	public static void doctorColumnHeader(TableColumn<?, ?> column) {
 		Node columnGraphic = column.getGraphic();
 		if (columnGraphic != null) {
 			Label label = new Label();

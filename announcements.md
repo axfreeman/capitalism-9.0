@@ -1,8 +1,14 @@
 # Capitalism 9.0 announcements
 
+## 2/3/2018 10:16:39 PM 
+
+Corrected silly graphics bug.
+New Executable
+
 ## 2/3/2018 8:28:27 PM 
 
 The grouped columns in the UseValue table can be contracted and expanded by double-clicking
+New Executable
 
 ## 2/2/2018 3:55:22 PM 
 

@@ -230,42 +230,44 @@ public class Demand extends Simulation implements Command {
 	 */
 	public void registerSocialClassDemand() {
 		Reporter.report(logger, 0, "REGISTER DEMAND FROM CLASSES");
-		UseValue consumptionGoodUseValue = DataManager.useValueOfConsumptionGoods();
-		double priceOfConsumptionGoods = consumptionGoodUseValue.getUnitPrice();
-		double demand = 0.0;
-		List<SocialClass> classes = DataManager.socialClassesAll();
-		for (SocialClass sc : classes) {
-			double money = sc.getMoneyQuantity();
-			double thisClassDemand = 0.0;
-			if (sc.getSocialClassName().equals("Workers")) {
+		for(UseValue u:DataManager.useValuesOfType(UseValue.USEVALUETYPE.NECESSITIES)) {
+			double priceOfConsumptionGoods = u.getUnitPrice();
+			double demand = 0.0;
+			List<SocialClass> classes = DataManager.socialClassesAll();
+			for (SocialClass sc : classes) {
+				double money = sc.getMoneyQuantity();
+				double thisClassDemand = 0.0;
+				if (sc.getSocialClassName().equals("Workers")) {
+					Reporter.report(logger, 1,
+							" [Workers] revenue given by the wage. They will sell %.2f of their labour power for $%.2f",
+							sc.getSalesQuantity(), sc.getSalesPrice());
+					sc.setRevenue(sc.getSalesPrice());
+				} else {
+					Reporter.report(logger, 1,
+							" [%s] revenue, established in the previous period, is %.2f ",
+							sc.getSocialClassName(), sc.getRevenue());
+				}
 				Reporter.report(logger, 1,
-						" [Workers] revenue given by the wage. They will sell %.2f of their labour power for $%.2f",
-						sc.getSalesQuantity(), sc.getSalesPrice());
-				sc.setRevenue(sc.getSalesPrice());
-			} else {
-				Reporter.report(logger, 1,
-						" [%s] revenue, established in the previous period, is %.2f ",
-						sc.getSocialClassName(), sc.getRevenue());
-			}
-			Reporter.report(logger, 1,
-					" Demand for necessities priced at $%.2f by the class [%s], whose revenue is %.2f, is %.2f ",
-					priceOfConsumptionGoods, sc.getSocialClassName(), sc.getRevenue(),sc.getRevenue() / priceOfConsumptionGoods);
-			thisClassDemand = sc.getRevenue() / priceOfConsumptionGoods;
-			double minimumDemand = money / priceOfConsumptionGoods;
-			if (minimumDemand >= thisClassDemand) {
-				Reporter.report(logger, 1, " Demand is unconstrained by money and will be set at %.2f", thisClassDemand);
-			} else {
-				thisClassDemand = minimumDemand;
-				Reporter.report(logger, 1, " Demand is constrained by money and will be set at %.2f", minimumDemand);
-			}
+						" Demand for necessities priced at $%.2f by the class [%s], whose revenue is %.2f, is %.2f ",
+						priceOfConsumptionGoods, sc.getSocialClassName(), sc.getRevenue(),sc.getRevenue() / priceOfConsumptionGoods);
+				thisClassDemand = sc.getRevenue() / priceOfConsumptionGoods;
+				double minimumDemand = money / priceOfConsumptionGoods;
+				if (minimumDemand >= thisClassDemand) {
+					Reporter.report(logger, 1, " Demand is unconstrained by money and will be set at %.2f", thisClassDemand);
+				} else {
+					thisClassDemand = minimumDemand;
+					Reporter.report(logger, 1, " Demand is constrained by money and will be set at %.2f", minimumDemand);
+				}
 
-			// remember how much this class wants, so that we know how much to buy when we get to trade.
-			// this may be adjusted downwards in the allocation phase
+				// remember how much this class wants, so that we know how much to buy when we get to trade.
+				// this may be adjusted downwards in the allocation phase
 
-			sc.setConsumptionQuantityDemanded(Precision.round(thisClassDemand, roundingPrecision));
-			demand += thisClassDemand;
+				sc.setConsumptionQuantityDemanded(Precision.round(thisClassDemand, roundingPrecision));
+				demand += thisClassDemand;
+			}
+			Reporter.report(logger, 1, " Total demand for Consumption Goods is %.2f", demand);
+			u.setTotalDemand(Precision.round(demand, roundingPrecision));
+			
 		}
-		Reporter.report(logger, 1, " Total demand for Consumption Goods is %.2f", demand);
-		consumptionGoodUseValue.setTotalDemand(Precision.round(demand, roundingPrecision));
 	}
 }

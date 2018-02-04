@@ -120,22 +120,4 @@ public class ObservableListProvider extends DataManager {
 		}
 		return result;
 	}
-
-	/**
-	 * an Observable list of the productive stocks managed by a circuit.
-	 * 
-	 * @param circuit
-	 *            the name of the circuit
-	 * @return an Observable list of the productive stocks that this circuit manages
-	 */
-
-	public ObservableList<Stock> stocksProductiveByCircuitObservable(String circuit) {
-		stocksProductiveByCircuitQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampDisplayCursor)
-				.setParameter("circuit", circuit);
-		ObservableList<Stock> result = FXCollections.observableArrayList();
-		for (Stock s : stocksProductiveByCircuitQuery.getResultList()) {
-			result.add(s);
-		}
-		return result;
-	}
 }

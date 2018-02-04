@@ -160,16 +160,18 @@ public class Constrain extends Simulation implements Command {
 
 	public void constrainClasses() {
 		Reporter.report(logger, 1, " Constraining consumption by classes");
-		double allocationShare = DataManager.useValueOfConsumptionGoods().getAllocationShare();
-		for (SocialClass sc : DataManager.socialClassesAll()) {
-			double quantityDemanded = sc.consumptionQuantityDemanded();
-			if (allocationShare != 1) {
-				quantityDemanded = Precision.round(quantityDemanded, Simulation.getRoundingPrecision());
-				Reporter.report(logger, 2, "  Consumption of class [%s] will be cut from %.2f to %.2f",
-						sc.getSocialClassName(), quantityDemanded, quantityDemanded * allocationShare);
-				sc.setConsumptionQuantityDemanded(quantityDemanded * allocationShare);
-			} else {
-				Reporter.report(logger, 2, "  Consumption of class [%s] is unchanged at %.2f", sc.getSocialClassName(), quantityDemanded);
+		for (UseValue u:DataManager.useValuesOfType(UseValue.USEVALUETYPE.NECESSITIES)){
+			double allocationShare = u.getAllocationShare();
+			for (SocialClass sc : DataManager.socialClassesAll()) {
+				double quantityDemanded = sc.consumptionQuantityDemanded();
+				if (allocationShare != 1) {
+					quantityDemanded = Precision.round(quantityDemanded, Simulation.getRoundingPrecision());
+					Reporter.report(logger, 2, "  Consumption of class [%s] will be cut from %.2f to %.2f",
+							sc.getSocialClassName(), quantityDemanded, quantityDemanded * allocationShare);
+					sc.setConsumptionQuantityDemanded(quantityDemanded * allocationShare);
+				} else {
+					Reporter.report(logger, 2, "  Consumption of class [%s] is unchanged at %.2f", sc.getSocialClassName(), quantityDemanded);
+				}
 			}
 		}
 	}

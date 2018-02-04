@@ -41,28 +41,28 @@ import org.apache.commons.math3.util.Precision;
 @Entity
 @Table(name = "stocks")
 @NamedQueries({
-		// select a single stock
+		// select a single stock by all elements of its primary key
 		@NamedQuery(name = "Primary", query = "SELECT s FROM Stock s WHERE s.pk.project=:project and s.pk.timeStamp =:timeStamp and s.pk.circuit =:circuit and s.pk.useValue= :useValue and s.pk.stockType=:stockType"),
 
 		// select all stocks with the given project and timeStamp
 		@NamedQuery(name = "All", query = "SELECT s FROM Stock s where s.pk.project= :project and s.pk.timeStamp = :timeStamp"),
 		
-		// select all stocks of the given stockType
+		// select all stocks with the given project, timeStamp and stockType
 		@NamedQuery(name = "Type", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp=:timeStamp and s.pk.stockType=:stockType"),
 
 		// select all productive stocks managed by a named circuit
-		@NamedQuery(name = "Circuit.Productive", query = "SELECT s FROM Stock s "
-				+ "where s.pk.project= :project and s.pk.timeStamp = :timeStamp and s.pk.circuit= :circuit and s.pk.stockType='Productive'"),
+		@NamedQuery(name = "Circuit.Type", query = "SELECT s FROM Stock s "
+				+ "where s.pk.project= :project and s.pk.timeStamp = :timeStamp and s.pk.circuit= :circuit and s.pk.stockType=:stockType"),
 
-		// select all stocks of the named useValue
+		// select all stocks of a given project, timeStamp and useValue
 		@NamedQuery(name = "UseValue", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp = :timeStamp and s.pk.useValue= :useValue"),
 
-		// select sales stocks
-		@NamedQuery(name = "Sales", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp = :timeStamp and s.pk.stockType='Sales' and s.pk.useValue= :useValue"),
+		// select all stocks of a given project, timeStamp, usevalue and stocktype
+		@NamedQuery(name = "UseValue.Type", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp = :timeStamp and s.pk.stockType=:stockType and s.pk.useValue= :useValue"),
 
-		// select all stocks that are sources of demand (stocktypes Productive and Consumption)
+		// select all stocks of a given project and timestamp, whose stockType is one of two specified types (used with Productive and Cnsumption to yield sources of demand)
 		@NamedQuery(name = "Demand", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp=:timeStamp "
-				+ "and (s.pk.stockType = 'Productive' or s.pk.stockType='Consumption')")
+				+ "and (s.pk.stockType = :stockType1 or s.pk.stockType=:stockType2)")
 })
 
 public class Stock extends Observable implements Serializable {
@@ -85,6 +85,17 @@ public class Stock extends Observable implements Serializable {
 	 */
 	public enum Selector {
 		CIRCUIT, OWNERTYPE, USEVALUE, STOCKTYPE, QUANTITY, COEFFICIENT, QUANTITYDEMANDED, VALUE, PRICE
+	}
+	
+	public enum STOCKTYPE{
+		PRODUCTIVE("Productive"),CONSUMPTION("Consumption"),SALES("Sales"),MONEY("Money");
+		private String text;
+		STOCKTYPE(String text){
+			this.text=text;
+		}
+		public String text() {
+			return text;
+		}
 	}
 
 	/**
