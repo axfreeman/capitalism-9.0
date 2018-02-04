@@ -160,7 +160,7 @@ public class Constrain extends Simulation implements Command {
 
 	public void constrainClasses() {
 		Reporter.report(logger, 1, " Constraining consumption by classes");
-		for (UseValue u:DataManager.useValuesOfType(UseValue.USEVALUETYPE.NECESSITIES)){
+		for (UseValue u:DataManager.useValuesByType(UseValue.USEVALUETYPE.NECESSITIES)){
 			double allocationShare = u.getAllocationShare();
 			for (SocialClass sc : DataManager.socialClassesAll()) {
 				double quantityDemanded = sc.consumptionQuantityDemanded();

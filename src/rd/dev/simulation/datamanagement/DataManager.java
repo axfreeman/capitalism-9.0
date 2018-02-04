@@ -93,6 +93,7 @@ public class DataManager {
 	protected static TypedQuery<UseValue> useValuesAllQuery;
 	protected static TypedQuery<UseValue> useValuesProductiveQuery;
 	protected static TypedQuery<UseValue> useValuesByTypeQuery;
+	protected static TypedQuery<UseValue> useValuesByCircuitTypeQuery;
 
 	// circuit queries
 	protected static TypedQuery<Circuit> circuitPrimaryQuery;
@@ -151,6 +152,7 @@ public class DataManager {
 		useValueByPrimaryKeyQuery = useValueEntityManager.createNamedQuery("Primary", UseValue.class);
 		useValuesAllQuery = useValueEntityManager.createNamedQuery("All", UseValue.class);
 		useValuesByTypeQuery = useValueEntityManager.createNamedQuery("UseValueType", UseValue.class);
+		useValuesByCircuitTypeQuery = useValueEntityManager.createNamedQuery("UseValueCircuitType", UseValue.class);
 
 		// circuit queries
 		circuitPrimaryQuery = circuitEntityManager.createNamedQuery("Primary", Circuit.class);
@@ -456,7 +458,7 @@ public class DataManager {
 	 * @return a list of circuits at the latest timeStamp that has been persisted.
 	 * 
 	 */
-	public static List<UseValue> useValuesOfType(UseValue.USEVALUETYPE useValueType) {
+	public static List<UseValue> useValuesByType(UseValue.USEVALUETYPE useValueType) {
 		useValuesByTypeQuery.setParameter("project", Simulation.projectCurrent);
 		useValuesByTypeQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent);
 		useValuesByTypeQuery.setParameter("useValueType", useValueType);
@@ -474,8 +476,41 @@ public class DataManager {
 	 *            the given USEVALUETYPE
 	 * @return the topMost useValue of this type
 	 */
-	public static UseValue useValueOfType(UseValue.USEVALUETYPE useValueType) {
-		List<UseValue> useValues = useValuesOfType(useValueType);
+	public static UseValue useValueByType(UseValue.USEVALUETYPE useValueType) {
+		List<UseValue> useValues = useValuesByType(useValueType);
+		return useValues.get(0);
+	}
+	
+	/**
+	 * a list of all use values of the given circuittype and the given timeStamp
+	 * 
+	 * @param timeStamp
+	 *            the given timeStamp
+	 * @param useValueCircuitType
+	 *            the type of the UseValue (SOCIAL, CLASS)
+	 * @return a list of circuits at the latest timeStamp that has been persisted.
+	 * 
+	 */
+	public static List<UseValue> useValuesByCircuitType(UseValue.USEVALUECIRCUITTYPE useValueCircuitType) {
+		useValuesByCircuitTypeQuery.setParameter("project", Simulation.projectCurrent);
+		useValuesByCircuitTypeQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent);
+		useValuesByCircuitTypeQuery.setParameter("useValueType", useValueCircuitType);
+		return useValuesByCircuitTypeQuery.getResultList();
+	}
+
+	/**
+	 * the topmost useValue of the given circuit type
+	 * legacy method for the places where we assume a single use value of a particular type, eg Labour Power
+	 * TODO phase this out
+	 * 
+	 * @param timeStamp
+	 *            the given timeStamp
+	 * @param useValueType
+	 *            the given USEVALUETYPE
+	 * @return the topMost useValue of this type
+	 */
+	public static UseValue useValueByCircuitType(UseValue.USEVALUECIRCUITTYPE useValueCircuitType) {
+		List<UseValue> useValues = useValuesByCircuitType(useValueCircuitType);
 		return useValues.get(0);
 	}
 

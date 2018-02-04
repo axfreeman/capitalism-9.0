@@ -95,13 +95,12 @@ public class CircuitsProduce extends Simulation implements Command {
 				Reporter.report(logger, 2, "  The surplus of production over use for [%s] was %.2f", useValue.getUseValueName(), surplus);
 				useValue.setSurplusProduct(surplus);
 			}else {
-				Reporter.report(logger, 2, "  The surplus of consumer goods has been set to zero, because they are not used in production", 0);
+				Reporter.report(logger, 1, " The surplus of consumer goods has been set to zero, because they are not used in production", 0);
 				useValue.setSurplusProduct(0);// just in case...
 			}
 
 			// TODO has to be more sophisticated if we allow multiple producers of the same use value
 		}
-		Reporter.report(logger, 2, "NOTE THAT TOTAL VALUE AND PRICE ARE TEMPORARILY REPORTED BELOW THEIR TRUE LEVEL UNTIL LABOUR POWER HAS REGENERATED");
 		calculateUseValueAggregates(false);
 	}
 }

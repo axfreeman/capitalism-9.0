@@ -1,5 +1,10 @@
 # Capitalism 9.0 announcements
 
+## 2/4/2018 10:40:30 AM 
+
+Corrected a number of faults in data management, as a result of which SR with equalization is close to working.
+Provisional updated to the code has been committed, but no new executable or Jar, in case there are errors as yet undetected
+
 ## 2/3/2018 10:16:39 PM 
 
 Corrected silly graphics bug.

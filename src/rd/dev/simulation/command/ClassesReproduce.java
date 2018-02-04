@@ -95,15 +95,13 @@ public class ClassesReproduce extends Simulation implements Command {
 			double existingStock=sc.getConsumptionQuantity();
 			double quantityConsumed = existingStock;
 			consumptionStock.modifyBy(-quantityConsumed);
-			Reporter.report(logger, 2, "  Consumption stock of class [%s] reduced by consuming %.2f from %.2f to %.2f",
-					sc.getSocialClassName(), quantityConsumed, existingStock,sc.getConsumptionQuantity());
+			Reporter.report(logger, 2, "  Consumption stock of class [%s] reduced from %.2f to %.2f by consuming %.2f ",
+					sc.getSocialClassName(), sc.getConsumptionQuantity(),quantityConsumed, existingStock);
 		}
 
 		// recalculate the use value aggregates from the stocks, because this does not happen automatically
 		// (it could, but there would be a cost and it would open the door to bugs arising from failures to update usevalues following a change in stocks)
 
 		calculateUseValueAggregates(true);
-
-
 	}
 }

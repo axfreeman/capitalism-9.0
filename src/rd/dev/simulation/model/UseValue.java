@@ -45,7 +45,8 @@ import rd.dev.simulation.view.ViewManager;
 @NamedQueries({
 		@NamedQuery(name = "Primary", query = "SELECT u FROM UseValue u where u.pk.project= :project AND u.pk.timeStamp= :timeStamp and u.pk.useValueName=:useValueName"),
 		@NamedQuery(name = "All", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp"),
-		@NamedQuery(name = "UseValueType", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.useValueType=:useValueType")
+		@NamedQuery(name = "UseValueType", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.useValueType=:useValueType"),
+		@NamedQuery(name = "UseValueCircuitType", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.useValueCircuitType=:useValueCircuitType")
 })
 @Embeddable
 public class UseValue extends Observable implements Serializable {
@@ -55,8 +56,8 @@ public class UseValue extends Observable implements Serializable {
 	// The primary key (composite key containing project, timeStamp and productUseValueName)
 	@EmbeddedId protected UseValuePK pk;
 
-	@Column(name = "useValueCircuitType") private String useValueCircuitType; // describes the way this is produced (by capitalist production, or socially)
-	@Column(name = "useValueType") private USEVALUETYPE useValueType;// see enum USEVALUENAME for list of possible types
+	@Column(name = "useValueCircuitType") private USEVALUECIRCUITTYPE useValueCircuitType; // describes the way this is produced (by capitalist production, or socially)
+	@Column(name = "useValueType") private USEVALUETYPE useValueType;// see enum USEVALUETYPE for list of possible types
 	@Column(name = "description") private String description; // TODO redundant, eliminate at some point
 	@Column(name = "turnoverTime") private double turnoverTime;
 	@Column(name = "unitValue") private double unitValue;
@@ -95,6 +96,24 @@ public class UseValue extends Observable implements Serializable {
 			return text;
 		}
 	};
+	
+	public enum USEVALUECIRCUITTYPE{
+		SOCIAL("Social"), CAPITALIST("Capitalist"),MONEY("Money");
+		String text;
+
+		USEVALUECIRCUITTYPE(String text) {
+			this.text = text;
+		}
+
+		/**
+		 * @return the text associated with this type - normally, so it can be displayed for the user
+		 */
+
+		public String getText() {
+			return text;
+		}
+		
+	}
 
 	/**
 	 * Readable constants to refer to the methods which provide information about the persistent members of the class
@@ -264,7 +283,7 @@ public class UseValue extends Observable implements Serializable {
 		case USEVALUENAME:
 			return new ReadOnlyStringWrapper(pk.useValueName);
 		case USEVALUECIRCUITTYPE:
-			return new ReadOnlyStringWrapper(useValueCircuitType);
+			return new ReadOnlyStringWrapper(useValueCircuitType.getText());
 		case UNITPRICE:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, unitPrice));
 		case UNITVALUE:
@@ -392,11 +411,11 @@ public class UseValue extends Observable implements Serializable {
 		this.unitValue = unitValue;
 	}
 
-	public String getUseValueCircuitType() {
+	public USEVALUECIRCUITTYPE getUseValueCircuitType() {
 		return this.useValueCircuitType;
 	}
 
-	public void setUseValueCircuitType(String useValueCircuitType) {
+	public void setUseValueCircuitType(USEVALUECIRCUITTYPE useValueCircuitType) {
 		this.useValueCircuitType = useValueCircuitType;
 	}
 

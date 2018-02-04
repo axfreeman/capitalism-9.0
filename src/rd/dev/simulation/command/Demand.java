@@ -189,7 +189,7 @@ public class Demand extends Simulation implements Command {
 		switch (supplyResponse) {
 		case FLEXIBLE:
 			SocialClass workers = DataManager.socialClassByName("Workers");
-			UseValue labourPower=DataManager.useValueOfType(UseValue.USEVALUETYPE.LABOURPOWER);
+			UseValue labourPower=DataManager.useValueByType(UseValue.USEVALUETYPE.LABOURPOWER);
 			double demandForLabourPower = labourPower.getTotalDemand();
 			Reporter.report(logger, 2, "  Labour Power supply has increased in response to demand. It was %.2f and is now %.2f", workers.getSalesQuantity(),
 					demandForLabourPower);
@@ -230,7 +230,7 @@ public class Demand extends Simulation implements Command {
 	 */
 	public void registerSocialClassDemand() {
 		Reporter.report(logger, 0, "REGISTER DEMAND FROM CLASSES");
-		for(UseValue u:DataManager.useValuesOfType(UseValue.USEVALUETYPE.NECESSITIES)) {
+		for(UseValue u:DataManager.useValuesByType(UseValue.USEVALUETYPE.NECESSITIES)) {
 			double priceOfConsumptionGoods = u.getUnitPrice();
 			double demand = 0.0;
 			List<SocialClass> classes = DataManager.socialClassesAll();
