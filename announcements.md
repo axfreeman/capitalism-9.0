@@ -1,5 +1,20 @@
 # Capitalism 9.0 announcements
 
+## 2/4/2018 4:53:30 PM 
+
+New option 'deltas' allows user to display the differences between changed items and their predecessors
+Incomplete but shows the principle sufficiently to be useful.
+Hence new executable.
+In this version, the project 'SR with halved period' is not working. 
+Since it was working not long ago, I'll delay fixing this until equal-profit-rate is fully working, or at least, tested on a more general example.
+The current test simply checks to see it produces the same results as no equalization but is a bit trivial since SR has equal profit rates in any case.
+Some work is needed to introduce a more thoroughgoing test, for example, allowing for two means of production in the accumulation phase.
+
+Data Management overhaul (necessary to introduce the above generalizations) is almost complete, but has uncovered a bug in H2. 
+Slightly techie explanation: this occurs when an 'enum' type is part of the primary key of a table.
+It prevents me from removing, from the code, anything that depends on the names that the user has given to individual industries and classes
+And thereby prevents us, for example, describing 'Means of Production' as a type of product, of which there can be many instances.
+
 ## 2/4/2018 10:40:30 AM 
 
 Corrected a number of faults in data management, as a result of which SR with equalization is close to working.

@@ -47,7 +47,21 @@ public class CircuitTableCell extends TableCell<Circuit, String> {
 			logger.debug(" Null Circuit");
 			return;
 		}
-		setTextFill(circuit.changed(selector, TabbedTableViewer.displayAttribute) ? Color.RED : Color.BLACK);
+		
+		String deltaModifier="";
+		
+		if (circuit.changed(selector,TabbedTableViewer.displayAttribute)) {
+			setTextFill(Color.RED);
+			deltaModifier=(ViewManager.displayDeltas?ViewManager.deltaSymbol:"");
+		}
+
+		String valueModifier= deltaModifier+ViewManager.valuesExpressionSymbol;
+		String priceModifier= deltaModifier+ViewManager.pricesExpressionSymbol;
+
+		if(ViewManager.displayDeltas) {
+			item=circuit.showDelta(item, selector,TabbedTableViewer.displayAttribute);
+		}
+
 		switch (selector) {
 		case CONSTRAINEDOUTPUT:
 			if (ViewManager.displayHints)
@@ -66,12 +80,12 @@ public class CircuitTableCell extends TableCell<Circuit, String> {
 			case PRICE:
 				if (ViewManager.displayHints)
 					setStyle("-fx-background-color: rgba(255,240,204,0.3)");
-				setText(ViewManager.pricesExpressionSymbol + item);
+				setText(priceModifier + item);
 				break;
 			case VALUE:
 				if (ViewManager.displayHints)
 					setStyle("-fx-background-color: rgb(255,225,225,0.3)");
-				setText(ViewManager.valuesExpressionSymbol + item);
+				setText(valueModifier + item);
 				break;
 			case QUANTITY:
 				if (ViewManager.displayHints)
@@ -85,7 +99,7 @@ public class CircuitTableCell extends TableCell<Circuit, String> {
 		case PROFIT:
 			if (ViewManager.displayHints)
 				setStyle("-fx-background-color: rgba(255,240,204,0.3)");
-			setText(ViewManager.pricesExpressionSymbol + item);
+			setText(priceModifier + item);
 			break;
 		default:
 			setText(item);

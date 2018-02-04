@@ -40,6 +40,7 @@ import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.TabbedTableViewer;
 import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.Stock.ValueExpression;
+import rd.dev.simulation.model.UseValue.Selector;
 import rd.dev.simulation.model.UseValue.USEVALUETYPE;
 import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.MathStuff;
@@ -330,7 +331,57 @@ public class Circuit extends Observable implements Serializable {
 			return false;
 		}
 	}
+	
+	/**
+	 * If the selected field has changed, return the difference between the current value and the former value
+	 * 
+	 * @param selector
+	 *            chooses which field to evaluate
+	 * 
+	 * @param item
+	 *            the original item - returned as the result if there is no change
+	 *            
+	 * @param valueExpression
+	 * 			selects the display attribute where relevant (QUANTITY, VALUE, PRICE)          
+	 * 
+	 * @return the original item if nothing has changed, otherwise the change, as an appropriately formatted string
+	 */
 
+	public String showDelta(String item, Selector selector,Stock.ValueExpression valueExpression) {
+		if (!changed(selector,valueExpression))
+			return item;
+		switch (selector) {
+		case PRODUCTUSEVALUETYPE:
+			return item;
+		case PROPOSEDOUTPUT:
+			return String.format(ViewManager.largeNumbersFormatString, ( proposedOutput - comparator.proposedOutput));
+		case GROWTHRATE:
+			return String.format(ViewManager.smallNumbersFormatString, ( growthRate - comparator.growthRate));
+		case CONSTRAINEDOUTPUT:
+			return String.format(ViewManager.largeNumbersFormatString, ( constrainedOutput - comparator.constrainedOutput));
+		case INITIALCAPITAL:
+			return String.format(ViewManager.largeNumbersFormatString, ( initialCapital - comparator.initialCapital));
+		case RATEOFPROFIT:
+			return String.format(ViewManager.smallNumbersFormatString, ( rateOfProfit - comparator.rateOfProfit));
+		case PROFIT:
+			return String.format(ViewManager.largeNumbersFormatString, ( profit - comparator.profit));
+		case MONEYSTOCK:
+			return String.format(ViewManager.largeNumbersFormatString, ( moneyAttribute(valueExpression) - comparator.moneyAttribute(valueExpression)));
+		case SALESSTOCK:
+			return String.format(ViewManager.largeNumbersFormatString, ( salesAttribute(valueExpression) - comparator.salesAttribute(valueExpression)));
+		case PRODUCTIVESTOCKS:
+			double p1 = productiveStocksAttribute(valueExpression);
+			double p2 = comparator.productiveStocksAttribute(valueExpression);
+			return String.format(ViewManager.largeNumbersFormatString, ( p1-p2));
+		case TOTAL:
+			return String.format(ViewManager.largeNumbersFormatString, ( totalAttribute(valueExpression) - comparator.totalAttribute(valueExpression)));
+		case CURRENTCAPITAL:
+			return String.format(ViewManager.largeNumbersFormatString, ( currentCapital - comparator.currentCapital));
+		default:
+			return item;
+		}
+	}
+	
 	/**
 	 * calculates the cost of producing at level proposedOutput, given constrainedOutput and the current level of productive inputs
 	 * NOTE this cannot be reduced to a simple multiple of existing stocks, because some stocks may already exist. It is thus a non-linear function of Output

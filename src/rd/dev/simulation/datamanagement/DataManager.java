@@ -142,10 +142,10 @@ public class DataManager {
 		// stock queries
 		stockByPrimaryKeyQuery = stocksEntityManager.createNamedQuery("Primary", Stock.class);
 		stocksAllQuery = stocksEntityManager.createNamedQuery("All", Stock.class);
-		stocksByStockTypeQuery = stocksEntityManager.createNamedQuery("Type", Stock.class);
-		stocksByCircuitAndTypeQuery = stocksEntityManager.createNamedQuery("Circuit.Type", Stock.class);
+		stocksByStockTypeQuery = stocksEntityManager.createNamedQuery("StockType", Stock.class);
+		stocksByCircuitAndTypeQuery = stocksEntityManager.createNamedQuery("Circuit.StockType", Stock.class);
 		stocksByUseValueQuery = stocksEntityManager.createNamedQuery("UseValue", Stock.class);
-		stocksByUseValueAndTypeQuery = stocksEntityManager.createNamedQuery("UseValue.Type", Stock.class);
+		stocksByUseValueAndTypeQuery = stocksEntityManager.createNamedQuery("UseValue.StockType", Stock.class);
 		stocksByOneOfTwoStockTypesQuery = stocksEntityManager.createNamedQuery("Demand", Stock.class);
 
 		// use value queries
@@ -332,8 +332,6 @@ public class DataManager {
 	/**
 	 * a list of all stocks that constitute sources of demand (productive and consumption but not money or sales), for the current project and a given timeStamp
 	 * 
-	 * @param timeStamp
-	 *            the given timeStamp
 	 * 
 	 * @return a list of all stocks that constitute sources of demand
 	 */
@@ -438,8 +436,6 @@ public class DataManager {
 	/**
 	 * a list of all use values at the current project and timeStamp
 	 * 
-	 * @param timeStamp
-	 *            the given timeStamp
 	 * 
 	 * @return a list of all use values at the current timeStamp and the current project
 	 */
@@ -451,8 +447,6 @@ public class DataManager {
 	/**
 	 * a list of all use values of the given type and the given timeStamp
 	 * 
-	 * @param timeStamp
-	 *            the given timeStamp
 	 * @param useValueType
 	 *            the type of the UseValue (LABOURPOWER, MONEY, PRODUCTIVE, etc)
 	 * @return a list of circuits at the latest timeStamp that has been persisted.
@@ -470,8 +464,6 @@ public class DataManager {
 	 * legacy method for the places where we assume a single use value of a particular type, eg Labour Power
 	 * TODO phase this out
 	 * 
-	 * @param timeStamp
-	 *            the given timeStamp
 	 * @param useValueType
 	 *            the given USEVALUETYPE
 	 * @return the topMost useValue of this type
@@ -480,12 +472,10 @@ public class DataManager {
 		List<UseValue> useValues = useValuesByType(useValueType);
 		return useValues.get(0);
 	}
-	
+
 	/**
 	 * a list of all use values of the given circuittype and the given timeStamp
 	 * 
-	 * @param timeStamp
-	 *            the given timeStamp
 	 * @param useValueCircuitType
 	 *            the type of the UseValue (SOCIAL, CLASS)
 	 * @return a list of circuits at the latest timeStamp that has been persisted.
@@ -503,9 +493,7 @@ public class DataManager {
 	 * legacy method for the places where we assume a single use value of a particular type, eg Labour Power
 	 * TODO phase this out
 	 * 
-	 * @param timeStamp
-	 *            the given timeStamp
-	 * @param useValueType
+	 * @param useValueCircuitType
 	 *            the given USEVALUETYPE
 	 * @return the topMost useValue of this type
 	 */
@@ -522,7 +510,7 @@ public class DataManager {
 	 * @param project
 	 *            the project
 	 * @param timeStamp
-	 *            the timestamp
+	 *            the timeStamp
 	 * @param useValueName
 	 *            the name of the usevalue that is produced by this circuit
 	 * @return the circuit that produces {@code useValueName}, or null if this does not exist

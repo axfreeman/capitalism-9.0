@@ -103,7 +103,7 @@ public class SocialClass extends Observable implements Serializable {
 	 * @return the money stock that is owned by this social class.
 	 */
 	public Stock getMoneyStock() {
-		return DataManager.stockMoneyByCircuitSingle(pk.timeStamp, pk.socialClassName);
+  		return DataManager.stockMoneyByCircuitSingle(pk.timeStamp, pk.socialClassName);
 	}
 
 	/**
@@ -135,7 +135,7 @@ public class SocialClass extends Observable implements Serializable {
 	 */
 
 	public Stock getLabourPower() {
-		return DataManager.stockByPrimaryKey(pk.project, pk.timeStamp, pk.socialClassName, "Labour Power", "Sales");
+		return DataManager.stockByPrimaryKey(pk.project, pk.timeStamp, pk.socialClassName, "Labour Power", Stock.STOCKTYPE.SALES.text());
 	}
 
 	/**

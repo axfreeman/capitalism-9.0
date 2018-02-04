@@ -56,9 +56,9 @@ public class UseValue extends Observable implements Serializable {
 	// The primary key (composite key containing project, timeStamp and productUseValueName)
 	@EmbeddedId protected UseValuePK pk;
 
-	@Column(name = "useValueCircuitType") private USEVALUECIRCUITTYPE useValueCircuitType; // describes the way this is produced (by capitalist production, or socially)
+	@Column(name = "useValueCircuitType") private USEVALUECIRCUITTYPE useValueCircuitType; // describes the way this is produced (by capitalist production, or
+																							 // socially)
 	@Column(name = "useValueType") private USEVALUETYPE useValueType;// see enum USEVALUETYPE for list of possible types
-	@Column(name = "description") private String description; // TODO redundant, eliminate at some point
 	@Column(name = "turnoverTime") private double turnoverTime;
 	@Column(name = "unitValue") private double unitValue;
 	@Column(name = "unitPrice") private double unitPrice;
@@ -96,9 +96,9 @@ public class UseValue extends Observable implements Serializable {
 			return text;
 		}
 	};
-	
-	public enum USEVALUECIRCUITTYPE{
-		SOCIAL("Social"), CAPITALIST("Capitalist"),MONEY("Money");
+
+	public enum USEVALUECIRCUITTYPE {
+		SOCIAL("Social"), CAPITALIST("Capitalist"), MONEY("Money");
 		String text;
 
 		USEVALUECIRCUITTYPE(String text) {
@@ -112,7 +112,7 @@ public class UseValue extends Observable implements Serializable {
 		public String getText() {
 			return text;
 		}
-		
+
 	}
 
 	/**
@@ -144,7 +144,6 @@ public class UseValue extends Observable implements Serializable {
 		this.pk.useValueName = useValueTemplate.pk.useValueName;
 		this.pk.project = useValueTemplate.pk.project;
 		this.useValueCircuitType = useValueTemplate.useValueCircuitType;
-		this.description = useValueTemplate.description;
 		this.turnoverTime = useValueTemplate.turnoverTime;
 		this.unitValue = useValueTemplate.unitValue;
 		this.unitPrice = useValueTemplate.unitPrice;
@@ -156,8 +155,8 @@ public class UseValue extends Observable implements Serializable {
 		this.totalPrice = useValueTemplate.totalPrice;
 		this.allocationShare = useValueTemplate.allocationShare;
 		this.useValueType = useValueTemplate.useValueType;
-		this.capital=useValueTemplate.capital;
-		this.surplusValue=useValueTemplate.surplusValue;
+		this.capital = useValueTemplate.capital;
+		this.surplusValue = useValueTemplate.surplusValue;
 	}
 
 	/**
@@ -259,9 +258,9 @@ public class UseValue extends Observable implements Serializable {
 		case ALLOCATIONSHARE:
 			return allocationShare != comparator.allocationShare;
 		case CAPITAL:
-			return capital!=comparator.capital;
+			return capital != comparator.capital;
 		case SURPLUSVALUE:
-			return surplusValue!=comparator.surplusValue;
+			return surplusValue != comparator.surplusValue;
 		default:
 			return false;
 		}
@@ -309,15 +308,68 @@ public class UseValue extends Observable implements Serializable {
 		case CAPITAL:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, capital));
 		case SURPLUSVALUE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, surplusValue));			
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, surplusValue));
 		default:
 			return null;
 		}
 	}
 
 	/**
+	 * If the selected field has changed, return the difference between the current value and the former value
+	 * 
+	 * @param selector
+	 *            chooses which field to evaluate
+	 * 
+	 * @param item
+	 *            the original item - returned as the result if there is no change
+	 * 
+	 * @return the original item if nothing has changed, otherwise the change, as an appropriately formatted string
+	 */
+
+	public String showDelta(String item, Selector selector) {
+		if (!changed(selector))
+			return item;
+		switch (selector) {
+		case USEVALUENAME:
+		case USEVALUECIRCUITTYPE:
+			return item;
+		case UNITPRICE:
+			return String.format(ViewManager.smallNumbersFormatString, (unitPrice - comparator.unitPrice));
+		case UNITVALUE:
+			return String.format(ViewManager.smallNumbersFormatString, (unitValue - comparator.unitValue));
+		case TOTALVALUE:
+			return String.format(ViewManager.largeNumbersFormatString, (totalValue - comparator.totalValue));
+		case TOTALPRICE:
+			return String.format(ViewManager.largeNumbersFormatString, (totalPrice - comparator.totalPrice));
+		case TOTALQUANTITY:
+			return String.format(ViewManager.largeNumbersFormatString, (totalQuantity - comparator.totalQuantity));
+		case TOTALSUPPLY:
+			return String.format(ViewManager.largeNumbersFormatString, (totalSupply - comparator.getTotalSupply()));
+		case TOTALDEMAND:
+			return String.format(ViewManager.largeNumbersFormatString, (totalDemand - comparator.totalDemand));
+		case SURPLUS:
+			return String.format(ViewManager.largeNumbersFormatString, (surplusProduct - comparator.surplusProduct));
+		case TURNOVERTIME:
+			return String.format(ViewManager.smallNumbersFormatString, (turnoverTime - comparator.getTurnoverTime()));
+		case ALLOCATIONSHARE:
+			return String.format(ViewManager.smallNumbersFormatString, (allocationShare - comparator.allocationShare));
+		case CAPITAL:
+			return String.format(ViewManager.largeNumbersFormatString, (capital - comparator.capital));
+		case SURPLUSVALUE:
+			return String.format(ViewManager.largeNumbersFormatString, (surplusValue - comparator.surplusValue));
+		default:
+			return item;
+		}
+	}
+
+	/**
+	 * 
 	 * sets a comparator use value, which comes from a different timestamp. This informs the 'change' method which
 	 * communicates to the GUI interface so it knows to colour changed magnitudes differently.
+	 * 
+	 * @param comparator
+	 * 
+	 *            the comparator use value Bean
 	 */
 	public void setComparator(UseValue comparator) {
 		this.comparator = comparator;
@@ -454,7 +506,8 @@ public class UseValue extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param surplusValue the surplusValue to set
+	 * @param surplusValue
+	 *            the surplusValue to set
 	 */
 	public void setSurplusValue(double surplusValue) {
 		this.surplusValue = surplusValue;
@@ -468,10 +521,10 @@ public class UseValue extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param capital the capital to set
+	 * @param capital
+	 *            the capital to set
 	 */
 	public void setCapital(double capital) {
 		this.capital = capital;
 	}
-	
 }

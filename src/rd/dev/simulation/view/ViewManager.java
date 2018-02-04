@@ -31,6 +31,7 @@ import javafx.fxml.FXML;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
@@ -86,10 +87,11 @@ public class ViewManager {
 	public static DisplayAsExpression valuesExpressionDisplay = DisplayAsExpression.MONEY;
 	public static DisplayAsExpression pricesExpressionDisplay = DisplayAsExpression.MONEY;
 	public static boolean displayHints = false;
+	public static boolean displayDeltas = false;
 
 	public static String moneyExpressionSymbol = "$";
 	public static String quantityExpressionSymbol = "#";
-
+	public static String deltaSymbol="± ";
 	public static String pricesExpressionSymbol = moneyExpressionSymbol;
 	public static String valuesExpressionSymbol = moneyExpressionSymbol;
 
@@ -136,18 +138,23 @@ public class ViewManager {
 	@FXML private Button graphicsToggle;
 	@FXML private Button loadButton;
 
+	// Radio Buttons 1
+
 	@FXML private RadioButton showValuesButton;
 	@FXML private RadioButton showQuantitiesButton;
 	@FXML private RadioButton showPricesButton;
 	ToggleGroup magnitudeToggle = new ToggleGroup();
 
-	// Radio Buttons
+	// Radio Buttons 2
 
 	@FXML private RadioButton startSelectorButton;
 	@FXML private RadioButton endSelectorButton;
 	@FXML private RadioButton customSelectorButton;
 	@FXML private RadioButton previousSelectorButton;
 	ToggleGroup comparatorToggle = new ToggleGroup();
+
+	// Check Box
+	@FXML private CheckBox deltasCheckBox;
 
 	/**
 	 * ViewManager constructor.
@@ -321,6 +328,14 @@ public class ViewManager {
 					}
 					refreshDisplay();
 				}
+			}
+		});
+		deltasCheckBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
+
+			@Override public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+				logger.debug("User chose to display deltas:" + newValue);
+				displayDeltas = newValue;
+				refreshDisplay();
 			}
 		});
 	}
@@ -697,10 +712,10 @@ public class ViewManager {
 				currentProject, Simulation.timeStampDisplayCursor, Simulation.getTimeStampComparatorCursor()));
 
 		tabbedTableViewer.populateTabbedTables();
-		
+
 		// we have to force a refresh of the display because if the data has not changed
 		// see https://stackoverflow.com/questions/11065140/javafx-2-1-tableview-refresh-items
-		
+
 		tabbedTableViewer.refreshTables();
 		populateGlobalsGrid();
 	}

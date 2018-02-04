@@ -45,12 +45,18 @@ public class UseValueTableCell extends TableCell<UseValue, String> {
 			logger.debug(" Null Use Value");
 			return;
 		}
-		setTextFill(useValue.changed(selector) ? Color.RED : Color.BLACK);
-		switch(ViewManager.pricesExpressionDisplay){
-		case MONEY:
-			break;
-		case TIME:
-			break;
+		String deltaModifier="";
+		
+		if (useValue.changed(selector)) {
+			setTextFill(Color.RED);
+			deltaModifier=(ViewManager.displayDeltas?ViewManager.deltaSymbol:"");
+		}
+
+		String valueModifier= deltaModifier+ViewManager.valuesExpressionSymbol;
+		String priceModifier= deltaModifier+ViewManager.pricesExpressionSymbol;
+
+		if(ViewManager.displayDeltas) {
+			item=useValue.showDelta(item, selector);
 		}
 		switch (selector) {
 		case TOTALDEMAND:
@@ -63,7 +69,7 @@ public class UseValueTableCell extends TableCell<UseValue, String> {
 		case TOTALVALUE:
 			if (ViewManager.displayHints)
 				setStyle("-fx-background-color: rgb(255,225,225,0.3)");
-			item = ViewManager.valuesExpressionSymbol+ item;
+			item = valueModifier+ item;
 			break;
 		case UNITPRICE:
 		case TOTALPRICE:
@@ -71,7 +77,7 @@ public class UseValueTableCell extends TableCell<UseValue, String> {
 		case SURPLUSVALUE:
 			if (ViewManager.displayHints)
 				setStyle("-fx-background-color: rgba(255,240,204,0.3)");
-			item = ViewManager.pricesExpressionSymbol+ item;
+			item = priceModifier + item;
 			break;
 		default:
 		}

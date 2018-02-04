@@ -46,21 +46,22 @@ import org.apache.commons.math3.util.Precision;
 
 		// select all stocks with the given project and timeStamp
 		@NamedQuery(name = "All", query = "SELECT s FROM Stock s where s.pk.project= :project and s.pk.timeStamp = :timeStamp"),
-		
-		// select all stocks with the given project, timeStamp and stockType
-		@NamedQuery(name = "Type", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp=:timeStamp and s.pk.stockType=:stockType"),
 
-		// select all productive stocks managed by a named circuit
-		@NamedQuery(name = "Circuit.Type", query = "SELECT s FROM Stock s "
+		// select all stocks with the given project, timeStamp and stockType
+		@NamedQuery(name = "StockType", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp=:timeStamp and s.pk.stockType=:stockType"),
+
+		// select all stocks with the given project, timeStamp and stockType
+		@NamedQuery(name = "Circuit.StockType", query = "SELECT s FROM Stock s "
 				+ "where s.pk.project= :project and s.pk.timeStamp = :timeStamp and s.pk.circuit= :circuit and s.pk.stockType=:stockType"),
 
 		// select all stocks of a given project, timeStamp and useValue
 		@NamedQuery(name = "UseValue", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp = :timeStamp and s.pk.useValue= :useValue"),
 
 		// select all stocks of a given project, timeStamp, usevalue and stocktype
-		@NamedQuery(name = "UseValue.Type", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp = :timeStamp and s.pk.stockType=:stockType and s.pk.useValue= :useValue"),
+		@NamedQuery(name = "UseValue.StockType", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp = :timeStamp and s.pk.stockType=:stockType and s.pk.useValue= :useValue"),
 
-		// select all stocks of a given project and timestamp, whose stockType is one of two specified types (used with Productive and Cnsumption to yield sources of demand)
+		// select all stocks of a given project and timestamp, whose stockType is one of two specified types (used with Productive and Cnsumption to yield
+		// sources of demand)
 		@NamedQuery(name = "Demand", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp=:timeStamp "
 				+ "and (s.pk.stockType = :stockType1 or s.pk.stockType=:stockType2)")
 })
@@ -70,7 +71,7 @@ public class Stock extends Observable implements Serializable {
 	private static final Logger logger = LogManager.getLogger(Stock.class);
 
 	@EmbeddedId protected StockPK pk;
-	@Column(name = "ownertype") private String ownerType;
+	@Column(name = "ownertype") private OWNERTYPE ownerType;
 	@Column(name = "quantity") private double quantity;
 	@Column(name = "coefficient") private double coefficient;
 	@Column(name = "quantityDemanded") private double quantityDemanded;
@@ -86,13 +87,29 @@ public class Stock extends Observable implements Serializable {
 	public enum Selector {
 		CIRCUIT, OWNERTYPE, USEVALUE, STOCKTYPE, QUANTITY, COEFFICIENT, QUANTITYDEMANDED, VALUE, PRICE
 	}
-	
-	public enum STOCKTYPE{
-		PRODUCTIVE("Productive"),CONSUMPTION("Consumption"),SALES("Sales"),MONEY("Money");
+
+	// SQL type ENUM ('PRODUCTIVE', 'CONSUMPTION', 'SALES', 'MONEY')
+	public enum STOCKTYPE {
+		PRODUCTIVE("Productive"), CONSUMPTION("Consumption"), SALES("Sales"), MONEY("Money");
 		private String text;
-		STOCKTYPE(String text){
-			this.text=text;
+
+		STOCKTYPE(String text) {
+			this.text = text;
 		}
+
+		public String text() {
+			return text;
+		}
+	}
+
+	public enum OWNERTYPE {
+		CLASS("Social Class"), CIRCUIT("Industry");
+		private String text;
+
+		OWNERTYPE(String text) {
+			this.text = text;
+		}
+
 		public String text() {
 			return text;
 		}
@@ -163,7 +180,7 @@ public class Stock extends Observable implements Serializable {
 		pk.circuit = stockTemplate.pk.circuit;
 		pk.useValue = stockTemplate.pk.useValue;
 		pk.stockType = stockTemplate.pk.stockType;
-		ownerType=stockTemplate.ownerType;
+		ownerType = stockTemplate.ownerType;
 		coefficient = stockTemplate.coefficient;
 		quantity = stockTemplate.quantity;
 		quantityDemanded = stockTemplate.quantityDemanded;
@@ -193,36 +210,36 @@ public class Stock extends Observable implements Serializable {
 
 		double unitValue = unitValue();
 		double unitPrice = unitPrice();
-		double extraValue=Precision.round(extraQuantity * unitValue,Simulation.getRoundingPrecision());
-		double extraPrice=Precision.round(extraQuantity * unitPrice,Simulation.getRoundingPrecision());
+		double extraValue = Precision.round(extraQuantity * unitValue, Simulation.getRoundingPrecision());
+		double extraPrice = Precision.round(extraQuantity * unitPrice, Simulation.getRoundingPrecision());
 		double newValue = value + extraValue;
 		double newPrice = price + extraPrice;
 		double newQuantity = quantity + extraQuantity;
-		
+
 		// a little consistency check
-		
-		if (newQuantity< -Simulation.getEpsilon()) {
-			Dialogues.alert(logger, "Stock of " + pk.useValue + " owned by " + pk.circuit+ " has fallen below zero. ");
-		}else if (newValue< -Simulation.getEpsilon()) {
-			Dialogues.alert(logger, "Value of " + pk.useValue + " owned by " + pk.circuit+ " has fallen below zero. ");
-		}else if (newPrice< -Simulation.getEpsilon()) {
-			Dialogues.alert(logger, "Price of " + pk.useValue + " owned by " + pk.circuit+ " has fallen below zero. ");
+
+		if (newQuantity < -Simulation.getEpsilon()) {
+			Dialogues.alert(logger, "Stock of " + pk.useValue + " owned by " + pk.circuit + " has fallen below zero. ");
+		} else if (newValue < -Simulation.getEpsilon()) {
+			Dialogues.alert(logger, "Value of " + pk.useValue + " owned by " + pk.circuit + " has fallen below zero. ");
+		} else if (newPrice < -Simulation.getEpsilon()) {
+			Dialogues.alert(logger, "Price of " + pk.useValue + " owned by " + pk.circuit + " has fallen below zero. ");
 		}
 		quantity = newQuantity;
 		value = newValue;
 		price = newPrice;
-		
+
 		// now adjust the use value totals and the global totals to keep track
-		
-		UseValue useValue=getUseValue();
-		double newUseValueQuantity=useValue.getTotalQuantity()+extraQuantity;
-		double newUseValueValue=useValue.getTotalValue()+extraValue;
-		double newUseValuePrice=useValue.getTotalPrice()+extraPrice;
+
+		UseValue useValue = getUseValue();
+		double newUseValueQuantity = useValue.getTotalQuantity() + extraQuantity;
+		double newUseValueValue = useValue.getTotalValue() + extraValue;
+		double newUseValuePrice = useValue.getTotalPrice() + extraPrice;
 		useValue.setTotalQuantity(newUseValueQuantity);
 		useValue.setTotalValue(newUseValueValue);
 		useValue.setTotalPrice(newUseValuePrice);
-		Global global=DataManager.getGlobal(Simulation.timeStampIDCurrent);
-		global.setTotalValue(global.getTotalValue()+extraValue);
+		Global global = DataManager.getGlobal(Simulation.timeStampIDCurrent);
+		global.setTotalValue(global.getTotalValue() + extraValue);
 		global.setTotalPrice(global.getTotalPrice());
 	}
 
@@ -235,13 +252,13 @@ public class Stock extends Observable implements Serializable {
 	 *            the increase in value
 	 */
 	public void modifyBy(double quantity, double valueAdded) {
-		double oldValue=value;
-		double oldTotalValue=getUseValue().getTotalValue();
+		double oldValue = value;
+		double oldTotalValue = getUseValue().getTotalValue();
 		modifyBy(quantity);
-		setValue(oldValue+valueAdded); // overwrite what was done by the simple call to changeBy
-		getUseValue().setTotalValue(oldTotalValue+valueAdded);
-		Global global =DataManager.getGlobal(Simulation.timeStampIDCurrent);
-		global.setTotalValue(global.getTotalValue()+valueAdded);
+		setValue(oldValue + valueAdded); // overwrite what was done by the simple call to changeBy
+		getUseValue().setTotalValue(oldTotalValue + valueAdded);
+		Global global = DataManager.getGlobal(Simulation.timeStampIDCurrent);
+		global.setTotalValue(global.getTotalValue() + valueAdded);
 	}
 
 	/**
@@ -255,20 +272,21 @@ public class Stock extends Observable implements Serializable {
 		double melt = global.getMelt();
 		double unitValue = unitValue();
 		double unitPrice = unitPrice();
-		double newValue = Precision.round(newQuantity * unitValue,Simulation.getRoundingPrecision());
-		double newPrice = Precision.round(newQuantity * unitPrice,Simulation.getRoundingPrecision());
-		double changeInValue=newValue-value;
-		double changeInPrice=newPrice-price;
-		double changeInQuantity=newQuantity-quantity;
+		double newValue = Precision.round(newQuantity * unitValue, Simulation.getRoundingPrecision());
+		double newPrice = Precision.round(newQuantity * unitPrice, Simulation.getRoundingPrecision());
+		double changeInValue = newValue - value;
+		double changeInPrice = newPrice - price;
+		double changeInQuantity = newQuantity - quantity;
 		quantity = newQuantity;
 		value = newValue;
 		price = newPrice;
-		Reporter.report(logger, 2, "  Size of commodity [%s], of type [%s], owned by [%s]: is %.2f. Value set to $%.2f (intrinsic %.2f), and price to %.2f (intrinsic %.2f)", 
-				pk.useValue, pk.stockType, pk.circuit, quantity,value, value/melt, price, price/melt);
-		UseValue useValue=getUseValue();
-		useValue.setTotalQuantity(useValue.getTotalQuantity()+changeInQuantity);
-		useValue.setTotalValue(useValue.getTotalValue()+changeInValue);
-		useValue.setTotalPrice(useValue.getTotalPrice()+changeInPrice);
+		Reporter.report(logger, 2,
+				"  Size of commodity [%s], of type [%s], owned by [%s]: is %.2f. Value set to $%.2f (intrinsic %.2f), and price to %.2f (intrinsic %.2f)",
+				pk.useValue, pk.stockType, pk.circuit, quantity, value, value / melt, price, price / melt);
+		UseValue useValue = getUseValue();
+		useValue.setTotalQuantity(useValue.getTotalQuantity() + changeInQuantity);
+		useValue.setTotalValue(useValue.getTotalValue() + changeInValue);
+		useValue.setTotalPrice(useValue.getTotalPrice() + changeInPrice);
 	}
 
 	/**
@@ -283,9 +301,9 @@ public class Stock extends Observable implements Serializable {
 		case QUANTITY:
 			return quantity;
 		case VALUE:
-			return ViewManager.valueExpression(value, ViewManager.valuesExpressionDisplay); 
+			return ViewManager.valueExpression(value, ViewManager.valuesExpressionDisplay);
 		case PRICE:
-			return ViewManager.valueExpression(price, ViewManager.pricesExpressionDisplay); 
+			return ViewManager.valueExpression(price, ViewManager.pricesExpressionDisplay);
 		default:
 			throw new RuntimeException("ERROR: unknown attribute selector");
 		}
@@ -307,7 +325,7 @@ public class Stock extends Observable implements Serializable {
 		case CIRCUIT:
 			return new ReadOnlyStringWrapper(pk.circuit);
 		case OWNERTYPE:
-			return new ReadOnlyStringWrapper(ownerType);
+			return new ReadOnlyStringWrapper(ownerType.text());
 		case USEVALUE:
 			return new ReadOnlyStringWrapper(pk.useValue);
 		case STOCKTYPE:
@@ -315,9 +333,11 @@ public class Stock extends Observable implements Serializable {
 		case QUANTITY:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, quantity));
 		case VALUE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, ViewManager.valueExpression(value,ViewManager.valuesExpressionDisplay)));
+			return new ReadOnlyStringWrapper(
+					String.format(ViewManager.largeNumbersFormatString, ViewManager.valueExpression(value, ViewManager.valuesExpressionDisplay)));
 		case PRICE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, ViewManager.valueExpression(price,ViewManager.pricesExpressionDisplay)));
+			return new ReadOnlyStringWrapper(
+					String.format(ViewManager.largeNumbersFormatString, ViewManager.valueExpression(price, ViewManager.pricesExpressionDisplay)));
 		case QUANTITYDEMANDED:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, quantityDemanded));
 		case COEFFICIENT:
@@ -379,13 +399,42 @@ public class Stock extends Observable implements Serializable {
 			return false;
 		}
 	}
+
+	/**
+	 * If the selected field has changed, return the difference between the current value and the former value
+	 * 
+	 * @param item
+	 *            the original item - returned as the result if there is no change
+	 *            
+	 * @param valueExpression
+	 * 			selects the display attribute where relevant (QUANTITY, VALUE, PRICE)          
+	 * 
+	 * @return the original item if nothing has changed, otherwise the change, as an appropriately formatted string
+	 */
+	public String showDelta(String item, ValueExpression valueExpression) {
+		if (!changed(valueExpression))
+			return item;
+		switch (valueExpression) {
+		case QUANTITY:
+			return String.format(ViewManager.largeNumbersFormatString,quantity - comparator.quantity);
+		case VALUE:
+			return String.format(ViewManager.largeNumbersFormatString,value - comparator.value);
+		case PRICE:
+			return String.format(ViewManager.largeNumbersFormatString,price - comparator.price);
+		default:
+			return item;
+		}
+	}
+
 	
+
 	/**
 	 * Part of primitive typology of use values
-	 * @return  the use value type of this stock
+	 * 
+	 * @return the use value type of this stock
 	 */
-	
-	public UseValue.USEVALUETYPE useValueType(){
+
+	public UseValue.USEVALUETYPE useValueType() {
 		return getUseValue().getUseValueType();
 	}
 
@@ -511,8 +560,12 @@ public class Stock extends Observable implements Serializable {
 
 	/**
 	 * set the comparator stock.
+	 * 
+	 * @param comparator
+	 *            A Stock Bean with which this stock will be compared
 	 */
 	public void setComparator(Stock comparator) {
-		this.comparator=comparator;
+		this.comparator = comparator;
 	}
+
 }

@@ -49,17 +49,31 @@ public class CircuitTableStockCell extends TableCell<Circuit, String> {
 		}
 		Stock theStock = DataManager.stockProductiveByNameSingle(Simulation.timeStampDisplayCursor, circuit.getProductUseValueName(), stockValueUseName);
 		boolean hasChanged = theStock.changed(TabbedTableViewer.displayAttribute);
-		setTextFill(hasChanged ? Color.RED : Color.BLACK);// TODO not yet complete
+		
+		String deltaModifier="";
+		
+		if (theStock.changed(TabbedTableViewer.displayAttribute)) {
+			setTextFill(Color.RED);
+			deltaModifier=(ViewManager.displayDeltas?ViewManager.deltaSymbol:"");
+		}
+
+		String valueModifier= deltaModifier+ViewManager.valuesExpressionSymbol;
+		String priceModifier= deltaModifier+ViewManager.pricesExpressionSymbol;
+
+		if(ViewManager.displayDeltas) {
+			item=theStock.showDelta(item,TabbedTableViewer.displayAttribute);
+		}
+		
 		switch (TabbedTableViewer.displayAttribute) {
 		case PRICE:
 			if (ViewManager.displayHints)
 				setStyle("-fx-background-color: rgba(255,240,204,0.3)");
-			setText(ViewManager.pricesExpressionSymbol + item);
+			setText(priceModifier+ item);
 			break;
 		case VALUE:
 			if (ViewManager.displayHints)
 				setStyle("-fx-background-color: rgb(255,225,225,0.3)");
-			setText(ViewManager.valuesExpressionSymbol + item);
+			setText(valueModifier+ item);
 			break;
 		case QUANTITY:
 			if (ViewManager.displayHints)
