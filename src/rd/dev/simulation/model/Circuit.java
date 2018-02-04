@@ -40,7 +40,6 @@ import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.TabbedTableViewer;
 import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.Stock.ValueExpression;
-import rd.dev.simulation.model.UseValue.Selector;
 import rd.dev.simulation.model.UseValue.USEVALUETYPE;
 import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.MathStuff;

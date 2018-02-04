@@ -47,6 +47,21 @@ public class SocialClassTableCell extends TableCell<SocialClass, String> {
 			logger.debug(" Null Social Class");
 			return;
 		}
+		
+		String deltaModifier="";
+		
+		if (socialClass.changed(selector,TabbedTableViewer.displayAttribute)) {
+			setTextFill(Color.RED);
+			deltaModifier=(ViewManager.displayDeltas?ViewManager.deltaSymbol:"");
+		}
+
+		String valueModifier= deltaModifier+ViewManager.valuesExpressionSymbol;
+		String priceModifier= deltaModifier+ViewManager.pricesExpressionSymbol;
+
+		if(ViewManager.displayDeltas) {
+			item=socialClass.showDelta(item, selector,TabbedTableViewer.displayAttribute);
+		}
+
 		setTextFill(socialClass.changed(selector,TabbedTableViewer.displayAttribute) ? Color.RED : Color.BLACK);
 			switch (selector) {
 			case MONEY:
@@ -57,24 +72,24 @@ public class SocialClassTableCell extends TableCell<SocialClass, String> {
 				switch (TabbedTableViewer.displayAttribute) {
 				case PRICE:
 					if (ViewManager.displayHints) setStyle("-fx-background-color: rgba(255,240,204,0.3)");
-					setText(ViewManager.pricesExpressionSymbol+item);
+					setText(priceModifier+item);
 					break;
 				case VALUE:
 					if (ViewManager.displayHints) setStyle("-fx-background-color: rgb(255,225,225,0.3)");
-					setText(ViewManager.valuesExpressionSymbol+item);
+					setText(valueModifier+item);
 					break;
 				case QUANTITY:
 					if (ViewManager.displayHints) setStyle("-fx-background-color: rgba(220,220,220,0.3)");
-					setText(item);
+					setText(deltaModifier+item);
 					break;
 				}
 				break;
 			case QUANTITYDEMANDED:
 				if (ViewManager.displayHints) setStyle("-fx-background-color: rgba(220,220,220,0.3)");
-				setText(item);
+				setText(deltaModifier+item);
 				break;
 			default:
-				setText(item);
+				setText(deltaModifier+item);
 				break;
 			}
 	}

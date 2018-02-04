@@ -59,11 +59,13 @@ public class UseValueTableCell extends TableCell<UseValue, String> {
 			item=useValue.showDelta(item, selector);
 		}
 		switch (selector) {
+		case ALLOCATIONSHARE:
 		case TOTALDEMAND:
 		case TOTALSUPPLY:
 		case TOTALQUANTITY:
 			if (ViewManager.displayHints)
 				setStyle("-fx-background-color: rgba(220,220,220,0.3)");
+			item=deltaModifier+item;
 			break;
 		case UNITVALUE:
 		case TOTALVALUE:
@@ -80,6 +82,7 @@ public class UseValueTableCell extends TableCell<UseValue, String> {
 			item = priceModifier + item;
 			break;
 		default:
+			item=deltaModifier+item;
 		}
 		setText(item);
 	}

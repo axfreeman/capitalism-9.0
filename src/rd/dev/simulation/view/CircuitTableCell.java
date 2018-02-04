@@ -64,14 +64,10 @@ public class CircuitTableCell extends TableCell<Circuit, String> {
 
 		switch (selector) {
 		case CONSTRAINEDOUTPUT:
-			if (ViewManager.displayHints)
-				setStyle("-fx-background-color: rgba(220,220,220,0.3)");
-			setText(item);
-			break;
 		case PROPOSEDOUTPUT:
 			if (ViewManager.displayHints)
 				setStyle("-fx-background-color: rgba(220,220,220,0.3)");
-			setText(item);
+			setText(deltaModifier+item);
 			break;
 		case PRODUCTIVESTOCKS:
 		case SALESSTOCK:
@@ -90,7 +86,7 @@ public class CircuitTableCell extends TableCell<Circuit, String> {
 			case QUANTITY:
 				if (ViewManager.displayHints)
 					setStyle("-fx-background-color: rgba(220,220,220,0.3)");
-				setText(item);
+				setText(deltaModifier+item);
 				break;
 			}
 			break;

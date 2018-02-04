@@ -48,7 +48,6 @@ public class CircuitTableStockCell extends TableCell<Circuit, String> {
 			return;
 		}
 		Stock theStock = DataManager.stockProductiveByNameSingle(Simulation.timeStampDisplayCursor, circuit.getProductUseValueName(), stockValueUseName);
-		boolean hasChanged = theStock.changed(TabbedTableViewer.displayAttribute);
 		
 		String deltaModifier="";
 		

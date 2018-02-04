@@ -26,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import rd.dev.simulation.datamanagement.DataManager;
+import rd.dev.simulation.model.Stock.ValueExpression;
 import rd.dev.simulation.view.ViewManager;
 
 /**
@@ -180,9 +181,6 @@ public class SocialClass extends Observable implements Serializable {
 	 * informs the display whether the selected member of this entity has changed, compared with the 'comparator' UseValue which normally
 	 * comes from a different timeStamp.
 	 * 
-	 * We don't mind the hardwiring because we don't really intend this code to be re-usable, it's not hard to modify, and it results in compact
-	 * and readable usage code (see (@link TabbedTableViewer#populateUseValuesViewTable})
-	 * 
 	 * @param selector
 	 *            chooses which member to evaluate
 	 * @param valueExpression
@@ -212,6 +210,43 @@ public class SocialClass extends Observable implements Serializable {
 			return totalAttribute(valueExpression)!=comparator.totalAttribute(valueExpression);
 		default:
 			return false;
+		}
+	}
+	
+	/**
+If the selected field has changed, return the difference between the current value and the former value
+	 * 	
+	 * @param selector
+	 *            chooses which member to evaluate
+	 * @param displayAttribute
+	 *            selects the display attribute where relevant (QUANTITY, VALUE, PRICE)
+	 * @return the item if unchanged, otherwise the difference between the item and its former magnitude
+	 */
+
+	
+	public String showDelta(String item, Selector selector, ValueExpression displayAttribute) {
+		if (!changed(selector,displayAttribute))return item;
+		switch (selector) {
+		case SOCIALCLASSNAME:
+			return item;
+		case SIZE:
+			return String.format(ViewManager.largeNumbersFormatString,  size-comparator.size);
+		case CONSUMPTIONPERPERSON:
+			return String.format(ViewManager.largeNumbersFormatString,  consumptionStocksRequiredPerPerson-comparator.consumptionStocksRequiredPerPerson);
+		case CONSUMPTIONSTOCKS:
+			return String.format(ViewManager.largeNumbersFormatString,  consumptionAttribute(displayAttribute)-comparator.consumptionAttribute(displayAttribute));
+		case MONEY:
+			return String.format(ViewManager.largeNumbersFormatString,  moneyAttribute(displayAttribute)-comparator.moneyAttribute(displayAttribute));
+		case QUANTITYDEMANDED:
+			return String.format(ViewManager.largeNumbersFormatString,  consumptionQuantityDemanded()-comparator.consumptionQuantityDemanded());
+		case SPENDING:
+			return String.format(ViewManager.largeNumbersFormatString,  revenue-comparator.revenue);
+		case SALES:
+			return String.format(ViewManager.largeNumbersFormatString,  salesAttribute(displayAttribute)-comparator.salesAttribute(displayAttribute));
+		case TOTAL:
+			return String.format(ViewManager.largeNumbersFormatString,  totalAttribute(displayAttribute)-comparator.totalAttribute(displayAttribute));
+		default:
+			return item;
 		}
 	}
 	
@@ -478,4 +513,5 @@ public class SocialClass extends Observable implements Serializable {
 		double then = comparator.totalAttribute(a);
 		return now != then;
 	}
+
 }

@@ -1,9 +1,9 @@
 # Capitalism 9.0 announcements
 
-## 2/4/2018 4:53:30 PM 
+## 2/4/2018 2/4/2018 5:49:20 PM 
 
 New option 'deltas' allows user to display the differences between changed items and their predecessors
-Incomplete but shows the principle sufficiently to be useful.
+Working for all items in the main tables.
 Hence new executable.
 In this version, the project 'SR with halved period' is not working. 
 Since it was working not long ago, I'll delay fixing this until equal-profit-rate is fully working, or at least, tested on a more general example.
