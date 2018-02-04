@@ -54,7 +54,7 @@ public class CircuitsProduce extends Simulation implements Command {
 		double melt = global.getMelt();
 		List<Circuit> circuits = DataManager.circuitsAll();
 		for (Circuit c : circuits) {
-			String useValueType = c.getProductUseValueType();
+			String useValueType = c.getProductUseValueName();
 			Stock salesStock = c.getSalesStock();
 			UseValue useValue = c.getUseValue();
 			double output = c.getConstrainedOutput();
@@ -75,7 +75,7 @@ public class CircuitsProduce extends Simulation implements Command {
 				} else {
 					double valueOfStockUsedUp = stockUsedUp * useValue.getUnitValue();
 					Reporter.report(logger, 2, "  Stock [%s] has transferred value $%.2f (intrinsic %.2f) to commodity [%s] ",
-							s.getUseValueName(), valueOfStockUsedUp, valueOfStockUsedUp / melt, c.getProductUseValueType());
+							s.getUseValueName(), valueOfStockUsedUp, valueOfStockUsedUp / melt, c.getProductUseValueName());
 					valueAdded += valueOfStockUsedUp;
 				}
 				s.modifyBy(-stockUsedUp);
@@ -88,7 +88,7 @@ public class CircuitsProduce extends Simulation implements Command {
 			salesStock.modifyBy(extraSalesQuantity, valueAdded);
 			Reporter.report(logger, 2,
 					"  The sales stock of [%s] has grown to %.2f, its value to $%.2f (intrinsic value %.2f) and its price to $%.2f (intrinsic value %.2f)",
-					c.getProductUseValueType(), salesStock.getQuantity(), salesStock.getValue(), salesStock.getValue() / melt, salesStock.getPrice(),
+					c.getProductUseValueName(), salesStock.getQuantity(), salesStock.getValue(), salesStock.getValue() / melt, salesStock.getPrice(),
 					salesStock.getPrice() / melt);
 			if (c.iNDUSTRYTYPE()!=Circuit.INDUSTRYTYPE.NECESSITIES) {
 				double surplus = Precision.round(salesStock.getQuantity() - useValue.getTotalDemand(), Simulation.getRoundingPrecision());

@@ -67,7 +67,7 @@ public class Trade extends Simulation implements Command {
 		Reporter.report(logger, 1, " Industries will now purchase the stocks they need. There are %d of them", circuits.size());
 
 		for (Circuit buyer : circuits) {
-			String buyerName = buyer.getProductUseValueType();
+			String buyerName = buyer.getProductUseValueName();
 			Stock buyerMoneyStock = buyer.getMoneyStock();
 			List<Stock> stocks = buyer.productiveStocks();
 
@@ -89,7 +89,7 @@ public class Trade extends Simulation implements Command {
 					// This is part of a larger deficiency in that we suppose only one supplier of each commodity
 					// to be corrected in a later projectCurrent
 
-					SocialClass workers = DataManager.socialClassByName(timeStampIDCurrent, "Workers");
+					SocialClass workers = DataManager.socialClassByName("Workers");
 					sellerMoneyStock = workers.getMoneyStock();
 					sellerSalesStock = workers.getSalesStock();
 				} else {
@@ -113,7 +113,7 @@ public class Trade extends Simulation implements Command {
 	 */
 	private void socialClassesTrade() {
 		Reporter.report(logger, 1, " Purchasing for social classes");
-		List<SocialClass> socialClasses = DataManager.socialClassesAll(timeStampIDCurrent);
+		List<SocialClass> socialClasses = DataManager.socialClassesAll();
 		for (SocialClass buyer : socialClasses) {
 			String buyerName = buyer.getSocialClassName();
 			Reporter.report(logger, 2, "  Purchasing for the social class [%s]", buyerName);

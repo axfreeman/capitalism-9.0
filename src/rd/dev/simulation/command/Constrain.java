@@ -80,7 +80,7 @@ public class Constrain extends Simulation implements Command {
 	 */
 
 	public void allocateToStocks() {
-		List<Stock> stockList = DataManager.stocksSourcesOfDemand(timeStampIDCurrent);
+		List<Stock> stockList = DataManager.stocksSourcesOfDemand();
 		Reporter.report(logger, 1, " Constraining demand for stocks, on the basis of constraints on output levels");
 
 		for (Stock s : stockList) {
@@ -110,8 +110,8 @@ public class Constrain extends Simulation implements Command {
 		for (Circuit c : circuits) {
 			double desiredOutputLevel = c.getProposedOutput();
 			Reporter.report(logger, 1, " Estimating supply-constrained output for industry [%s] with unconstrained output %.2f",
-					c.getProductUseValueType(), desiredOutputLevel);
-			List<Stock> managedStocks = DataManager.stocksProductiveByCircuit(timeStampIDCurrent, c.getProductUseValueType());
+					c.getProductUseValueName(), desiredOutputLevel);
+			List<Stock> managedStocks = DataManager.stocksProductiveByCircuit(timeStampIDCurrent, c.getProductUseValueName());
 			for (Stock s : managedStocks) {
 //				UseValue useValue = DataManager.useValueByName(timeStampIDCurrent, s.getUseValueName());
 				double existingQuantity = s.getQuantity();
@@ -129,7 +129,7 @@ public class Constrain extends Simulation implements Command {
 				}
 			}
 			Reporter.report(logger, 1, " Output of [%s] has been constrained to %.2f; unconstrained output was %.2f",
-					c.getProductUseValueType(), desiredOutputLevel, c.getProposedOutput());
+					c.getProductUseValueName(), desiredOutputLevel, c.getProposedOutput());
 			c.setConstrainedOutput(desiredOutputLevel);
 		}
 	}
@@ -141,9 +141,8 @@ public class Constrain extends Simulation implements Command {
 	 */
 	public void calculateAllocationShare() {
 		Reporter.report(logger, 0, "CALCULATE ALLOCATION SHARES");
-		List<UseValue> results = DataManager.useValuesAll(timeStampIDCurrent);
-
-		for (UseValue u : results) {
+	
+		for (UseValue u : DataManager.useValuesAll()) {
 			double totalDemand = u.getTotalDemand();
 			double totalSupply = u.getTotalSupply();
 			double allocationShare = totalSupply / totalDemand;
@@ -161,8 +160,8 @@ public class Constrain extends Simulation implements Command {
 
 	public void constrainClasses() {
 		Reporter.report(logger, 1, " Constraining consumption by classes");
-		double allocationShare = DataManager.useValueOfConsumptionGoods(timeStampIDCurrent).getAllocationShare();
-		for (SocialClass sc : DataManager.socialClassesAll(timeStampIDCurrent)) {
+		double allocationShare = DataManager.useValueOfConsumptionGoods().getAllocationShare();
+		for (SocialClass sc : DataManager.socialClassesAll()) {
 			double quantityDemanded = sc.consumptionQuantityDemanded();
 			if (allocationShare != 1) {
 				quantityDemanded = Precision.round(quantityDemanded, Simulation.getRoundingPrecision());

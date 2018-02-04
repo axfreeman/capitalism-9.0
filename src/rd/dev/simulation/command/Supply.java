@@ -19,8 +19,6 @@
 */
 package rd.dev.simulation.command;
 
-import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import rd.dev.simulation.Simulation;
@@ -48,8 +46,7 @@ public class Supply extends Simulation implements Command {
 
 		advanceOneStep(ActionStates.M_C_Supply.getText(),ActionStates.M_C_PreTrade.getText());
 		
-		List<UseValue> results = DataManager.useValuesAll(timeStampIDCurrent);
-		for (UseValue u : results) {
+		for (UseValue u :  DataManager.useValuesAll()) {
 			u.registerSupply();
 		}
 		

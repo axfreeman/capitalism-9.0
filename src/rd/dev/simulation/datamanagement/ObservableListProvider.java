@@ -82,10 +82,10 @@ public class ObservableListProvider extends DataManager {
 	 */
 
 	public ObservableList<UseValue> useValuesObservable() {
-		useValueBasicQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp",
+		useValuesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp",
 				Simulation.timeStampDisplayCursor);
 		ObservableList<UseValue> result = FXCollections.observableArrayList();
-		for (UseValue u : useValueBasicQuery.getResultList()) {
+		for (UseValue u : useValuesAllQuery.getResultList()) {
 			result.add(u);
 		}
 		return result;
@@ -98,9 +98,9 @@ public class ObservableListProvider extends DataManager {
 	 * @return an ObservableList of circuits
 	 */
 	public ObservableList<Circuit> circuitsObservable() {
-		circuitBasicQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampDisplayCursor);
+		circuitAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampDisplayCursor);
 		ObservableList<Circuit> result = FXCollections.observableArrayList();
-		for (Circuit c : circuitBasicQuery.getResultList()) {
+		for (Circuit c : circuitAllQuery.getResultList()) {
 			result.add(c);
 		}
 		return result;
@@ -113,9 +113,9 @@ public class ObservableListProvider extends DataManager {
 	 * @return an ObservableList of SocialClasses
 	 */
 	public ObservableList<SocialClass> socialClassesObservable() {
-		socialClassBasicQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampDisplayCursor);
+		socialClassAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampDisplayCursor);
 		ObservableList<SocialClass> result = FXCollections.observableArrayList();
-		for (SocialClass s : socialClassBasicQuery.getResultList()) {
+		for (SocialClass s : socialClassAllQuery.getResultList()) {
 			result.add(s);
 		}
 		return result;

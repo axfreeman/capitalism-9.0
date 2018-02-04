@@ -20,8 +20,6 @@
 
 package rd.dev.simulation.command;
 
-import java.util.List;
-
 import org.apache.commons.math3.util.Precision;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -63,9 +61,7 @@ public class ImmediateConsequences extends Simulation implements Command {
 		double globalTotalValue = 0.0;
 		double globalTotalPrice = 0.0;
 		Global global = DataManager.getGlobal(timeStampIDCurrent);
-		List<UseValue> useValues = DataManager.useValuesAll(timeStampIDCurrent);
-
-		for (UseValue u : useValues) {
+		for (UseValue u :  DataManager.useValuesAll()) {
 			Reporter.report(logger, 1, "Commodity [%s]", u.getUseValueName());
 			Reporter.report(logger, 2, "Total value is %.2f, and total price is %.2f", u.getTotalValue(), u.getTotalPrice());
 			globalTotalValue += u.getTotalValue();
@@ -95,7 +91,7 @@ public class ImmediateConsequences extends Simulation implements Command {
 
 		// Reset all unit values on the basis of the total value and total quantity of this commodity in existence
 
-		for (UseValue u : useValues) {
+		for (UseValue u : DataManager.useValuesAll()) {
 			if (u.getUseValueType() != UseValue.USEVALUETYPE.MONEY) {
 				double quantity = u.getTotalQuantity();
 				double newUnitValue = Precision.round(adjustmentFactor * u.getTotalValue() / quantity, Simulation.roundingPrecision);
@@ -138,10 +134,10 @@ public class ImmediateConsequences extends Simulation implements Command {
 			// there may be more than one producer of the same commodity.
 			// we can only set the profit rate for the sector as a whole,which means we work from the per-useValue profit rates
 	
-			for (UseValue u:DataManager.useValuesProductive(timeStampIDCurrent)) {
+			for (UseValue u:DataManager.useValuesOfType(UseValue.USEVALUETYPE.PRODUCTIVE)) {
 				Reporter.report(logger, 1, "Setting profit-equalizing price for use value [%s]", u.getUseValueName());
 				for (Circuit c:DataManager.circuitsByProductUseValue(u.getUseValueName())) {
-					Reporter.report(logger, 2, " Note: circuit %s is produces this use value", c.getProductUseValueType());
+					Reporter.report(logger, 2, " Note: circuit %s produces this use value", c.getProductUseValueName());
 				}
 				double newUnitPrice=u.getCapital()*(1+global.getProfitRate())/u.getTotalQuantity();
 				Reporter.report(logger, 2, "  Unit price changed from %.2f to %.2f", u.getUnitPrice(),newUnitPrice);
@@ -168,7 +164,7 @@ public class ImmediateConsequences extends Simulation implements Command {
 		// initialise the capitals and sv of each use value
 		// we are going to set the both to be the total of the circuits that produce this useValue
 		
-		for (UseValue u:DataManager.useValuesAll(timeStampIDCurrent)) {
+		for (UseValue u:DataManager.useValuesAll()) {
 			u.setCapital(0);
 			u.setSurplusValue(0);
 		}
@@ -184,7 +180,7 @@ public class ImmediateConsequences extends Simulation implements Command {
 			globalCurrentCapital += c.getCurrentCapital();
 			globalProfit += profit;
 			double profitRate = profit / c.getInitialCapital();
-			Reporter.report(logger, 2, "  The initial capital of industry [%s] was %.2f; current capital is %.2f; profit is %.2f", c.getProductUseValueType(),
+			Reporter.report(logger, 2, "  The initial capital of industry [%s] was %.2f; current capital is %.2f; profit is %.2f", c.getProductUseValueName(),
 					c.getInitialCapital(), c.getCurrentCapital(), profit);
 			c.setProfit(profit);
 			c.setRateOfProfit(profitRate);

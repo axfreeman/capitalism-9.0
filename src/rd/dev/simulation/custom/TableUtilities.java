@@ -87,15 +87,6 @@ public class TableUtilities {
 		contextMenu.getItems().addAll(item1, item2);
 	}
 
-	
-	/**
-	 * Hide all the columns in a supercolumn but keep them so they can be restored
-	 */
-
-	public void hideColumns(TableColumn<?, ?> superColumn) {
-
-	}
-
 	/**
 	 * add the specified tooltip to the specified table
 	 * 
@@ -152,10 +143,13 @@ public class TableUtilities {
 
 	/**
 	 * experimental method.
-	 * make supercolumn headers clickable so user can control what they display
+	 * make supercolumn headers clickable so user can contract and expand them
 	 * 
 	 * @param superColumn
 	 *            the column whose header is to be modified
+	 * 
+	 * @param showColumn
+	 *            the one column that will be displayed in the contracted state
 	 */
 
 	public static void setSuperColumnHandler(TableColumn<?, ?> superColumn, TableColumn<?, ?> showColumn) {

@@ -43,10 +43,8 @@ import rd.dev.simulation.view.ViewManager;
 @Entity
 @Table(name = "usevalues")
 @NamedQueries({
-		@NamedQuery(name = "UseValues.findAll", query = "SELECT u FROM UseValue u"),
-		@NamedQuery(name = "UseValues.Primary", query = "SELECT u FROM UseValue u where u.pk.project= :project AND u.pk.timeStamp= :timeStamp and u.pk.useValueName=:useValueName"),
-		@NamedQuery(name = "UseValues.project.timeStamp", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp"),
-		@NamedQuery(name = "UseValues.productive", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.useValueCircuitType='Capitalist'"),
+		@NamedQuery(name = "Primary", query = "SELECT u FROM UseValue u where u.pk.project= :project AND u.pk.timeStamp= :timeStamp and u.pk.useValueName=:useValueName"),
+		@NamedQuery(name = "All", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp"),
 		@NamedQuery(name = "UseValueType", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.useValueType=:useValueType")
 })
 @Embeddable
@@ -302,8 +300,8 @@ public class UseValue extends Observable implements Serializable {
 	 * sets a comparator use value, which comes from a different timestamp. This informs the 'change' method which
 	 * communicates to the GUI interface so it knows to colour changed magnitudes differently.
 	 */
-	public void setComparator() {
-		this.comparator = DataManager.useValueByPrimaryKey(pk.project, Simulation.getTimeStampComparatorCursor(), pk.useValueName);
+	public void setComparator(UseValue comparator) {
+		this.comparator = comparator;
 	}
 
 	/**

@@ -150,7 +150,7 @@ public class Simulation {
 	 */
 
 	public void overrideLabourPower() {
-		SocialClass workers = DataManager.socialClassByName(timeStampIDCurrent, "Workers");
+		SocialClass workers = DataManager.socialClassByName("Workers");
 		double size = workers.getSize();
 		Stock labourPower = workers.getLabourPower();
 		labourPower.setQuantity(size);
@@ -168,7 +168,7 @@ public class Simulation {
 	 */
 
 	public void checkInvariants() {
-		for (UseValue u : DataManager.useValuesAll(timeStampIDCurrent)) {
+		for (UseValue u : DataManager.useValuesAll()) {
 			double listedQuantity = u.getTotalQuantity();
 			double unitValue = u.getUnitValue();
 			double listedValue = u.getTotalValue();
@@ -271,7 +271,7 @@ public class Simulation {
 		Circuit newCircuit;
 		logger.debug("  Scanning existing circuits of which there are " + circuitList.size());
 		for (Circuit c : circuitList) {
-			logger.debug("  Persisting a circuit whose use value is " + c.getProductUseValueType());
+			logger.debug("  Persisting a circuit whose use value is " + c.getProductUseValueName());
 			newCircuit = new Circuit();
 			newCircuit.copyCircuit(c);
 			newCircuit.setTimeStamp(timeStampIDCurrent);
@@ -344,7 +344,7 @@ public class Simulation {
 		Reporter.report(logger, 1, " Registering use value total prices and values based on stocks");
 		double globalTotalValue = 0;
 		double globalTotalPrice = 0;
-		for (UseValue u : DataManager.useValuesAll(timeStampIDCurrent)) {
+		for (UseValue u : DataManager.useValuesAll()) {
 			u.calculateAggregates(validate);
 			globalTotalValue += u.getTotalValue();
 			globalTotalPrice += u.getTotalPrice();
@@ -367,7 +367,7 @@ public class Simulation {
 		for (Circuit c : DataManager.circuitsAll()) {
 			c.calculateCurrentCapital();
 			double initialCapital = c.getCurrentCapital();
-			Reporter.report(logger, 2, "  The initial capital of the industry[%s] is now $%.2f (intrinsic %.2f)", c.getProductUseValueType(),initialCapital,initialCapital/global.getMelt());
+			Reporter.report(logger, 2, "  The initial capital of the industry[%s] is now $%.2f (intrinsic %.2f)", c.getProductUseValueName(),initialCapital,initialCapital/global.getMelt());
 			c.setInitialCapital(initialCapital);
 			globalInitialCapital+=initialCapital;
 		}

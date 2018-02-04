@@ -1,9 +1,10 @@
 # TODO 2/2/2018 3:45:18 PM 
 
 
-## 2/2/2018 5:47:20 PM 
+## 2/3/2018 8:25:54 PM 
 
-hints have gone wobbly
+Visuals now working
+Partial overhaul of DataManager
 
 ## 2/2/2018 3:46:21 PM 
 
@@ -74,6 +75,7 @@ Some more projects: in priority order
 2. Bortkiewicz's 'counterexample' done correctly according to Marx, not Sweezy
 
 ## FIXED
+FIXED2/3/2018 8:27:11 PM Hints have gone wobbly
 GONE 2/2/2018 3:46:00 PM double-clicking a column to resize it provokes a fetch of a null table row
 FIXED 2/2/2018 3:44:35 PM graphics switching finally sorted, plus consistent loading of tables without redrawing 
 FIXED (Partly) 1/29/2018 3:43:58 PM Configure the name of the consumption good and perhaps workers/capitalists/labour power

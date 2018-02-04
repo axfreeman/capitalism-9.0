@@ -49,7 +49,7 @@ import rd.dev.simulation.view.ViewManager;
 @Entity
 @Table(name = "circuits")
 @NamedQueries({
-		@NamedQuery(name = "Basic", query = "Select c from Circuit c where c.pk.project = :project and c.pk.timeStamp = :timeStamp"),
+		@NamedQuery(name = "All", query = "Select c from Circuit c where c.pk.project = :project and c.pk.timeStamp = :timeStamp"),
 		@NamedQuery(name = "Primary", query = "Select c from Circuit c where c.pk.project= :project and c.pk.timeStamp = :timeStamp and c.pk.productUseValueName= :productUseValueName")
 })
 
@@ -110,7 +110,7 @@ public class Circuit extends Observable implements Serializable {
 	 *            TODO get BeanUtils to do this, or find some other way. There must be a better way but many people complain about it
 	 */
 	public void copyCircuit(Circuit circuitTemplate) {
-		pk.productUseValueName = circuitTemplate.getProductUseValueType();
+		pk.productUseValueName = circuitTemplate.getProductUseValueName();
 		pk.timeStamp = circuitTemplate.getTimeStamp();
 		pk.project = circuitTemplate.getProject();
 		constrainedOutput = circuitTemplate.constrainedOutput;
@@ -505,7 +505,7 @@ public class Circuit extends Observable implements Serializable {
 		pk.timeStamp = timeStamp;
 	}
 
-	public String getProductUseValueType() {
+	public String getProductUseValueName() {
 		return pk.productUseValueName;
 	}
 
@@ -625,8 +625,8 @@ public class Circuit extends Observable implements Serializable {
 		return contents;
 	}
 
-	public void setComparator() {
-		this.comparator = DataManager.circuitByPrimaryKey(this.pk.project, Simulation.getTimeStampComparatorCursor(), this.pk.productUseValueName);
+	public void setComparator(Circuit comparator) {
+		this.comparator = comparator;
 	}
 
 	/**

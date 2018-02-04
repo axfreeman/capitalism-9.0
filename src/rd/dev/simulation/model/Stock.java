@@ -37,38 +37,32 @@ import org.apache.commons.math3.util.Precision;
  * The persistent class for the stocks database table. It extends the Observable Class so it can provide base data for TableViews.
  * TODO The additional functionality provided by the Observable Class is not used, but it probably should be.
  */
-// TODO implement a proper inheritance strategy for stocks of different types,
-// in particular money, consumer goods and productive stocks
-// TODO is it better to have a single named query for all fields and parameterise it in DataManager? read up on optimization
 
 @Entity
 @Table(name = "stocks")
 @NamedQueries({
 		// select a single stock
-		@NamedQuery(name = "Stocks.Primary", query = "SELECT s FROM Stock s WHERE s.pk.project=:project and s.pk.timeStamp =:timeStamp and s.pk.circuit =:circuit and s.pk.useValue= :useValue and s.pk.stockType=:stockType"),
+		@NamedQuery(name = "Primary", query = "SELECT s FROM Stock s WHERE s.pk.project=:project and s.pk.timeStamp =:timeStamp and s.pk.circuit =:circuit and s.pk.useValue= :useValue and s.pk.stockType=:stockType"),
 
 		// select all stocks with the given project and timeStamp
-		@NamedQuery(name = "Stocks.basic", query = "SELECT s FROM Stock s where s.pk.project= :project and s.pk.timeStamp = :timeStamp"),
+		@NamedQuery(name = "All", query = "SELECT s FROM Stock s where s.pk.project= :project and s.pk.timeStamp = :timeStamp"),
+		
+		// select all stocks of the given stockType
+		@NamedQuery(name = "Type", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp=:timeStamp and s.pk.stockType=:stockType"),
 
 		// select all productive stocks managed by a named circuit
-		@NamedQuery(name = "Stocks.project.timeStamp.circuit.productive", query = "SELECT s FROM Stock s "
+		@NamedQuery(name = "Circuit.Productive", query = "SELECT s FROM Stock s "
 				+ "where s.pk.project= :project and s.pk.timeStamp = :timeStamp and s.pk.circuit= :circuit and s.pk.stockType='Productive'"),
 
 		// select all stocks of the named useValue
-		@NamedQuery(name = "Stocks.project.timeStamp.useValue", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp = :timeStamp and s.pk.useValue= :useValue"),
-
-		// select the productive stock of the named useValue that is managed by the named circuit
-		@NamedQuery(name = "Stocks.project.timeStamp.useValue.circuit", query = "SELECT s FROM Stock s where s.pk.project= :project and s.pk.timeStamp = :timeStamp and s.pk.stockType='Productive' and s.pk.useValue= :useValue and s.pk.circuit= :circuit"),
+		@NamedQuery(name = "UseValue", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp = :timeStamp and s.pk.useValue= :useValue"),
 
 		// select sales stocks
-		@NamedQuery(name = "Stocks.sales", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp = :timeStamp and s.pk.stockType='Sales' and s.pk.useValue= :useValue"),
+		@NamedQuery(name = "Sales", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp = :timeStamp and s.pk.stockType='Sales' and s.pk.useValue= :useValue"),
 
 		// select all stocks that are sources of demand (stocktypes Productive and Consumption)
-		@NamedQuery(name = "Stocks.project.timeStamp.sourcesOfDemand", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp=:timeStamp "
-				+ "and (s.pk.stockType = 'Productive' or s.pk.stockType='Consumption')"),
-
-		// select all stocks of the given stockType
-		@NamedQuery(name = "Stocks.project.timeStamp.stockType", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp=:timeStamp and s.pk.stockType=:stockType")
+		@NamedQuery(name = "Demand", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp=:timeStamp "
+				+ "and (s.pk.stockType = 'Productive' or s.pk.stockType='Consumption')")
 })
 
 public class Stock extends Observable implements Serializable {
@@ -507,7 +501,7 @@ public class Stock extends Observable implements Serializable {
 	/**
 	 * set the comparator stock.
 	 */
-	public void setComparator() {
-		comparator = DataManager.stockByPrimaryKey(pk.project, Simulation.getTimeStampComparatorCursor(), pk.circuit, pk.useValue, pk.stockType);
+	public void setComparator(Stock comparator) {
+		this.comparator=comparator;
 	}
 }

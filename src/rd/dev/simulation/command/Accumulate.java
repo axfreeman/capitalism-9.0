@@ -73,7 +73,7 @@ public class Accumulate extends Simulation implements Command {
 
 		Reporter.report(logger, 1, " Calculating the surplus of means of production available for expansion");
 		double surplusMeansOfProduction = 0.0;
-		for (UseValue u : DataManager.useValuesAll(timeStampIDCurrent)) {
+		for (UseValue u : DataManager.useValuesAll()) {
 			if (u.getUseValueType() != (UseValue.USEVALUETYPE.NECESSITIES)) {
 				double thisSurplusMeansOfProduction = Precision.round(u.getSurplusProduct() * u.getUnitPrice(), Simulation.roundingPrecision);
 				Reporter.report(logger, 2, "  The surplus of commodity [%s] is %.2f and its price is $%.2f", u.getUseValueName(), u.getSurplusProduct(),
@@ -108,7 +108,7 @@ public class Accumulate extends Simulation implements Command {
 	 * @return the amount that was allocated
 	 */
 	private double allocateToCircuitsOfType(double meansOfProductionRemaining, Circuit.INDUSTRYTYPE type) {
-		SocialClass capitalists = DataManager.socialClassByName(timeStampIDCurrent, "Capitalists");
+		SocialClass capitalists = DataManager.socialClassByName( "Capitalists");
 		Stock donor = capitalists.getMoneyStock();
 		Stock recipient = null;
 		double fundsAllocated = 0;
@@ -127,7 +127,7 @@ public class Accumulate extends Simulation implements Command {
 					c.calculateOutputCosts();
 					fundsAllocated = c.getCostOfExpansion(); // Allocate the money to the total expansion requested
 					Reporter.report(logger, 2, "  Industry [%s] has been allocated $%.2f of which %.2f for means of production ",
-							c.getProductUseValueType(), fundsAllocated, c.getCostOfMPForExpansion());
+							c.getProductUseValueName(), fundsAllocated, c.getCostOfMPForExpansion());
 					recipient = c.getMoneyStock();
 					global.setSurplusMeansOfProduction(global.getSurplusMeansOfProduction() - c.getCostOfMPForExpansion());
 				}
@@ -142,7 +142,7 @@ public class Accumulate extends Simulation implements Command {
 					c.computePossibleOutput(global.getSurplusMeansOfProduction());
 					fundsAllocated = c.getCostOfExpansion();
 					Reporter.report(logger, 2, "Industry [%s] has been allocated %.2f of which %.2f for means of production",
-							c.getProductUseValueType(), fundsAllocated, c.getCostOfMPForExpansion());
+							c.getProductUseValueName(), fundsAllocated, c.getCostOfMPForExpansion());
 					recipient = c.getMoneyStock();
 				}
 			}

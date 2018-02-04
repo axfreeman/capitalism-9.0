@@ -55,7 +55,7 @@ public class Revenue extends Simulation implements Command {
 	}
 
 	private void allocateProfits() {
-		SocialClass capitalists = DataManager.socialClassByName(timeStampIDCurrent, "Capitalists");
+		SocialClass capitalists = DataManager.socialClassByName("Capitalists");
 		double capitalistRevenue=0.0;
 		for (Circuit c : DataManager.circuitsAll()) {
 			double profit = c.getProfit();
@@ -68,7 +68,7 @@ public class Revenue extends Simulation implements Command {
 			recipient.modifyBy(profit);
 			donor.modifyBy(-profit);
 			Reporter.report(logger, 1, " Capitalist class has received $%.2f from circuit [%s]",
-					profit, c.getProductUseValueType());
+					profit, c.getProductUseValueName());
 
 			// Note: revenue is in effect a memo item, not a stock.
 			// its use is to determine what classes consume

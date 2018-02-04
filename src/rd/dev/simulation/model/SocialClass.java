@@ -25,7 +25,6 @@ import javax.persistence.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import javafx.beans.property.ReadOnlyStringWrapper;
-import rd.dev.simulation.Simulation;
 import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.view.ViewManager;
 
@@ -36,9 +35,8 @@ import rd.dev.simulation.view.ViewManager;
 @Entity
 @Table(name = "socialclasses")
 @NamedQueries({
-		@NamedQuery(name = "SocialClass.findAll", query = "SELECT c FROM SocialClass c"),
-		@NamedQuery(name = "SocialClass.project.timeStamp", query = "SELECT c FROM SocialClass c where c.pk.project= :project and c.pk.timeStamp = :timeStamp "),
-		@NamedQuery(name = "SocialClass.PrimaryKey", query = "SELECT c FROM SocialClass c where c.pk.project= :project and c.pk.timeStamp = :timeStamp and c.pk.socialClassName =:socialClassName")
+		@NamedQuery(name = "All", query = "SELECT c FROM SocialClass c where c.pk.project= :project and c.pk.timeStamp = :timeStamp "),
+		@NamedQuery(name = "Primary", query = "SELECT c FROM SocialClass c where c.pk.project= :project and c.pk.timeStamp = :timeStamp and c.pk.socialClassName =:socialClassName")
 })
 
 @Embeddable
@@ -397,10 +395,12 @@ public class SocialClass extends Observable implements Serializable {
 	}
 
 	/**
-	 * set the comparator Social Class.
+	 * set the comparator for a SocialClass, so we can display differences
+	 * 
+	 * @param comparator the socialClass entity, normally drawn from a previous timeStamp, with which this will be compared
 	 */
-	public void setComparator() {
-		this.comparator = DataManager.socialClassByPrimaryKey(pk.project, Simulation.getTimeStampComparatorCursor(), pk.socialClassName);
+	public void setComparator(SocialClass comparator) {
+		this.comparator = comparator;
 	}
 	
 	/**

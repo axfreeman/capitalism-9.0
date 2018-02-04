@@ -56,7 +56,7 @@ public class ClassesReproduce extends Simulation implements Command {
 
 		Global global = DataManager.getGlobal(Simulation.timeStampIDCurrent);
 		double melt = global.getMelt();
-		List<SocialClass> socialClasses = DataManager.socialClassesAll(timeStampIDCurrent);
+		List<SocialClass> socialClasses = DataManager.socialClassesAll();
 		for (SocialClass sc : socialClasses) {
 			String socialClassName = sc.getSocialClassName();
 			Reporter.report(logger, 1, " Reproducing the class [%s]", socialClassName);
