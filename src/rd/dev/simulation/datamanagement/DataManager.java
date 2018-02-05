@@ -484,7 +484,7 @@ public class DataManager {
 	public static List<UseValue> useValuesByCircuitType(UseValue.USEVALUECIRCUITTYPE useValueCircuitType) {
 		useValuesByCircuitTypeQuery.setParameter("project", Simulation.projectCurrent);
 		useValuesByCircuitTypeQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent);
-		useValuesByCircuitTypeQuery.setParameter("useValueType", useValueCircuitType);
+		useValuesByCircuitTypeQuery.setParameter("useValueCircuitType", useValueCircuitType);
 		return useValuesByCircuitTypeQuery.getResultList();
 	}
 
@@ -562,6 +562,24 @@ public class DataManager {
 				.setParameter("productUseValueName", useValueName);
 		return circuitPrimaryQuery.getResultList();
 	}
+	
+	/**
+	 * a list of circuits, for the current project and the given timeStamp, that produce a given use value
+	 * 
+	 * 
+	 * @param useValueName
+	 *            the name of the use value that these circuits produce
+	 * @param timeStamp
+	 * 			the given timeStamp           
+	 * @return a list of circuits which produce the given use value at the given timeStamp.
+	 */
+
+	public static List<Circuit> circuitsByProductUseValue(int timeStamp, String useValueName) {
+		circuitPrimaryQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp)
+				.setParameter("productUseValueName", useValueName);
+		return circuitPrimaryQuery.getResultList();
+	}
+
 
 	/**
 	 * retrieve the topmost circuit that produces a named use value for the current project and at a given timeStamp.
@@ -576,6 +594,8 @@ public class DataManager {
 		List<Circuit> circuits = circuitsByProductUseValue(useValueName);
 		return circuits.get(0);
 	}
+	
+	
 
 	// SOCIAL CLASS QUERIES
 

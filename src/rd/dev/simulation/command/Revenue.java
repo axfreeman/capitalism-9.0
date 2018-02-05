@@ -47,7 +47,6 @@ public class Revenue extends Simulation implements Command {
 		// TODO bankers landlords and merchants will receive revenue at this point
 		// that is, before accumulation.
 
-	
 		// first, give the capitalists their profits
 		// they will accumulate some of it and consume the rest. this happens in the Accumulate phase
 		
@@ -58,7 +57,7 @@ public class Revenue extends Simulation implements Command {
 		SocialClass capitalists = DataManager.socialClassByName("Capitalists");
 		double capitalistRevenue=0.0;
 		for (Circuit c : DataManager.circuitsAll()) {
-			double profit = c.getProfit();
+			double profit = c.profit();
 
 			// transfer all profits to the capitalist class. In the Accumulate phase, part of this revenue
 			// will be put back into the circuits to invest
@@ -74,7 +73,6 @@ public class Revenue extends Simulation implements Command {
 			// its use is to determine what classes consume
 
 			capitalistRevenue+=profit;
-			c.setProfit(0);
 		}
 		Reporter.report(logger, 1, "  Capitalist revenue (disposable income) set to $%.2f", capitalistRevenue);
 		capitalists.setRevenue(capitalistRevenue);

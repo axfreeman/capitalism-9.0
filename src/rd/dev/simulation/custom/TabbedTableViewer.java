@@ -104,15 +104,12 @@ public class TabbedTableViewer extends VBox {
 	@FXML private TableColumn<UseValue, String> useValueTotalPriceColumn;
 	@FXML private TableColumn<UseValue, String> useValueAllocationShareColumn;
 	@FXML private TableColumn<UseValue, String> useValueCapitalColumn;
-	@FXML private TableColumn<UseValue, String> useValueSurplusValueColumn;
+	@FXML private TableColumn<UseValue, String> useValueProfitColumn;
+	@FXML private TableColumn<UseValue, String> useValueProfitRateColumn;
 	
 	@FXML private TableColumn<UseValue,String> useValueDemandSupplySuperColumn;
 	@FXML private TableColumn<UseValue,String> useValueCapitalProfitSuperColumn;
 	@FXML private TableColumn<UseValue,String> useValueValuePriceSuperColumn;
-
-	// a static list of the suppressible columns (see TableUtilities.ContextMenu)
-
-	ArrayList<TableColumn<?, ?>> useValueSuppressibleColumns = new ArrayList<TableColumn<?, ?>>();
 
 	// the Circuit Table and associated columns
 
@@ -188,7 +185,7 @@ public class TabbedTableViewer extends VBox {
 		TableUtilities.doctorColumnHeaders(tabbedTables);  // doctor all the tables so the graphics can be switched
 		TableUtilities.setSuperColumnHandler(useValueValuePriceSuperColumn,useValueTotalPriceColumn);
 		TableUtilities.setSuperColumnHandler(useValueDemandSupplySuperColumn,useValueAllocationShareColumn);
-		TableUtilities.setSuperColumnHandler(useValueCapitalProfitSuperColumn,useValueSurplusValueColumn);
+		TableUtilities.setSuperColumnHandler(useValueCapitalProfitSuperColumn,useValueProfitRateColumn);
 	}
 
 	public void setTooltips() {
@@ -256,39 +253,34 @@ public class TabbedTableViewer extends VBox {
 		makeStockColumn(consumptionStockDemandColumn, Stock.Selector.QUANTITYDEMANDED);
 	}
 
-	private void makeUseValueColumn(TableColumn<UseValue, String> column, UseValue.Selector selector) {
+	private void makeUseValueColumn(TableColumn<UseValue, String> column, UseValue.USEVALUE_SELECTOR useValueSelector) {
 		column.setCellFactory(new Callback<TableColumn<UseValue, String>, TableCell<UseValue, String>>() {
 			@Override public TableCell<UseValue, String> call(TableColumn<UseValue, String> col) {
-				return new UseValueTableCell(selector);
+				return new UseValueTableCell(useValueSelector);
 			}
 		});
-		column.setCellValueFactory(cellData -> cellData.getValue().wrappedString(selector));
+		column.setCellValueFactory(cellData -> cellData.getValue().wrappedString(useValueSelector));
 	}
 
 	/**
 	 * Initialize the UseValues tableView and cellFactories
 	 */
 	public void makeUseValuesViewTable() {
-		makeUseValueColumn(useValueNameColumn, UseValue.Selector.USEVALUENAME);
-		makeUseValueColumn(useValueTypeColumn, UseValue.Selector.USEVALUETYPE);
-		makeUseValueColumn(useValueTotalValueColumn, UseValue.Selector.TOTALVALUE);
-		makeUseValueColumn(useValueTotalPriceColumn, UseValue.Selector.TOTALPRICE);
-		makeUseValueColumn(useValueUnitValueColumn, UseValue.Selector.UNITVALUE);
-		makeUseValueColumn(useValueUnitPriceColumn, UseValue.Selector.UNITPRICE);
-		makeUseValueColumn(useValueTurnoverTimeColumn, UseValue.Selector.TURNOVERTIME);
-		makeUseValueColumn(useValueTotalSupplyColumn, UseValue.Selector.TOTALSUPPLY);
-		makeUseValueColumn(useValueTotalQuantityColumn, UseValue.Selector.TOTALQUANTITY);
-		makeUseValueColumn(useValueTotalDemandColumn, UseValue.Selector.TOTALDEMAND);
-		makeUseValueColumn(useValueSurplusColumn, UseValue.Selector.SURPLUS);
-		makeUseValueColumn(useValueAllocationShareColumn, UseValue.Selector.ALLOCATIONSHARE);
-		makeUseValueColumn(useValueCapitalColumn, UseValue.Selector.CAPITAL);
-		makeUseValueColumn(useValueSurplusValueColumn, UseValue.Selector.SURPLUSVALUE);
-
-		useValueSuppressibleColumns.add(useValueTotalDemandColumn);
-		useValueSuppressibleColumns.add(useValueTotalSupplyColumn);
-
-//		TableUtilities.createTableContextMenu(useValuesTable);
-//		TableUtilities.createSuperColumnHandler(useValueValuePriceSuperColumn);
+		makeUseValueColumn(useValueNameColumn, UseValue.USEVALUE_SELECTOR.USEVALUENAME);
+		makeUseValueColumn(useValueTypeColumn, UseValue.USEVALUE_SELECTOR.USEVALUETYPE);
+		makeUseValueColumn(useValueTotalValueColumn, UseValue.USEVALUE_SELECTOR.TOTALVALUE);
+		makeUseValueColumn(useValueTotalPriceColumn, UseValue.USEVALUE_SELECTOR.TOTALPRICE);
+		makeUseValueColumn(useValueUnitValueColumn, UseValue.USEVALUE_SELECTOR.UNITVALUE);
+		makeUseValueColumn(useValueUnitPriceColumn, UseValue.USEVALUE_SELECTOR.UNITPRICE);
+		makeUseValueColumn(useValueTurnoverTimeColumn, UseValue.USEVALUE_SELECTOR.TURNOVERTIME);
+		makeUseValueColumn(useValueTotalSupplyColumn, UseValue.USEVALUE_SELECTOR.TOTALSUPPLY);
+		makeUseValueColumn(useValueTotalQuantityColumn, UseValue.USEVALUE_SELECTOR.TOTALQUANTITY);
+		makeUseValueColumn(useValueTotalDemandColumn, UseValue.USEVALUE_SELECTOR.TOTALDEMAND);
+		makeUseValueColumn(useValueSurplusColumn, UseValue.USEVALUE_SELECTOR.SURPLUS);
+		makeUseValueColumn(useValueAllocationShareColumn, UseValue.USEVALUE_SELECTOR.ALLOCATIONSHARE);
+		makeUseValueColumn(useValueCapitalColumn, UseValue.USEVALUE_SELECTOR.INITIALCAPITAL);
+		makeUseValueColumn(useValueProfitColumn, UseValue.USEVALUE_SELECTOR.PROFIT);
+		makeUseValueColumn(useValueProfitRateColumn, UseValue.USEVALUE_SELECTOR.PROFITRATE);
 	}
 
 	private void makeCircuitColumn(TableColumn<Circuit, String> column, Circuit.Selector selector) {
@@ -311,7 +303,7 @@ public class TabbedTableViewer extends VBox {
 		makeCircuitColumn(circuitMoneyColumn, Circuit.Selector.MONEYSTOCK);
 		makeCircuitColumn(circuitCurrentCapitalColumn, Circuit.Selector.CURRENTCAPITAL);
 		makeCircuitColumn(circuitProfitColumn, Circuit.Selector.PROFIT);
-		makeCircuitColumn(circuitProfitRateColumn, Circuit.Selector.RATEOFPROFIT);
+		makeCircuitColumn(circuitProfitRateColumn, Circuit.Selector.PROFITRATE);
 	}
 
 	private void makeSocialClassColumn(TableColumn<SocialClass, String> column, SocialClass.Selector selector) {

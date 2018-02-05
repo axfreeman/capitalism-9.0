@@ -33,6 +33,8 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
+
+import org.apache.commons.math3.util.Precision;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -50,7 +52,7 @@ import rd.dev.simulation.view.ViewManager;
 @Table(name = "circuits")
 @NamedQueries({
 		@NamedQuery(name = "All", query = "Select c from Circuit c where c.pk.project = :project and c.pk.timeStamp = :timeStamp"),
-		@NamedQuery(name = "Primary", query = "Select c from Circuit c where c.pk.project= :project and c.pk.timeStamp = :timeStamp and c.pk.productUseValueName= :productUseValueName")
+		@NamedQuery(name = "Primary", query = "Select c from Circuit c where c.pk.project= :project and c.pk.timeStamp = :timeStamp and c.pk.productUseValueName= :productUseValueName"),
 })
 
 @XmlRootElement
@@ -66,9 +68,6 @@ public class Circuit extends Observable implements Serializable {
 	@Column(name = "ConstrainedOutput") private double constrainedOutput;
 	@Column(name = "ProposedOutput") private double proposedOutput;
 	@Column(name = "InitialCapital") private double initialCapital;
-	@Column(name = "CurrentCapital") private double currentCapital;
-	@Column(name = "Profit") private double profit;
-	@Column(name = "RateOfProfit") private double rateOfProfit;
 	@Column(name = "Growthrate") private double growthRate;
 	@Column(name = "costOfMPForExpansion") private double costOfMPForExpansion; // investment in Means of Production needed to achieve proposed expansion
 	@Column(name = "costOfLPForExpansion") private double costOfLPForExpansion; // investment in Labour Power needed to achieve proposed expansion
@@ -79,7 +78,7 @@ public class Circuit extends Observable implements Serializable {
 	 * Readable constants to refer to the methods which provide information about the persistent members of the class
 	 */
 	public enum Selector {
-		PRODUCTUSEVALUETYPE, CONSTRAINEDOUTPUT, PROPOSEDOUTPUT, INITIALCAPITAL, CURRENTCAPITAL, PROFIT, RATEOFPROFIT, PRODUCTIVESTOCKS, MONEYSTOCK, SALESSTOCK, TOTAL, GROWTHRATE
+		PRODUCTUSEVALUETYPE, CONSTRAINEDOUTPUT, PROPOSEDOUTPUT, INITIALCAPITAL, CURRENTCAPITAL, PROFIT, PROFITRATE, PRODUCTIVESTOCKS, MONEYSTOCK, SALESSTOCK, TOTAL, GROWTHRATE
 	}
 
 	/**
@@ -116,11 +115,7 @@ public class Circuit extends Observable implements Serializable {
 		constrainedOutput = circuitTemplate.constrainedOutput;
 		proposedOutput = circuitTemplate.proposedOutput;
 		growthRate = circuitTemplate.growthRate;
-		;
-		currentCapital = circuitTemplate.currentCapital;
 		initialCapital = circuitTemplate.initialCapital;
-		profit = circuitTemplate.profit;
-		rateOfProfit = circuitTemplate.rateOfProfit;
 	}
 
 	/**
@@ -128,7 +123,7 @@ public class Circuit extends Observable implements Serializable {
 	 *         TODO improve on this
 	 */
 
-	public INDUSTRYTYPE iNDUSTRYTYPE() {
+	public INDUSTRYTYPE industryType() {
 		if (pk.productUseValueName.equals("Consumption"))
 			return INDUSTRYTYPE.NECESSITIES;
 		if (pk.productUseValueName.equals("Luxuries"))
@@ -253,13 +248,13 @@ public class Circuit extends Observable implements Serializable {
 		case PRODUCTIVESTOCKS:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, productiveStocksAttribute(valueExpression)));
 		case PROFIT:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, profit));
-		case RATEOFPROFIT:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, rateOfProfit));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, profit()));
+		case PROFITRATE:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, profitRate()));
 		case TOTAL:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalAttribute(valueExpression)));
 		case CURRENTCAPITAL:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, currentCapital));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, currentCapital()));
 		default:
 			return null;
 		}
@@ -310,10 +305,10 @@ public class Circuit extends Observable implements Serializable {
 			return constrainedOutput != comparator.constrainedOutput;
 		case INITIALCAPITAL:
 			return initialCapital != comparator.initialCapital;
-		case RATEOFPROFIT:
-			return rateOfProfit != comparator.rateOfProfit;
+		case PROFITRATE:
+			return profitRate() != comparator.profitRate();
 		case PROFIT:
-			return profit != comparator.profit;
+			return profit() != comparator.profit();
 		case MONEYSTOCK:
 			return moneyAttribute(valueExpression) != comparator.moneyAttribute(valueExpression);
 		case SALESSTOCK:
@@ -325,12 +320,12 @@ public class Circuit extends Observable implements Serializable {
 		case TOTAL:
 			return totalAttribute(valueExpression) != comparator.totalAttribute(valueExpression);
 		case CURRENTCAPITAL:
-			return currentCapital != comparator.currentCapital;
+			return currentCapital() != comparator.currentCapital();
 		default:
 			return false;
 		}
 	}
-	
+
 	/**
 	 * If the selected field has changed, return the difference between the current value and the former value
 	 * 
@@ -339,48 +334,48 @@ public class Circuit extends Observable implements Serializable {
 	 * 
 	 * @param item
 	 *            the original item - returned as the result if there is no change
-	 *            
+	 * 
 	 * @param valueExpression
-	 * 			selects the display attribute where relevant (QUANTITY, VALUE, PRICE)          
+	 *            selects the display attribute where relevant (QUANTITY, VALUE, PRICE)
 	 * 
 	 * @return the original item if nothing has changed, otherwise the change, as an appropriately formatted string
 	 */
 
-	public String showDelta(String item, Selector selector,Stock.ValueExpression valueExpression) {
-		if (!changed(selector,valueExpression))
+	public String showDelta(String item, Selector selector, Stock.ValueExpression valueExpression) {
+		if (!changed(selector, valueExpression))
 			return item;
 		switch (selector) {
 		case PRODUCTUSEVALUETYPE:
 			return item;
 		case PROPOSEDOUTPUT:
-			return String.format(ViewManager.largeNumbersFormatString, ( proposedOutput - comparator.proposedOutput));
+			return String.format(ViewManager.largeNumbersFormatString, (proposedOutput - comparator.proposedOutput));
 		case GROWTHRATE:
-			return String.format(ViewManager.smallNumbersFormatString, ( growthRate - comparator.growthRate));
+			return String.format(ViewManager.smallNumbersFormatString, (growthRate - comparator.growthRate));
 		case CONSTRAINEDOUTPUT:
-			return String.format(ViewManager.largeNumbersFormatString, ( constrainedOutput - comparator.constrainedOutput));
+			return String.format(ViewManager.largeNumbersFormatString, (constrainedOutput - comparator.constrainedOutput));
 		case INITIALCAPITAL:
-			return String.format(ViewManager.largeNumbersFormatString, ( initialCapital - comparator.initialCapital));
-		case RATEOFPROFIT:
-			return String.format(ViewManager.smallNumbersFormatString, ( rateOfProfit - comparator.rateOfProfit));
+			return String.format(ViewManager.largeNumbersFormatString, (initialCapital - comparator.initialCapital));
+		case PROFITRATE:
+			return String.format(ViewManager.smallNumbersFormatString, (profitRate() - comparator.profitRate()));
 		case PROFIT:
-			return String.format(ViewManager.largeNumbersFormatString, ( profit - comparator.profit));
+			return String.format(ViewManager.largeNumbersFormatString, (profit() - comparator.profit()));
 		case MONEYSTOCK:
-			return String.format(ViewManager.largeNumbersFormatString, ( moneyAttribute(valueExpression) - comparator.moneyAttribute(valueExpression)));
+			return String.format(ViewManager.largeNumbersFormatString, (moneyAttribute(valueExpression) - comparator.moneyAttribute(valueExpression)));
 		case SALESSTOCK:
-			return String.format(ViewManager.largeNumbersFormatString, ( salesAttribute(valueExpression) - comparator.salesAttribute(valueExpression)));
+			return String.format(ViewManager.largeNumbersFormatString, (salesAttribute(valueExpression) - comparator.salesAttribute(valueExpression)));
 		case PRODUCTIVESTOCKS:
 			double p1 = productiveStocksAttribute(valueExpression);
 			double p2 = comparator.productiveStocksAttribute(valueExpression);
-			return String.format(ViewManager.largeNumbersFormatString, ( p1-p2));
+			return String.format(ViewManager.largeNumbersFormatString, (p1 - p2));
 		case TOTAL:
-			return String.format(ViewManager.largeNumbersFormatString, ( totalAttribute(valueExpression) - comparator.totalAttribute(valueExpression)));
+			return String.format(ViewManager.largeNumbersFormatString, (totalAttribute(valueExpression) - comparator.totalAttribute(valueExpression)));
 		case CURRENTCAPITAL:
-			return String.format(ViewManager.largeNumbersFormatString, ( currentCapital - comparator.currentCapital));
+			return String.format(ViewManager.largeNumbersFormatString, (currentCapital() - comparator.currentCapital()));
 		default:
 			return item;
 		}
 	}
-	
+
 	/**
 	 * calculates the cost of producing at level proposedOutput, given constrainedOutput and the current level of productive inputs
 	 * NOTE this cannot be reduced to a simple multiple of existing stocks, because some stocks may already exist. It is thus a non-linear function of Output
@@ -680,57 +675,36 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	/**
-	 * @return the currentCapital
+	 * The current capital of this circult.
+	 * this is the sum of all outlays (including mone), that is to say, it is everything that has to be engaged in the business to keep it going
+	 * it is always calculated using the price expression of these outlays
+	 * @return the current capital of this circuit
+	 * 
+	 * 
 	 */
-	public double getCurrentCapital() {
-		return currentCapital;
+	public double currentCapital() {
+		return getMoneyPrice() + getSalesPrice() + productiveStocksAttribute(ValueExpression.PRICE);
 	}
 
 	/**
-	 * @param currentCapital
-	 *            the currentCapital to set
+	 * The profit of this circuit.
+	 * This is the current capital less the initial capital. It is thus a simple difference independent of sales,
+	 * and hence makes no assumption that profit is realised.
+	 * Like all capital, it is calculated using the price expression of the magnitudes involved.
+	 * @return the profit (so far) of this circuit. 
 	 */
-	public void setCurrentCapital(double currentCapital) {
-		this.currentCapital = currentCapital;
+	public double profit() {
+		return currentCapital()-initialCapital;
 	}
-
+	
 	/**
-	 * @return the profit
+	 * @return the profitRate
 	 */
-	public double getProfit() {
-		return profit;
-	}
-
-	/**
-	 * @param profit
-	 *            the profit to set
-	 */
-	public void setProfit(double profit) {
-		this.profit = profit;
-	}
-
-	/**
-	 * Set the current capital from money, sales and productive stocks.
-	 * NOTE this is inherently a price magnitude. It makes no sense to interpret it as a value magnitude. But of course, since price is a form of value, it can
-	 * be measured either by its intrinsice or its extrinsic expression.
-	 */
-	public void calculateCurrentCapital() {
-		this.currentCapital = getMoneyPrice() + getSalesPrice() + productiveStocksAttribute(ValueExpression.PRICE);
-	}
-
-	/**
-	 * @return the rateOfProfit
-	 */
-	public double getRateOfProfit() {
-		return rateOfProfit;
-	}
-
-	/**
-	 * @param rateOfProfit
-	 *            the rateOfProfit to set
-	 */
-	public void setRateOfProfit(double rateOfProfit) {
-		this.rateOfProfit = rateOfProfit;
+	public double profitRate() {
+		if (Precision.round(initialCapital,Simulation.getRoundingPrecision())==0){
+			return Double.NaN;
+		}
+		return profit()/initialCapital;
 	}
 
 	/**

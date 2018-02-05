@@ -29,10 +29,10 @@ import rd.dev.simulation.model.UseValue;
 public class UseValueTableCell extends TableCell<UseValue, String> {
 	static final Logger logger = LogManager.getLogger("UseValueTableCell");
 
-	UseValue.Selector selector;
+	UseValue.USEVALUE_SELECTOR useValueSelector;
 
-	public UseValueTableCell(UseValue.Selector selector) {
-		this.selector = selector;
+	public UseValueTableCell(UseValue.USEVALUE_SELECTOR useValueSelector) {
+		this.useValueSelector = useValueSelector;
 	}
 
 	@Override protected void updateItem(String item, boolean empty) {
@@ -47,7 +47,7 @@ public class UseValueTableCell extends TableCell<UseValue, String> {
 		}
 		String deltaModifier="";
 		
-		if (useValue.changed(selector)) {
+		if (useValue.changed(useValueSelector)) {
 			setTextFill(Color.RED);
 			deltaModifier=(ViewManager.displayDeltas?ViewManager.deltaSymbol:"");
 		}
@@ -56,13 +56,14 @@ public class UseValueTableCell extends TableCell<UseValue, String> {
 		String priceModifier= deltaModifier+ViewManager.pricesExpressionSymbol;
 
 		if(ViewManager.displayDeltas) {
-			item=useValue.showDelta(item, selector);
+			item=useValue.showDelta(item, useValueSelector);
 		}
-		switch (selector) {
+		switch (useValueSelector) {
 		case ALLOCATIONSHARE:
 		case TOTALDEMAND:
 		case TOTALSUPPLY:
 		case TOTALQUANTITY:
+		case PROFITRATE:
 			if (ViewManager.displayHints)
 				setStyle("-fx-background-color: rgba(220,220,220,0.3)");
 			item=deltaModifier+item;
@@ -75,8 +76,8 @@ public class UseValueTableCell extends TableCell<UseValue, String> {
 			break;
 		case UNITPRICE:
 		case TOTALPRICE:
-		case CAPITAL:
-		case SURPLUSVALUE:
+		case INITIALCAPITAL:
+		case PROFIT:
 			if (ViewManager.displayHints)
 				setStyle("-fx-background-color: rgba(255,240,204,0.3)");
 			item = priceModifier + item;

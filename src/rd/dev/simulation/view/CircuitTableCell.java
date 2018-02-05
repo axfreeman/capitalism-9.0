@@ -65,6 +65,7 @@ public class CircuitTableCell extends TableCell<Circuit, String> {
 		switch (selector) {
 		case CONSTRAINEDOUTPUT:
 		case PROPOSEDOUTPUT:
+		case PROFITRATE:
 			if (ViewManager.displayHints)
 				setStyle("-fx-background-color: rgba(220,220,220,0.3)");
 			setText(deltaModifier+item);

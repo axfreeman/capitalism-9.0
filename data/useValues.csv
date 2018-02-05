@@ -1,26 +1,26 @@
-Project,TimeStamp,UseValueName,UseValueCircuitType,UnitValue,UnitPrice,TurnoverTime,Total Supply,Total Quantity,Total Demand,SurplusProduct,Total Value,Total Price,allocationShare,UseValueType,Capital,SurplusValue
-4,1,Circulating,CAPITALIST,1,1,60,0,0,0,0,0,0,0,PRODUCTIVE,,
-3,1,Consumption,CAPITALIST,1,1,2,0,0,0,0,0,0,0,NECESSITIES,,
-1,1,Consumption,CAPITALIST,1,1,1,0,0,0,0,0,0,0,NECESSITIES,,
-5,1,Consumption,CAPITALIST,1,1,1,0,0,0,0,0,0,0,NECESSITIES,,
-6,1,Consumption,CAPITALIST,1,1,1,0,0,0,0,0,0,0,NECESSITIES,,
-4,1,Consumption,CAPITALIST,0.5,0.5,1,0,0,0,0,0,0,0,NECESSITIES,,
-2,1,Consumption,CAPITALIST,1,1,1,0,0,0,0,0,0,0,NECESSITIES,,
-4,1,Fixed,CAPITALIST,1,1,360,0,0,0,0,0,0,0,PRODUCTIVE,,
-1,1,Labour Power,SOCIAL,0.5,0.5,1,0,0,0,0,0,0,0,LABOURPOWER,,
-6,1,Labour Power,SOCIAL,0.5,0.5,1,0,0,0,0,0,0,0,LABOURPOWER,,
-2,1,Labour Power,SOCIAL,0.5,0.5,1,0,0,0,0,0,0,0,LABOURPOWER,,
-4,1,Labour Power,SOCIAL,0.5,0.5,1,0,0,0,0,0,0,0,LABOURPOWER,,
-5,1,Labour Power,SOCIAL,0.5,0.5,1,0,0,0,0,0,0,0,LABOURPOWER,,
-3,1,Labour Power,SOCIAL,0.5,0.5,2,0,0,0,0,0,0,0,LABOURPOWER,,
-2,1,Means of Production,CAPITALIST,1,1,1,0,0,0,0,0,0,0,PRODUCTIVE,,
-6,1,Means of Production,CAPITALIST,1,1,1,0,0,0,0,0,0,0,PRODUCTIVE,,
-5,1,Means of Production,CAPITALIST,1,1,1,0,0,0,0,0,0,0,PRODUCTIVE,,
-1,1,Means of Production,CAPITALIST,1,1,1,0,0,0,0,0,0,0,PRODUCTIVE,,
-3,1,Means of Production,CAPITALIST,1,1,2,0,0,0,0,0,0,0,PRODUCTIVE,,
-4,1,Money,MONEY,1,1,0,0,0,0,0,0,0,0,MONEY,,
-1,1,Money,MONEY,1,1,0,0,0,0,0,0,0,0,MONEY,,
-3,1,Money,MONEY,1,1,0,0,0,0,0,0,0,0,MONEY,,
-5,1,Money,MONEY,1,1,0,0,0,0,0,0,0,0,MONEY,,
-2,1,Money,MONEY,1,1,0,0,0,0,0,0,0,0,MONEY,,
-6,1,Money,MONEY,1,1,0,0,0,0,0,0,0,0,MONEY,,
+Project,TimeStamp,UseValueName,UseValueCircuitType,UnitValue,UnitPrice,TurnoverTime,UseValueType
+4,1,Circulating,CAPITALIST,1,1,60,PRODUCTIVE
+3,1,Consumption,CAPITALIST,1,1,2,NECESSITIES
+1,1,Consumption,CAPITALIST,1,1,1,NECESSITIES
+5,1,Consumption,CAPITALIST,1,1,1,NECESSITIES
+6,1,Consumption,CAPITALIST,1,1,1,NECESSITIES
+4,1,Consumption,CAPITALIST,0.5,0.5,1,NECESSITIES
+2,1,Consumption,CAPITALIST,1,1,1,NECESSITIES
+4,1,Fixed,CAPITALIST,1,1,360,PRODUCTIVE
+1,1,Labour Power,SOCIAL,0.5,0.5,1,LABOURPOWER
+6,1,Labour Power,SOCIAL,0.5,0.5,1,LABOURPOWER
+2,1,Labour Power,SOCIAL,0.5,0.5,1,LABOURPOWER
+4,1,Labour Power,SOCIAL,0.5,0.5,1,LABOURPOWER
+5,1,Labour Power,SOCIAL,0.5,0.5,1,LABOURPOWER
+3,1,Labour Power,SOCIAL,0.5,0.5,2,LABOURPOWER
+2,1,Means of Production,CAPITALIST,1,1,1,PRODUCTIVE
+6,1,Means of Production,CAPITALIST,1,1,1,PRODUCTIVE
+5,1,Means of Production,CAPITALIST,1,1,1,PRODUCTIVE
+1,1,Means of Production,CAPITALIST,1,1,1,PRODUCTIVE
+3,1,Means of Production,CAPITALIST,1,1,2,PRODUCTIVE
+4,1,Money,MONEY,1,1,0,MONEY
+1,1,Money,MONEY,1,1,0,MONEY
+3,1,Money,MONEY,1,1,0,MONEY
+5,1,Money,MONEY,1,1,0,MONEY
+2,1,Money,MONEY,1,1,0,MONEY
+6,1,Money,MONEY,1,1,0,MONEY

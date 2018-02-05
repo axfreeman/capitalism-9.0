@@ -228,19 +228,6 @@ public class Stock extends Observable implements Serializable {
 		quantity = newQuantity;
 		value = newValue;
 		price = newPrice;
-
-		// now adjust the use value totals and the global totals to keep track
-
-		UseValue useValue = getUseValue();
-		double newUseValueQuantity = useValue.getTotalQuantity() + extraQuantity;
-		double newUseValueValue = useValue.getTotalValue() + extraValue;
-		double newUseValuePrice = useValue.getTotalPrice() + extraPrice;
-		useValue.setTotalQuantity(newUseValueQuantity);
-		useValue.setTotalValue(newUseValueValue);
-		useValue.setTotalPrice(newUseValuePrice);
-		Global global = DataManager.getGlobal(Simulation.timeStampIDCurrent);
-		global.setTotalValue(global.getTotalValue() + extraValue);
-		global.setTotalPrice(global.getTotalPrice());
 	}
 
 	/**
@@ -253,12 +240,8 @@ public class Stock extends Observable implements Serializable {
 	 */
 	public void modifyBy(double quantity, double valueAdded) {
 		double oldValue = value;
-		double oldTotalValue = getUseValue().getTotalValue();
 		modifyBy(quantity);
 		setValue(oldValue + valueAdded); // overwrite what was done by the simple call to changeBy
-		getUseValue().setTotalValue(oldTotalValue + valueAdded);
-		Global global = DataManager.getGlobal(Simulation.timeStampIDCurrent);
-		global.setTotalValue(global.getTotalValue() + valueAdded);
 	}
 
 	/**
@@ -274,19 +257,12 @@ public class Stock extends Observable implements Serializable {
 		double unitPrice = unitPrice();
 		double newValue = Precision.round(newQuantity * unitValue, Simulation.getRoundingPrecision());
 		double newPrice = Precision.round(newQuantity * unitPrice, Simulation.getRoundingPrecision());
-		double changeInValue = newValue - value;
-		double changeInPrice = newPrice - price;
-		double changeInQuantity = newQuantity - quantity;
 		quantity = newQuantity;
 		value = newValue;
 		price = newPrice;
 		Reporter.report(logger, 2,
 				"  Size of commodity [%s], of type [%s], owned by [%s]: is %.2f. Value set to $%.2f (intrinsic %.2f), and price to %.2f (intrinsic %.2f)",
 				pk.useValue, pk.stockType, pk.circuit, quantity, value, value / melt, price, price / melt);
-		UseValue useValue = getUseValue();
-		useValue.setTotalQuantity(useValue.getTotalQuantity() + changeInQuantity);
-		useValue.setTotalValue(useValue.getTotalValue() + changeInValue);
-		useValue.setTotalPrice(useValue.getTotalPrice() + changeInPrice);
 	}
 
 	/**

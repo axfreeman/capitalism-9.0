@@ -1,5 +1,14 @@
 # TODO 2/2/2018 3:45:18 PM 
 
+## 2/5/2018 9:25:58 AM 
+
+See 'announcements' for overview of changes. Technically:
+
+The principle is that all aggregate magnitudes (total value, capital, profit and so on) are calculated on the fly from the underlying stocks.
+This greatly reduces the risk of errors caused by improperly updating these aggregate magnitudes as the simulation proceeds.
+It also greatly simplifies the code.
+It may have a cost in terms of speed; this has to be seen
+At this point, we don't use the database to calculate the sums, but do it ourselves. 
 
 ## 2/3/2018 8:25:54 PM 
 

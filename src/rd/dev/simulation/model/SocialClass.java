@@ -220,6 +220,8 @@ If the selected field has changed, return the difference between the current val
 	 *            chooses which member to evaluate
 	 * @param displayAttribute
 	 *            selects the display attribute where relevant (QUANTITY, VALUE, PRICE)
+	 * @param item
+	 * 		the item which the calling method (normally a TableCell) proposes to display           
 	 * @return the item if unchanged, otherwise the difference between the item and its former magnitude
 	 */
 

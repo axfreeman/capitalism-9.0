@@ -63,19 +63,16 @@ public class UseValue extends Observable implements Serializable {
 	@Column(name = "unitValue") private double unitValue;
 	@Column(name = "unitPrice") private double unitPrice;
 	@Column(name = "totalSupply") private double totalSupply;// registers the total commodities up for sale
-	@Column(name = "totalQuantity") private double totalQuantity; // bigger than total supply because it includes commodities not available for purchase
 	@Column(name = "totalDemand") private double totalDemand;
 	@Column(name = "surplusProduct") private double surplusProduct; // if after production there is an excess of inventory over use, it is recorded here
-	@Column(name = "totalValue") private double totalValue;// corresponds to total quantity; is the value of all commodities of this type
-	@Column(name = "totalPrice") private double totalPrice;// corresponds to total quantity - price of all commodities of this type
 	@Column(name = "allocationShare") private double allocationShare;// proportion of total demand that can actually be supplied
-	@Column(name = "surplusValue") private double surplusValue;// total surplusValue of enterprises in this sector
-	@Column(name = "capital") private double capital;// total capital of enterprises in this sector
+	@Column(name = "stockUsedUp") private double stockUsedUp; // stock used up in production in the current period
+	@Column(name = "stockProduced") private double stockProduced; // stock produced in the current period
 
 	@Transient private UseValue comparator;
 
 	/**
-	 * Types of commodities, basis of a rudimentary typology system for use values
+	 * Types of commodities, basis of a rudimentary typology for use values
 	 * 
 	 * @author afree
 	 *
@@ -118,8 +115,8 @@ public class UseValue extends Observable implements Serializable {
 	/**
 	 * Readable constants to refer to the methods which provide information about the persistent members of the class
 	 */
-	public enum Selector {
-		USEVALUENAME, USEVALUECIRCUITTYPE, TURNOVERTIME, UNITVALUE, UNITPRICE, TOTALSUPPLY, TOTALQUANTITY, TOTALDEMAND, SURPLUS, TOTALVALUE, TOTALPRICE, ALLOCATIONSHARE, USEVALUETYPE, CAPITAL, SURPLUSVALUE
+	public enum USEVALUE_SELECTOR {
+		USEVALUENAME, USEVALUECIRCUITTYPE, TURNOVERTIME, UNITVALUE, UNITPRICE, TOTALSUPPLY, TOTALQUANTITY, TOTALDEMAND, SURPLUS, TOTALVALUE, TOTALPRICE, ALLOCATIONSHARE, USEVALUETYPE, INITIALCAPITAL, PROFIT, PROFITRATE
 	}
 
 	/**
@@ -148,15 +145,12 @@ public class UseValue extends Observable implements Serializable {
 		this.unitValue = useValueTemplate.unitValue;
 		this.unitPrice = useValueTemplate.unitPrice;
 		this.totalSupply = useValueTemplate.totalSupply;
-		this.totalQuantity = useValueTemplate.totalQuantity;
 		this.totalDemand = useValueTemplate.totalDemand;
 		this.surplusProduct = useValueTemplate.surplusProduct;
-		this.totalValue = useValueTemplate.totalValue;
-		this.totalPrice = useValueTemplate.totalPrice;
 		this.allocationShare = useValueTemplate.allocationShare;
 		this.useValueType = useValueTemplate.useValueType;
-		this.capital = useValueTemplate.capital;
-		this.surplusValue = useValueTemplate.surplusValue;
+		this.stockUsedUp = useValueTemplate.stockUsedUp;
+		this.stockProduced = useValueTemplate.stockProduced;
 	}
 
 	/**
@@ -182,9 +176,6 @@ public class UseValue extends Observable implements Serializable {
 	 */
 
 	public void calculateAggregates(boolean validate) {
-		double oldTotalQuantity = totalQuantity;
-		double oldTotalValue = totalValue;
-		double oldTotalPrice = totalPrice;
 		double totalQuantity = 0;
 		double totalValue = 0;
 		double totalPrice = 0;
@@ -198,23 +189,6 @@ public class UseValue extends Observable implements Serializable {
 		totalQuantity = Precision.round(totalQuantity, Simulation.getRoundingPrecision());
 		totalValue = Precision.round(totalValue, Simulation.getRoundingPrecision());
 		totalPrice = Precision.round(totalPrice, Simulation.getRoundingPrecision());
-		if (validate) {
-			if (totalQuantity != getTotalQuantity()) {
-				Reporter.report(logger, 2, "  ALERT: Total quantity of [%s] (%.2f) is different from registered quantity (%.2f)", pk.useValueName,
-						totalQuantity, oldTotalQuantity);
-			}
-			if (totalValue != getTotalValue()) {
-				Reporter.report(logger, 2, "  ALERT: Total value of [%s] (%.2f) is different from registered value (%.2f)", pk.useValueName, totalValue,
-						oldTotalValue);
-			}
-			if (totalPrice != getTotalPrice()) {
-				Reporter.report(logger, 2, "  ALERT: Total price of [%s] (%.2f) is different from registered price (%.2f)", pk.useValueName, totalPrice,
-						oldTotalPrice);
-			}
-		}
-		setTotalQuantity(totalQuantity);
-		setTotalValue(totalValue);
-		setTotalPrice(totalPrice);
 		Reporter.report(logger, 2, "  Total quantity of the commodity [%s] is %.2f (value %.2f, price %.2f). ",
 				pk.useValueName, totalQuantity, totalPrice, totalValue);
 	}
@@ -226,13 +200,13 @@ public class UseValue extends Observable implements Serializable {
 	 * We don't mind the hardwiring because we don't really intend this code to be re-usable, it's not hard to modify, and it results in compact
 	 * and readable usage code (see (@link TabbedTableViewer#populateUseValuesViewTable})
 	 * 
-	 * @param selector
+	 * @param uSEVALUE_SELECTOR
 	 *            chooses which member to evaluate
 	 * @return whether this member has changed or not. False if selector is unavailable here
 	 */
 
-	public boolean changed(Selector selector) {
-		switch (selector) {
+	public boolean changed(USEVALUE_SELECTOR uSEVALUE_SELECTOR) {
+		switch (uSEVALUE_SELECTOR) {
 		case USEVALUENAME:
 			return false;
 		case USEVALUECIRCUITTYPE:
@@ -242,11 +216,11 @@ public class UseValue extends Observable implements Serializable {
 		case UNITVALUE:
 			return unitValue != comparator.getUnitValue();
 		case TOTALVALUE:
-			return totalValue != comparator.totalValue;
+			return totalValue() != comparator.totalValue();
 		case TOTALPRICE:
-			return totalPrice != comparator.totalPrice;
+			return totalPrice() != comparator.totalPrice();
 		case TOTALQUANTITY:
-			return totalQuantity != comparator.totalQuantity;
+			return totalQuantity() != comparator.totalQuantity();
 		case TOTALSUPPLY:
 			return totalSupply != comparator.getTotalSupply();
 		case TOTALDEMAND:
@@ -257,10 +231,12 @@ public class UseValue extends Observable implements Serializable {
 			return turnoverTime != comparator.getTurnoverTime();
 		case ALLOCATIONSHARE:
 			return allocationShare != comparator.allocationShare;
-		case CAPITAL:
-			return capital != comparator.capital;
-		case SURPLUSVALUE:
-			return surplusValue != comparator.surplusValue;
+		case INITIALCAPITAL:
+			return initialCapital() != comparator.initialCapital();
+		case PROFIT:
+			return profit() != comparator.profit();
+		case PROFITRATE:
+			return profitRate()!=comparator.profitRate();
 		default:
 			return false;
 		}
@@ -272,13 +248,13 @@ public class UseValue extends Observable implements Serializable {
 	 * We don't mind the hardwiring because we don't really intend this code to be re-usable, it's not hard to modify, and it results in compact
 	 * and readable usage code (see (@link TabbedTableViewer#populateUseValuesViewTable})
 	 * 
-	 * @param selector
+	 * @param uSEVALUE_SELECTOR
 	 *            chooses which member to evaluate
 	 * @return a String representation of the members, formatted according to the relevant format string
 	 */
 
-	public ReadOnlyStringWrapper wrappedString(Selector selector) {
-		switch (selector) {
+	public ReadOnlyStringWrapper wrappedString(USEVALUE_SELECTOR uSEVALUE_SELECTOR) {
+		switch (uSEVALUE_SELECTOR) {
 		case USEVALUENAME:
 			return new ReadOnlyStringWrapper(pk.useValueName);
 		case USEVALUECIRCUITTYPE:
@@ -288,11 +264,11 @@ public class UseValue extends Observable implements Serializable {
 		case UNITVALUE:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, unitValue));
 		case TOTALVALUE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalValue));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalValue()));
 		case TOTALPRICE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalPrice));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalPrice()));
 		case TOTALQUANTITY:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalQuantity));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalQuantity()));
 		case TOTALSUPPLY:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalSupply));
 		case TOTALDEMAND:
@@ -305,10 +281,12 @@ public class UseValue extends Observable implements Serializable {
 			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, allocationShare));
 		case USEVALUETYPE:
 			return new ReadOnlyStringWrapper(useValueType.text);
-		case CAPITAL:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, capital));
-		case SURPLUSVALUE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, surplusValue));
+		case INITIALCAPITAL:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, initialCapital()));
+		case PROFIT:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, profit()));
+		case PROFITRATE:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, profitRate()));
 		default:
 			return null;
 		}
@@ -317,7 +295,7 @@ public class UseValue extends Observable implements Serializable {
 	/**
 	 * If the selected field has changed, return the difference between the current value and the former value
 	 * 
-	 * @param selector
+	 * @param uSEVALUE_SELECTOR
 	 *            chooses which field to evaluate
 	 * 
 	 * @param item
@@ -326,10 +304,10 @@ public class UseValue extends Observable implements Serializable {
 	 * @return the original item if nothing has changed, otherwise the change, as an appropriately formatted string
 	 */
 
-	public String showDelta(String item, Selector selector) {
-		if (!changed(selector))
+	public String showDelta(String item, USEVALUE_SELECTOR uSEVALUE_SELECTOR) {
+		if (!changed(uSEVALUE_SELECTOR))
 			return item;
-		switch (selector) {
+		switch (uSEVALUE_SELECTOR) {
 		case USEVALUENAME:
 		case USEVALUECIRCUITTYPE:
 			return item;
@@ -338,11 +316,11 @@ public class UseValue extends Observable implements Serializable {
 		case UNITVALUE:
 			return String.format(ViewManager.smallNumbersFormatString, (unitValue - comparator.unitValue));
 		case TOTALVALUE:
-			return String.format(ViewManager.largeNumbersFormatString, (totalValue - comparator.totalValue));
+			return String.format(ViewManager.largeNumbersFormatString, (totalValue() - comparator.totalValue()));
 		case TOTALPRICE:
-			return String.format(ViewManager.largeNumbersFormatString, (totalPrice - comparator.totalPrice));
+			return String.format(ViewManager.largeNumbersFormatString, (totalPrice() - comparator.totalPrice()));
 		case TOTALQUANTITY:
-			return String.format(ViewManager.largeNumbersFormatString, (totalQuantity - comparator.totalQuantity));
+			return String.format(ViewManager.largeNumbersFormatString, (totalQuantity() - comparator.totalQuantity()));
 		case TOTALSUPPLY:
 			return String.format(ViewManager.largeNumbersFormatString, (totalSupply - comparator.getTotalSupply()));
 		case TOTALDEMAND:
@@ -353,10 +331,10 @@ public class UseValue extends Observable implements Serializable {
 			return String.format(ViewManager.smallNumbersFormatString, (turnoverTime - comparator.getTurnoverTime()));
 		case ALLOCATIONSHARE:
 			return String.format(ViewManager.smallNumbersFormatString, (allocationShare - comparator.allocationShare));
-		case CAPITAL:
-			return String.format(ViewManager.largeNumbersFormatString, (capital - comparator.capital));
-		case SURPLUSVALUE:
-			return String.format(ViewManager.largeNumbersFormatString, (surplusValue - comparator.surplusValue));
+		case PROFIT:
+			return String.format(ViewManager.largeNumbersFormatString, (profit() - comparator.profit()));
+		case PROFITRATE:
+			return String.format(ViewManager.largeNumbersFormatString, (profitRate() - comparator.profitRate()));
 		default:
 			return item;
 		}
@@ -407,36 +385,12 @@ public class UseValue extends Observable implements Serializable {
 		this.totalSupply = totalSupply;
 	}
 
-	public double getTotalQuantity() {
-		return totalQuantity;
-	}
-
-	public void setTotalQuantity(double totalQuantity) {
-		this.totalQuantity = totalQuantity;
-	}
-
 	public double getTotalDemand() {
 		return totalDemand;
 	}
 
 	public void setTotalDemand(double totalDemand) {
 		this.totalDemand = totalDemand;
-	}
-
-	public double getTotalValue() {
-		return totalValue;
-	}
-
-	public void setTotalValue(double totalValue) {
-		this.totalValue = totalValue;
-	}
-
-	public double getTotalPrice() {
-		return totalPrice;
-	}
-
-	public void setTotalPrice(double totalPrice) {
-		this.totalPrice = totalPrice;
 	}
 
 	public double getTurnoverTime() {
@@ -499,32 +453,100 @@ public class UseValue extends Observable implements Serializable {
 	}
 
 	/**
-	 * @return the surplusValue
+	 * @return the total value of this use value in the economy at this time
 	 */
-	public double getSurplusValue() {
-		return surplusValue;
+	
+	public double totalValue() {
+		double totalValue=0;
+		for (Stock s:DataManager.stocksByUseValue( pk.timeStamp,pk.useValueName)) {
+			totalValue+=s.getValue();
+		}
+		return totalValue;
+	}
+	
+	/**
+	 * @return the total price of this use value in the economy at this time
+	 */
+	
+	public double totalPrice() {
+		double totalPrice=0;
+		for (Stock s:DataManager.stocksByUseValue( pk.timeStamp,pk.useValueName)) {
+			totalPrice+=s.getPrice();
+		}
+		return totalPrice;
+	}
+	
+	/**
+	 * @return the total quantity of this use value in the economy at this time
+	 */
+	
+	public double totalQuantity() {
+		double totalQuantity=0;
+		for (Stock s:DataManager.stocksByUseValue( pk.timeStamp,pk.useValueName)) {
+			totalQuantity+=s.getQuantity();
+		}
+		return totalQuantity;
+	}
+
+	
+	/**
+	 * @return total profit so far in the circuits that produce this use value
+	 */
+
+	public double profit() {
+		double profit = 0;
+		for (Circuit c : DataManager.circuitsByProductUseValue(pk.timeStamp, pk.useValueName)) {
+			profit += c.profit();
+		}
+		return profit;
+	}
+	 
+	/**
+	 * @return the profit rate so far in the circuits that produce this use value
+	 */
+	public double profitRate() {
+		return profit()/initialCapital();
 	}
 
 	/**
-	 * @param surplusValue
-	 *            the surplusValue to set
+	 * @return the total capital invested in producing this use value
 	 */
-	public void setSurplusValue(double surplusValue) {
-		this.surplusValue = surplusValue;
-	}
-
-	/**
-	 * @return the capital
-	 */
-	public double getCapital() {
+	public double initialCapital() {
+		double capital = 0;
+		for (Circuit c : DataManager.circuitsByProductUseValue(pk.useValueName)) {
+			capital += c.getInitialCapital();
+		}
 		return capital;
 	}
 
 	/**
-	 * @param capital
-	 *            the capital to set
+	 * @return the stockUsedUp
 	 */
-	public void setCapital(double capital) {
-		this.capital = capital;
+	public double getStockUsedUp() {
+		return stockUsedUp;
 	}
+
+	/**
+	 * @param stockUsedUp
+	 *            the stockUsedUp to set
+	 */
+	public void setStockUsedUp(double stockUsedUp) {
+		this.stockUsedUp = stockUsedUp;
+	}
+
+	/**
+	 * @return the stockProduced
+	 */
+	public double getStockProduced() {
+		return stockProduced;
+	}
+
+	/**
+	 * @param stockProduced
+	 *            the stockProduced to set
+	 */
+	public void setStockProduced(double stockProduced) {
+		this.stockProduced = stockProduced;
+	}
+
 }

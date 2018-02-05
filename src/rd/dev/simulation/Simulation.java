@@ -128,10 +128,6 @@ public class Simulation {
 			overrideLabourPower();
 
 			calculateStockAggregates();
-
-			// the first time, we don't validate, so the 'validate' parameter of 'calculateAggregates' is set to false.
-
-			calculateUseValueAggregates(false);
 			setCapitals();
 			checkInvariants();
 
@@ -169,9 +165,9 @@ public class Simulation {
 
 	public void checkInvariants() {
 		for (UseValue u : DataManager.useValuesAll()) {
-			double listedQuantity = u.getTotalQuantity();
+			double listedQuantity = u.totalQuantity();
 			double unitValue = u.getUnitValue();
-			double listedValue = u.getTotalValue();
+			double listedValue = u.totalValue();
 			double calculatedValue = listedQuantity * unitValue;
 			if (listedValue != calculatedValue) {
 				logger.error("ERROR: listed price is {} and total price is {}", listedValue, calculatedValue);
@@ -330,51 +326,18 @@ public class Simulation {
 	}
 
 	/**
-	 * Calculate all the aggregates that are only present in the stock data but not registered in other entities.
-	 * At present, just use values, but could conceivably be extended
-	 * Tell every use value to sum, independent of each other, the quantity, value and price of all stocks of this type.
-	 * Use this to reset the global total
-	 * NOTE:Assumes that the values and prices of the stocks have been set correctly beforehand
-	 * 
-	 * @param validate
-	 *            if this is true, check the calculated magnitudes against those already recorded. These should always be the same, so if an alert appears in
-	 *            the user log, something is wrong
-	 */
-	public void calculateUseValueAggregates(boolean validate) {
-		Reporter.report(logger, 1, " Registering use value total prices and values based on stocks");
-		double globalTotalValue = 0;
-		double globalTotalPrice = 0;
-		for (UseValue u : DataManager.useValuesAll()) {
-			u.calculateAggregates(validate);
-			globalTotalValue += u.getTotalValue();
-			globalTotalPrice += u.getTotalPrice();
-		}
-		Reporter.report(logger, 1, " Setting global totals");
-		Global currentGlobal = DataManager.getGlobal(timeStampDisplayCursor);
-		currentGlobal.setTotalValue(globalTotalValue);
-		currentGlobal.setTotalPrice(globalTotalPrice);
-		Reporter.report(logger, 2, " Global total value reset to %.2f and price to %.2f", globalTotalValue, globalTotalPrice);
-	}
-
-	/**
 	 * initialise the initialCapital of each circuit to be the price of its stocks when the period starts.
 	 * Initialise the currentCapital to be the same.
 	 * Called by 'startup' and then AFTER Supply. The reason is only to display to the user how the profit is calculated.
 	 */
 	protected void setCapitals() {
 		Global global = DataManager.getGlobal(Simulation.timeStampIDCurrent);
-		double globalInitialCapital=0.0;
 		for (Circuit c : DataManager.circuitsAll()) {
-			c.calculateCurrentCapital();
-			double initialCapital = c.getCurrentCapital();
+			double initialCapital = c.currentCapital();
 			Reporter.report(logger, 2, "  The initial capital of the industry[%s] is now $%.2f (intrinsic %.2f)", c.getProductUseValueName(),initialCapital,initialCapital/global.getMelt());
 			c.setInitialCapital(initialCapital);
-			globalInitialCapital+=initialCapital;
 		}
-		Reporter.report(logger, 2, "  Total initial capital is now $%.2f (intrinsic %.2f)", globalInitialCapital,globalInitialCapital/global.getMelt());
-		
-		global.setInitialCapital(globalInitialCapital);
-		global.setCurrentCapital(globalInitialCapital);
+		Reporter.report(logger, 2, "  Total initial capital is now $%.2f (intrinsic %.2f)", global.initialCapital(),global.initialCapital()/global.getMelt());
 	}
 
 	public void advanceOnePeriod() {

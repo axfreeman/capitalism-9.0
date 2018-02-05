@@ -101,15 +101,15 @@ public class SwitchableGraphicsGrid extends AnchorPane {
 	public void populate(String floatFormatString, Global global) {
 		Project currentProject=Capitalism.selectionsProvider.projectSingle(Simulation.projectCurrent);
 		setNumericLabel(ViewManager.largeNumbersFormatString, "Initial Capital",
-				ViewManager.valueExpression(global.getInitialCapital(), ViewManager.valuesExpressionDisplay));
+				ViewManager.valueExpression(global.initialCapital(), ViewManager.valuesExpressionDisplay));
 		setNumericLabel(ViewManager.largeNumbersFormatString, "Current Capital",
-				ViewManager.valueExpression(global.getCurrentCapital(), ViewManager.valuesExpressionDisplay));
+				ViewManager.valueExpression(global.currentCapital(), ViewManager.valuesExpressionDisplay));
 		setNumericLabel(ViewManager.largeNumbersFormatString, "Total Value",
-				ViewManager.valueExpression(global.getTotalValue(), ViewManager.valuesExpressionDisplay));
+				ViewManager.valueExpression(global.totalValue(), ViewManager.valuesExpressionDisplay));
 		setNumericLabel(ViewManager.largeNumbersFormatString, "Total Price",
-				ViewManager.valueExpression(global.getTotalPrice(), ViewManager.pricesExpressionDisplay));
-		setNumericLabel(ViewManager.largeNumbersFormatString, "Profit", global.getProfit());
-		setNumericLabel(ViewManager.smallNumbersFormatString, "Profit Rate", global.getProfitRate());
+				ViewManager.valueExpression(global.totalPrice(), ViewManager.pricesExpressionDisplay));
+		setNumericLabel(ViewManager.largeNumbersFormatString, "Profit", global.profit());
+		setNumericLabel(ViewManager.smallNumbersFormatString, "Profit Rate", global.profitRate());
 		setNumericLabel(ViewManager.smallNumbersFormatString, "MELT", global.getMelt());
 		setNumericLabel(ViewManager.smallNumbersFormatString, "Population Growth Rate", global.getPopulationGrowthRate());
 		setTextLabel(currentProject.getPriceDynamics().getText(),"Price Dynamics");

@@ -53,10 +53,6 @@ public class Trade extends Simulation implements Command {
 
 		productivePurchasesTrade();
 		socialClassesTrade();
-		
-		// validate the use value aggregates from the stocks
-
-		calculateUseValueAggregates(true);
 	}
 
 	/**

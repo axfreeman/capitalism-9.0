@@ -36,7 +36,10 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.apache.commons.math3.util.Precision;
+
 import rd.dev.simulation.Simulation;
+import rd.dev.simulation.datamanagement.DataManager;
 
 /**
  *
@@ -56,13 +59,7 @@ public class Global extends Observable implements Serializable {
 	@EmbeddedId protected GlobalPK pk;
 	@Column(name = "RateOfExploitation") private double rateOfExploitation;
 	@Column(name = "MELT") private double melt;
-	@Column(name = "Profit")private double profit;
-	@Column(name = "ProfitRate") private double profitRate;
 	@Column(name = "PopulationGrowthRate") private double populationGrowthRate;
-	@Column(name= "InitialCapital") private double initialCapital;
-	@Column(name = "CurrentCapital") private double currentCapital;
-	@Column(name = "TotalValue") private double totalValue;
-	@Column(name = "TotalPrice") private double totalPrice;
 	@Column(name = "InvestmentRatio") private double investmentRatio;
 	@Column(name = "LabourSupplyResponse") private Simulation.SupplyResponse labourSupplyResponse;
 	@Column(name = "CurrencySymbol") private String currencySymbol;
@@ -80,13 +77,7 @@ public class Global extends Observable implements Serializable {
 		pk.project=globalTemplate.pk.project;
 		rateOfExploitation = globalTemplate.getRateOfExploitation();
 		melt = globalTemplate.getMelt();
-		initialCapital=globalTemplate.initialCapital;
-		currentCapital=globalTemplate.currentCapital;
-		profit=globalTemplate.getProfit();
-		profitRate = globalTemplate.getProfitRate();
 		populationGrowthRate = globalTemplate.getPopulationGrowthRate();
-		totalValue=globalTemplate.totalValue;
-		totalPrice=globalTemplate.totalPrice;
 		investmentRatio=globalTemplate.investmentRatio;
 		labourSupplyResponse=globalTemplate.labourSupplyResponse;
 		currencySymbol=globalTemplate.currencySymbol;
@@ -109,14 +100,6 @@ public class Global extends Observable implements Serializable {
 		this.melt = melt;
 	}
 
-	public double getProfitRate() {
-		return profitRate;
-	}
-
-	public void setProfitRate(double profitRate) {
-		this.profitRate = profitRate;
-	}
-
 	public double getPopulationGrowthRate() {
 		return populationGrowthRate;
 	}
@@ -126,39 +109,76 @@ public class Global extends Observable implements Serializable {
 	}
 
 	/**
-	 * @return the totalValue
+	 * @return the total value in the economy
 	 */
-	public double getTotalValue() {
+	public double totalValue() {
+		//TODO replace by a sum query
+		double totalValue=0;
+		for (Stock s:DataManager.stocksAll(pk.timeStamp)) {
+			totalValue+=s.getValue();
+		}
 		return totalValue;
 	}
-
+	
 	/**
-	 * @param totalValue the totalValue to set
+	 * @return the total price in the economy
 	 */
-	public void setTotalValue(double totalValue) {
-		this.totalValue = totalValue;
-	}
-
-	/**
-	 * @return the totalPrice
-	 */
-	public double getTotalPrice() {
+	public double totalPrice() {
+		//TODO replace by a sum query
+		double totalPrice=0;
+		for (Stock s:DataManager.stocksAll(pk.timeStamp)) {
+			totalPrice+=s.getPrice();
+		}
 		return totalPrice;
 	}
 
 	/**
-	 * @return the profit
+	 * @return the total initial capital in the economy
+	 * 
 	 */
-	public double getProfit() {
-		return profit;
+	public double initialCapital() {
+		double initialCapital=0;
+		for (Circuit c:DataManager.circuitsAll(pk.timeStamp)) {
+			initialCapital+=c.getInitialCapital();
+		}
+		return initialCapital;
 	}
-
+	
 	/**
-	 * @param profit the profit to set
+	 * @return the total current capital in the economy
 	 */
-	public void setProfit(double profit) {
-		this.profit = profit;
+	
+	public double currentCapital() {
+		double currentCapital=0;
+		for (Circuit c:DataManager.circuitsAll(pk.timeStamp)) {
+			currentCapital+=c.currentCapital();
+		}
+		return currentCapital;
 	}
+	
+	/**
+	 * @return the total profit in the economy
+	 */
+	public double profit() {
+		return currentCapital()-initialCapital();
+	}
+	
+	/**
+	 * @return the profit rate for the whole economy
+	 */
+	
+	public double profitRate() {
+		double initialCapital=Precision.round(initialCapital(),Simulation.getRoundingPrecision());
+		if (initialCapital==0) {
+			return Double.NaN;
+		}
+		return profit()/initialCapital();
+	}
+	
+	/**
+	 * set the timeStamp
+	 * @param timeStamp the timeStamp to set
+	 */
 
 	public void setTimeStamp(int timeStamp) {
 		this.pk.timeStamp=timeStamp;
@@ -167,42 +187,6 @@ public class Global extends Observable implements Serializable {
 	public int getProject() {
 		return pk.project;
 	}
-
-	/**
-	 * @return the initialCapital
-	 */
-	public double getInitialCapital() {
-		return initialCapital;
-	}
-
-	/**
-	 * @param initialCapital the initialCapital to set
-	 */
-	public void setInitialCapital(double initialCapital) {
-		this.initialCapital = initialCapital;
-	}
-
-	/**
-	 * @return the currentCapital
-	 */
-	public double getCurrentCapital() {
-		return currentCapital;
-	}
-
-	/**
-	 * @param currentCapital the currentCapital to set
-	 */
-	public void setCurrentCapital(double currentCapital) {
-		this.currentCapital = currentCapital;
-	}
-
-	/**
-	 * @param totalPrice the totalPrice to set
-	 */
-	public void setTotalPrice(double totalPrice) {
-		this.totalPrice = totalPrice;
-	}
-
 	@Override
 	public int hashCode() {
 		int hash = 0;

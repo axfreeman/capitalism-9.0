@@ -1,5 +1,12 @@
 # Capitalism 9.0 announcements
 
+## 2/5/2018 9:19:41 AM 
+
+Thorough overhaul of underlying database storage and retrieval.
+Result is a much more robust and simpler project (see 'todo.md' for tech details)
+All projects working except SR with profit rate equalization; however currently this is only a simple consistency check since profit rates are already equal for SR project 1
+Before proceeding to deal exhaustively with profit rate equalization, it was necessary first to ensure that the project could accomodate multiple industries and multiple different types of means of production. The underlying code is now there, but has to be tested.
+
 ## 2/4/2018 2/4/2018 5:49:20 PM 
 
 New option 'deltas' allows user to display the differences between changed items and their predecessors

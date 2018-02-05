@@ -62,25 +62,22 @@ public class ImmediateConsequences extends Simulation implements Command {
 		double globalTotalPrice = 0.0;
 		Global global = DataManager.getGlobal(timeStampIDCurrent);
 		for (UseValue u :  DataManager.useValuesAll()) {
-			Reporter.report(logger, 1, "Commodity [%s] Total value is %.2f, and total price is %.2f", u.getUseValueName(),u.getTotalValue(), u.getTotalPrice());
-			globalTotalValue += u.getTotalValue();
-			globalTotalPrice += u.getTotalPrice();
+			Reporter.report(logger, 1, "Commodity [%s] Total value is %.2f, and total price is %.2f", u.getUseValueName(),u.totalValue(), u.totalPrice());
+			globalTotalValue += u.totalValue();
+			globalTotalPrice += u.totalPrice();
 		}
 		Reporter.report(logger, 1, "Global total value is %.2f, and total price is %.2f", globalTotalValue, globalTotalPrice);
 
-		logger.debug("Recorded global total value is %.2f, and calculated total value is %.2f", global.getTotalValue(), globalTotalValue);
-		logger.debug("Recorded global total price is %.2f, and calculated total price is %.2f", global.getTotalPrice(), globalTotalPrice);
+		logger.debug("Recorded global total value is %.2f, and total value calculated from use values is %.2f", global.totalValue(), globalTotalValue);
+		logger.debug("Recorded global total price is %.2f, and total price calculated from use values is %.2f", global.totalPrice(), globalTotalPrice);
 		
-		if (globalTotalValue != global.getTotalValue())
-			Dialogues.alert(logger, "The computed global total value is out of sync with recorded total value");
-		if (globalTotalPrice != global.getTotalPrice())
-			Dialogues.alert(logger, "The computed global total price is is out of sync with recorded total price");
+		if (globalTotalValue != global.totalValue())
+			Dialogues.alert(logger, "The total value of stocks is out of sync");
+		if (globalTotalPrice != global.totalPrice())
+			Dialogues.alert(logger, "The total price of stocks is out of sync");
 
 		// ... end of the consistency check
 
-		// calculate profit rates on the basis of the unadjusted prices and values
-		calculateProfits();
-		
 		// adjust prices depending on the price adjustment mechanism specific to the project (no change, equalization, or dynamic)
 		adjustPrices();
 		
@@ -98,8 +95,8 @@ public class ImmediateConsequences extends Simulation implements Command {
 
 		for (UseValue u : DataManager.useValuesAll()) {
 			if (u.getUseValueType() != UseValue.USEVALUETYPE.MONEY) {
-				double quantity = u.getTotalQuantity();
-				double newUnitValue = Precision.round(adjustmentFactor * u.getTotalValue() / quantity, Simulation.roundingPrecision);
+				double quantity = u.totalQuantity();
+				double newUnitValue = Precision.round(adjustmentFactor * u.totalValue() / quantity, Simulation.roundingPrecision);
 				Reporter.report(logger, 2, "The unit value of commodity [%s] was %.2f, and will be reset to %.2f", u.getUseValueName(),u.getUnitValue(), newUnitValue);
 				u.setUnitValue(newUnitValue);
 			}
@@ -108,15 +105,6 @@ public class ImmediateConsequences extends Simulation implements Command {
 		// recalculate the values and prices of each stock on the basis of the new unit values and prices
 
 		stockValuesRecalculate();
-
-		// and recalculate the values and prices of the use values on the basis of the stock total values and prices we just re-calculated
-
-		calculateUseValueAggregates(false);
-		// finally, calculate the profits that resulted from the combination of production and revaluation.
-		// NOTE these are the unmodified profits, before any equalization of profit rates or indeed,
-		// any movement of profit rates caused by market operation and price formation.
-
-		calculateProfits();
 	}
 	
 	/**
@@ -133,7 +121,7 @@ public class ImmediateConsequences extends Simulation implements Command {
 		case EQUALISE:
 			Reporter.report(logger, 0, "Setting prices to equalise profit rates");
 			Global global =DataManager.getGlobal(timeStampIDCurrent);
-			Reporter.report(logger, 1, "Average Profit Rate is currently recorded as %.2f", global.getProfitRate());
+			Reporter.report(logger, 1, "Average Profit Rate is currently recorded as %.2f", global.profitRate());
 
 			// there may be more than one producer of the same commodity.
 			// we can only set the profit rate for the sector as a whole,which means we work from the per-useValue profit rates
@@ -143,7 +131,7 @@ public class ImmediateConsequences extends Simulation implements Command {
 				for (Circuit c:DataManager.circuitsByProductUseValue(u.getUseValueName())) {
 					Reporter.report(logger, 2, " Note: circuit %s produces this use value", c.getProductUseValueName());
 				}
-				double newUnitPrice=u.getCapital()*(1+global.getProfitRate())/u.getTotalQuantity();
+				double newUnitPrice=u.initialCapital()*(1+global.profitRate())/u.totalQuantity();
 				Reporter.report(logger, 2, "  Unit price changed from %.2f to %.2f", u.getUnitPrice(),newUnitPrice);
 				u.setUnitPrice(newUnitPrice);
 			}
@@ -157,42 +145,5 @@ public class ImmediateConsequences extends Simulation implements Command {
 		for (Stock s : DataManager.stocksAll(timeStampIDCurrent)) {
 			s.reCalculateStockTotalValuesAndPrices();
 		}
-	}
-
-	private void calculateProfits() {
-		Global global = DataManager.getGlobal(timeStampIDCurrent);
-		double globalProfit = 0.0;
-		double globalInitialCapital = 0.0;
-		double globalCurrentCapital = 0.0;
-		
-		// initialise the capitals and sv of each use value
-		// we are going to set both to be the total of the circuits that produce this useValue
-		
-		for (UseValue u:DataManager.useValuesAll()) {
-			u.setCapital(0);
-			u.setSurplusValue(0);
-		}
-
-		Reporter.report(logger, 1, " Calculate profits and profit rates");
-		for (Circuit c : DataManager.circuitsAll()) {
-			UseValue useValue=c.getUseValue();
-			useValue.setCapital(useValue.getCapital()+c.getInitialCapital());
-			c.calculateCurrentCapital();
-			double profit = c.getCurrentCapital() - c.getInitialCapital();
-			useValue.setSurplusValue(useValue.getSurplusValue()+profit);
-			globalInitialCapital += c.getInitialCapital();
-			globalCurrentCapital += c.getCurrentCapital();
-			globalProfit += profit;
-			double profitRate = profit / c.getInitialCapital();
-			Reporter.report(logger, 2, "  The initial capital of industry [%s] was %.2f; current capital is %.2f and profit is %.2f. the profit rate of this industry is %.2f", 
-					c.getProductUseValueName(),	c.getInitialCapital(), c.getCurrentCapital(), profit, profitRate);
-			c.setProfit(profit);
-			c.setRateOfProfit(profitRate);
-		}
-		Reporter.report(logger, 1, " Global initial capital was %.2f; currentCapital is %.2f and profit is %.2f. The global profit rate is %.2f",
-				globalProfit, globalInitialCapital, globalCurrentCapital, globalProfit, globalProfit / globalInitialCapital);		global.setCurrentCapital(globalCurrentCapital);
-		global.setInitialCapital(globalInitialCapital);
-		global.setProfit(globalProfit);
-		global.setProfitRate(globalProfit / globalInitialCapital);
 	}
 }
