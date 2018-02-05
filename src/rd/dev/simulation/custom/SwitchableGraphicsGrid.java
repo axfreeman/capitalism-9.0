@@ -11,10 +11,7 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
-import rd.dev.simulation.Capitalism;
-import rd.dev.simulation.Simulation;
 import rd.dev.simulation.model.Global;
-import rd.dev.simulation.model.Project;
 import rd.dev.simulation.view.ViewManager;
 
 /**
@@ -47,45 +44,25 @@ public class SwitchableGraphicsGrid extends AnchorPane {
 		dropShadow.setOffsetY(2.0);
 		dropShadow.setColor(Color.BROWN);
 		setEffect(dropShadow);
-
-		addLabel(0, 0, "Initial Capital");
-		addLabel(0, 1, "Current Capital");
-		addLabel(0, 2, "Profit");
-		addLabel(0, 3, "Profit Rate");
-		addLabel(1, 0, "Total Value");
-		addLabel(1, 1, "Total Price");
-		addLabel(1, 2, "MELT");
-		addLabel(1, 3, "Population Growth Rate");
-		addLabel(0, 4, "Price Dynamics");
-		addLabel(1, 4, "Labour Supply Response");
 	}
 
-	/**
-	 * add a new Glabel and store a reference to it, defined by the description string.
-	 * 
-	 * @param col
-	 *            the column in the grid
-	 * @param row
-	 *            the row in the grid
-	 * @param description
-	 *            the text description
-	 */
-	private void addLabel(int col, int row, String description) {
+	public void setGridCell(int col, int row, Global global, Global.GLOBAL_SELECTOR selector) {
 		Glabel glabel = new Glabel();
-		glabel.setDescription(description);
+		glabel.setDescription(selector.text());
 		gridPane.add(glabel, row, col);
-		labelsByDescription.put(description, glabel.numberLabel);
-	}
+		Label label = glabel.numberLabel;
+		String text = global.value(selector);
+		
+		String deltaModifier="";
 
-	private void setNumericLabel(String formatString, String description, double number) {
-		Label numberLabel = labelsByDescription.get(description);
-		numberLabel.setText(String.format(formatString, number));
-	}
-	
-	
-	private void setTextLabel(String text,String description) {
-		Label numberLabel = labelsByDescription.get(description);
-		numberLabel.setText(text);
+		if (global.changed(selector)) {
+			label.setTextFill(Color.RED);
+			if (ViewManager.displayDeltas) {
+				text=global.showDelta(text, selector);
+				deltaModifier=(ViewManager.displayDeltas?ViewManager.deltaSymbol:"");
+			}
+		}
+		label.setText(deltaModifier+text);
 	}
 
 	/**
@@ -99,24 +76,15 @@ public class SwitchableGraphicsGrid extends AnchorPane {
 	 *            the persistent Global that is used to get the numeric values
 	 */
 	public void populate(String floatFormatString, Global global) {
-		Project currentProject=Capitalism.selectionsProvider.projectSingle(Simulation.projectCurrent);
-		setNumericLabel(ViewManager.largeNumbersFormatString, "Initial Capital",
-				ViewManager.valueExpression(global.initialCapital(), ViewManager.valuesExpressionDisplay));
-		setNumericLabel(ViewManager.largeNumbersFormatString, "Current Capital",
-				ViewManager.valueExpression(global.currentCapital(), ViewManager.valuesExpressionDisplay));
-		setNumericLabel(ViewManager.largeNumbersFormatString, "Total Value",
-				ViewManager.valueExpression(global.totalValue(), ViewManager.valuesExpressionDisplay));
-		setNumericLabel(ViewManager.largeNumbersFormatString, "Total Price",
-				ViewManager.valueExpression(global.totalPrice(), ViewManager.pricesExpressionDisplay));
-		setNumericLabel(ViewManager.largeNumbersFormatString, "Profit", global.profit());
-		setNumericLabel(ViewManager.smallNumbersFormatString, "Profit Rate", global.profitRate());
-		setNumericLabel(ViewManager.smallNumbersFormatString, "MELT", global.getMelt());
-		setNumericLabel(ViewManager.smallNumbersFormatString, "Population Growth Rate", global.getPopulationGrowthRate());
-		setTextLabel(currentProject.getPriceDynamics().getText(),"Price Dynamics");
-		setTextLabel(global.getLabourSupplyResponse().toString(),"Labour Supply Response");
-	}
-
-	public void changeSmallNumberFormatString() {
-
+		setGridCell(0, 0, global, Global.GLOBAL_SELECTOR.INITIALCAPITAL);
+		setGridCell(0, 1, global, Global.GLOBAL_SELECTOR.CURRENTCAPITAL);
+		setGridCell(0, 2, global, Global.GLOBAL_SELECTOR.PROFIT);
+		setGridCell(0, 3, global, Global.GLOBAL_SELECTOR.PROFITRATE);
+		setGridCell(1, 0, global, Global.GLOBAL_SELECTOR.TOTALVALUE);
+		setGridCell(1, 1, global, Global.GLOBAL_SELECTOR.TOTALPRICE);
+		setGridCell(1, 2, global, Global.GLOBAL_SELECTOR.MELT);
+		setGridCell(1, 3, global, Global.GLOBAL_SELECTOR.POPULATION_GROWTH_RATE);
+		setGridCell(0, 4, global, Global.GLOBAL_SELECTOR.PRICE_DYNAMICS);
+		setGridCell(1, 4, global, Global.GLOBAL_SELECTOR.LABOUR_SUPPLY_RESPONSE);
 	}
 }

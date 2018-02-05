@@ -68,8 +68,15 @@ public class Simulation {
 	// if FLEXIBLE, labour power will expand to meet demand (reserve army)
 	// if FIXED, labour power cannot expand to meet demand and provides a supply constraint on output
 	
-	public static enum SupplyResponse{
-		FLEXIBLE, FIXED
+	public static enum LABOUR_SUPPLY_RESPONSE{
+		FLEXIBLE("Flexible"), FIXED("Fixed");
+		String text;
+		private LABOUR_SUPPLY_RESPONSE(String text) {
+			this.text=text;
+		}
+		public String text() {
+			return  text;
+		}
 	}
 	
 	public Simulation() {
@@ -296,10 +303,9 @@ public class Simulation {
 		Global newGlobal = new Global();
 		newGlobal.copyGlobal(g);
 		newGlobal.setTimeStamp(timeStampIDCurrent);
+		DataManager.getGlobalEntityManager().persist(newGlobal);
 
 		DataManager.setComparators(timeStampIDCurrent);
-
-		DataManager.getGlobalEntityManager().persist(newGlobal);
 
 		DataManager.getSocialClassEntityManager().getTransaction().commit();
 		DataManager.getCircuitEntityManager().getTransaction().commit();

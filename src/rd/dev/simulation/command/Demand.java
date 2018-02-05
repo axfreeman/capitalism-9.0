@@ -180,13 +180,13 @@ public class Demand extends Simulation implements Command {
 	/**
 	 * Primitive response function for the supply of Labour Power
 	 * 
-	 * @param supplyResponse 
+	 * @param lABOUR_SUPPLY_RESPONSE 
 	 * 			a per-project parameter
 	 *          if this is FLEXIBLE, the supply changes to match demand
 	 *          if it is FIXED,supply is unaffected by demand
 	 */
-	private void registerLabourResponse(Simulation.SupplyResponse supplyResponse) {
-		switch (supplyResponse) {
+	private void registerLabourResponse(Simulation.LABOUR_SUPPLY_RESPONSE lABOUR_SUPPLY_RESPONSE) {
+		switch (lABOUR_SUPPLY_RESPONSE) {
 		case FLEXIBLE:
 			SocialClass workers = DataManager.socialClassByName("Workers");
 			UseValue labourPower=DataManager.useValueByType(UseValue.USEVALUETYPE.LABOURPOWER);

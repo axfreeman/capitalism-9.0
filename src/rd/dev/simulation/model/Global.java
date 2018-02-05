@@ -38,8 +38,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.math3.util.Precision;
 
+import rd.dev.simulation.Capitalism;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.datamanagement.DataManager;
+import rd.dev.simulation.view.ViewManager;
 
 /**
  *
@@ -61,29 +63,145 @@ public class Global extends Observable implements Serializable {
 	@Column(name = "MELT") private double melt;
 	@Column(name = "PopulationGrowthRate") private double populationGrowthRate;
 	@Column(name = "InvestmentRatio") private double investmentRatio;
-	@Column(name = "LabourSupplyResponse") private Simulation.SupplyResponse labourSupplyResponse;
+	@Column(name = "LabourSupplyResponse") private Simulation.LABOUR_SUPPLY_RESPONSE labourSupplyResponse;
 	@Column(name = "CurrencySymbol") private String currencySymbol;
 	@Column(name = "QuantitySymbol") private String quantitySymbol;
-	
-	
+
 	@Transient private double surplusMeansOfProduction = 0; // how much (in $) is available for investment
-	
-	public Global() {
-		pk=new GlobalPK();
+
+	public static enum GLOBAL_SELECTOR {
+		INITIALCAPITAL("Initial Capital"), CURRENTCAPITAL("Current Capital"), PROFIT("Profit"), PROFITRATE("Profit Rate"), TOTALVALUE(
+				"Total Value"), TOTALPRICE("Total Price"), MELT("MELT"), POPULATION_GROWTH_RATE(
+						"Population Growth Rate"), PRICE_DYNAMICS("Price Dynamics"), LABOUR_SUPPLY_RESPONSE("Labour Supply Response");
+		String text;
+
+		GLOBAL_SELECTOR(String text) {
+			this.text = text;
+		}
+
+		public String text() {
+			return text;
+		}
 	}
-	
+
+	@Transient private Global comparator = null;
+
+	public Global() {
+		pk = new GlobalPK();
+	}
+
 	public void copyGlobal(Global globalTemplate) {
-		pk.timeStamp=globalTemplate.pk.timeStamp;
-		pk.project=globalTemplate.pk.project;
+		pk.timeStamp = globalTemplate.pk.timeStamp;
+		pk.project = globalTemplate.pk.project;
 		rateOfExploitation = globalTemplate.getRateOfExploitation();
 		melt = globalTemplate.getMelt();
 		populationGrowthRate = globalTemplate.getPopulationGrowthRate();
-		investmentRatio=globalTemplate.investmentRatio;
-		labourSupplyResponse=globalTemplate.labourSupplyResponse;
-		currencySymbol=globalTemplate.currencySymbol;
-		quantitySymbol=globalTemplate.quantitySymbol;
+		investmentRatio = globalTemplate.investmentRatio;
+		labourSupplyResponse = globalTemplate.labourSupplyResponse;
+		currencySymbol = globalTemplate.currencySymbol;
+		quantitySymbol = globalTemplate.quantitySymbol;
 	}
 
+	public String value(GLOBAL_SELECTOR selector) {
+		Project currentProject = Capitalism.selectionsProvider.projectSingle(Simulation.projectCurrent);
+
+		switch (selector) {
+		case CURRENTCAPITAL:
+			return String.format(ViewManager.largeNumbersFormatString, currentCapital());
+		case INITIALCAPITAL:
+			return String.format(ViewManager.largeNumbersFormatString, initialCapital());
+		case LABOUR_SUPPLY_RESPONSE:
+			return String.format("%s", labourSupplyResponse.text());
+		case MELT:
+			return String.format(ViewManager.smallNumbersFormatString, melt);
+		case POPULATION_GROWTH_RATE:
+			return String.format(ViewManager.smallNumbersFormatString, populationGrowthRate);
+		case PRICE_DYNAMICS:
+			return String.format("%s", currentProject.getPriceDynamics().text);
+		case PROFIT:
+			return String.format(ViewManager.largeNumbersFormatString, profit());
+		case PROFITRATE:
+			return String.format(ViewManager.smallNumbersFormatString, profitRate());
+		case TOTALPRICE:
+			return String.format(ViewManager.largeNumbersFormatString, totalPrice());
+		case TOTALVALUE:
+			return String.format(ViewManager.largeNumbersFormatString, totalValue());
+		default:
+			return "";
+		}
+	}
+
+	/**
+	 * If the selected field has changed, return the difference between the current value and the former value
+	 * 
+	 * @param selector
+	 *            chooses which field to evaluate
+	 * 
+	 * @param item
+	 *            the original item - returned as the result if there is no change
+	 * 
+	 * @return the original item if nothing has changed, otherwise the change, as an appropriately formatted string
+	 */
+
+	public String showDelta(String item, GLOBAL_SELECTOR selector) {
+		switch (selector) {
+		case CURRENTCAPITAL:
+			return String.format(ViewManager.largeNumbersFormatString,  currentCapital() - comparator.currentCapital());
+		case INITIALCAPITAL:
+			return String.format(ViewManager.largeNumbersFormatString,  initialCapital() - comparator.initialCapital());
+		case MELT:
+			return String.format(ViewManager.smallNumbersFormatString,  melt - comparator.melt);
+		case PROFIT:
+			return String.format(ViewManager.largeNumbersFormatString,  profit() - comparator.profit());
+		case PROFITRATE:
+			return String.format(ViewManager.smallNumbersFormatString,  profitRate() - comparator.profitRate());
+		case TOTALPRICE:
+			return String.format(ViewManager.largeNumbersFormatString,  totalPrice() - comparator.totalPrice());
+		case TOTALVALUE:
+			return String.format(ViewManager.largeNumbersFormatString,  totalValue() - comparator.totalValue());
+		case LABOUR_SUPPLY_RESPONSE:
+		case POPULATION_GROWTH_RATE:
+		case PRICE_DYNAMICS:
+		default:
+			return item;
+		}
+	}
+
+	/**
+	 * Shows whether the selected magnitude has changed.
+	 * Returns false if this is expected to be constant
+	 * 
+	 * @param selector
+	 *            the magnitude to be selected
+	 * @return
+	 * 		true if the selected variable has changed, false if it has not
+	 */
+
+	public boolean changed(GLOBAL_SELECTOR selector) {
+		switch (selector) {
+		case CURRENTCAPITAL:
+			return currentCapital() != comparator.currentCapital();
+		case INITIALCAPITAL:
+			return initialCapital() != comparator.initialCapital();
+		case MELT:
+			return melt != comparator.melt;
+		case LABOUR_SUPPLY_RESPONSE:
+		case POPULATION_GROWTH_RATE:
+		case PRICE_DYNAMICS:
+			return false;
+		case PROFIT:
+			return profit() != comparator.profit();
+		case PROFITRATE:
+			return profitRate() != comparator.profitRate();
+		case TOTALPRICE:
+			return totalPrice() != comparator.totalPrice();
+		case TOTALVALUE:
+			return totalValue() != comparator.totalValue();
+		default:
+			return false;
+		}
+	}
+	
 	public double getRateOfExploitation() {
 		return rateOfExploitation;
 	}
@@ -112,22 +230,22 @@ public class Global extends Observable implements Serializable {
 	 * @return the total value in the economy
 	 */
 	public double totalValue() {
-		//TODO replace by a sum query
-		double totalValue=0;
-		for (Stock s:DataManager.stocksAll(pk.timeStamp)) {
-			totalValue+=s.getValue();
+		// TODO replace by a sum query
+		double totalValue = 0;
+		for (Stock s : DataManager.stocksAll(pk.timeStamp)) {
+			totalValue += s.getValue();
 		}
 		return totalValue;
 	}
-	
+
 	/**
 	 * @return the total price in the economy
 	 */
 	public double totalPrice() {
-		//TODO replace by a sum query
-		double totalPrice=0;
-		for (Stock s:DataManager.stocksAll(pk.timeStamp)) {
-			totalPrice+=s.getPrice();
+		// TODO replace by a sum query
+		double totalPrice = 0;
+		for (Stock s : DataManager.stocksAll(pk.timeStamp)) {
+			totalPrice += s.getPrice();
 		}
 		return totalPrice;
 	}
@@ -137,65 +255,66 @@ public class Global extends Observable implements Serializable {
 	 * 
 	 */
 	public double initialCapital() {
-		double initialCapital=0;
-		for (Circuit c:DataManager.circuitsAll(pk.timeStamp)) {
-			initialCapital+=c.getInitialCapital();
+		double initialCapital = 0;
+		for (Circuit c : DataManager.circuitsAll(pk.timeStamp)) {
+			initialCapital += c.getInitialCapital();
 		}
 		return initialCapital;
 	}
-	
+
 	/**
 	 * @return the total current capital in the economy
 	 */
-	
+
 	public double currentCapital() {
-		double currentCapital=0;
-		for (Circuit c:DataManager.circuitsAll(pk.timeStamp)) {
-			currentCapital+=c.currentCapital();
+		double currentCapital = 0;
+		for (Circuit c : DataManager.circuitsAll(pk.timeStamp)) {
+			currentCapital += c.currentCapital();
 		}
 		return currentCapital;
 	}
-	
+
 	/**
 	 * @return the total profit in the economy
 	 */
 	public double profit() {
-		return currentCapital()-initialCapital();
+		return currentCapital() - initialCapital();
 	}
-	
+
 	/**
 	 * @return the profit rate for the whole economy
 	 */
-	
+
 	public double profitRate() {
-		double initialCapital=Precision.round(initialCapital(),Simulation.getRoundingPrecision());
-		if (initialCapital==0) {
+		double initialCapital = Precision.round(initialCapital(), Simulation.getRoundingPrecision());
+		if (initialCapital == 0) {
 			return Double.NaN;
 		}
-		return profit()/initialCapital();
+		return profit() / initialCapital();
 	}
-	
+
 	/**
 	 * set the timeStamp
-	 * @param timeStamp the timeStamp to set
+	 * 
+	 * @param timeStamp
+	 *            the timeStamp to set
 	 */
 
 	public void setTimeStamp(int timeStamp) {
-		this.pk.timeStamp=timeStamp;
+		this.pk.timeStamp = timeStamp;
 	}
-	
+
 	public int getProject() {
 		return pk.project;
 	}
-	@Override
-	public int hashCode() {
+
+	@Override public int hashCode() {
 		int hash = 0;
 		hash += (pk != null ? pk.hashCode() : 0);
 		return hash;
 	}
 
-	@Override
-	public boolean equals(Object object) {
+	@Override public boolean equals(Object object) {
 		if (!(object instanceof Global)) {
 			return false;
 		}
@@ -207,8 +326,7 @@ public class Global extends Observable implements Serializable {
 		return true;
 	}
 
-	@Override
-	public String toString() {
+	@Override public String toString() {
 		return "demo.Globals[ persistent globalsPK=" + pk + " ]";
 	}
 
@@ -220,7 +338,8 @@ public class Global extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param investmentRatio the investmentRatio to set
+	 * @param investmentRatio
+	 *            the investmentRatio to set
 	 */
 	public void setInvestmentRatio(double investmentRatio) {
 		this.investmentRatio = investmentRatio;
@@ -229,14 +348,15 @@ public class Global extends Observable implements Serializable {
 	/**
 	 * @return the labourSupplyResponse
 	 */
-	public Simulation.SupplyResponse getLabourSupplyResponse() {
+	public Simulation.LABOUR_SUPPLY_RESPONSE getLabourSupplyResponse() {
 		return labourSupplyResponse;
 	}
 
 	/**
-	 * @param labourSupplyResponse the labourSupplyResponse to set
+	 * @param labourSupplyResponse
+	 *            the labourSupplyResponse to set
 	 */
-	public void setLabourSupplyResponse(Simulation.SupplyResponse labourSupplyResponse) {
+	public void setLabourSupplyResponse(Simulation.LABOUR_SUPPLY_RESPONSE labourSupplyResponse) {
 		this.labourSupplyResponse = labourSupplyResponse;
 	}
 
@@ -248,7 +368,8 @@ public class Global extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param totalSurplusOfMeansOfProduction the totalSurplusOfMeansOfProduction to set
+	 * @param totalSurplusOfMeansOfProduction
+	 *            the totalSurplusOfMeansOfProduction to set
 	 */
 	public void setSurplusMeansOfProduction(double totalSurplusOfMeansOfProduction) {
 		this.surplusMeansOfProduction = totalSurplusOfMeansOfProduction;
@@ -262,7 +383,8 @@ public class Global extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param currencySymbol the currencySymbol to set
+	 * @param currencySymbol
+	 *            the currencySymbol to set
 	 */
 	public void setCurrencySymbol(String currencySymbol) {
 		this.currencySymbol = currencySymbol;
@@ -276,11 +398,14 @@ public class Global extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param quantitySymbol the quantitySymbol to set
+	 * @param quantitySymbol
+	 *            the quantitySymbol to set
 	 */
 	public void setQuantitySymbol(String quantitySymbol) {
 		this.quantitySymbol = quantitySymbol;
 	}
-	
 
+	public void setComparator(Global comparator) {
+		this.comparator = comparator;
+	}
 }

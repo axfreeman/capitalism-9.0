@@ -1,5 +1,10 @@
 # Capitalism 9.0 announcements
 
+## 2/5/2018 3:32:56 PM 
+
+Global deltas, almost complete.
+New executable.
+
 ## 2/5/2018 9:19:41 AM 
 
 Thorough overhaul of underlying database storage and retrieval.

@@ -562,20 +562,12 @@ public class Circuit extends Observable implements Serializable {
 		this.constrainedOutput = output;
 	}
 
-	public boolean changedOutput() {
-		return constrainedOutput != comparator.constrainedOutput;
-	}
-
 	public double getProposedOutput() {
 		return proposedOutput;
 	}
 
 	public void setProposedOutput(double maximumOutput) {
 		this.proposedOutput = maximumOutput;
-	}
-
-	public boolean changedMaximumOutput() {
-		return proposedOutput != comparator.proposedOutput;
 	}
 
 	@Override public int hashCode() {

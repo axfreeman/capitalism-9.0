@@ -735,6 +735,9 @@ public class DataManager {
 		for (SocialClass sc : socialClassesAll(timeStampID)) {
 			sc.setComparator(socialClassByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), sc.getSocialClassName()));
 		}
+		Global comparator= getGlobal(Simulation.getTimeStampComparatorCursor());
+		Global currentGlobal=getGlobal(timeStampID);
+		currentGlobal.setComparator(comparator);
 	}
 
 	// NON-QUERY GETTERS AND SETTERS

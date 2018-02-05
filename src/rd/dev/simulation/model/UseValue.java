@@ -295,7 +295,7 @@ public class UseValue extends Observable implements Serializable {
 	/**
 	 * If the selected field has changed, return the difference between the current value and the former value
 	 * 
-	 * @param uSEVALUE_SELECTOR
+	 * @param useValueSelector
 	 *            chooses which field to evaluate
 	 * 
 	 * @param item
@@ -304,10 +304,10 @@ public class UseValue extends Observable implements Serializable {
 	 * @return the original item if nothing has changed, otherwise the change, as an appropriately formatted string
 	 */
 
-	public String showDelta(String item, USEVALUE_SELECTOR uSEVALUE_SELECTOR) {
-		if (!changed(uSEVALUE_SELECTOR))
+	public String showDelta(String item, USEVALUE_SELECTOR useValueSelector) {
+		if (!changed(useValueSelector))
 			return item;
-		switch (uSEVALUE_SELECTOR) {
+		switch (useValueSelector) {
 		case USEVALUENAME:
 		case USEVALUECIRCUITTYPE:
 			return item;
