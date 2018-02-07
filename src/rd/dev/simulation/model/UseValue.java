@@ -78,7 +78,7 @@ public class UseValue extends Observable implements Serializable {
 	 *
 	 */
 	public enum USEVALUETYPE {
-		LABOURPOWER("Labour Power"), MONEY("Money"), PRODUCTIVE("Productive"), NECESSITIES("Necessities"), LUXURIES("Luxuries");
+		LABOURPOWER("Labour Power"), MONEY("Money"), PRODUCTIVE("Productive Inputs"), CONSUMPTION("Consumer Goods");
 		String text;
 
 		USEVALUETYPE(String text) {

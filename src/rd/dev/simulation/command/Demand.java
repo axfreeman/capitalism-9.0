@@ -60,7 +60,7 @@ public class Demand extends Simulation implements Command {
 	public void execute() {
 		advanceOneStep(ActionStates.M_C_Demand.getText(), ActionStates.M_C_PreTrade.getText());
 		registerProductiveDemand();
-		registerLabourResponse(DataManager.getGlobal(timeStampIDCurrent).getLabourSupplyResponse());
+		registerLabourResponse(DataManager.getGlobal().getLabourSupplyResponse());
 		registerSocialClassDemand();
 	}
 
@@ -97,7 +97,7 @@ public class Demand extends Simulation implements Command {
 		for (UseValue u :  DataManager.useValuesAll()) {
 			u.setTotalDemand(0);
 		}
-		for (Stock s : DataManager.stocksAll(timeStampIDCurrent)) {
+		for (Stock s : DataManager.stocksAll()) {
 			s.setQuantityDemanded(0);
 		}
 
@@ -108,7 +108,7 @@ public class Demand extends Simulation implements Command {
 		List<Circuit> results = DataManager.circuitsAll();
 		for (Circuit c : results) {
 			double totalCost = 0;
-			logger.debug(" Estimating demand for industry {}", c.getProductUseValueName());
+			logger.debug(" Estimating demand for productive stocks byindustry {}", c.getProductUseValueName());
 			double moneyAvailable = c.getMoneyQuantity();
 
 			// at this stage, proposedOutput will have been set in the preceding Accumulate phase of the past period on the basis of plausible private plans for expansion
@@ -124,7 +124,7 @@ public class Demand extends Simulation implements Command {
 			totalCost=c.getCostOfExpansion();
 			
 			
-			Reporter.report(logger, 1, " Total cost of an output of %.2f is $%.2f and $%.2f is available.",
+			Reporter.report(logger, 1, " Total cost of an output of %.2f is $%.0f and $%.0f is available.",
 					proposedOutput, totalCost, moneyAvailable);
 			
 			// check for monetary constraints
@@ -149,7 +149,7 @@ public class Demand extends Simulation implements Command {
 			// now go through all the stocks again, calculating how much of each will be needed
 			// and adding this to the demand for the use value that the stock represents
 
-			Reporter.report(logger, 1, " Demand will now be set for each stock owned by industry [%s] for an output level of %.2f",
+			Reporter.report(logger, 1, " Demand will now be set for each stock owned by industry [%s] for an output level of %.0f",
 					c.getProductUseValueName(), constrainedOutput);
 
 			List<Stock> managedStocks = DataManager.stocksProductiveByCircuit(Simulation.timeStampIDCurrent,c.getProductUseValueName());
@@ -166,9 +166,9 @@ public class Demand extends Simulation implements Command {
 					double newDemand = requiredStockLevel - existingStock;
 					double totalDemandForThisUseValue = u.getTotalDemand();
 					double newDemandForThisUseValue = totalDemandForThisUseValue + newDemand;
-					Reporter.report(logger, 2, "  Productive stock [%s] requires $%.2f to raise its level from %.2f to %.2f",
+					Reporter.report(logger, 2, "  Productive stock [%s] requires $%.0f to adjust its proposed output level from %.0f to %.0f",
 							useValueName, newDemand, existingStock, requiredStockLevel);
-					Reporter.report(logger, 2, "  The demand for commodity [%s] was %.2f and is now %.2f",
+					Reporter.report(logger, 2, "  The demand for commodity [%s] was %.0f and is now %.0f",
 							useValueName, totalDemandForThisUseValue, newDemandForThisUseValue);
 					s.setQuantityDemanded(Precision.round(newDemand, roundingPrecision));
 					u.setTotalDemand(Precision.round(newDemandForThisUseValue, roundingPrecision));
@@ -191,7 +191,7 @@ public class Demand extends Simulation implements Command {
 			SocialClass workers = DataManager.socialClassByName("Workers");
 			UseValue labourPower=DataManager.useValueByType(UseValue.USEVALUETYPE.LABOURPOWER);
 			double demandForLabourPower = labourPower.getTotalDemand();
-			Reporter.report(logger, 2, "  Labour Power supply has increased in response to demand. It was %.2f and is now %.2f", workers.getSalesQuantity(),
+			Reporter.report(logger, 2, "  Labour Power supply has increased in response to demand. It was %.0f and is now %.0f", workers.getSalesQuantity(),
 					demandForLabourPower);
 			workers.getSalesStock().modifyTo(demandForLabourPower);
 			
@@ -230,11 +230,10 @@ public class Demand extends Simulation implements Command {
 	 */
 	public void registerSocialClassDemand() {
 		Reporter.report(logger, 0, "REGISTER DEMAND FROM CLASSES");
-		for(UseValue u:DataManager.useValuesByType(UseValue.USEVALUETYPE.NECESSITIES)) {
+		for(UseValue u:DataManager.useValuesByType(UseValue.USEVALUETYPE.CONSUMPTION)) {
 			double priceOfConsumptionGoods = u.getUnitPrice();
 			double demand = 0.0;
-			List<SocialClass> classes = DataManager.socialClassesAll();
-			for (SocialClass sc : classes) {
+			for (SocialClass sc : DataManager.socialClassesAll()) {
 				double money = sc.getMoneyQuantity();
 				double thisClassDemand = 0.0;
 				if (sc.getSocialClassName().equals("Workers")) {
@@ -267,7 +266,6 @@ public class Demand extends Simulation implements Command {
 			}
 			Reporter.report(logger, 1, " Total demand for Consumption Goods is %.2f", demand);
 			u.setTotalDemand(Precision.round(demand, roundingPrecision));
-			
 		}
 	}
 }

@@ -202,16 +202,12 @@ public class Simulation {
 	 *            the components(children) of this record, once these have been generated
 	 */
 
-	// Note: Project is the only persistent entity that does not need a new record when the timeStampIDCurrent changes
-
 	public void advanceOneStep(String description, String superState) {
 		timeStampComparatorCursor = timeStampIDCurrent;
-		timeStampIDCurrent++;
-		timeStampDisplayCursor = timeStampIDCurrent;
-		logger.debug("Move One Step in the project called {} by creating a new timeStamp {} with description {}", projectCurrent, timeStampIDCurrent,
-				description);
+		timeStampDisplayCursor=timeStampIDCurrent+1;
+		logger.debug("Move One Step in project {} by creating a new timeStamp {} called {}", projectCurrent, timeStampIDCurrent, description);
 
-		TimeStamp newTimeStamp = new TimeStamp(timeStampIDCurrent, projectCurrent, periodCurrent, superState, timeStampIDCurrent - 1, description);
+		TimeStamp newTimeStamp = new TimeStamp(timeStampIDCurrent+1, projectCurrent, periodCurrent, superState, timeStampIDCurrent, description);
 
 		try {
 			DataManager.getTimeStampEntityManager().getTransaction().begin();
@@ -227,7 +223,7 @@ public class Simulation {
 		// do not create a new project record - modify the existing one.
 
 		DataManager.getProjectEntityManager().getTransaction().begin();
-		Capitalism.selectionsProvider.setTimeStampOfProject(projectCurrent, timeStampIDCurrent);
+		Capitalism.selectionsProvider.setTimeStampOfProject(projectCurrent, timeStampIDCurrent+1);
 		Capitalism.selectionsProvider.setTimeStampCursorOfProject(projectCurrent, timeStampDisplayCursor);
 		DataManager.getProjectEntityManager().getTransaction().commit();
 
@@ -241,71 +237,61 @@ public class Simulation {
 
 		// Use values
 
-		logger.debug(" Persisting a new set of use values with timeStamp {}", timeStampIDCurrent);
-		List<UseValue> results = DataManager.useValuesAll(timeStampIDCurrent - 1);
+		logger.debug(" Persisting a new set of use values with timeStamp {}", timeStampIDCurrent+1);
 		UseValue newUseValue;
-		logger.debug("  Scanning existing use values of which there are " + results.size());
-		for (UseValue u : results) {
-			logger.debug(String.format("  Persisting the use value [%s]", u.getUseValueName()));
+		for (UseValue u : DataManager.useValuesAll()) {
 			newUseValue = new UseValue();
 			newUseValue.copyUseValue(u);
-			newUseValue.setTimeStamp(timeStampIDCurrent);
+			newUseValue.setTimeStamp(timeStampIDCurrent+1);
 			DataManager.getUseValueEntityManager().persist(newUseValue);
 		}
 
 		// Stocks
 
-		logger.debug(" Persisting a new set of stocks with timeStamp {} ", timeStampIDCurrent);
-		List<Stock> stockList = DataManager.stocksAll(timeStampIDCurrent - 1);
+		logger.debug(" Persisting a new set of stocks with timeStamp {} ", timeStampIDCurrent+1);
 		Stock newStock;
-		logger.debug("  Scanning existing stocks of which there are " + stockList.size());
-		for (Stock s : stockList) {
+		for (Stock s : DataManager.stocksAll()) {
 			logger.log(Level.ALL, "   Persisting " + s.primaryKeyAsString());
 			newStock = new Stock();
 			newStock.copyStock(s);
-			newStock.setTimeStamp(timeStampIDCurrent);
+			newStock.setTimeStamp(timeStampIDCurrent+1);
 			DataManager.getStocksEntityManager().persist(newStock);
 		}
 
 		// Circuits
 
-		logger.debug(" Persisting a new set of circuits with timeStamp ", timeStampIDCurrent);
-		List<Circuit> circuitList = DataManager.circuitsAll(timeStampIDCurrent - 1);
+		logger.debug(" Persisting a new set of circuits with timeStamp ", timeStampIDCurrent+1);
 		Circuit newCircuit;
-		logger.debug("  Scanning existing circuits of which there are " + circuitList.size());
-		for (Circuit c : circuitList) {
+		for (Circuit c : DataManager.circuitsAll()) {
 			logger.debug("  Persisting a circuit whose use value is " + c.getProductUseValueName());
 			newCircuit = new Circuit();
 			newCircuit.copyCircuit(c);
-			newCircuit.setTimeStamp(timeStampIDCurrent);
+			newCircuit.setTimeStamp(timeStampIDCurrent+1);
 			DataManager.getCircuitEntityManager().persist(newCircuit);
 		}
 
 		// Social Classes
 
-		logger.debug(" Persisting a new set of social classes with timeStamp {}", timeStampIDCurrent);
-		List<SocialClass> socialClassList = DataManager.socialClassesAll(timeStampIDCurrent - 1);
+		logger.debug(" Persisting a new set of social classes with timeStamp {}", timeStampIDCurrent+1);
 		SocialClass newSocialClass;
-		logger.debug("  Scanning existing social classes of which there are " + socialClassList.size());
-		for (SocialClass sc : socialClassList) {
+		for (SocialClass sc : DataManager.socialClassesAll()) {
 			logger.debug("  Persisting a social class whose name is " + sc.getSocialClassName());
-
 			newSocialClass = new SocialClass();
 			newSocialClass.copySocialClass(sc);
-			newSocialClass.setTimeStamp(timeStampIDCurrent);
+			newSocialClass.setTimeStamp(timeStampIDCurrent+1);
 			DataManager.getSocialClassEntityManager().persist(newSocialClass);
 		}
 
 		// Globals
 
-		logger.debug(" Persisting a new globals record with timeStamp {} ", timeStampIDCurrent);
-		Global g = DataManager.getGlobal(timeStampIDCurrent - 1);
+		logger.debug(" Persisting a new globals record with timeStamp {} ", timeStampIDCurrent+1);
+		Global g = DataManager.getGlobal();
 		Global newGlobal = new Global();
 		newGlobal.copyGlobal(g);
-		newGlobal.setTimeStamp(timeStampIDCurrent);
+		newGlobal.setTimeStamp(timeStampIDCurrent+1);
 		DataManager.getGlobalEntityManager().persist(newGlobal);
 
-		DataManager.setComparators(timeStampIDCurrent);
+		DataManager.setComparators(timeStampIDCurrent+1);
 
 		DataManager.getSocialClassEntityManager().getTransaction().commit();
 		DataManager.getCircuitEntityManager().getTransaction().commit();
@@ -313,11 +299,8 @@ public class Simulation {
 		DataManager.getUseValueEntityManager().getTransaction().commit();
 		DataManager.getGlobalEntityManager().getTransaction().commit();
 
+		timeStampIDCurrent++;
 		logger.debug("Done Persisting: exit AdvanceOneStep");
-		logger.debug("");
-		timeStampDisplayCursor = timeStampIDCurrent; // synchronise cursor with what was just done
-
-		// We do not refresh the display because this is done from within ViewManager and may depend on what is done with the newly-persisted objects
 	}
 
 	/**
@@ -325,7 +308,7 @@ public class Simulation {
 	 */
 	public void calculateStockAggregates() {
 		Reporter.report(logger, 1, " Calculating stock values and prices from stock quantities, unit values and unit prices");
-		List<Stock> allStocks = DataManager.stocksAll(timeStampIDCurrent);
+		List<Stock> allStocks = DataManager.stocksAll();
 		for (Stock s : allStocks) {
 			s.modifyTo(s.getQuantity());
 		}
@@ -337,7 +320,7 @@ public class Simulation {
 	 * Called by 'startup' and then AFTER Supply. The reason is only to display to the user how the profit is calculated.
 	 */
 	protected void setCapitals() {
-		Global global = DataManager.getGlobal(Simulation.timeStampIDCurrent);
+		Global global = DataManager.getGlobal();
 		for (Circuit c : DataManager.circuitsAll()) {
 			double initialCapital = c.currentCapital();
 			Reporter.report(logger, 2, "  The initial capital of the industry[%s] is now $%.2f (intrinsic %.2f)", c.getProductUseValueName(),initialCapital,initialCapital/global.getMelt());

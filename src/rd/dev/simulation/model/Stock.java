@@ -251,7 +251,7 @@ public class Stock extends Observable implements Serializable {
 	 *            the quantity to be added to the size of the stock (negative if subtracted)
 	 */
 	public void modifyTo(double newQuantity) {
-		Global global = DataManager.getGlobal(Simulation.timeStampIDCurrent);
+		Global global = DataManager.getGlobal();
 		double melt = global.getMelt();
 		double unitValue = unitValue();
 		double unitPrice = unitPrice();

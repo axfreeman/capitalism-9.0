@@ -34,14 +34,14 @@
  CREATE TABLE timeStamps (timeStampID int Default 1 NOT NULL, projectFK INT default 1 NOT NULL, period INT DEFAULT NULL,superState VARCHAR(45) default NULL, 
  COMPARATORTIMESTAMPID INT DEFAULT 1, Description VARCHAR(30) default NULL, PRIMARY KEY (timeStampID,projectFK));
  
- insert into globals (project,timeStamp,RateOfExploitation,Melt,Profit,ProfitRate,PopulationGrowthRate,totalValue,totalPrice, investmentRatio,labourSupplyResponse,
- CurrencySymbol,quantitySymbol) select project,timeStamp,RateOfExploitation,Melt,Profit, ProfitRate,PopulationGrowthRate,totalValue,totalPrice,investmentRatio,
- labourSupplyResponse,CurrencySymbol,quantitySymbol from CSVREAD('~/Documents/Capsim/data/globals.csv');
+ insert into globals (project,timeStamp,Melt,PopulationGrowthRate,investmentRatio,labourSupplyResponse, CurrencySymbol,quantitySymbol) 
+ select project,timeStamp,Melt,PopulationGrowthRate,investmentRatio,labourSupplyResponse,CurrencySymbol,quantitySymbol 
+ from CSVREAD('~/Documents/Capsim/data/globals.csv');
 
  insert into socialClasses select * from CSVREAD('~/Documents/Capsim/data/socialClasses.csv');	
  
- insert into circuits (PROJECT, TIMESTAMP, PRODUCTUSEVALUENAME, CONSTRAINEDOUTPUT, PROPOSEDOUTPUT, GROWTHRATE) select PROJECT, TIMESTAMP, 
- PRODUCTUSEVALUENAME, CONSTRAINEDOUTPUT, PROPOSEDOUTPUT, GROWTHRATE from CSVREAD('~/Documents/Capsim/data/circuits.csv');
+ insert into circuits (PROJECT, TIMESTAMP, PRODUCTUSEVALUENAME, PROPOSEDOUTPUT, GROWTHRATE) select PROJECT, TIMESTAMP, 
+ PRODUCTUSEVALUENAME, PROPOSEDOUTPUT, GROWTHRATE from CSVREAD('~/Documents/Capsim/data/circuits.csv');
  
  insert into useValues (PROJECT, TIMESTAMP, USEVALUENAME,useValueCircuitType,UNITVALUE,UNITPRICE,TURNOVERTIME,USEVALUETYPE) 
  select PROJECT, TIMESTAMP, USEVALUENAME,useValueCircuitType,UNITVALUE,UNITPRICE,TURNOVERTIME,USEVALUETYPE from CSVREAD('~/Documents/Capsim/data/useValues.csv');
@@ -60,6 +60,6 @@
  -- and because it greatly simplifies the code.
  -- possibly, in a future version, separate tables could be introduced for each type of stock, with proper functional abstraction to deal with the variety among them.
  
- insert into stocks (PROJECT, TIMESTAMP, OWNER, OWNERTYPE, USEVALUE, STOCKTYPE, QUANTITY, COEFFICIENT, QUANTITYDEMANDED) 
- select PROJECT, TIMESTAMP, OWNER, OWNERTYPE, USEVALUE, STOCKTYPE, QUANTITY, COEFFICIENT, QUANTITYDEMANDED from CSVREAD('~/Documents/Capsim/data/stocks.csv');
+ insert into stocks (PROJECT, TIMESTAMP, OWNER, OWNERTYPE, USEVALUE, STOCKTYPE, QUANTITY, COEFFICIENT) 
+ select PROJECT, TIMESTAMP, OWNER, OWNERTYPE, USEVALUE, STOCKTYPE, QUANTITY, COEFFICIENT from CSVREAD('~/Documents/Capsim/data/stocks.csv');
  

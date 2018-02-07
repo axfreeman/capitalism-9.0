@@ -259,6 +259,9 @@ public class Global extends Observable implements Serializable {
 		for (Circuit c : DataManager.circuitsAll(pk.timeStamp)) {
 			initialCapital += c.getInitialCapital();
 		}
+// TODO get this aggregate query working		
+//		double checkInitialCapital;
+//		checkInitialCapital=DataManager.circuitsInitialCapital(pk.timeStamp);
 		return initialCapital;
 	}
 

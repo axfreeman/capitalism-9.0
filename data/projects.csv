@@ -5,3 +5,4 @@ ProjectID,description,PriceDynamics
 3,SR with halved period,SIMPLE
 2,SR with lower MELT,SIMPLE
 5,Expanded Reproduction,SIMPLE
+7,SR with two consumption oods,SIMPLE

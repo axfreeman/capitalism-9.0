@@ -43,7 +43,7 @@ public class Accumulate extends Simulation implements Command {
 	}
 
 	public void execute() {
-		global = DataManager.getGlobal(timeStampIDCurrent);
+		global = DataManager.getGlobal();
 		Reporter.report(logger, 0, "ACCUMULATE");
 		advanceOneStep(ActionStates.C_M_Accumulate.getText(), ActionStates.C_M_Distribute.getText());
 		calculateSurplus();
@@ -73,13 +73,11 @@ public class Accumulate extends Simulation implements Command {
 
 		Reporter.report(logger, 1, " Calculating the surplus of means of production available for expansion");
 		double surplusMeansOfProduction = 0.0;
-		for (UseValue u : DataManager.useValuesAll()) {
-			if (u.getUseValueType() != (UseValue.USEVALUETYPE.NECESSITIES)) {
+		for (UseValue u : DataManager.useValuesByType(UseValue.USEVALUETYPE.PRODUCTIVE)) {
 				double thisSurplusMeansOfProduction = Precision.round(u.getSurplusProduct() * u.getUnitPrice(), Simulation.roundingPrecision);
 				Reporter.report(logger, 2, "  The surplus of commodity [%s] is %.2f and its price is $%.2f", u.getUseValueName(), u.getSurplusProduct(),
 						thisSurplusMeansOfProduction);
 				surplusMeansOfProduction += thisSurplusMeansOfProduction;
-			}
 		}
 		Reporter.report(logger, 1, " Total surplus of means of production available for investment is $%.2f", surplusMeansOfProduction);
 		global.setSurplusMeansOfProduction(surplusMeansOfProduction);

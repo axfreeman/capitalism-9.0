@@ -478,7 +478,7 @@ public class ViewManager {
 	 * See also {@link initializeGlobalsGrid}
 	 */
 	private void populateGlobalsGrid() {
-		Global global = DataManager.getGlobal(Simulation.timeStampIDCurrent);
+		Global global = DataManager.getGlobal();
 		switchableGrid.populate(smallNumbersFormatString, global);
 	}
 
@@ -515,7 +515,7 @@ public class ViewManager {
 	 * But if a simulation involves a currency reform, it could be in the right place after all.
 	 */
 	public void setExpressionSymbols() {
-		Global global = DataManager.getGlobal(1);
+		Global global = DataManager.getGlobal();
 		moneyExpressionSymbol = global.getCurrencySymbol();
 		quantityExpressionSymbol = global.getQuantitySymbol();
 
@@ -575,7 +575,7 @@ public class ViewManager {
 		if (valuesExpressionDisplay == DisplayAsExpression.MONEY) {
 			return intrinsicValueExpression;
 		} else {
-			Global global = DataManager.getGlobal(Simulation.timeStampIDCurrent);
+			Global global = DataManager.getGlobal();
 			double melt = global.getMelt();
 			return intrinsicValueExpression / melt;
 		}

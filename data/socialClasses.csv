@@ -1,8 +1,8 @@
 Project,timeStamp,SocialClassName,Size,ConsumptionPerPerson,ReproductionTime,Revenue
 1,1,Workers,3000,1,1,0
 1,1,Capitalists,1500,1,1,1500
-6,1,Workers,3000,1,1,0
-6,1,Capitalists,1500,1,1,1500
+7,1,Workers,3000,1,1,0
+7,1,Capitalists,1500,1,1,1500
 2,1,Workers,3000,1,1,0
 2,1,Capitalists,1500,1,1,1500
 3,1,Workers,3000,1,2,0
@@ -12,3 +12,5 @@ Project,timeStamp,SocialClassName,Size,ConsumptionPerPerson,ReproductionTime,Rev
 4,1,Capitalists,10,1,1,10
 5,1,Workers,3500,1,1,0
 5,1,Capitalists,1500,1,1,1250
+6,1,Workers,3000,1,1,0
+6,1,Capitalists,1500,1,1,1500

@@ -25,6 +25,7 @@ import javax.persistence.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import javafx.beans.property.ReadOnlyStringWrapper;
+import rd.dev.simulation.Simulation;
 import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.Stock.ValueExpression;
 import rd.dev.simulation.view.ViewManager;
@@ -115,7 +116,9 @@ public class SocialClass extends Observable implements Serializable {
 	 * @return the sales stock that is owned by this social class.
 	 */
 	public Stock getSalesStock() {
-		return DataManager.stockSalesByCircuitSingle(pk.timeStamp, pk.socialClassName, "Labour Power");
+		// TODO we can't assume there is only one type of labour power
+		// also we should allow for theories in which social classes sell other things
+		return DataManager.stockByPrimaryKey(Simulation.projectCurrent, pk.timeStamp, pk.socialClassName, "Labour Power", Stock.STOCKTYPE.SALES.text());
 	}
 
 	/**

@@ -67,19 +67,21 @@ public class DataManager {
 	protected static EntityManager globalEntityManager;
 	protected static EntityManager stocksEntityManager;
 
-	// TimeStamp and Project queries
+	// TimeStamp queries
 	protected static TypedQuery<TimeStamp> timeStampsAllByProjectQuery;
 	protected static TypedQuery<TimeStamp> timeStampStatesQuery;
 	protected static TypedQuery<TimeStamp> timeStampByPrimarykeyQuery;
-	protected static TypedQuery<Project> projectByPrimaryKeyQuery;
-	protected static TypedQuery<Project> projectAllQuery;
 	protected static TypedQuery<TimeStamp> timeStampSuperStatesQuery;
 	protected static TypedQuery<TimeStamp> timeStampsAllQuery;
 
-	// global queries
+	// Project queries
+	protected static TypedQuery<Project> projectByPrimaryKeyQuery;
+	protected static TypedQuery<Project> projectAllQuery;
+
+	// Global queries
 	protected static TypedQuery<Global> globalQuery;
 
-	// stock queries
+	// Stock queries
 	protected static TypedQuery<Stock> stockByPrimaryKeyQuery;
 	protected static TypedQuery<Stock> stocksAllQuery;
 	protected static TypedQuery<Stock> stocksByUseValueQuery;
@@ -88,18 +90,19 @@ public class DataManager {
 	protected static TypedQuery<Stock> stocksByOneOfTwoStockTypesQuery;
 	protected static TypedQuery<Stock> stocksByStockTypeQuery;
 
-	// use value queries
+	// Use value queries
 	protected static TypedQuery<UseValue> useValueByPrimaryKeyQuery;
 	protected static TypedQuery<UseValue> useValuesAllQuery;
 	protected static TypedQuery<UseValue> useValuesProductiveQuery;
 	protected static TypedQuery<UseValue> useValuesByTypeQuery;
 	protected static TypedQuery<UseValue> useValuesByCircuitTypeQuery;
 
-	// circuit queries
+	// Circuit queries
 	protected static TypedQuery<Circuit> circuitPrimaryQuery;
 	protected static TypedQuery<Circuit> circuitAllQuery;
+	protected static TypedQuery<Circuit> circuitInitialCapitalQuery;
 
-	// social class queries
+	// Social class queries
 	protected static TypedQuery<SocialClass> socialClassByPrimaryKeyQuery;
 	protected static TypedQuery<SocialClass> socialClassAllQuery;
 
@@ -126,20 +129,20 @@ public class DataManager {
 
 		// create named queries which are used to retrieve and update the persistent data types.
 
-		// timestamp queries
+		// Timestamp queries
 		timeStampsAllByProjectQuery = timeStampEntityManager.createNamedQuery("timeStamp.project", TimeStamp.class);
 		timeStampSuperStatesQuery = timeStampEntityManager.createNamedQuery("superStates", TimeStamp.class);
 		timeStampsAllQuery = timeStampEntityManager.createNamedQuery("timeStamp.project", TimeStamp.class);
 		timeStampByPrimarykeyQuery = timeStampEntityManager.createNamedQuery("timeStamp.project.timeStamp", TimeStamp.class);
 
-		// global queries
-		globalQuery = globalEntityManager.createNamedQuery("globals.project.timeStamp", Global.class);
-
-		// project queries
+		// Project queries
 		projectAllQuery = projectEntityManager.createNamedQuery("Project.findAll", Project.class);
 		projectByPrimaryKeyQuery = projectEntityManager.createNamedQuery("Project.findOne", Project.class);
 
-		// stock queries
+		// Global queries
+		globalQuery = globalEntityManager.createNamedQuery("globals.project.timeStamp", Global.class);
+
+		// Stock queries
 		stockByPrimaryKeyQuery = stocksEntityManager.createNamedQuery("Primary", Stock.class);
 		stocksAllQuery = stocksEntityManager.createNamedQuery("All", Stock.class);
 		stocksByStockTypeQuery = stocksEntityManager.createNamedQuery("StockType", Stock.class);
@@ -148,16 +151,16 @@ public class DataManager {
 		stocksByUseValueAndTypeQuery = stocksEntityManager.createNamedQuery("UseValue.StockType", Stock.class);
 		stocksByOneOfTwoStockTypesQuery = stocksEntityManager.createNamedQuery("Demand", Stock.class);
 
-		// use value queries
+		// UseValue queries
 		useValueByPrimaryKeyQuery = useValueEntityManager.createNamedQuery("Primary", UseValue.class);
 		useValuesAllQuery = useValueEntityManager.createNamedQuery("All", UseValue.class);
 		useValuesByTypeQuery = useValueEntityManager.createNamedQuery("UseValueType", UseValue.class);
 		useValuesByCircuitTypeQuery = useValueEntityManager.createNamedQuery("UseValueCircuitType", UseValue.class);
 
-		// circuit queries
+		// Circuit queries
 		circuitPrimaryQuery = circuitEntityManager.createNamedQuery("Primary", Circuit.class);
 		circuitAllQuery = circuitEntityManager.createNamedQuery("All", Circuit.class);
-
+		circuitInitialCapitalQuery = circuitEntityManager.createNamedQuery("InitialCapital", Circuit.class);
 		// social class queries
 		socialClassByPrimaryKeyQuery = socialClassEntityManager.createNamedQuery("Primary", SocialClass.class);
 		socialClassAllQuery = socialClassEntityManager.createNamedQuery("All", SocialClass.class);
@@ -166,14 +169,12 @@ public class DataManager {
 	// GLOBAL QUERIES
 
 	/**
-	 * retrieve the global record at the given timeStamp and return it to the caller
+	 * retrieve the global record at the current timeStamp and project 
 	 * 
-	 * @return the global record for the current project and the given timeStamp, null if it does not exist (which is an error)
-	 * @param timeStamp
-	 *            the timeStamp for which this global is required
+	 * @return the global record for the current project and the current timeStamp, null if it does not exist (which is an error)
 	 */
-	public static Global getGlobal(int timeStamp) {
-		globalQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
+	public static Global getGlobal() {
+		globalQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
 		try {
 			return globalQuery.getSingleResult();
 		} catch (javax.persistence.NoResultException e) {
@@ -207,28 +208,6 @@ public class DataManager {
 			return null;
 		}
 	}
-
-	/**
-	 * the single sales stock of a circuit defined by the name of the circuit and the use value it produces, for the current project and a given timeStamp
-	 * 
-	 * @param timeStamp
-	 *            the given timeStammp
-	 * @param circuit
-	 *            the circuit to which the stock belongs
-	 * @param useValue
-	 *            the useValue produced by this circuit
-	 * @return the single sales stock of the named circuit
-	 */
-	public static Stock stockSalesByCircuitSingle(int timeStamp, String circuit, String useValue) {
-		stockByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp)
-				.setParameter("circuit", circuit).setParameter("stockType", Stock.STOCKTYPE.SALES.text()).setParameter("useValue", useValue);
-		try {
-			return stockByPrimaryKeyQuery.getSingleResult();
-		} catch (javax.persistence.NoResultException e) {
-			return null;// because this query throws a fit if it doesn't find anything
-		}
-	}
-
 	/**
 	 * the single productive stock of a circuit defined by the name of the circuit, the use value it produces, for the current project and a given timeStamp
 	 * 
@@ -307,10 +286,20 @@ public class DataManager {
 	 * @param timeStamp
 	 *            the given timeStamp
 	 * 
-	 * @return a list of stocks at the current project and timeStamp
+	 * @return a list of stocks at the current project and the given timeStamp
 	 */
 	public static List<Stock> stocksAll(int timeStamp) {
 		stocksAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
+		return stocksAllQuery.getResultList();
+	}
+	
+	/**
+	 * a list of all stocks at the current project and timeStamp
+	 * 
+	 * @return a list of stocks at the current project and timeStamp
+	 */
+	public static List<Stock> stocksAll() {
+		stocksAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
 		return stocksAllQuery.getResultList();
 	}
 
@@ -332,8 +321,7 @@ public class DataManager {
 	/**
 	 * a list of all stocks that constitute sources of demand (productive and consumption but not money or sales), for the current project and a given timeStamp
 	 * 
-	 * 
-	 * @return a list of all stocks that constitute sources of demand
+	 *  @return a list of all stocks that constitute sources of demand
 	 */
 	public static List<Stock> stocksSourcesOfDemand() {
 		stocksByOneOfTwoStockTypesQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
@@ -418,19 +406,6 @@ public class DataManager {
 		} catch (NoResultException r) {
 			return null;
 		}
-	}
-
-	/**
-	 * a list of all use values at the current project and for a given timeStamp
-	 * 
-	 * @param timeStamp
-	 *            the given timeStamp
-	 * 
-	 * @return a list of all use values at the current timeStamp and a given project
-	 */
-	public static List<UseValue> useValuesAll(int timeStamp) {
-		useValuesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
-		return useValuesAllQuery.getResultList();
 	}
 
 	/**
@@ -580,7 +555,6 @@ public class DataManager {
 		return circuitPrimaryQuery.getResultList();
 	}
 
-
 	/**
 	 * retrieve the topmost circuit that produces a named use value for the current project and at a given timeStamp.
 	 * TODO Note that in general, we must allow for a named use value to be produced by more than one circuit.
@@ -595,8 +569,18 @@ public class DataManager {
 		return circuits.get(0);
 	}
 	
-	
+    /**
+     * TODO get this working
+     * @return the sum of the initial capital in all circuits	
+     */
 
+	public static double circuitsInitialCapital(int timeStamp) {
+		circuitInitialCapitalQuery.setParameter("timeStamp", timeStamp).setParameter("project", Simulation.projectCurrent);
+		Object o=circuitInitialCapitalQuery.getSingleResult();
+		double result=(double)o;
+		return result;
+	}
+	
 	// SOCIAL CLASS QUERIES
 
 	/**
@@ -628,20 +612,6 @@ public class DataManager {
 
 	public static List<SocialClass> socialClassesAll() {
 		socialClassAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
-		return socialClassAllQuery.getResultList();
-	}
-
-	/**
-	 * a list of social classes, for the current project and a given timeStamp
-	 * 
-	 * @param timeStamp
-	 *            the given timeStamp
-	 * 
-	 * @return a list of all social classes for the current project and timeStamp
-	 */
-
-	public static List<SocialClass> socialClassesAll(int timeStamp) {
-		socialClassAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
 		return socialClassAllQuery.getResultList();
 	}
 
@@ -722,22 +692,30 @@ public class DataManager {
 	 */
 
 	public static void setComparators(int timeStampID) {
-		for (Stock s : stocksAll(timeStampID)) {
-			s.setComparator(stockByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), s.getCircuit(), s.getUseValueName(),
-					s.getStockType()));
+		try {
+			for (Stock s : stocksAll(timeStampID)) {
+				s.setComparator(stockByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), s.getCircuit(), s.getUseValueName(),
+						s.getStockType()));
+			}
+			useValuesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStampID);
+			for (UseValue u : useValuesAllQuery.getResultList()) {
+				u.setComparator(useValueByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), u.getUseValueName()));
+			}
+			for (Circuit c : circuitsAll(timeStampID)) {
+				c.setComparator(circuitByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), c.getProductUseValueName()));
+			}
+			socialClassAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStampID);
+			for (SocialClass sc : socialClassAllQuery.getResultList()){
+				sc.setComparator(socialClassByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), sc.getSocialClassName()));
+			}
+			globalQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.getTimeStampComparatorCursor());
+			Global comparator= globalQuery.getSingleResult();
+			globalQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStampID);
+			Global currentGlobal=globalQuery.getSingleResult();
+			currentGlobal.setComparator(comparator);
+		} catch (Exception e) {
+			Dialogues.alert(logger, "Database fubar. Sorry, please contact developer");
 		}
-		for (UseValue u : useValuesAll(timeStampID)) {
-			u.setComparator(useValueByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), u.getUseValueName()));
-		}
-		for (Circuit c : circuitsAll(timeStampID)) {
-			c.setComparator(circuitByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), c.getProductUseValueName()));
-		}
-		for (SocialClass sc : socialClassesAll(timeStampID)) {
-			sc.setComparator(socialClassByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), sc.getSocialClassName()));
-		}
-		Global comparator= getGlobal(Simulation.getTimeStampComparatorCursor());
-		Global currentGlobal=getGlobal(timeStampID);
-		currentGlobal.setComparator(comparator);
 	}
 
 	// NON-QUERY GETTERS AND SETTERS

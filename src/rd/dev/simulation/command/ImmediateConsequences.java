@@ -60,7 +60,7 @@ public class ImmediateConsequences extends Simulation implements Command {
 
 		double globalTotalValue = 0.0;
 		double globalTotalPrice = 0.0;
-		Global global = DataManager.getGlobal(timeStampIDCurrent);
+		Global global = DataManager.getGlobal();
 		for (UseValue u :  DataManager.useValuesAll()) {
 			Reporter.report(logger, 1, "Commodity [%s] Total value is %.2f, and total price is %.2f", u.getUseValueName(),u.totalValue(), u.totalPrice());
 			globalTotalValue += u.totalValue();
@@ -120,7 +120,7 @@ public class ImmediateConsequences extends Simulation implements Command {
 			Dialogues.alert(logger, "Dynamic price adjustment not available yet, sorry");
 		case EQUALISE:
 			Reporter.report(logger, 0, "Setting prices to equalise profit rates");
-			Global global =DataManager.getGlobal(timeStampIDCurrent);
+			Global global =DataManager.getGlobal();
 			Reporter.report(logger, 1, "Average Profit Rate is currently recorded as %.2f", global.profitRate());
 
 			// there may be more than one producer of the same commodity.

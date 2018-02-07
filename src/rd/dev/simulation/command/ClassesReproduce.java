@@ -54,14 +54,14 @@ public class ClassesReproduce extends Simulation implements Command {
 //		UseValue consumptionUseValue=DataManager.useValueOfConsumptionGoods(timeStampIDCurrent);
 //		double priceOfConsumptionGoods=consumptionUseValue.getUnitPrice();
 
-		Global global = DataManager.getGlobal(Simulation.timeStampIDCurrent);
+		Global global = DataManager.getGlobal();
 		double melt = global.getMelt();
 		List<SocialClass> socialClasses = DataManager.socialClassesAll();
 		for (SocialClass sc : socialClasses) {
 			String socialClassName = sc.getSocialClassName();
 			Reporter.report(logger, 1, " Reproducing the class [%s]", socialClassName);
 			double currentSize = sc.getSize();
-			double populationGrowth = DataManager.getGlobal(timeStampIDCurrent).getPopulationGrowthRate();
+			double populationGrowth = DataManager.getGlobal().getPopulationGrowthRate();
 
 			// if the working class has grown it has more labour power to sell; if either class has grown its demand will increase
 

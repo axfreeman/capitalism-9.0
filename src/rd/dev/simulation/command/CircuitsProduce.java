@@ -48,7 +48,7 @@ public class CircuitsProduce extends Simulation implements Command {
 	public void execute() {
 		Reporter.report(logger, 0, "INDUSTRY PRODUCTION");
 		advanceOneStep(ActionStates.C_P_CircuitsProduce.getText(), ActionStates.C_P_Produce.getText());
-		Global global = DataManager.getGlobal(timeStampIDCurrent);
+		Global global = DataManager.getGlobal();
 		double melt = global.getMelt();
 
 		// initialise the accounting for how much of this useValue is used up and how much is created in production in the current period

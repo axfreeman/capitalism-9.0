@@ -53,6 +53,7 @@ import rd.dev.simulation.view.ViewManager;
 @NamedQueries({
 		@NamedQuery(name = "All", query = "Select c from Circuit c where c.pk.project = :project and c.pk.timeStamp = :timeStamp"),
 		@NamedQuery(name = "Primary", query = "Select c from Circuit c where c.pk.project= :project and c.pk.timeStamp = :timeStamp and c.pk.productUseValueName= :productUseValueName"),
+		@NamedQuery(name= "InitialCapital", query= "Select sum(c.initialCapital) from Circuit c where c.pk.project=:project and c.pk.timeStamp=:timeStamp")
 })
 
 @XmlRootElement
@@ -213,7 +214,9 @@ public class Circuit extends Observable implements Serializable {
 	 * @return the sales stock owned by this circuit
 	 */
 	public Stock getSalesStock() {
-		return DataManager.stockSalesByCircuitSingle(pk.timeStamp, pk.productUseValueName, pk.productUseValueName);
+		// TODO the product and the circuit have the same name, because the circuit is selling its own product
+		// but if there are multiple producers of the same thing, the circuit should have an independent name of its own
+		return DataManager.stockByPrimaryKey(Simulation.projectCurrent, pk.timeStamp, pk.productUseValueName, pk.productUseValueName, Stock.STOCKTYPE.SALES.text());
 	}
 
 	/**
@@ -271,7 +274,7 @@ public class Circuit extends Observable implements Serializable {
 
 	public ReadOnlyStringWrapper wrappedString(String productiveStockName) {
 		try {
-			Stock namedStock = DataManager.stockProductiveByNameSingle(getTimeStamp(), pk.productUseValueName, productiveStockName);
+			Stock namedStock = DataManager.stockProductiveByNameSingle(pk.timeStamp, pk.productUseValueName, productiveStockName);
 			String result = String.format(ViewManager.largeNumbersFormatString, namedStock.get(TabbedTableViewer.displayAttribute));
 			return new ReadOnlyStringWrapper(result);
 		} catch (Exception e) {
