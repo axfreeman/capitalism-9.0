@@ -1,30 +1,31 @@
-Project,TimeStamp,UseValueName,UseValueCircuitType,UnitValue,UnitPrice,TurnoverTime,UseValueType
-1,1,Labour Power,SOCIAL,0.5,0.5,1,LABOURPOWER
-1,1,Money,MONEY,1,1,0,MONEY
-1,1,Means of Production,CAPITALIST,1,1,1,PRODUCTIVE
-1,1,Consumption,CAPITALIST,1,1,1,NECESSITIES
-2,1,Means of Production,CAPITALIST,1,1,1,PRODUCTIVE
-2,1,Consumption,CAPITALIST,1,1,1,NECESSITIES
-2,1,Labour Power,SOCIAL,0.5,0.5,1,LABOURPOWER
-2,1,Money,MONEY,1,1,0,MONEY
-3,1,Labour Power,SOCIAL,0.5,0.5,2,LABOURPOWER
-3,1,Means of Production,CAPITALIST,1,1,2,PRODUCTIVE
-3,1,Money,MONEY,1,1,0,MONEY
-3,1,Consumption,CAPITALIST,1,1,2,NECESSITIES
-4,1,Circulating,CAPITALIST,1,1,60,PRODUCTIVE
-4,1,Consumption,CAPITALIST,0.5,0.5,1,NECESSITIES
-4,1,Fixed,CAPITALIST,1,1,360,PRODUCTIVE
-4,1,Labour Power,SOCIAL,0.5,0.5,1,LABOURPOWER
-4,1,Money,MONEY,1,1,0,MONEY
-5,1,Means of Production,CAPITALIST,1,1,1,PRODUCTIVE
-5,1,Consumption,CAPITALIST,1,1,1,NECESSITIES
-5,1,Money,MONEY,1,1,0,MONEY
-5,1,Labour Power,SOCIAL,0.5,0.5,1,LABOURPOWER
-6,1,Labour Power,SOCIAL,0.5,0.5,1,LABOURPOWER
-6,1,Means of Production,CAPITALIST,1,1,1,PRODUCTIVE
-6,1,Money,MONEY,1,1,0,MONEY
-6,1,Consumption,CAPITALIST,1,1,1,NECESSITIES
-7,1,Labour Power,SOCIAL,0.5,0.5,1,LABOURPOWER
-7,1,Money,MONEY,1,1,0,MONEY
-7,1,Consumption,CAPITALIST,1,1,1,NECESSITIES
-7,1,Means of Production,CAPITALIST,1,1,1,PRODUCTIVE
+Project,TimeStamp,UseValueName,UseValueCircuitType,UnitValue,UnitPrice,TurnoverTime,UseValueType,ImageName
+4,1,Circulating,CAPITALIST,1,1,60,PRODUCTIVE,
+5,1,Consumption,CAPITALIST,1,1,1,CONSUMPTION,necessities.png
+1,1,Consumption,CAPITALIST,1,1,1,CONSUMPTION,necessities.png
+4,1,Consumption,CAPITALIST,0.5,0.5,1,CONSUMPTION,necessities.png
+6,1,Consumption,CAPITALIST,1,1,1,CONSUMPTION,necessities.png
+2,1,Consumption,CAPITALIST,1,1,1,CONSUMPTION,necessities.png
+3,1,Consumption,CAPITALIST,1,1,2,CONSUMPTION,necessities.png
+4,1,Fixed,CAPITALIST,1,1,360,PRODUCTIVE,
+7,1,Labour Power,SOCIAL,0.5,0.5,1,LABOURPOWER,labourPower.png
+4,1,Labour Power,SOCIAL,0.5,0.5,1,LABOURPOWER,labourPower.png
+1,1,Labour Power,SOCIAL,0.5,0.5,1,LABOURPOWER,labourPower.png
+3,1,Labour Power,SOCIAL,0.5,0.5,2,LABOURPOWER,labourPower.png
+2,1,Labour Power,SOCIAL,0.5,0.5,1,LABOURPOWER,labourPower.png
+6,1,Labour Power,SOCIAL,0.5,0.5,1,LABOURPOWER,labourPower.png
+5,1,Labour Power,SOCIAL,0.5,0.5,1,LABOURPOWER,labourPower.png
+7,1,Luxuries,CAPITALIST,1,1,1,CONSUMPTION,
+6,1,Means of Production,CAPITALIST,1,1,1,PRODUCTIVE,Means of Production.png
+5,1,Means of Production,CAPITALIST,1,1,1,PRODUCTIVE,Means of Production.png
+7,1,Means of Production,CAPITALIST,1,1,1,PRODUCTIVE,Means of Production.png
+3,1,Means of Production,CAPITALIST,1,1,2,PRODUCTIVE,Means of Production.png
+2,1,Means of Production,CAPITALIST,1,1,1,PRODUCTIVE,Means of Production.png
+1,1,Means of Production,CAPITALIST,1,1,1,PRODUCTIVE,Means of Production.png
+3,1,Money,MONEY,1,1,0,MONEY,
+2,1,Money,MONEY,1,1,0,MONEY,
+6,1,Money,MONEY,1,1,0,MONEY,
+1,1,Money,MONEY,1,1,0,MONEY,
+7,1,Money,MONEY,1,1,0,MONEY,
+5,1,Money,MONEY,1,1,0,MONEY,
+4,1,Money,MONEY,1,1,0,MONEY,
+7,1,Necessities,CAPITALIST,1,1,1,CONSUMPTION,necessities.png

@@ -1,8 +1,6 @@
 project,timeStamp,ProductUseValueName,ProposedOutput,GrowthRate
 1,1,Means of Production,6000,0
 1,1,Consumption,3000,0
-7,1,Means of Production,6000,0
-7,1,Consumption,3000,0
 2,1,Means of Production,6000,0
 2,1,Consumption,3000,0
 3,1,Means of Production,3000,0
@@ -14,3 +12,6 @@ project,timeStamp,ProductUseValueName,ProposedOutput,GrowthRate
 5,1,Consumption,3000,0.1
 6,1,Means of Production,6000,0
 6,1,Consumption,3000,0
+7,1,Means of Production,6000,0
+7,1,Luxuries,3000,0
+7,1,Necessities,3000,0

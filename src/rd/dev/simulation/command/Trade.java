@@ -113,44 +113,45 @@ public class Trade extends Simulation implements Command {
 		for (SocialClass buyer : socialClasses) {
 			String buyerName = buyer.getSocialClassName();
 			Reporter.report(logger, 2, "  Purchasing for the social class [%s]", buyerName);
-			UseValue consumptionUseValue = DataManager.useValueByName(timeStampIDCurrent, "Consumption");
-			Circuit seller = DataManager.circuitByProductUseValue("Consumption");
-			if (seller == null) {
-				Dialogues.alert(logger, "NOBODY IS SELLING CONSUMPTION GOODS ");
-				break;
-			}
-			Stock consumptionStock = buyer.getConsumptionStock();
-			Stock buyerMoneyStock = buyer.getMoneyStock();
-			Stock sellerSalesStock = seller.getSalesStock();
-			Stock sellerMoneyStock = seller.getMoneyStock();
+			for(UseValue consumptionUseValue:DataManager.useValuesByType(UseValue.USEVALUETYPE.CONSUMPTION)) {
+				Circuit seller = DataManager.circuitByProductUseValue("Consumption");
+				if (seller == null) {
+					Dialogues.alert(logger, "NOBODY IS SELLING CONSUMPTION GOODS ");
+					break;
+				}
+				Stock consumptionStock = buyer.getConsumptionStock();
+				Stock buyerMoneyStock = buyer.getMoneyStock();
+				Stock sellerSalesStock = seller.getSalesStock();
+				Stock sellerMoneyStock = seller.getMoneyStock();
 
-			if ((consumptionUseValue == null) || (consumptionStock == null) || (buyerMoneyStock == null) || (sellerMoneyStock == null)
-					|| (sellerSalesStock == null)) {
-				Dialogues.alert(logger, "A STOCK NEEDED FOR THIS TRANSACTION IS NOT DEFINED");
-				break;
-			}
+				if ((consumptionUseValue == null) || (consumptionStock == null) || (buyerMoneyStock == null) || (sellerMoneyStock == null)
+						|| (sellerSalesStock == null)) {
+					Dialogues.alert(logger, "A STOCK NEEDED FOR THIS TRANSACTION IS NOT DEFINED");
+					break;
+				}
 
-			double unitPrice = consumptionUseValue.getUnitPrice();
-			double allocatedDemand = consumptionStock.getQuantityDemanded();
-			double quantityAdded = allocatedDemand;
-			double maximumQuantityAdded = buyerMoneyStock.getQuantity() / consumptionUseValue.getUnitPrice();
-			double epsilon=Simulation.getEpsilon();
-			if (maximumQuantityAdded < quantityAdded-epsilon) {
-				Dialogues.alert(logger, buyer.getSocialClassName()+" does not have enough money. This is a progamme error. See log for details");
-				quantityAdded = maximumQuantityAdded;
+				double unitPrice = consumptionUseValue.getUnitPrice();
+				double allocatedDemand = consumptionStock.getQuantityDemanded();
+				double quantityAdded = allocatedDemand;
+				double maximumQuantityAdded = buyerMoneyStock.getQuantity() / consumptionUseValue.getUnitPrice();
+				double epsilon=Simulation.getEpsilon();
+				if (maximumQuantityAdded < quantityAdded-epsilon) {
+					Dialogues.alert(logger, buyer.getSocialClassName()+" does not have enough money. This is a progamme error. See log for details");
+					quantityAdded = maximumQuantityAdded;
+				}
+				Reporter.report(logger, 2, "   The social class [%s] is buying %.2f units of Consumption goods for %.2f", 
+						buyerName, quantityAdded, quantityAdded * unitPrice);
+				try {
+					transferStock(sellerSalesStock, consumptionStock, quantityAdded);
+					transferStock(buyerMoneyStock, sellerMoneyStock, quantityAdded * unitPrice);
+				} catch (RuntimeException r) {
+					logger.error("ERROR: TRANSFER MIS-SPECIFIED:" + r.getMessage());
+					r.printStackTrace();
+				}
+				double usedUpRevenue=quantityAdded*unitPrice;
+				buyer.setRevenue(buyer.getRevenue()-usedUpRevenue);
+				Reporter.report(logger, 2, "  Disposable revenue reduced by $%.2f", usedUpRevenue);
 			}
-			Reporter.report(logger, 2, "   The social class [%s] is buying %.2f units of Consumption goods for %.2f", 
-					buyerName, quantityAdded, quantityAdded * unitPrice);
-			try {
-				transferStock(sellerSalesStock, consumptionStock, quantityAdded);
-				transferStock(buyerMoneyStock, sellerMoneyStock, quantityAdded * unitPrice);
-			} catch (RuntimeException r) {
-				logger.error("ERROR: TRANSFER MIS-SPECIFIED:" + r.getMessage());
-				r.printStackTrace();
-			}
-			double usedUpRevenue=quantityAdded*unitPrice;
-			buyer.setRevenue(buyer.getRevenue()-usedUpRevenue);
-			Reporter.report(logger, 2, "  Disposable revenue reduced by $%.2f", usedUpRevenue);
 		}
 	}
 

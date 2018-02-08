@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 import rd.dev.simulation.Capitalism;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.ActionButtonsBox;
+import rd.dev.simulation.custom.TabbedTableViewer;
 import rd.dev.simulation.model.Circuit;
 import rd.dev.simulation.model.Global;
 import rd.dev.simulation.model.Project;
@@ -42,6 +43,7 @@ import rd.dev.simulation.model.TimeStamp;
 import rd.dev.simulation.model.UseValue;
 import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.Reporter;
+import rd.dev.simulation.view.ViewManager;
 
 // TODO the namespace has become somewhat chaotic. Rename consistently, especially with regard to the primary key queries
 
@@ -86,7 +88,7 @@ public class DataManager {
 	protected static TypedQuery<Stock> stocksAllQuery;
 	protected static TypedQuery<Stock> stocksByUseValueQuery;
 	protected static TypedQuery<Stock> stocksByUseValueAndTypeQuery;
-	protected static TypedQuery<Stock> stocksByCircuitAndTypeQuery;
+	protected static TypedQuery<Stock> stocksByOwnerAndTypeQuery;
 	protected static TypedQuery<Stock> stocksByOneOfTwoStockTypesQuery;
 	protected static TypedQuery<Stock> stocksByStockTypeQuery;
 
@@ -146,7 +148,7 @@ public class DataManager {
 		stockByPrimaryKeyQuery = stocksEntityManager.createNamedQuery("Primary", Stock.class);
 		stocksAllQuery = stocksEntityManager.createNamedQuery("All", Stock.class);
 		stocksByStockTypeQuery = stocksEntityManager.createNamedQuery("StockType", Stock.class);
-		stocksByCircuitAndTypeQuery = stocksEntityManager.createNamedQuery("Circuit.StockType", Stock.class);
+		stocksByOwnerAndTypeQuery = stocksEntityManager.createNamedQuery("Owner.StockType", Stock.class);
 		stocksByUseValueQuery = stocksEntityManager.createNamedQuery("UseValue", Stock.class);
 		stocksByUseValueAndTypeQuery = stocksEntityManager.createNamedQuery("UseValue.StockType", Stock.class);
 		stocksByOneOfTwoStockTypesQuery = stocksEntityManager.createNamedQuery("Demand", Stock.class);
@@ -200,32 +202,12 @@ public class DataManager {
 	 * @return the single stock defined by this primary key, null if it does not exist
 	 */
 	public static Stock stockByPrimaryKey(int project, int timeStamp, String circuit, String useValue, String stockType) {
-		stockByPrimaryKeyQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("circuit", circuit)
+		stockByPrimaryKeyQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("owner", circuit)
 				.setParameter("useValue", useValue).setParameter("stockType", stockType);
 		try {
 			return stockByPrimaryKeyQuery.getSingleResult();
 		} catch (NoResultException r) {
 			return null;
-		}
-	}
-	/**
-	 * the single productive stock of a circuit defined by the name of the circuit, the use value it produces, for the current project and a given timeStamp
-	 * 
-	 * @param timeStamp
-	 *            the given timeStamp
-	 * @param circuit
-	 *            the circuit to which the stock belongs
-	 * @param useValue
-	 *            the useValue of the stock
-	 * @return the single productive stock, with the given useValue, of the named circuit
-	 */
-	public static Stock stockProductiveByNameSingle(int timeStamp, String circuit, String useValue) {
-		stockByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp)
-				.setParameter("circuit", circuit).setParameter("stockType", Stock.STOCKTYPE.PRODUCTIVE.text()).setParameter("useValue", useValue);
-		try {
-			return stockByPrimaryKeyQuery.getSingleResult();
-		} catch (javax.persistence.NoResultException e) {
-			return null;// because this query throws a fit if it doesn't find anything
 		}
 	}
 
@@ -240,44 +222,13 @@ public class DataManager {
 	 * @return the single stock of money owned by the circuit
 	 */
 	public static Stock stockMoneyByCircuitSingle(int timeStamp, String circuit) {
-		stockByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp).setParameter("circuit", circuit)
+		stockByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp).setParameter("owner", circuit)
 				.setParameter("stockType", Stock.STOCKTYPE.MONEY.text()).setParameter("useValue", "Money");
 		try {
 			return stockByPrimaryKeyQuery.getSingleResult();
 		} catch (javax.persistence.NoResultException e) {
 			return null;// because this query throws a fit if it doesn't find anything
 		}
-	}
-
-	/**
-	 * the single consumption stock that is owned by a given social class, for the current project and a given timeStamp
-	 * 
-	 * @param timeStamp
-	 *            the given timeStamp
-	 * @param socialClassName
-	 *            the name of the class that owns this consumption stock
-	 * @return the single consumption stock owned by this class
-	 */
-	public static Stock stockConsumptionByCircuitSingle(int timeStamp, String socialClassName) {
-		logger.log(Level.ALL, "  Fetching consumption stocks for the social class " + socialClassName);
-		stockByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp).setParameter("circuit",
-				socialClassName).setParameter("stockType", Stock.STOCKTYPE.CONSUMPTION.text()).setParameter("useValue", "Consumption");
-		try {
-			return stockByPrimaryKeyQuery.getSingleResult();
-		} catch (javax.persistence.NoResultException e) {
-			return null;// because this query throws a fit if it doesn't find anything
-		}
-	}
-
-	/**
-	 * a list of all productive stocks at the current project and timeStamp.
-	 * uses the "Consumption" circuit purely to pick up the productive stocks, since these have the same names for all circuits
-	 * 
-	 * @return a list of stocks at the current project and timeStamp
-	 */
-
-	public static List<Stock> productiveStocks() {
-		return circuitByProductUseValue("Consumption").productiveStocks();
 	}
 
 	/**
@@ -335,17 +286,74 @@ public class DataManager {
 	 *
 	 * @param timeStamp
 	 *            the given timeStamp
-	 * 
 	 * @param circuit
 	 *            the circuit that manages these productive stocks
 	 * @return a list of the productive stocks managed by this circuit
 	 */
 	public static List<Stock> stocksProductiveByCircuit(int timeStamp, String circuit) {
 		logger.log(Level.ALL, "  Fetching productive stocks for the circuit " + circuit);
-		stocksByCircuitAndTypeQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
-		stocksByCircuitAndTypeQuery.setParameter("circuit", circuit).setParameter("stockType", Stock.STOCKTYPE.PRODUCTIVE.text());
-		return stocksByCircuitAndTypeQuery.getResultList();
+		stocksByOwnerAndTypeQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
+		stocksByOwnerAndTypeQuery.setParameter("owner", circuit).setParameter("stockType", Stock.STOCKTYPE.PRODUCTIVE.text());
+		return stocksByOwnerAndTypeQuery.getResultList();
 	}
+	
+	/**
+	 * the single productive stock of a circuit defined by the name of the circuit, the use value it produces, for the current project and a given timeStamp
+	 * 
+	 * @param timeStamp
+	 *            the given timeStamp
+	 * @param circuit
+	 *            the circuit to which the stock belongs
+	 * @param useValue
+	 *            the useValue of the stock
+	 * @return the single productive stock, with the given useValue, of the named circuit
+	 */
+	public static Stock stockProductiveByNameSingle(int timeStamp, String circuit, String useValue) {
+		stockByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp)
+				.setParameter("owner", circuit).setParameter("stockType", Stock.STOCKTYPE.PRODUCTIVE.text()).setParameter("useValue", useValue);
+		try {
+			return stockByPrimaryKeyQuery.getSingleResult();
+		} catch (javax.persistence.NoResultException e) {
+			return null;// because this query throws a fit if it doesn't find anything
+		}
+	}
+	
+	/**
+	 * the single stock of a consumer good of the given use value required by the given social class, at the current project and a given timeStamp
+	 *
+	 * @param timeStamp
+	 *            the given timeStamp
+	 * @param socialClass
+	 *            the socialClass that consumes thhese stocks
+	 * @return a list of the consumption stocks owned by this social class
+	 */
+	public static Stock stockConsumptionByClassSingle(int timeStamp, String socialClass, String useValue) {
+		logger.debug("  Fetching consumption stocks for the ownner {}", socialClass);
+		stockByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
+		stockByPrimaryKeyQuery.setParameter("owner", socialClass).setParameter("stockType", Stock.STOCKTYPE.CONSUMPTION.text()).setParameter("useValue", useValue);
+		try {
+			return stockByPrimaryKeyQuery.getSingleResult();
+		} catch (javax.persistence.NoResultException e) {
+			return null;// because this query throws a fit if it doesn't find anything
+		}
+	}
+
+	/**
+	 * a single stock of a named consumer good that is required by a given social class, at the current project and a given timeStamp
+	 *
+	 * @param timeStamp
+	 *            the given timeStamp
+	 * @param socialClass
+	 *            the socialClass that consumes thhese stocks
+	 * @return the consumption stocks owned by this social class
+	 */
+	public static List<Stock> stocksConsumptionByClass(int timeStamp, String socialClass) {
+		logger.log(Level.ALL, "  Fetching productive stocks for the circuit " + socialClass);
+		stocksByOwnerAndTypeQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
+		stocksByOwnerAndTypeQuery.setParameter("owner", socialClass).setParameter("stockType", Stock.STOCKTYPE.CONSUMPTION.text());
+		return stocksByOwnerAndTypeQuery.getResultList();
+	}
+
 
 	/**
 	 * a list of sales Stock of a given use value for the current project and a given timeStamp.
@@ -420,11 +428,9 @@ public class DataManager {
 	}
 
 	/**
-	 * a list of all use values of the given type and the given timeStamp
-	 * 
 	 * @param useValueType
 	 *            the type of the UseValue (LABOURPOWER, MONEY, PRODUCTIVE, etc)
-	 * @return a list of circuits at the latest timeStamp that has been persisted.
+	 * @return a list of useValues at the current project and timeStamp, of the given type.
 	 * 
 	 */
 	public static List<UseValue> useValuesByType(UseValue.USEVALUETYPE useValueType) {
@@ -681,7 +687,8 @@ public class DataManager {
 		Simulation.setTimeStampComparatorCursor(newProject.getTimeStampComparatorCursor());
 		actionButtonsBox.setActionStateFromLabel(newProject.getButtonState());
 		Simulation.projectCurrent = newProjectID;
-		Reporter.report(logger, 0, "SWITCH TO PROJECT %s (%s)", newProjectID, newProject.getDescription());
+		Reporter.report(logger, 0, "SWITCHED TO PROJECT %s (%s)", newProjectID, newProject.getDescription());
+//		ViewManager.getTabbedTableViewer().buildTables();
 	}
 
 	/**
@@ -761,5 +768,14 @@ public class DataManager {
 	 */
 	public static EntityManager getStocksEntityManager() {
 		return stocksEntityManager;
+	}
+
+	// named query getters
+	
+	/**
+	 * @return the socialClassByPrimaryKeyQuery
+	 */
+	public static TypedQuery<Stock> getStockByPrimaryKeyQuery() {
+		return stockByPrimaryKeyQuery;
 	}
 }

@@ -1,5 +1,11 @@
 # Capitalism 9.0 announcements
 
+## 2/8/2018 12:56:06 AM 
+
+Multiple consumption goods.
+Partially complete, hence no new executable
+
+
 ## 2/5/2018 3:32:56 PM 
 
 Global deltas, almost complete.

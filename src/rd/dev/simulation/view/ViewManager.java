@@ -711,9 +711,9 @@ public class ViewManager {
 		logger.debug(String.format("Refresh Display with project %d, timestamp %d and comparator %d",
 				currentProject, Simulation.timeStampDisplayCursor, Simulation.getTimeStampComparatorCursor()));
 
-		tabbedTableViewer.populateTabbedTables();
+		tabbedTableViewer.repopulateTabbedTables();
 
-		// we have to force a refresh of the display because if the data has not changed
+		// we have to force a refresh of the display because if the data has not changed, it won't refresh
 		// see https://stackoverflow.com/questions/11065140/javafx-2-1-tableview-refresh-items
 
 		tabbedTableViewer.refreshTables();

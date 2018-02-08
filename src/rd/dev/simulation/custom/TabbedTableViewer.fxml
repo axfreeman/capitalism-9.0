@@ -261,15 +261,6 @@
 											</ImageView>
 										</graphic>
 									</TableColumn>
-									<TableColumn fx:id="socialClassConsumptionGoodsColumn" prefWidth="75.0" styleClass="table-column-right" text="Necessities">
-										<graphic>
-											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-												<image>
-													<Image url="@../../../../../img/necessities.png" />
-												</image>
-											</ImageView>
-										</graphic>
-									</TableColumn>
 									<TableColumn fx:id="socialClassMoneyColumn" prefWidth="75.0" styleClass="table-column-right" text="Money">
 										<graphic>
 											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
@@ -293,15 +284,6 @@
 											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
 												<image>
 													<Image url="@../../../../../img/glass-and-bottle-of-wine.png" />
-												</image>
-											</ImageView>
-										</graphic>
-									</TableColumn>
-									<TableColumn fx:id="socialClassQuantityDemandedColumn" prefWidth="75.0" styleClass="table-column-right" text="Demand">
-										<graphic>
-											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-												<image>
-													<Image url="@../../../../../img/demand.png" />
 												</image>
 											</ImageView>
 										</graphic>

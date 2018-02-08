@@ -42,7 +42,7 @@ import org.apache.commons.math3.util.Precision;
 @Table(name = "stocks")
 @NamedQueries({
 		// select a single stock by all elements of its primary key
-		@NamedQuery(name = "Primary", query = "SELECT s FROM Stock s WHERE s.pk.project=:project and s.pk.timeStamp =:timeStamp and s.pk.circuit =:circuit and s.pk.useValue= :useValue and s.pk.stockType=:stockType"),
+		@NamedQuery(name = "Primary", query = "SELECT s FROM Stock s WHERE s.pk.project=:project and s.pk.timeStamp =:timeStamp and s.pk.owner =:owner and s.pk.useValue= :useValue and s.pk.stockType=:stockType"),
 
 		// select all stocks with the given project and timeStamp
 		@NamedQuery(name = "All", query = "SELECT s FROM Stock s where s.pk.project= :project and s.pk.timeStamp = :timeStamp"),
@@ -50,9 +50,9 @@ import org.apache.commons.math3.util.Precision;
 		// select all stocks with the given project, timeStamp and stockType
 		@NamedQuery(name = "StockType", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp=:timeStamp and s.pk.stockType=:stockType"),
 
-		// select all stocks with the given project, timeStamp and stockType
-		@NamedQuery(name = "Circuit.StockType", query = "SELECT s FROM Stock s "
-				+ "where s.pk.project= :project and s.pk.timeStamp = :timeStamp and s.pk.circuit= :circuit and s.pk.stockType=:stockType"),
+		// select all stocks with the given project, timeStamp, owner and stockType
+		@NamedQuery(name = "Owner.StockType", query = "SELECT s FROM Stock s "
+				+ "where s.pk.project= :project and s.pk.timeStamp = :timeStamp and s.pk.owner= :owner and s.pk.stockType=:stockType"),
 
 		// select all stocks of a given project, timeStamp and useValue
 		@NamedQuery(name = "UseValue", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp = :timeStamp and s.pk.useValue= :useValue"),
@@ -177,7 +177,7 @@ public class Stock extends Observable implements Serializable {
 	public void copyStock(Stock stockTemplate) {
 		pk.timeStamp = stockTemplate.pk.timeStamp;
 		pk.project = stockTemplate.pk.project;
-		pk.circuit = stockTemplate.pk.circuit;
+		pk.owner = stockTemplate.pk.owner;
 		pk.useValue = stockTemplate.pk.useValue;
 		pk.stockType = stockTemplate.pk.stockType;
 		ownerType = stockTemplate.ownerType;
@@ -219,11 +219,11 @@ public class Stock extends Observable implements Serializable {
 		// a little consistency check
 
 		if (newQuantity < -Simulation.getEpsilon()) {
-			Dialogues.alert(logger, "Stock of " + pk.useValue + " owned by " + pk.circuit + " has fallen below zero. ");
+			Dialogues.alert(logger, "Stock of " + pk.useValue + " owned by " + pk.owner + " has fallen below zero. ");
 		} else if (newValue < -Simulation.getEpsilon()) {
-			Dialogues.alert(logger, "Value of " + pk.useValue + " owned by " + pk.circuit + " has fallen below zero. ");
+			Dialogues.alert(logger, "Value of " + pk.useValue + " owned by " + pk.owner + " has fallen below zero. ");
 		} else if (newPrice < -Simulation.getEpsilon()) {
-			Dialogues.alert(logger, "Price of " + pk.useValue + " owned by " + pk.circuit + " has fallen below zero. ");
+			Dialogues.alert(logger, "Price of " + pk.useValue + " owned by " + pk.owner + " has fallen below zero. ");
 		}
 		quantity = newQuantity;
 		value = newValue;
@@ -262,7 +262,7 @@ public class Stock extends Observable implements Serializable {
 		price = newPrice;
 		Reporter.report(logger, 2,
 				"  Size of commodity [%s], of type [%s], owned by [%s]: is %.2f. Value set to $%.2f (intrinsic %.2f), and price to %.2f (intrinsic %.2f)",
-				pk.useValue, pk.stockType, pk.circuit, quantity, value, value / melt, price, price / melt);
+				pk.useValue, pk.stockType, pk.owner, quantity, value, value / melt, price, price / melt);
 	}
 
 	/**
@@ -299,7 +299,7 @@ public class Stock extends Observable implements Serializable {
 	public ReadOnlyStringWrapper wrappedString(Selector selector) {
 		switch (selector) {
 		case CIRCUIT:
-			return new ReadOnlyStringWrapper(pk.circuit);
+			return new ReadOnlyStringWrapper(pk.owner);
 		case OWNERTYPE:
 			return new ReadOnlyStringWrapper(ownerType.text());
 		case USEVALUE:
@@ -427,7 +427,7 @@ public class Stock extends Observable implements Serializable {
 	 * @return formatted primary key of the stock formatted to constant length, which identifies it visually
 	 */
 	public String primaryKeyAsString() {
-		return String.format("[ %12.12s.%12.12s.%12.12s]", pk.stockType, pk.circuit, pk.useValue);
+		return String.format("[ %12.12s.%12.12s.%12.12s]", pk.stockType, pk.owner, pk.useValue);
 	}
 
 	/**
@@ -489,7 +489,7 @@ public class Stock extends Observable implements Serializable {
 	}
 
 	public String getCircuit() {
-		return pk.circuit;
+		return pk.owner;
 	}
 
 	public void setTimeStamp(int timeStamp) {
@@ -510,6 +510,10 @@ public class Stock extends Observable implements Serializable {
 	public void setValue(double value) {
 		this.value = value;
 	}
+	
+	public double getIntrinsicValue() {
+		return value/DataManager.getGlobal().getMelt();
+	}
 
 	/**
 	 * @return the price
@@ -517,7 +521,17 @@ public class Stock extends Observable implements Serializable {
 	public double getPrice() {
 		return price;
 	}
+	
+	/**
+	 * @return the intrinsic expression of the price
+	 */
 
+	public double getIntrinsicPrice() {
+		return price/DataManager.getGlobal().getMelt();
+	}
+	
+	
+	
 	/**
 	 * @param price
 	 *            the price to set

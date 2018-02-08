@@ -269,7 +269,7 @@ public class Circuit extends Observable implements Serializable {
 	 * @param productiveStockName
 	 *            the useValue of the productive Stock
 	 * 
-	 * @return the magnitude of the named Stock, expressed as defined by {@code valueExpression}, null if this does not exist
+	 * @return the magnitude of the named Stock, expressed as defined by {@code displayAttribute}, null if this does not exist
 	 */
 
 	public ReadOnlyStringWrapper wrappedString(String productiveStockName) {

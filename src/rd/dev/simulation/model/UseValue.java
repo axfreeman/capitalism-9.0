@@ -56,8 +56,7 @@ public class UseValue extends Observable implements Serializable {
 	// The primary key (composite key containing project, timeStamp and productUseValueName)
 	@EmbeddedId protected UseValuePK pk;
 
-	@Column(name = "useValueCircuitType") private USEVALUECIRCUITTYPE useValueCircuitType; // describes the way this is produced (by capitalist production, or
-																							 // socially)
+	@Column(name = "useValueCircuitType") private USEVALUECIRCUITTYPE useValueCircuitType; // whether this is produced by an enterprise or a class
 	@Column(name = "useValueType") private USEVALUETYPE useValueType;// see enum USEVALUETYPE for list of possible types
 	@Column(name = "turnoverTime") private double turnoverTime;
 	@Column(name = "unitValue") private double unitValue;
@@ -68,6 +67,7 @@ public class UseValue extends Observable implements Serializable {
 	@Column(name = "allocationShare") private double allocationShare;// proportion of total demand that can actually be supplied
 	@Column(name = "stockUsedUp") private double stockUsedUp; // stock used up in production in the current period
 	@Column(name = "stockProduced") private double stockProduced; // stock produced in the current period
+	@Column(name = "imageName") private String imageName; // a graphical image that can be used in column headers in place of text
 
 	@Transient private UseValue comparator;
 
@@ -547,6 +547,13 @@ public class UseValue extends Observable implements Serializable {
 	 */
 	public void setStockProduced(double stockProduced) {
 		this.stockProduced = stockProduced;
+	}
+
+	/**
+	 * @return the imageName
+	 */
+	public String getImageName() {
+		return imageName;
 	}
 
 }
