@@ -1,5 +1,10 @@
 # Capitalism 9.0 announcements
 
+## 2/8/2018 2:33:25 PM 
+
+Table display reworked so that multiple consumption goods can be displayed.
+In so doing, a lot of infrastructure created
+
 ## 2/8/2018 12:56:06 AM 
 
 Multiple consumption goods.

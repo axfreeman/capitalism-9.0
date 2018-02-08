@@ -112,38 +112,18 @@ public class TabbedTableViewer extends VBox {
 	@FXML private TableColumn<UseValue,String> useValueCapitalProfitSuperColumn;
 	@FXML private TableColumn<UseValue,String> useValueValuePriceSuperColumn;
 
-	// the Circuit Table and associated columns
-
 	@FXML private TableView<Circuit> circuitsTable;
-	@FXML private TableColumn<Circuit, String> circuitUseValueTypeColumn;
-	@FXML private TableColumn<Circuit, String> circuitInitialCapitalColumn;
-	@FXML private TableColumn<Circuit, String> circuitSalesColumn;
-	@FXML private TableColumn<Circuit, String> circuitMoneyColumn;
-	@FXML private TableColumn<Circuit, String> circuitProductiveColumn;
-	@FXML private TableColumn<Circuit, String> circuitCurrentCapitalColumn;
-	@FXML private TableColumn<Circuit, String> circuitProfitColumn;
-	@FXML private TableColumn<Circuit, String> circuitProfitRateColumn;
-
-	// the Dynamic Circuit tableView and data table
-
 	@FXML private TableView<Circuit> dynamicCircuitTable;
-
-	// The social classes table and associated columns
-
 	@FXML private TableView<SocialClass> socialClassesTable;
-	@FXML private TableColumn<SocialClass, String> socialClassNameColumn;
-	@FXML private TableColumn<SocialClass, String> socialClassDescriptionColumn;
-	@FXML private TableColumn<SocialClass, String> socialClassSizeColumn;
-	@FXML private TableColumn<SocialClass, String> socialClassSalesStockColumn;
-	@FXML private TableColumn<SocialClass, String> socialClassMoneyColumn;
-	@FXML private TableColumn<SocialClass, String> socialClassTotalColumn;
-	@FXML private TableColumn<SocialClass, String> socialClassRevenueColumn;
 
 	/**
 	 * a simple static list of all the tables, so utilities can get at them
 	 */
 
 	private static ArrayList<TableView<?>> tabbedTables = new ArrayList<TableView<?>>();
+	
+	private static ArrayList<TableView<?>> dynamicTables = new ArrayList<TableView<?>>();
+	
 
 	/**
 	 * Custom control handles the main ViewTables
@@ -175,10 +155,10 @@ public class TabbedTableViewer extends VBox {
 		makeMoneyStocksViewTable();
 		makeSalesStocksViewTable();
 		makeConsumptionStocksViewTable();
-		makeSocialClassesViewTable();
 		makeUseValuesViewTable();
 		makeCircuitsViewTable();
 		makeDynamicCircuitsTable();	
+		makeSocialClassesViewTable();
 		tabbedTables.clear();
 		tabbedTables.add(productiveStockTable);
 		tabbedTables.add(moneyStockTable);
@@ -189,10 +169,23 @@ public class TabbedTableViewer extends VBox {
 		tabbedTables.add(circuitsTable);
 		tabbedTables.add(socialClassesTable);
 		tabbedTables.add(dynamicCircuitTable);
+		dynamicTables.add(dynamicCircuitTable);
+		dynamicTables.add(socialClassesTable);
 		TableUtilities.doctorColumnHeaders(tabbedTables);  // doctor all the tables so the graphics can be switched
 		TableUtilities.setSuperColumnHandler(useValueValuePriceSuperColumn,useValueTotalPriceColumn);
 		TableUtilities.setSuperColumnHandler(useValueDemandSupplySuperColumn,useValueAllocationShareColumn);
 		TableUtilities.setSuperColumnHandler(useValueCapitalProfitSuperColumn,useValueProfitRateColumn);
+	}
+	
+	/** 
+	 * rebuild the tables with variable numbers of columns (for example when switching projects)
+	 */
+	public void reBuildDynamicTables() {
+		dynamicCircuitTable.getColumns().clear();
+		socialClassesTable.getColumns().clear();
+		makeDynamicCircuitsTable();	
+		makeSocialClassesViewTable();
+		TableUtilities.doctorColumnHeaders(dynamicTables);
 	}
 	
 	public void setTooltips() {
@@ -290,111 +283,59 @@ public class TabbedTableViewer extends VBox {
 		addUseValueColumn(useValueProfitRateColumn, UseValue.USEVALUE_SELECTOR.PROFITRATE);
 	}
 
-	private void addCircuitColumn(TableColumn<Circuit, String> column, Circuit.Selector selector) {
-		column.setCellFactory(new Callback<TableColumn<Circuit, String>, TableCell<Circuit, String>>() {
-			@Override public TableCell<Circuit, String> call(TableColumn<Circuit, String> col) {
-				return new CircuitTableCell(selector);
-			}
-		});
-		column.setCellValueFactory(cellData -> cellData.getValue().wrappedString(selector, TabbedTableViewer.displayAttribute));
-	}
-
-	/**
-	 * Initialize the Circuits tableView and cellFactories
-	 */
-	public void makeCircuitsViewTable() {
-		addCircuitColumn(circuitUseValueTypeColumn, Circuit.Selector.PRODUCTUSEVALUETYPE);
-		addCircuitColumn(circuitInitialCapitalColumn, Circuit.Selector.INITIALCAPITAL);
-		addCircuitColumn(circuitSalesColumn, Circuit.Selector.SALESSTOCK);
-		addCircuitColumn(circuitProductiveColumn, Circuit.Selector.PRODUCTIVESTOCKS);
-		addCircuitColumn(circuitMoneyColumn, Circuit.Selector.MONEYSTOCK);
-		addCircuitColumn(circuitCurrentCapitalColumn, Circuit.Selector.CURRENTCAPITAL);
-		addCircuitColumn(circuitProfitColumn, Circuit.Selector.PROFIT);
-		addCircuitColumn(circuitProfitRateColumn, Circuit.Selector.PROFITRATE);
-	}
-
-	private void addSocialClassColumn(TableColumn<SocialClass, String> column, SocialClass.Selector selector) {
-		column.setCellFactory(new Callback<TableColumn<SocialClass, String>, TableCell<SocialClass, String>>() {
-			@Override public TableCell<SocialClass, String> call(TableColumn<SocialClass, String> col) {
-				return new SocialClassTableCell(selector);
-			}
-		});
-		column.setCellValueFactory(cellData -> cellData.getValue().wrappedString(selector, TabbedTableViewer.displayAttribute));
-	}
-	
-	private void addDynamicSocialClassConsumptionStockColumn(String consumptionStockName) {
-		TableColumn<SocialClass, String> newColumn = new TableColumn<SocialClass, String>(consumptionStockName);// Use the stock name as a column heading
-		newColumn.setCellFactory(new Callback<TableColumn<SocialClass, String>, TableCell<SocialClass, String>>() {
-			@Override public TableCell<SocialClass, String> call(TableColumn<SocialClass, String> col) {
-				return new SocialClassTableStockCell(consumptionStockName);
-			}
-		});
-		newColumn.setCellValueFactory(cellData -> cellData.getValue().wrappedString(consumptionStockName));
-		newColumn.getStyleClass().add("table-column-right");
-		UseValue stockUseValue=DataManager.useValueByName(Simulation.timeStampIDCurrent, consumptionStockName);
-		String imageName=stockUseValue.getImageName();
-		TableUtilities.addGraphicToColummnHeader(newColumn, imageName);
-		socialClassesTable.getColumns().add(newColumn);
-	}
-
 	/**
 	 * Initialize the Social Classes tableView and cellFactories
 	 */
 	public void makeSocialClassesViewTable() {
-		addSocialClassColumn(socialClassNameColumn, SocialClass.Selector.SOCIALCLASSNAME);
-		addSocialClassColumn(socialClassSalesStockColumn, SocialClass.Selector.SALES);
-		addSocialClassColumn(socialClassTotalColumn, SocialClass.Selector.TOTAL);
-		addSocialClassColumn(socialClassMoneyColumn, SocialClass.Selector.MONEY);
-		addSocialClassColumn(socialClassRevenueColumn, SocialClass.Selector.SPENDING);
-		addSocialClassColumn(socialClassSizeColumn, SocialClass.Selector.SIZE);
+		
+		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SOCIALCLASSNAME));
+		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SIZE));
+		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SALES));
+		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.MONEY));
+		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.TOTAL));
+		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.REVENUE));
 		for (UseValue u:DataManager.useValuesByType(UseValue.USEVALUETYPE.CONSUMPTION)) {
-			addDynamicSocialClassConsumptionStockColumn(u.getUseValueName());
-		}
+			socialClassesTable.getColumns().add(new SocialClassColumn(u.getUseValueName()));		}
 	}
 
-	private void addDynamicCircuitColumn(String columnName, Circuit.Selector selector, String imageURL) {
-		TableColumn<Circuit, String> newColumn = new TableColumn<Circuit, String>(columnName);
-		newColumn.setCellFactory(new Callback<TableColumn<Circuit, String>, TableCell<Circuit, String>>() {
-			@Override public TableCell<Circuit, String> call(TableColumn<Circuit, String> col) {
-				return new CircuitTableCell(selector);
-			}
-		});
-		newColumn.setCellValueFactory(cellData -> cellData.getValue().wrappedString(selector, TabbedTableViewer.displayAttribute));
-		newColumn.getStyleClass().add("table-column-right");
-		TableUtilities.addGraphicToColummnHeader(newColumn, imageURL);
-		dynamicCircuitTable.getColumns().add(newColumn);
+	/**
+	 * Build the Circuits tableView and cellFactories.
+	 * Only call this when we want to rebuild the display from scratch, for example when starting up or switching projects
+	 */
+	
+	public void makeCircuitsViewTable() {
+		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.PRODUCTUSEVALUENAME));
+		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.INITIALCAPITAL));
+		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.SALESSTOCK));
+		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.PRODUCTIVESTOCKS));
+		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.MONEYSTOCK));
+		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.CURRENTCAPITAL));
+		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.PROFIT));
+		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.PROFITRATE));
 	}
 
-	private void addDynamicCircuitProductiveStockColumn(String productiveStockName) {
-		TableColumn<Circuit, String> newColumn = new TableColumn<Circuit, String>(productiveStockName);// Use the stock name as a column heading
-		newColumn.setCellFactory(new Callback<TableColumn<Circuit, String>, TableCell<Circuit, String>>() {
-			@Override public TableCell<Circuit, String> call(TableColumn<Circuit, String> col) {
-				return new CircuitTableStockCell(productiveStockName);
-			}
-		});
-		newColumn.setCellValueFactory(cellData -> cellData.getValue().wrappedString(productiveStockName));
-		newColumn.getStyleClass().add("table-column-right");
-		UseValue stockUseValue=DataManager.useValueByName(Simulation.timeStampIDCurrent, productiveStockName);
-		String imageName=stockUseValue.getImageName();
-		TableUtilities.addGraphicToColummnHeader(newColumn, imageName);
-		dynamicCircuitTable.getColumns().add(newColumn);
-	}
-
+	
+	/**
+	 * Build the DynamicCircuitTable and cellFactories.
+	 * Only call this when we want to rebuild the display from scratch, for example when starting up or switching projects
+	 */
+	
 	private void makeDynamicCircuitsTable() {
-		addDynamicCircuitColumn("Producer", Circuit.Selector.PRODUCTUSEVALUETYPE, null);
-		addDynamicCircuitColumn("Desired Output", Circuit.Selector.PROPOSEDOUTPUT, "maximum output.png");
-		addDynamicCircuitColumn("Constrained Output", Circuit.Selector.CONSTRAINEDOUTPUT, "constrained output.png");
-		addDynamicCircuitColumn("GrowthRate", Circuit.Selector.GROWTHRATE, "growthrate.png");
+		dynamicCircuitTable.getColumns().add(new CircuitColumn(Circuit.Selector.PRODUCTUSEVALUENAME));
+		dynamicCircuitTable.getColumns().add(new CircuitColumn(Circuit.Selector.CONSTRAINEDOUTPUT));
+		dynamicCircuitTable.getColumns().add(new CircuitColumn(Circuit.Selector.PROPOSEDOUTPUT));
+		dynamicCircuitTable.getColumns().add(new CircuitColumn(Circuit.Selector.GROWTHRATE));
+
 		for (UseValue u : DataManager.useValuesByType(UseValue.USEVALUETYPE.PRODUCTIVE)) {
-			addDynamicCircuitProductiveStockColumn(u.getUseValueName());
+			dynamicCircuitTable.getColumns().add(new CircuitColumn(u.getUseValueName()));
 		}
 		for (UseValue u : DataManager.useValuesByType(UseValue.USEVALUETYPE.LABOURPOWER)) {
-			addDynamicCircuitProductiveStockColumn(u.getUseValueName());
+			dynamicCircuitTable.getColumns().add(new CircuitColumn(u.getUseValueName()));
 		}
 	}
 
 	/**
-	 * refresh all the tabbed tables
+	 * refresh the data in all the tabbed tables. Do not rebuild them.
 	 * 
 	 */
 

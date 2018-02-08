@@ -76,7 +76,29 @@ public class SocialClass extends Observable implements Serializable {
 	@Transient private SocialClass comparator;
 
 	public enum Selector {
-		SOCIALCLASSNAME, SIZE, CONSUMPTIONPERPERSON, MONEY, SALES, CONSUMPTIONSTOCKS, QUANTITYDEMANDED, participationRatio, SPENDING, TOTAL
+		SOCIALCLASSNAME("Social Class",null), 
+		SIZE("Population","population.png"), 
+		CONSUMPTIONPERPERSON("Consumption per person",""), 
+		MONEY("Money","money.png"), 
+		SALES("Labour Power","labourPower.png"), 
+		CONSUMPTIONSTOCKS("Consumer Goods","necessities.png"), 
+		QUANTITYDEMANDED("Demand","demand.png"), 
+		PARTICIPATIONRATIO("Participation Ratio",null), 
+		REVENUE("Revenue","glass-and-bottle-of-wine.png"), 
+		TOTAL("Assets","TotalCapital.png");
+		
+		String text;
+		String imageName;
+		Selector(String text, String imageName){
+			this.text=text;
+			this.imageName=imageName;
+		}
+		public String text() {
+			return text;
+		}
+		public String imageName() {
+			return imageName;
+		}
 	}
 
 	/**
@@ -163,7 +185,7 @@ public class SocialClass extends Observable implements Serializable {
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, salesAttribute(valueExpression)));
 		case QUANTITYDEMANDED:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, consumptionQuantityDemanded()));
-		case SPENDING:
+		case REVENUE:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, revenue));
 		case TOTAL:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalAttribute(valueExpression)));
@@ -217,7 +239,7 @@ public class SocialClass extends Observable implements Serializable {
 			return moneyAttribute(valueExpression) != comparator.moneyAttribute(valueExpression);
 		case QUANTITYDEMANDED:
 			return consumptionQuantityDemanded() != comparator.consumptionQuantityDemanded();
-		case SPENDING:
+		case REVENUE:
 			return revenue != comparator.revenue;
 		case SALES:
 			return salesAttribute(valueExpression) != comparator.salesAttribute(valueExpression);
@@ -257,7 +279,7 @@ public class SocialClass extends Observable implements Serializable {
 			return String.format(ViewManager.largeNumbersFormatString, moneyAttribute(displayAttribute) - comparator.moneyAttribute(displayAttribute));
 		case QUANTITYDEMANDED:
 			return String.format(ViewManager.largeNumbersFormatString, consumptionQuantityDemanded() - comparator.consumptionQuantityDemanded());
-		case SPENDING:
+		case REVENUE:
 			return String.format(ViewManager.largeNumbersFormatString, revenue - comparator.revenue);
 		case SALES:
 			return String.format(ViewManager.largeNumbersFormatString, salesAttribute(displayAttribute) - comparator.salesAttribute(displayAttribute));

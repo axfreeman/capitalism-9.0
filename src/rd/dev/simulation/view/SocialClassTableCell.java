@@ -67,7 +67,7 @@ public class SocialClassTableCell extends TableCell<SocialClass, String> {
 			case MONEY:
 			case CONSUMPTIONSTOCKS:
 			case SALES:
-			case SPENDING:
+			case REVENUE:
 			case TOTAL:
 				switch (TabbedTableViewer.displayAttribute) {
 				case PRICE:

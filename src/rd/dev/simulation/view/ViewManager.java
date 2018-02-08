@@ -613,6 +613,7 @@ public class ViewManager {
 			DataManager.switchProjects(newValue.getProjectID(), actionButtonsBox);
 			setExpressionSymbols();
 			refreshTimeStampTable();
+			tabbedTableViewer.reBuildDynamicTables();
 			refreshDisplay();
 		}
 	}

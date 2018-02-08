@@ -79,7 +79,32 @@ public class Circuit extends Observable implements Serializable {
 	 * Readable constants to refer to the methods which provide information about the persistent members of the class
 	 */
 	public enum Selector {
-		PRODUCTUSEVALUETYPE, CONSTRAINEDOUTPUT, PROPOSEDOUTPUT, INITIALCAPITAL, CURRENTCAPITAL, PROFIT, PROFITRATE, PRODUCTIVESTOCKS, MONEYSTOCK, SALESSTOCK, TOTAL, GROWTHRATE
+		PRODUCTUSEVALUENAME("Producer",null), 
+		CONSTRAINEDOUTPUT("Output","constrained output.png"), 
+		PROPOSEDOUTPUT("Proposed Output","maximum output.png"), 
+		INITIALCAPITAL("Initial Capital","capital  2.png"), 
+		CURRENTCAPITAL("Current Capital","capital 1.png"), 
+		PROFIT("Profit","profit.png"), 
+		PROFITRATE("Profit Rate","profitRate.png"), 
+		PRODUCTIVESTOCKS("Inputs","inputs.png"), 
+		MONEYSTOCK("Money","money.png"), 
+		SALESSTOCK("Sales","inventory.png"), 
+		TOTAL("Capital","TotalCapital.png"), 
+		GROWTHRATE("Growth Rate","growthrate.png");
+		
+		String text;
+		String imageName;
+		
+		Selector(String text, String imageName ){
+			this.text=text;
+			this.imageName=imageName;
+		}
+		public String text() {
+			return text;
+		}
+		public String imageName() {
+			return imageName;
+		}
 	}
 
 	/**
@@ -234,7 +259,7 @@ public class Circuit extends Observable implements Serializable {
 
 	public ReadOnlyStringWrapper wrappedString(Selector selector, Stock.ValueExpression valueExpression) {
 		switch (selector) {
-		case PRODUCTUSEVALUETYPE:
+		case PRODUCTUSEVALUENAME:
 			return new ReadOnlyStringWrapper(pk.productUseValueName);
 		case INITIALCAPITAL:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, initialCapital));
@@ -298,7 +323,7 @@ public class Circuit extends Observable implements Serializable {
 
 	public boolean changed(Selector selector, Stock.ValueExpression valueExpression) {
 		switch (selector) {
-		case PRODUCTUSEVALUETYPE:
+		case PRODUCTUSEVALUENAME:
 			return false;
 		case PROPOSEDOUTPUT:
 			return proposedOutput != comparator.proposedOutput;
@@ -348,7 +373,7 @@ public class Circuit extends Observable implements Serializable {
 		if (!changed(selector, valueExpression))
 			return item;
 		switch (selector) {
-		case PRODUCTUSEVALUETYPE:
+		case PRODUCTUSEVALUENAME:
 			return item;
 		case PROPOSEDOUTPUT:
 			return String.format(ViewManager.largeNumbersFormatString, (proposedOutput - comparator.proposedOutput));
