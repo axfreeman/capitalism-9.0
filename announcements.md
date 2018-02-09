@@ -1,5 +1,13 @@
 # Capitalism 9.0 announcements
 
+## 2/9/2018 1:06:53 PM 
+
+Visual display of multiple consumption goods complete
+Infrastructure overhaul of visual display complete more or less- residual minor bugs to be corrected.
+Project 7 (two consumption goods) not yet working
+This is next target
+But because the benchmark projects are working, a new executable 
+
 ## 2/8/2018 2:33:25 PM 
 
 Table display reworked so that multiple consumption goods can be displayed.

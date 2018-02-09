@@ -25,12 +25,10 @@ import javafx.scene.control.TableColumn;
 import javafx.util.Callback;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.datamanagement.DataManager;
-import rd.dev.simulation.model.Circuit;
 import rd.dev.simulation.model.SocialClass;
 import rd.dev.simulation.model.UseValue;
-import rd.dev.simulation.view.CircuitTableCell;
-import rd.dev.simulation.view.CircuitTableStockCell;
 import rd.dev.simulation.view.SocialClassTableCell;
+import rd.dev.simulation.view.SocialClassTableStockCell;
 
 /**
 * A CircuitGraphicsColumn contains the additional information needed to display a switchable graphic and to select the data item for display
@@ -46,8 +44,6 @@ public class SocialClassColumn extends TableColumn<SocialClass,String>{
 	 * 
 	 * @param selector
 	 * an enum specifying which field to display
-	 * 
-	 * @return a SocialClassColumn ready to be added to a {@code TableView<SocialClass,String>}
 	 */
 	SocialClassColumn(SocialClass.Selector selector) {
 		super(selector.text());
@@ -57,20 +53,21 @@ public class SocialClassColumn extends TableColumn<SocialClass,String>{
 			}
 		});
 		setCellValueFactory(cellData -> cellData.getValue().wrappedString(selector, TabbedTableViewer.displayAttribute));
-		TableUtilities.addGraphicToColummnHeader(this, selector.imageName());
+
+		// tailor the visual appearance of the column header
+
 		setPrefWidth(75.0);
 		getStyleClass().add("table-column-right");
+		TableUtilities.addGraphicToColummnHeader(this, selector.imageName(),selector.tooltip());
 	}
 	
 	/**
 	 * Produces a column to be displayed in a Circuit table({@code TableView<Circuit,String>}), whose value is a {@code Stock} field referenced by a foreign key 
-	 * in a {@code Circuit} bean. The magnitude is selected by the {@useValueName} of the Stock.
+	 * in a {@code Circuit} bean. The magnitude is selected by the {@code useValueName} of the Stock.
 	 * Use Stock itself to set the header text and graphic, and prepare the column header so its graphic is switchable.
 	 * 
-	 * @param productiveStockName
+	 * @param consumptionStockName
 	 * an enum specifying which productive Stock to display
-	 * 
-	 * @return a CircuitColumn ready to be added to a {@code TableView<Circuit,String>}
 	 */
 	
 	SocialClassColumn(String consumptionStockName){
@@ -79,11 +76,14 @@ public class SocialClassColumn extends TableColumn<SocialClass,String>{
 				return new SocialClassTableStockCell(consumptionStockName);
 			}
 		});
-		setText(consumptionStockName);
 		setCellValueFactory(cellData -> cellData.getValue().wrappedString(consumptionStockName));
+
+		// tailor the visual appearance of the column header
+
+		setText(consumptionStockName);
+		setPrefWidth(75.0);
 		getStyleClass().add("table-column-right");
 		UseValue stockUseValue=DataManager.useValueByName(Simulation.timeStampIDCurrent, consumptionStockName);
-		String imageName=stockUseValue.getImageName();
-		TableUtilities.addGraphicToColummnHeader(this, imageName);		
+			TableUtilities.addGraphicToColummnHeader(this, stockUseValue.getImageName(),"More information soon");		
 	}
 }

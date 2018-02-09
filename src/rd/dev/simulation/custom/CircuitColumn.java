@@ -43,9 +43,8 @@ public class CircuitColumn extends TableColumn<Circuit, String> {
 	 * that is chosen by the {@code selector} enum. Use the enum to set the header text and graphic, and prepare the column header so its graphic is switchable.
 	 * 
 	 * @param selector
-	 * an enum specifying which field to display
+	 *            an enum specifying which field to display
 	 * 
-	 * @return a CircuitColumn ready to be added to a {@code TableView<Circuit,String>}
 	 */
 	CircuitColumn(Circuit.Selector selector) {
 		super(selector.text());
@@ -55,24 +54,25 @@ public class CircuitColumn extends TableColumn<Circuit, String> {
 			}
 		});
 		setCellValueFactory(cellData -> cellData.getValue().wrappedString(selector, TabbedTableViewer.displayAttribute));
-		TableUtilities.addGraphicToColummnHeader(this, selector.imageName());
+
+		// tailor the visual appearance of the column header
+
 		setPrefWidth(75.0);
 		getStyleClass().add("table-column-right");
+		TableUtilities.addGraphicToColummnHeader(this, selector.imageName(), selector.tooltip());
 	}
 
 	/**
-	 * Produces a column to be displayed in a Circuit table({@code TableView<Circuit,String>}), whose value is a {@code Stock} field referenced by a foreign key 
-	 * in a {@code Circuit} bean. The magnitude is selected by the {@useValueName} of the Stock.
+	 * Produces a column to be displayed in a Circuit table({@code TableView<Circuit,String>}), whose value is a {@code Stock} field referenced by a foreign key
+	 * in a {@code Circuit} bean. The magnitude is selected by the {@code  useValueName} of the Stock.
 	 * Use Stock itself to set the header text and graphic, and prepare the column header so its graphic is switchable.
 	 * 
 	 * @param productiveStockName
-	 * an enum specifying which productive Stock to display
+	 *            an enum specifying which productive Stock to display
 	 * 
-	 * @return a CircuitColumn ready to be added to a {@code TableView<Circuit,String>}
 	 */
-	
-	
-	CircuitColumn(String productiveStockName){
+
+	CircuitColumn(String productiveStockName) {
 		setCellFactory(new Callback<TableColumn<Circuit, String>, TableCell<Circuit, String>>() {
 			@Override public TableCell<Circuit, String> call(TableColumn<Circuit, String> col) {
 				return new CircuitTableStockCell(productiveStockName);
@@ -80,9 +80,12 @@ public class CircuitColumn extends TableColumn<Circuit, String> {
 		});
 		setText(productiveStockName);
 		setCellValueFactory(cellData -> cellData.getValue().wrappedString(productiveStockName));
+
+		// tailor the visual appearance of the column header
+
+		setPrefWidth(75.0);
 		getStyleClass().add("table-column-right");
-		UseValue stockUseValue=DataManager.useValueByName(Simulation.timeStampIDCurrent, productiveStockName);
-		String imageName=stockUseValue.getImageName();
-		TableUtilities.addGraphicToColummnHeader(this, imageName);		
+		UseValue stockUseValue = DataManager.useValueByName(Simulation.timeStampIDCurrent, productiveStockName);
+		TableUtilities.addGraphicToColummnHeader(this, stockUseValue.getImageName(), "More information coming soon");
 	}
 }

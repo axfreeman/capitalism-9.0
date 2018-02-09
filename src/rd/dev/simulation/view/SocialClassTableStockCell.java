@@ -18,7 +18,7 @@
  *   along with Capsim.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package rd.dev.simulation.custom;
+package rd.dev.simulation.view;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,9 +26,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.paint.Color;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.datamanagement.DataManager;
-import rd.dev.simulation.model.Circuit;
 import rd.dev.simulation.model.Stock;
-import rd.dev.simulation.view.ViewManager;
 import rd.dev.simulation.custom.TabbedTableViewer;
 import rd.dev.simulation.model.SocialClass;
 

@@ -20,19 +20,13 @@
 
 package rd.dev.simulation.command;
 
-import java.util.List;
-
-import org.apache.commons.math3.util.Precision;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.ActionStates;
 import rd.dev.simulation.datamanagement.DataManager;
-import rd.dev.simulation.model.Global;
 import rd.dev.simulation.model.SocialClass;
-import rd.dev.simulation.model.Stock;
-import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.Reporter;
 
 public class ClassesReproduce extends Simulation implements Command {
@@ -50,8 +44,6 @@ public class ClassesReproduce extends Simulation implements Command {
 		Reporter.report(logger, 0, "REPRODUCE CLASSES");
 		advanceOneStep(ActionStates.C_P_ClassesReproduce.getText(), ActionStates.C_P_Produce.getText());
 
-		Global global = DataManager.getGlobal();
-		double melt = global.getMelt();
 		for (SocialClass sc : DataManager.socialClassesAll()) {
 			sc.regenerate();
 			sc.consume();

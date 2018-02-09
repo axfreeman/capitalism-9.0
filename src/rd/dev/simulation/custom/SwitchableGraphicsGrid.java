@@ -17,7 +17,7 @@ import rd.dev.simulation.view.ViewManager;
 /**
  * rough and ready custom GUI control to display a numeric quantity and a description of it. Used to display the values in a Global entity.
  * The descriptions and the numbers are left and right aligned within each grid element
- * This is done by the {@link Glabel} controls that are added to the grid by the {@link addLabel} method.
+ * This is done by the {@code Glabel} controls that are added to the grid by the {@link setGridCell} method.
  * TODO find a way to bind this to the persistent entity Global
  *
  */

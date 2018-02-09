@@ -116,8 +116,42 @@ public class UseValue extends Observable implements Serializable {
 	 * Readable constants to refer to the methods which provide information about the persistent members of the class
 	 */
 	public enum USEVALUE_SELECTOR {
-		USEVALUENAME, USEVALUECIRCUITTYPE, TURNOVERTIME, UNITVALUE, UNITPRICE, TOTALSUPPLY, TOTALQUANTITY, TOTALDEMAND, SURPLUS, TOTALVALUE, TOTALPRICE, ALLOCATIONSHARE, USEVALUETYPE, INITIALCAPITAL, PROFIT, PROFITRATE
-	}
+		// @formatter:off
+		USEVALUENAME("Commodity",null,null), 
+		USEVALUECIRCUITTYPE("Owner Type",null,null), 
+		TURNOVERTIME("Turnover Time","Turnover.png",null), 
+		UNITVALUE("Unit Value","unitValueTransparent.png",null), 
+		UNITPRICE("Unit Price","unitPrice.png",null), 
+		TOTALSUPPLY("Supply","supply.png",null), 
+		TOTALQUANTITY("Quantity","Quantity.png",null), 
+		TOTALDEMAND("Demand","demand.png",null), 
+		SURPLUS("Surplus","surplus.png",null), 
+		TOTALVALUE("Total Value","Value.png",null), 
+		TOTALPRICE("Total Price","price.png",null), 
+		ALLOCATIONSHARE("Share","Allocation.png",null), 
+		USEVALUETYPE("Commodity Type",null,null), 
+		INITIALCAPITAL("Initial Capital","capital  2.png",null), 
+		PROFIT("Profit","profit.png",null), 
+		PROFITRATE("Profit Rate","profitRate.png" ,null);
+		// @formatter:on
+		String text;
+		String imageName;
+		String toolTip;
+		USEVALUE_SELECTOR(String text, String imageName, String toolTip){
+			this.text=text;
+			this.imageName=imageName;
+			this.toolTip=toolTip;
+		}
+		public String text() {
+			return text;
+		}
+		public String imageName() {
+			return imageName;
+		}
+		public String tooltip() {
+			return toolTip;
+		}
+}
 
 	/**
 	 * Constructor for a UseValue entity.

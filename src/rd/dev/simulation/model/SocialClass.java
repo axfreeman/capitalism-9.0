@@ -20,7 +20,6 @@
 package rd.dev.simulation.model;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Observable;
 import javax.persistence.*;
 
@@ -32,7 +31,6 @@ import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.TabbedTableViewer;
 import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.Stock.ValueExpression;
-import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.Reporter;
 import rd.dev.simulation.view.ViewManager;
 
@@ -53,20 +51,6 @@ public class SocialClass extends Observable implements Serializable {
 
 	private static final Logger logger = LogManager.getLogger(SocialClass.class);
 
-	/*
-	 * MEMO: THE SQL STATEMENT THAT CREATES THE SOCIAL CLASS TABLE
-	 * CREATE TABLE `socialclasses` (
-	 * `project` INT DEFAULT 1 NOT NULL,
-	 * `timeStamp` VARCHAR (10) DEFAULT '1' NOT NULL,
-	 * `SocialClassName` VARCHAR(45) DEFAULT NULL,
-	 * `Description` VARCHAR(45) DEFAULT NULL,
-	 * `Size` DOUBLE DEFAULT NULL,
-	 * `SalesStock` DOUBLE DEFAULT NULL,
-	 * `Money` DOUBLE DEFAULT NULL,
-	 * `ConsumptionGoods` DOUBLE DEFAULT NULL ,
-	 * primary key (project, timeStamp, SocialClassName)) ENGINE=INNODB DEFAULT CHARSET=UTF8;
-	 */
-
 	@EmbeddedId protected SocialClassPK pk;
 	@Column(name = "Size") protected double size;
 	@Column(name = "ConsumptionPerPerson") protected double consumptionStocksRequiredPerPerson;
@@ -76,28 +60,35 @@ public class SocialClass extends Observable implements Serializable {
 	@Transient private SocialClass comparator;
 
 	public enum Selector {
-		SOCIALCLASSNAME("Social Class",null), 
-		SIZE("Population","population.png"), 
-		CONSUMPTIONPERPERSON("Consumption per person",""), 
-		MONEY("Money","money.png"), 
-		SALES("Labour Power","labourPower.png"), 
-		CONSUMPTIONSTOCKS("Consumer Goods","necessities.png"), 
-		QUANTITYDEMANDED("Demand","demand.png"), 
-		PARTICIPATIONRATIO("Participation Ratio",null), 
-		REVENUE("Revenue","glass-and-bottle-of-wine.png"), 
-		TOTAL("Assets","TotalCapital.png");
+		//@// @formatter:off
+		SOCIALCLASSNAME("Social Class",null,TabbedTableViewer.HEADER_TOOL_TIPS.SOCIALCLASS.text()), 
+		SIZE("Population","population.png",null), 
+		CONSUMPTIONPERPERSON("Consumption per person","",null), 
+		MONEY("Money","money.png",null), 
+		SALES("Labour Power","labourPower.png",null), 
+		CONSUMPTIONSTOCKS("Consumer Goods","necessities.png",null), 
+		QUANTITYDEMANDED("Demand","demand.png",null), 
+		PARTICIPATIONRATIO("Participation Ratio",null,null), 
+		REVENUE("Revenue","glass-and-bottle-of-wine.png",null), 
+		TOTAL("Assets","TotalCapital.png",null);
+		// @formatter:on
 		
 		String text;
 		String imageName;
-		Selector(String text, String imageName){
+		String toolTip;
+		Selector(String text, String imageName, String toolTip){
 			this.text=text;
 			this.imageName=imageName;
+			this.toolTip=toolTip;
 		}
 		public String text() {
 			return text;
 		}
 		public String imageName() {
 			return imageName;
+		}
+		public String tooltip() {
+			return toolTip;
 		}
 	}
 
@@ -334,6 +325,8 @@ public class SocialClass extends Observable implements Serializable {
 	
 	/**
 	 * temporary fix to yield the stock of necessities, while we convert to multiple consumption goods
+	 * TODO phase this out
+	 * @return a Single Consumption Stock called either "COnsumption" or "Necessities" if one of these exists, null otherwise
 	 */
 	
 	public Stock getConsumptionStock() {

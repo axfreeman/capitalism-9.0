@@ -53,7 +53,7 @@ import rd.dev.simulation.view.ViewManager;
 @NamedQueries({
 		@NamedQuery(name = "All", query = "Select c from Circuit c where c.pk.project = :project and c.pk.timeStamp = :timeStamp"),
 		@NamedQuery(name = "Primary", query = "Select c from Circuit c where c.pk.project= :project and c.pk.timeStamp = :timeStamp and c.pk.productUseValueName= :productUseValueName"),
-		@NamedQuery(name= "InitialCapital", query= "Select sum(c.initialCapital) from Circuit c where c.pk.project=:project and c.pk.timeStamp=:timeStamp")
+		@NamedQuery(name = "InitialCapital", query = "Select sum(c.initialCapital) from Circuit c where c.pk.project=:project and c.pk.timeStamp=:timeStamp")
 })
 
 @XmlRootElement
@@ -79,31 +79,41 @@ public class Circuit extends Observable implements Serializable {
 	 * Readable constants to refer to the methods which provide information about the persistent members of the class
 	 */
 	public enum Selector {
-		PRODUCTUSEVALUENAME("Producer",null), 
-		CONSTRAINEDOUTPUT("Output","constrained output.png"), 
-		PROPOSEDOUTPUT("Proposed Output","maximum output.png"), 
-		INITIALCAPITAL("Initial Capital","capital  2.png"), 
-		CURRENTCAPITAL("Current Capital","capital 1.png"), 
-		PROFIT("Profit","profit.png"), 
-		PROFITRATE("Profit Rate","profitRate.png"), 
-		PRODUCTIVESTOCKS("Inputs","inputs.png"), 
-		MONEYSTOCK("Money","money.png"), 
-		SALESSTOCK("Sales","inventory.png"), 
-		TOTAL("Capital","TotalCapital.png"), 
-		GROWTHRATE("Growth Rate","growthrate.png");
-		
+		// @formatter:off
+		PRODUCTUSEVALUENAME("Producer",null,TabbedTableViewer.HEADER_TOOL_TIPS.USEVALUE.text()), 
+		CONSTRAINEDOUTPUT("Output","constrained output.png",null), 
+		PROPOSEDOUTPUT("Proposed Output","maximum output.png",null), 
+		INITIALCAPITAL("Initial Capital","capital  2.png",null), 
+		CURRENTCAPITAL("Current Capital","capital 1.png",null), 
+		PROFIT("Profit","profit.png",null), 
+		PROFITRATE("Profit Rate","profitRate.png",null), 
+		PRODUCTIVESTOCKS("Inputs","inputs.png",null), 
+		MONEYSTOCK("Money","money.png",null), 
+		SALESSTOCK("Sales","inventory.png",null), 
+		TOTAL("Capital","TotalCapital.png",null), 
+		GROWTHRATE("Growth Rate","growthrate.png",null);
+		// @formatter:on
+
 		String text;
 		String imageName;
-		
-		Selector(String text, String imageName ){
-			this.text=text;
-			this.imageName=imageName;
+		String toolTip;
+
+		Selector(String text, String imageName, String tooltip) {
+			this.text = text;
+			this.imageName = imageName;
+			this.toolTip = tooltip;
 		}
+
 		public String text() {
 			return text;
 		}
+
 		public String imageName() {
 			return imageName;
+		}
+
+		public String tooltip() {
+			return toolTip;
 		}
 	}
 
@@ -241,7 +251,8 @@ public class Circuit extends Observable implements Serializable {
 	public Stock getSalesStock() {
 		// TODO the product and the circuit have the same name, because the circuit is selling its own product
 		// but if there are multiple producers of the same thing, the circuit should have an independent name of its own
-		return DataManager.stockByPrimaryKey(Simulation.projectCurrent, pk.timeStamp, pk.productUseValueName, pk.productUseValueName, Stock.STOCKTYPE.SALES.text());
+		return DataManager.stockByPrimaryKey(Simulation.projectCurrent, pk.timeStamp, pk.productUseValueName, pk.productUseValueName,
+				Stock.STOCKTYPE.SALES.text());
 	}
 
 	/**
@@ -698,6 +709,7 @@ public class Circuit extends Observable implements Serializable {
 	 * The current capital of this circult.
 	 * this is the sum of all outlays (including mone), that is to say, it is everything that has to be engaged in the business to keep it going
 	 * it is always calculated using the price expression of these outlays
+	 * 
 	 * @return the current capital of this circuit
 	 * 
 	 * 
@@ -711,20 +723,21 @@ public class Circuit extends Observable implements Serializable {
 	 * This is the current capital less the initial capital. It is thus a simple difference independent of sales,
 	 * and hence makes no assumption that profit is realised.
 	 * Like all capital, it is calculated using the price expression of the magnitudes involved.
-	 * @return the profit (so far) of this circuit. 
+	 * 
+	 * @return the profit (so far) of this circuit.
 	 */
 	public double profit() {
-		return currentCapital()-initialCapital;
+		return currentCapital() - initialCapital;
 	}
-	
+
 	/**
 	 * @return the profitRate
 	 */
 	public double profitRate() {
-		if (Precision.round(initialCapital,Simulation.getRoundingPrecision())==0){
+		if (Precision.round(initialCapital, Simulation.getRoundingPrecision()) == 0) {
 			return Double.NaN;
 		}
-		return profit()/initialCapital;
+		return profit() / initialCapital;
 	}
 
 	/**

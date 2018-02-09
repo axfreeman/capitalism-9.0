@@ -85,7 +85,34 @@ public class Stock extends Observable implements Serializable {
 	 * Readable constants to refer to the methods which provide information about the persistent members of the class
 	 */
 	public enum Selector {
-		CIRCUIT, OWNERTYPE, USEVALUE, STOCKTYPE, QUANTITY, COEFFICIENT, QUANTITYDEMANDED, VALUE, PRICE
+		//@// @formatter:off
+		CIRCUIT("Owner",null,null), 
+		OWNERTYPE("Owner Type",null,null), 
+		USEVALUE("Commodity Produced",null,null), 
+		STOCKTYPE("Stock Type",null,null), 
+		QUANTITY("Quantity",null,null), 
+		COEFFICIENT("Coefficient",null,null), 
+		QUANTITYDEMANDED("Demand",null,null), 
+		VALUE("Value",null,null), 
+		PRICE("Price",null,null);
+		// @formatter:on
+		String text;
+		String imageName;
+		String toolTip;
+		Selector(String text, String imageName, String toolTip){
+			this.text=text;
+			this.imageName=imageName;
+			this.toolTip=toolTip;
+		}
+		public String text() {
+			return text;
+		}
+		public String imageName() {
+			return imageName;
+		}
+		public String tooltip() {
+			return toolTip;
+		}
 	}
 
 	// SQL type ENUM ('PRODUCTIVE', 'CONSUMPTION', 'SALES', 'MONEY')

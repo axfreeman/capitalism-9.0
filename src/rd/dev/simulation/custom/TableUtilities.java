@@ -39,7 +39,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.text.Font;
 import rd.dev.simulation.view.ViewManager;
 
 /**
@@ -88,36 +87,30 @@ public class TableUtilities {
 	}
 
 	/**
-	 * add the specified tooltip to the specified table
-	 * 
-	 * @param tableView
-	 *            the table that the tip is to be applied to
-	 * @param text
-	 *            the tip itself
-	 */
-
-	public static void setTip(TableView<?> tableView, String text) {
-		Tooltip tip = new Tooltip();
-		tip.setText(text);
-		tip.setFont(new Font(15));
-		tableView.setTooltip(tip);
-	}
-
-	/**
 	 * Add a graphic to a table columnn dynamically. If the graphic is null, do nothing.
 	 * 
 	 * @param imageURL
 	 *            the URL of the image to be added
 	 * @param column
 	 *            the column
+	 * @param toolTip
+	 * 			an optional toolTip text to be added to the column header           
 	 */
 
-	public static void addGraphicToColummnHeader(TableColumn<?, ?> column, String imageURL) {
+	public static void addGraphicToColummnHeader(TableColumn<?, ?> column, String imageURL, String toolTip) {
+		Label label = new Label();
+		label.setText(column.getText());
+		if (toolTip!=null)
+			label.setTooltip(new Tooltip(toolTip));
+		column.setGraphic(label);
 		if (imageURL != null) {
 			ImageView image = new ImageView(imageURL);
 			image.setFitWidth(20);
 			image.setFitHeight(20);
-			column.setGraphic(image);
+			label.setGraphic(image);
+			column.setText("");
+			column.setUserData("HasGraphic"); 				// tells us that the heading has been doctored 
+			label.setContentDisplay(ContentDisplay.TEXT_ONLY);
 		}
 	}
 
@@ -204,17 +197,17 @@ public class TableUtilities {
 
 	public static void doctorColumnHeader(TableColumn<?, ?> column) {
 		Node columnGraphic = column.getGraphic();
-		if (columnGraphic != null) {
-			Label label = new Label();
-			label.setText(column.getText());
-			label.setGraphic(columnGraphic);
-			column.setGraphic(label);
-			column.setText("");
-			label.setTooltip(new Tooltip(label.getText())); // TODO this doesn't seem to work if there is a table tooltip active
-			label.toFront();								// this doesn't have any effect on the tooltip either - needs to be investigated
-			column.setUserData("HasGraphic"); 				// tells us that the heading has been doctored }
-			label.setContentDisplay(ContentDisplay.TEXT_ONLY);
-		}
+		if (columnGraphic == null)
+			return;
+		if ("HasGraphic".equals(column.getUserData()))
+			return;
+		Label label = new Label();
+		label.setText(column.getText());
+		label.setGraphic(columnGraphic);
+		column.setGraphic(label);
+		column.setText("");
+		column.setUserData("HasGraphic"); 				// tells us that the heading has been doctored }
+		label.setContentDisplay(ContentDisplay.TEXT_ONLY);
 	}
 
 	/**
