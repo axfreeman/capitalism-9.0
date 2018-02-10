@@ -132,7 +132,6 @@ public class Simulation {
 						"The initial timeStamp record for project %d should have an ID of 1 but instead has  %d. We will try to carry on with the new ID",
 						p.getDescription(), timeStampCurrentRecord);
 			}
-			overrideLabourPower();
 
 			calculateStockAggregates();
 			setCapitals();
@@ -145,18 +144,6 @@ public class Simulation {
 
 		// There will normally be more than one project. Choose the first.
 		projectCurrent = 1;
-	}
-
-	/**
-	 * whatever the user has supplied, calculate the stock of Labour Power from the size of the workforce
-	 * TODO this is a somewhat temporary measure. Needs to be thought through.
-	 */
-
-	public void overrideLabourPower() {
-		SocialClass workers = DataManager.socialClassByName("Workers");
-		double size = workers.getSize();
-		Stock labourPower = workers.getLabourPower();
-		labourPower.setQuantity(size);
 	}
 
 	/**
@@ -317,16 +304,16 @@ public class Simulation {
 	/**
 	 * initialise the initialCapital of each circuit to be the price of its stocks when the period starts.
 	 * Initialise the currentCapital to be the same.
-	 * Called by 'startup' and then AFTER Supply. The reason is only to display to the user how the profit is calculated.
+	 * Called at startup and thereafter afterAccumulate (i.e. at the very end of the whole circuit and start of the next)
 	 */
 	protected void setCapitals() {
 		Global global = DataManager.getGlobal();
 		for (Circuit c : DataManager.circuitsAll()) {
 			double initialCapital = c.currentCapital();
-			Reporter.report(logger, 2, "  The initial capital of the industry[%s] is now $%.2f (intrinsic %.2f)", c.getProductUseValueName(),initialCapital,initialCapital/global.getMelt());
+			Reporter.report(logger, 2, "  The initial capital of the industry[%s] is now $%.0f (intrinsic %.0f)", c.getProductUseValueName(),initialCapital,initialCapital/global.getMelt());
 			c.setInitialCapital(initialCapital);
 		}
-		Reporter.report(logger, 2, "  Total initial capital is now $%.2f (intrinsic %.2f)", global.initialCapital(),global.initialCapital()/global.getMelt());
+		Reporter.report(logger, 2, "  Total initial capital is now $%.0f (intrinsic %.0f)", global.initialCapital(),global.initialCapital()/global.getMelt());
 	}
 
 	public void advanceOnePeriod() {

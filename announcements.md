@@ -1,5 +1,12 @@
 # Capitalism 9.0 announcements
 
+## 2/10/2018 4:40:33 PM 
+
+Overhaul of database infrastructure for supply demand and trade involving substantial simplification.
+'Supply' no longer exists as a separate phase of the calculation.
+Only SR (project 1) is now fully working
+Hence no new executable
+
 ## 2/9/2018 1:06:53 PM 
 
 Visual display of multiple consumption goods complete

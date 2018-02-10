@@ -80,7 +80,7 @@ public class Circuit extends Observable implements Serializable {
 	 */
 	public enum Selector {
 		// @formatter:off
-		PRODUCTUSEVALUENAME("Producer",null,TabbedTableViewer.HEADER_TOOL_TIPS.USEVALUE.text()), 
+		PRODUCTUSEVALUENAME("Producer",null,TabbedTableViewer.HEADER_TOOL_TIPS.INDUSTRY.text()), 
 		CONSTRAINEDOUTPUT("Output","constrained output.png",null), 
 		PROPOSEDOUTPUT("Proposed Output","maximum output.png",null), 
 		INITIALCAPITAL("Initial Capital","capital  2.png",null), 
@@ -437,7 +437,7 @@ public class Circuit extends Observable implements Serializable {
 			if (u == null) {
 				Dialogues.alert(logger, "The use value [%s] does not exist", s.getUseValueName());
 			} else {
-				double coefficient = s.getCoefficient();
+				double coefficient = s.getProductionCoefficient();
 				double stockNewPrice = 0;
 				double stockLevelRequired = coefficient * u.getTurnoverTime() * proposedExpansion;
 				double stockLevelExisting = s.getQuantity();
@@ -791,7 +791,7 @@ public class Circuit extends Observable implements Serializable {
 		UseValue u = mP.getUseValue();
 		double price = u.getUnitPrice();
 		double extraStock = surplusMeansOfProduction / price;
-		proposedOutput = constrainedOutput + extraStock / mP.getCoefficient();
+		proposedOutput = constrainedOutput + extraStock / mP.getProductionCoefficient();
 		calculateOutputCosts();
 	}
 }

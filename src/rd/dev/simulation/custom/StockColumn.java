@@ -42,7 +42,7 @@ public class StockColumn extends TableColumn<Stock,String>{
 	 * an enum specifying which field to display
 	 * 
 	 */
-	StockColumn(Stock.Selector selector) {
+	StockColumn(Stock.Selector selector,boolean leftAlign) {
 		super(selector.text());
 		setCellFactory(new Callback<TableColumn<Stock, String>, TableCell<Stock, String>>() {
 			@Override public TableCell<Stock, String> call(TableColumn<Stock, String> col) {
@@ -54,9 +54,7 @@ public class StockColumn extends TableColumn<Stock,String>{
 		// tailor the visual appearance of the column header
 
 		setPrefWidth(75.0);
-		getStyleClass().add("table-column-right");
+		if(!leftAlign) getStyleClass().add("table-column-right");
 		TableUtilities.addGraphicToColummnHeader(this, selector.imageName(),selector.tooltip());
 	}
-	
-	
 }

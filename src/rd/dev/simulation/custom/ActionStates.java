@@ -15,7 +15,6 @@ import rd.dev.simulation.command.Revenue;
 import rd.dev.simulation.command.Accumulate;
 import rd.dev.simulation.command.Constrain;
 import rd.dev.simulation.command.Demand;
-import rd.dev.simulation.command.Supply;
 import rd.dev.simulation.command.Trade;
 
 /**
@@ -32,9 +31,6 @@ public enum ActionStates {
 	M_C_PreTrade("Exchange", new PreTrade(), 
 			"Exchange Money for Commodities", 
 			false), 
-	M_C_Supply("Supply", new Supply(),
-			"Calculate and register the supply of each use value",
-			true), 
 	M_C_Demand("Demand", new Demand(), 
 			"Calculate and register the demand for each use value", 
 			true), 

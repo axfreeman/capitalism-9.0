@@ -22,8 +22,6 @@ package rd.dev.simulation.model;
 import java.io.Serializable;
 import java.util.Observable;
 import javax.persistence.*;
-
-import org.apache.commons.math3.util.Precision;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -138,16 +136,6 @@ public class SocialClass extends Observable implements Serializable {
 		// TODO we can't assume there is only one type of labour power
 		// also we should allow for theories in which social classes sell other things
 		return DataManager.stockByPrimaryKey(Simulation.projectCurrent, pk.timeStamp, pk.socialClassName, "Labour Power", Stock.STOCKTYPE.SALES.text());
-	}
-
-	/**
-	 * get the stock of Labour Power of this class (normally applies only to working class but others are possible eg petty bourgeoisie)
-	 * 
-	 * @return the stock of LabourPower of this class
-	 */
-
-	public Stock getLabourPower() {
-		return DataManager.stockByPrimaryKey(pk.project, pk.timeStamp, pk.socialClassName, "Labour Power", Stock.STOCKTYPE.SALES.text());
 	}
 
 	/**
@@ -292,21 +280,17 @@ public class SocialClass extends Observable implements Serializable {
 
 	public void regenerate() {
 		Reporter.report(logger, 1, " Reproducing the class [%s]", pk.socialClassName);
-		double populationGrowth = DataManager.getGlobal().getPopulationGrowthRate();
-
-		double newSize = Precision.round(size * (1 + populationGrowth), Simulation.getRoundingPrecision());
-		// everyone that sells labour power regenerates it in proportion to the size of their class and the parameter 'participationRatio'
-		// conceptually this is different from the turnover time of labour power, so I created two separate parameters. I can't yet conceive of
-		// a situation where they would be different. But logically, the possibility would seem to exist.
-
+	
 		Stock salesStock = getSalesStock();
-		double existingLabourPower = salesStock.getQuantity();
-		double newLabourPower = newSize * participationRatio;
-		double extraLabourPower = newLabourPower - existingLabourPower;
-		if (extraLabourPower > 0) {
-			Reporter.report(logger, 2, "  The labour power of the class [%s] has grown from %.0f to %.0f", pk.socialClassName, existingLabourPower,
-					newLabourPower);
-			salesStock.modifyBy(extraLabourPower);
+		if (salesStock!=null) {
+			double existingLabourPower = salesStock.getQuantity();
+			double newLabourPower = size* participationRatio;
+			double extraLabourPower = newLabourPower - existingLabourPower;
+			if (extraLabourPower > 0) {
+				Reporter.report(logger, 2, "  The labour power of the class [%s] was %.0f and is now %.0f", pk.socialClassName, existingLabourPower,
+						newLabourPower);
+				salesStock.modifyBy(extraLabourPower);
+			}
 		}
 	}
 
@@ -340,71 +324,73 @@ public class SocialClass extends Observable implements Serializable {
 	// METHODS THAT RETRIEVE ATTRIBUTES OF STOCKS
 
 	/**
-	 * get the quantity of the Stock of money owned by this class. Return NaN if the stock cannot be found (which is an error)
+	 * get the quantity of the Stock of money owned by this class. Return 0 if the stock cannot be found
 	 * 
 	 * @return the quantity of money owned by this social class.
 	 */
 	public double getMoneyQuantity() {
 		Stock s = getMoneyStock();
-		return s == null ? Float.NaN : s.getQuantity();
+		return s == null ? 0: s.getQuantity();
 	}
 
 	/**
-	 * get the value of the Stock of money owned by this class. Return NaN if the stock cannot be found (which is an error)
+	 * get the value of the Stock of money owned by this class. Return 0 if the stock cannot be found
 	 * 
 	 * @return the quantity of money owned by this social class.
 	 */
 	public double getMoneyValue() {
 		Stock s = getMoneyStock();
-		return s == null ? Float.NaN : s.getValue();
+		return s == null ? 0: s.getValue();
 	}
 
 	/**
-	 * get the price of the Stock of money owned by this class. Return NaN if the stock cannot be found (which is an error)
+	 * get the price of the Stock of money owned by this class. Return 0 if the stock cannot be found
 	 * 
 	 * @return the price of money owned by this social class.
 	 */
 	public double getMoneyPrice() {
 		Stock s = getMoneyStock();
-		return s == null ? Float.NaN : s.getPrice();
+		return s == null ? 0: s.getPrice();
 	}
 
 	/**
-	 * return the quantity of the Stock of sales owned by this social class. Return NaN if the stock cannot be found (which is an error)
+	 * return the quantity of the Stock of sales owned by this social class. Return 0 if the stock cannot be found
 	 * 
 	 * @return the quantity of sales stock owned by this social class
 	 */
 	public double getSalesQuantity() {
 		Stock s = getSalesStock();
-		return s == null ? Float.NaN : s.getQuantity();
+		return s == null ? 0: s.getQuantity();
 	}
 
 	/**
-	 * return the value of the sales stock owned by this social class. Return NaN if the stock cannot be found (which is an error)
+	 * return the value of the sales stock owned by this social class. Return 0 if the stock cannot be found 
 	 * 
 	 * @return the value of the sales stock owned by this social class
 	 */
 	public double getSalesValue() {
 		Stock s = getSalesStock();
-		return s == null ? Float.NaN : s.getValue();
+		return s == null ? 0 : s.getValue();
 	}
 
 	/**
-	 * return the price of the Stock of sales owned by this social class. Return NaN if the stock cannot be found (which is an error)
+	 * return the price of the Stock of sales owned by this social class. Return 0 if the stock cannot be found
 	 * 
 	 * @return the quantity of sales stock owned by this social class
 	 */
 	public double getSalesPrice() {
 		Stock s = getSalesStock();
-		return s == null ? Float.NaN : s.getPrice();
+		return s == null ? 0 : s.getPrice();
 	}
 
 	/**
-	 * return the quantity demanded of the Stock of consumption good owned by this social class. Return NaN if the stock cannot be found (which is an error)
+	 * return the quantity demanded of the Stock of consumption good owned by this social class. 
+	 * Return NaN if the stock cannot be found (which is an error)
 	 * 
 	 * @return the quantity demanded of the consumption goods owned by this social class
 	 */
 	public double consumptionQuantityDemanded() {
+		
 		Stock s = getConsumptionStock();
 		return s == null ? Float.NaN : s.getQuantityDemanded();
 	}
@@ -501,10 +487,11 @@ public class SocialClass extends Observable implements Serializable {
 	 * 
 	 * @param a
 	 *            (QUANTITY, VALUE OR PRICE) selects whether to return the quantity, the value or the price of this stock
-	 * @return the quantity of sales stock if a=QUANTITY, etc.
+	 * @return the quantity of sales stock if a=QUANTITY, etc. If there is no sales Stock return zero.
 	 */
 	public double salesAttribute(Stock.ValueExpression a) {
-		return getSalesStock().get(a);
+		Stock salesStock=getSalesStock();
+		return salesStock==null?0:salesStock.get(a);
 	}
 
 	/**
@@ -541,7 +528,7 @@ public class SocialClass extends Observable implements Serializable {
 		if (a == Stock.ValueExpression.QUANTITY) {
 			return Double.NaN;
 		}
-		return getMoneyStock().get(a) + getSalesStock().get(a) + getConsumptionStock().get(a);
+		return getMoneyStock().get(a) + salesAttribute(a) + getConsumptionStock().get(a);
 	}
 
 	/**

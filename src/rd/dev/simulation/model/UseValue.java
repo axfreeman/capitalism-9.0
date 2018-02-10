@@ -61,8 +61,6 @@ public class UseValue extends Observable implements Serializable {
 	@Column(name = "turnoverTime") private double turnoverTime;
 	@Column(name = "unitValue") private double unitValue;
 	@Column(name = "unitPrice") private double unitPrice;
-	@Column(name = "totalSupply") private double totalSupply;// registers the total commodities up for sale
-	@Column(name = "totalDemand") private double totalDemand;
 	@Column(name = "surplusProduct") private double surplusProduct; // if after production there is an excess of inventory over use, it is recorded here
 	@Column(name = "allocationShare") private double allocationShare;// proportion of total demand that can actually be supplied
 	@Column(name = "stockUsedUp") private double stockUsedUp; // stock used up in production in the current period
@@ -178,27 +176,11 @@ public class UseValue extends Observable implements Serializable {
 		this.turnoverTime = useValueTemplate.turnoverTime;
 		this.unitValue = useValueTemplate.unitValue;
 		this.unitPrice = useValueTemplate.unitPrice;
-		this.totalSupply = useValueTemplate.totalSupply;
-		this.totalDemand = useValueTemplate.totalDemand;
 		this.surplusProduct = useValueTemplate.surplusProduct;
 		this.allocationShare = useValueTemplate.allocationShare;
 		this.useValueType = useValueTemplate.useValueType;
 		this.stockUsedUp = useValueTemplate.stockUsedUp;
 		this.stockProduced = useValueTemplate.stockProduced;
-	}
-
-	/**
-	 * Calculate the total supply of this use value by consulting all salesStocks (these can belong either to circuits or social classes).
-	 * In general many circuits will produce the same use value. For a simple model there will only be one.
-	 * TODO upgrade this to many circuits: critical to the dynamics of technical change
-	 * 
-	 */
-	public void registerSupply() {
-		totalSupply = 0.0;
-		for (Stock s : DataManager.stocksSalesByUseValue(this.pk.timeStamp, pk.useValueName)) {
-			totalSupply += s.getQuantity();
-		}
-		Reporter.report(logger, 1, "  The quantity of commodity [%s] that can be supplied from sales inventories is %.2f. ", pk.useValueName, totalSupply);
 	}
 
 	/**
@@ -218,7 +200,7 @@ public class UseValue extends Observable implements Serializable {
 			totalValue += s.getValue();
 			totalPrice += s.getPrice();
 			logger.debug(String.format("  Stock of type [%s] with name [%s] has added quantity %.2f; value %.2f, and price %.2f. ",
-					s.getStockType(), s.getCircuit(), s.getQuantity(), s.getPrice(), s.getValue()));
+					s.getStockType(), s.getOwner(), s.getQuantity(), s.getPrice(), s.getValue()));
 		}
 		totalQuantity = Precision.round(totalQuantity, Simulation.getRoundingPrecision());
 		totalValue = Precision.round(totalValue, Simulation.getRoundingPrecision());
@@ -256,9 +238,9 @@ public class UseValue extends Observable implements Serializable {
 		case TOTALQUANTITY:
 			return totalQuantity() != comparator.totalQuantity();
 		case TOTALSUPPLY:
-			return totalSupply != comparator.getTotalSupply();
+			return totalSupply() != comparator.totalSupply();
 		case TOTALDEMAND:
-			return totalDemand != comparator.totalDemand;
+			return totalDemand() != comparator.totalDemand();
 		case SURPLUS:
 			return surplusProduct != comparator.surplusProduct;
 		case TURNOVERTIME:
@@ -304,9 +286,9 @@ public class UseValue extends Observable implements Serializable {
 		case TOTALQUANTITY:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalQuantity()));
 		case TOTALSUPPLY:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalSupply));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalSupply()));
 		case TOTALDEMAND:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalDemand));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalDemand()));
 		case SURPLUS:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, surplusProduct));
 		case TURNOVERTIME:
@@ -356,9 +338,9 @@ public class UseValue extends Observable implements Serializable {
 		case TOTALQUANTITY:
 			return String.format(ViewManager.largeNumbersFormatString, (totalQuantity() - comparator.totalQuantity()));
 		case TOTALSUPPLY:
-			return String.format(ViewManager.largeNumbersFormatString, (totalSupply - comparator.getTotalSupply()));
+			return String.format(ViewManager.largeNumbersFormatString, (totalSupply() - comparator.totalSupply()));
 		case TOTALDEMAND:
-			return String.format(ViewManager.largeNumbersFormatString, (totalDemand - comparator.totalDemand));
+			return String.format(ViewManager.largeNumbersFormatString, (totalDemand() - comparator.totalDemand()));
 		case SURPLUS:
 			return String.format(ViewManager.largeNumbersFormatString, (surplusProduct - comparator.surplusProduct));
 		case TURNOVERTIME:
@@ -411,20 +393,20 @@ public class UseValue extends Observable implements Serializable {
 		return pk.project;
 	}
 
-	public double getTotalSupply() {
-		return totalSupply;
+	public double totalSupply() {
+		double supply =0.0;
+		for (Stock s:DataManager.stocksByUseValue(pk.timeStamp, pk.useValueName)) {
+			supply+=s.getQuantity();
+		}
+		return supply;
 	}
 
-	public void setTotalSupply(double totalSupply) {
-		this.totalSupply = totalSupply;
-	}
-
-	public double getTotalDemand() {
-		return totalDemand;
-	}
-
-	public void setTotalDemand(double totalDemand) {
-		this.totalDemand = totalDemand;
+	public double totalDemand() {
+		double demand =0.0;
+		for (Stock s:DataManager.stocksByUseValue(pk.timeStamp, pk.useValueName)) {
+			demand+=s.getQuantityDemanded();
+		}
+		return demand;
 	}
 
 	public double getTurnoverTime() {
@@ -522,7 +504,6 @@ public class UseValue extends Observable implements Serializable {
 		return totalQuantity;
 	}
 
-	
 	/**
 	 * @return total profit so far in the circuits that produce this use value
 	 */

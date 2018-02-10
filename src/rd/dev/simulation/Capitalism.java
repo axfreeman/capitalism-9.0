@@ -33,7 +33,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import rd.dev.simulation.command.PreTrade;
-import rd.dev.simulation.command.Supply;
 import rd.dev.simulation.custom.ActionStates;
 import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.datamanagement.ObservableListProvider;
@@ -142,7 +141,6 @@ public class Capitalism extends Application {
 		ActionStates.C_P_Produce.setSuccessor(ActionStates.C_M_Distribute);
 		ActionStates.C_M_Distribute.setSuccessor(ActionStates.M_C_PreTrade);
 
-		ActionStates.M_C_Supply.setSuccessor(ActionStates.M_C_Demand);
 		ActionStates.M_C_Demand.setSuccessor(ActionStates.M_C_Constrain);
 		ActionStates.M_C_Constrain.setSuccessor(ActionStates.M_C_Trade);
 		ActionStates.M_C_Trade.setSuccessor(ActionStates.C_P_Produce);
@@ -152,11 +150,10 @@ public class Capitalism extends Application {
 		ActionStates.C_M_Revenue.setSuccessor(ActionStates.C_M_Accumulate);
 		ActionStates.C_M_Accumulate.setSuccessor(ActionStates.M_C_PreTrade);
 		
-		ActionStates.M_C_PreTrade.setPermissibleSubAction(ActionStates.M_C_Supply);
+		ActionStates.M_C_PreTrade.setPermissibleSubAction(ActionStates.M_C_Demand);
 		ActionStates.C_P_Produce.setPermissibleSubAction(ActionStates.C_P_CircuitsProduce);
 		ActionStates.C_M_Distribute.setPermissibleSubAction(ActionStates.C_M_Revenue);
 
-		ActionStates.M_C_Supply.setParent(ActionStates.M_C_PreTrade);
 		ActionStates.M_C_Demand.setParent(ActionStates.M_C_PreTrade);
 		ActionStates.M_C_Constrain.setParent(ActionStates.M_C_PreTrade);
 		ActionStates.M_C_Trade.setParent(ActionStates.M_C_PreTrade);

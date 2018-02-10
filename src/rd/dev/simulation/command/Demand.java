@@ -64,7 +64,6 @@ public class Demand extends Simulation implements Command {
 		registerSocialClassDemand();
 	}
 
-
 	/**
 	 * Registers productive demand - the demand that arises because producers need stocks of inputs. One of the most complex methods in the simulation. Its
 	 * purpose is to calculate 'constrained output', which is the output level that can be achieved, given the money in the producers' possession and the supply
@@ -92,11 +91,8 @@ public class Demand extends Simulation implements Command {
 	public void registerProductiveDemand() {
 		Reporter.report(logger, 0, "REGISTER PRODUCTIVE DEMAND");
 
-		// First, set demand to zero for all use values and all stocks
+		// First, set demand to zero for all stocks
 
-		for (UseValue u :  DataManager.useValuesAll()) {
-			u.setTotalDemand(0);
-		}
 		for (Stock s : DataManager.stocksAll()) {
 			s.setQuantityDemanded(0);
 		}
@@ -111,51 +107,52 @@ public class Demand extends Simulation implements Command {
 			logger.debug(" Estimating demand for productive stocks byindustry {}", c.getProductUseValueName());
 			double moneyAvailable = c.getMoneyQuantity();
 
-			// at this stage, proposedOutput will have been set in the preceding Accumulate phase of the past period on the basis of plausible private plans for expansion
-			// In the Constraint phase we will test to see if these private proposals are publicly possible, and if need be, constrain them according to the availability 
-			// of supply and the money in the hands of the purchasers. At this point we calculate the inputs that would be needed to achieve the proposed levels of output.
-			
-			double constrainedOutput=0;
-			double proposedOutput=c.getProposedOutput();
-			
+			// at this stage, proposedOutput has been set in the Accumulate phase of the past period using plausible private plans for expansion.
+			// In the Constraint phase we will test to see if these private proposals are publicly possible, and if need be, 
+			// constrain them according to supply and the money in the hands of the purchasers. 
+			// At this point we calculate the inputs that would be needed to achieve the proposed levels of output.
+
+			double constrainedOutput = 0;
+			double proposedOutput = c.getProposedOutput();
+
 			// cost the entirety of the proposed output (by setting currentOutput to zero)
-			
-			c.calculateOutputCosts(); 
-			totalCost=c.getCostOfExpansion();
-			
-			
-			Reporter.report(logger, 1, " Total cost of an output of %.2f is $%.0f and $%.0f is available.",
+
+			c.calculateOutputCosts();
+			totalCost = c.getCostOfExpansion();
+
+			Reporter.report(logger, 1, " Total cost of an output of %.0f is $%.0f and $%.0f is available.",
 					proposedOutput, totalCost, moneyAvailable);
-			
+
 			// check for monetary constraints
-			
-			if (totalCost < moneyAvailable+Simulation.epsilon) {
+
+			if (totalCost < moneyAvailable + Simulation.epsilon) {
 				Reporter.report(logger, 2, "  Output is unconstrained by cost");
 				constrainedOutput = proposedOutput;
 			} else {
 
 				// TODO the code below may not work, because cost is not a linear function of output if there are pre-existing stocks
 				// the problem is that in these circumstances we will underestimate the cost.
-				
+
 				Reporter.report(logger, 1, " Output is constrained by cost");
 				proposedOutput = proposedOutput * moneyAvailable / totalCost;
 				c.calculateOutputCosts();
 				double revisedTotalCost = c.getCostOfExpansion();
-				if (revisedTotalCost<moneyAvailable+Simulation.epsilon) Dialogues.alert(logger, "There is not enough money to finance the required level of output by industry %s",c.getProductUseValueName());
+				if (revisedTotalCost < moneyAvailable + Simulation.epsilon)
+					Dialogues.alert(logger, "There is not enough money to finance the required level of output by industry %s", c.getProductUseValueName());
 			}
 
 			c.setConstrainedOutput(constrainedOutput);
-			
+
 			// now go through all the stocks again, calculating how much of each will be needed
 			// and adding this to the demand for the use value that the stock represents
 
 			Reporter.report(logger, 1, " Demand will now be set for each stock owned by industry [%s] for an output level of %.0f",
 					c.getProductUseValueName(), constrainedOutput);
 
-			List<Stock> managedStocks = DataManager.stocksProductiveByCircuit(Simulation.timeStampIDCurrent,c.getProductUseValueName());
+			List<Stock> managedStocks = DataManager.stocksProductiveByCircuit(Simulation.timeStampIDCurrent, c.getProductUseValueName());
 
 			for (Stock s : managedStocks) {
-				double coefficient = s.getCoefficient();
+				double coefficient = s.getProductionCoefficient();
 				String useValueName = s.getUseValueName();
 				UseValue u = s.getUseValue();
 				if (u == null) {
@@ -164,14 +161,13 @@ public class Demand extends Simulation implements Command {
 					double existingStock = s.getQuantity();
 					double requiredStockLevel = constrainedOutput * coefficient * u.getTurnoverTime();
 					double newDemand = requiredStockLevel - existingStock;
-					double totalDemandForThisUseValue = u.getTotalDemand();
+					double totalDemandForThisUseValue = u.totalDemand();
 					double newDemandForThisUseValue = totalDemandForThisUseValue + newDemand;
 					Reporter.report(logger, 2, "  Productive stock [%s] requires $%.0f to adjust its proposed output level from %.0f to %.0f",
 							useValueName, newDemand, existingStock, requiredStockLevel);
 					Reporter.report(logger, 2, "  The demand for commodity [%s] was %.0f and is now %.0f",
 							useValueName, totalDemandForThisUseValue, newDemandForThisUseValue);
 					s.setQuantityDemanded(Precision.round(newDemand, roundingPrecision));
-					u.setTotalDemand(Precision.round(newDemandForThisUseValue, roundingPrecision));
 				}
 			}
 		}
@@ -180,30 +176,41 @@ public class Demand extends Simulation implements Command {
 	/**
 	 * Primitive response function for the supply of Labour Power
 	 * 
-	 * @param lABOUR_SUPPLY_RESPONSE 
-	 * 			a per-project parameter
-	 *          if this is FLEXIBLE, the supply changes to match demand
-	 *          if it is FIXED,supply is unaffected by demand
+	 * @param response
+	 *            a per-project parameter
+	 *            if this is FLEXIBLE, the supply changes to match demand
+	 *            if it is FIXED,supply is unaffected by demand
 	 */
-	private void registerLabourResponse(Simulation.LABOUR_SUPPLY_RESPONSE lABOUR_SUPPLY_RESPONSE) {
-		switch (lABOUR_SUPPLY_RESPONSE) {
+	private void registerLabourResponse(Simulation.LABOUR_SUPPLY_RESPONSE response) {
+		UseValue labourPower = DataManager.useValueByType(UseValue.USEVALUETYPE.LABOURPOWER);
+		double demandForLabourPower = labourPower.totalDemand();
+		double supplyOfLabourPower = labourPower.totalSupply();
+		switch (response) {
 		case FLEXIBLE:
-			SocialClass workers = DataManager.socialClassByName("Workers");
-			UseValue labourPower=DataManager.useValueByType(UseValue.USEVALUETYPE.LABOURPOWER);
-			double demandForLabourPower = labourPower.getTotalDemand();
-			Reporter.report(logger, 2, "  Labour Power supply has increased in response to demand. It was %.0f and is now %.0f", workers.getSalesQuantity(),
-					demandForLabourPower);
-			workers.getSalesStock().modifyTo(demandForLabourPower);
-			
-			// A bit of a botch. More labour power has been summoned from the reserve army than originally recorded by RegisterProductiveDemand.
-			// So we retrospectively increase the supply.
-			
-			labourPower.setTotalSupply(demandForLabourPower);
+			if (demandForLabourPower < supplyOfLabourPower) {
+				Reporter.report(logger, 2, "  The demand for labour power is less than its supply. No adjustment has been made");
+				return;
+			}
+			double proportionateIncrease = demandForLabourPower / supplyOfLabourPower;
+			Reporter.report(logger, 2, "  Labour Power supply is %.0f and demand is %.0f. Supply from all sellers will increase by a factor of %.4f ",
+					supplyOfLabourPower, demandForLabourPower, proportionateIncrease);
+			for (Stock s : DataManager.stocksSalesByUseValue(Simulation.timeStampIDCurrent, "Labour Power")) {
+				s.modifyTo(s.getQuantity() * proportionateIncrease);
+			}
 			break;
 		case FIXED:
 			Reporter.report(logger, 2, "  Labour Power supply is unaffected by demand. ");
 			break;
 		default:
+		}
+
+		// Now we know how much labour power is going to be consumed, we can set the revenue of the sellers of labour power
+		for (SocialClass sc : DataManager.socialClassesAll()) {
+			double wageRevenue = sc.getSalesPrice();
+			double existingRevenue = sc.getRevenue();
+			Reporter.report(logger, 2, "  Wage Revenue of [%s] expected to be %.0f. Existing revenue is %.0f so the total is %.0f",
+					sc.getSocialClassName(), wageRevenue, existingRevenue, wageRevenue + existingRevenue);
+			sc.setRevenue(wageRevenue + existingRevenue);
 		}
 	}
 
@@ -230,42 +237,15 @@ public class Demand extends Simulation implements Command {
 	 */
 	public void registerSocialClassDemand() {
 		Reporter.report(logger, 0, "REGISTER DEMAND FROM CLASSES");
-		for(UseValue u:DataManager.useValuesByType(UseValue.USEVALUETYPE.CONSUMPTION)) {
-			double priceOfConsumptionGoods = u.getUnitPrice();
-			double demand = 0.0;
-			for (SocialClass sc : DataManager.socialClassesAll()) {
-				double money = sc.getMoneyQuantity();
-				double thisClassDemand = 0.0;
-				if (sc.getSocialClassName().equals("Workers")) {
-					Reporter.report(logger, 1,
-							" [Workers] revenue given by the wage. They will sell %.2f of their labour power for $%.2f",
-							sc.getSalesQuantity(), sc.getSalesPrice());
-					sc.setRevenue(sc.getSalesPrice());
-				} else {
-					Reporter.report(logger, 1,
-							" [%s] revenue, established in the previous period, is %.2f ",
-							sc.getSocialClassName(), sc.getRevenue());
-				}
-				Reporter.report(logger, 1,
-						" Demand for necessities priced at $%.2f by the class [%s], whose revenue is %.2f, is %.2f ",
-						priceOfConsumptionGoods, sc.getSocialClassName(), sc.getRevenue(),sc.getRevenue() / priceOfConsumptionGoods);
-				thisClassDemand = sc.getRevenue() / priceOfConsumptionGoods;
-				double minimumDemand = money / priceOfConsumptionGoods;
-				if (minimumDemand >= thisClassDemand) {
-					Reporter.report(logger, 1, " Demand is unconstrained by money and will be set at %.2f", thisClassDemand);
-				} else {
-					thisClassDemand = minimumDemand;
-					Reporter.report(logger, 1, " Demand is constrained by money and will be set at %.2f", minimumDemand);
-				}
-
-				// remember how much this class wants, so that we know how much to buy when we get to trade.
-				// this may be adjusted downwards in the allocation phase
-
-				sc.setConsumptionQuantityDemanded(Precision.round(thisClassDemand, roundingPrecision));
-				demand += thisClassDemand;
+		for (SocialClass sc:DataManager.socialClassesAll()) {
+			Reporter.report(logger, 1, " Calculating demand of the social Class [%s] whose revenue is %.0f", 
+					sc.getSocialClassName(),sc.getRevenue());
+			for (Stock s:DataManager.stocksConsumptionByClass(Simulation.timeStampIDCurrent, sc.getSocialClassName())) {
+				double demand = sc.getRevenue()*s.getConsumptionCoefficient();
+				Reporter.report(logger, 2, "  The demand for [%s] is %.0f%% of revenue, which is %.0f", 
+						s.getUseValueName(), s.getConsumptionCoefficient()*100,demand);
+				s.setQuantityDemanded(demand);
 			}
-			Reporter.report(logger, 1, " Total demand for Consumption Goods is %.2f", demand);
-			u.setTotalDemand(Precision.round(demand, roundingPrecision));
 		}
 	}
 }

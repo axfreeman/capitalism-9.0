@@ -81,7 +81,7 @@ public class CircuitsProduce extends Simulation implements Command {
 				}
 				// .. end of little consistency check
 
-				double coefficient = s.getCoefficient();
+				double coefficient = s.getProductionCoefficient();
 				double stockUsedUp = output * coefficient;
 				stockUsedUp = Precision.round(stockUsedUp, getRoundingPrecision());
 				if (s.useValueType() == USEVALUETYPE.LABOURPOWER) {

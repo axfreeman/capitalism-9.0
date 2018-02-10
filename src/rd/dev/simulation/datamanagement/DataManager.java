@@ -317,7 +317,23 @@ public class DataManager {
 	}
 
 	/**
-	 * the single stock of a consumer good of the given use value required by the given social class, at the current project and a given timeStamp
+	 * a list of the various consumer goods owned by a given social class, at the current project and a given timeStamp
+	 *
+	 * @param timeStamp
+	 *            the given timeStamp
+	 * @param socialClass
+	 *            the socialClass that consumes these stocks
+	 * @return a list of the consumption stocks owned by this social class
+	 */
+	public static List<Stock> stocksConsumptionByClass(int timeStamp, String socialClass) {
+		logger.log(Level.ALL, "  Fetching productive stocks for the circuit " + socialClass);
+		stocksByOwnerAndTypeQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
+		stocksByOwnerAndTypeQuery.setParameter("owner", socialClass).setParameter("stockType", Stock.STOCKTYPE.CONSUMPTION.text());
+		return stocksByOwnerAndTypeQuery.getResultList();
+	}
+	
+	/**
+	 * the single stock of a consumer good of the given use value owned by the given social class, at the current project and a given timeStamp
 	 *
 	 * @param timeStamp
 	 *            the given timeStamp
@@ -325,10 +341,10 @@ public class DataManager {
 	 *            the socialClass that consumes these stocks
 	 * @param useValue
 	 *            the required use value
-	 * @return a list of the consumption stocks owned by this social class
+	 * @return the single consumption stocks of the given useValue that is owned by this social class
 	 */
 	public static Stock stockConsumptionByClassSingle(int timeStamp, String socialClass, String useValue) {
-		logger.debug("  Fetching consumption stocks for the ownner {}", socialClass);
+		logger.debug("  Fetching consumption stocks for the owner {}", socialClass);
 		stockByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
 		stockByPrimaryKeyQuery.setParameter("owner", socialClass).setParameter("stockType", Stock.STOCKTYPE.CONSUMPTION.text()).setParameter("useValue",
 				useValue);
@@ -337,22 +353,6 @@ public class DataManager {
 		} catch (javax.persistence.NoResultException e) {
 			return null;// because this query throws a fit if it doesn't find anything
 		}
-	}
-
-	/**
-	 * a single stock of a named consumer good that is required by a given social class, at the current project and a given timeStamp
-	 *
-	 * @param timeStamp
-	 *            the given timeStamp
-	 * @param socialClass
-	 *            the socialClass that consumes thhese stocks
-	 * @return the consumption stocks owned by this social class
-	 */
-	public static List<Stock> stocksConsumptionByClass(int timeStamp, String socialClass) {
-		logger.log(Level.ALL, "  Fetching productive stocks for the circuit " + socialClass);
-		stocksByOwnerAndTypeQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
-		stocksByOwnerAndTypeQuery.setParameter("owner", socialClass).setParameter("stockType", Stock.STOCKTYPE.CONSUMPTION.text());
-		return stocksByOwnerAndTypeQuery.getResultList();
 	}
 
 	/**
@@ -705,7 +705,7 @@ public class DataManager {
 	public static void setComparators(int timeStampID) {
 		try {
 			for (Stock s : stocksAll(timeStampID)) {
-				s.setComparator(stockByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), s.getCircuit(), s.getUseValueName(),
+				s.setComparator(stockByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), s.getOwner(), s.getUseValueName(),
 						s.getStockType()));
 			}
 			useValuesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStampID);

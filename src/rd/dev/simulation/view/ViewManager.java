@@ -613,7 +613,9 @@ public class ViewManager {
 			DataManager.switchProjects(newValue.getProjectID(), actionButtonsBox);
 			setExpressionSymbols();
 			refreshTimeStampTable();
-			tabbedTableViewer.reBuildDynamicTables();
+			
+			// rebuild all the tables, because the number of columnns might have changed
+			tabbedTableViewer.buildTables();
 			refreshDisplay();
 		}
 	}
@@ -712,11 +714,10 @@ public class ViewManager {
 		logger.debug(String.format("Refresh Display with project %d, timestamp %d and comparator %d",
 				currentProject, Simulation.timeStampDisplayCursor, Simulation.getTimeStampComparatorCursor()));
 
-		tabbedTableViewer.repopulateTabbedTables();
-
+		// as well as repopulating the data model with rePopulateTabbedTables,
 		// we have to force a refresh of the display because if the data has not changed, it won't refresh
 		// see https://stackoverflow.com/questions/11065140/javafx-2-1-tableview-refresh-items
-
+		tabbedTableViewer.repopulateTabbedTables();
 		tabbedTableViewer.refreshTables();
 		populateGlobalsGrid();
 	}

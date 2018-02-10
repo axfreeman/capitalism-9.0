@@ -67,27 +67,34 @@ public class Trade extends Simulation implements Command {
 			Stock buyerMoneyStock = buyer.getMoneyStock();
 			List<Stock> stocks = buyer.productiveStocks();
 
-			Reporter.report(logger, 2, "  Industry [%s] will purchase %d productive stocks to facilitate output of $%.2f ", buyerName,	stocks.size(), buyer.getConstrainedOutput());
+			Reporter.report(logger, 2, "  Industry [%s] will purchase %d productive stocks to facilitate output of $%.0f ",
+					buyerName, stocks.size(), buyer.getConstrainedOutput());
 
 			for (Stock s : stocks) {
 				String useValueName = s.getUseValueName();
 				UseValue stockUseValue = s.getUseValue();
 				double quantityTransferred = s.getQuantityDemanded();
 				double unitPrice = stockUseValue.getUnitPrice();
-				Reporter.report(logger,2,"   industry [%s] is purchasing %.2f units of [%s] for $%.2f",s.getCircuit(), quantityTransferred, s.getUseValueName(), quantityTransferred*unitPrice);
-				Stock sellerMoneyStock;
-				Stock sellerSalesStock; 
-				if (s.useValueType()==USEVALUETYPE.LABOURPOWER) {
-
-					// TODO in general, we do not assume that a single class supplies the commodity labour power.
-					// For example, small proprietors who also work for wages
-					// therefore, we should scan all social classes to see if they have any labour power to offer
-					// This is part of a larger deficiency in that we suppose only one supplier of each commodity
-					// to be corrected in a later projectCurrent
-
-					SocialClass workers = DataManager.socialClassByName("Workers");
-					sellerMoneyStock = workers.getMoneyStock();
-					sellerSalesStock = workers.getSalesStock();
+				Reporter.report(logger, 2, "  Industry [%s] is purchasing %.0f units of [%s] for $%.0f", s.getOwner(), quantityTransferred,
+						s.getUseValueName(), quantityTransferred * unitPrice);
+				Stock sellerMoneyStock = null;
+				Stock sellerSalesStock = null;
+				if (s.useValueType() == USEVALUETYPE.LABOURPOWER) {
+					// ask each class if it has some labour power to sell
+					// TODO at this point we only accept the first offer
+					// eventually we need to allow multiple sellers of Labour Power
+					// but this should be part of a general reform to allow multiple sellers of every commodity
+					for (SocialClass sc : DataManager.socialClassesAll()) {
+						Stock salesStock = sc.getSalesStock();
+						if (salesStock != null) {
+							Reporter.report(logger, 2, "  Social class [%s] is selling", sc.getSocialClassName());
+							sellerMoneyStock = sc.getMoneyStock();
+							sellerSalesStock = salesStock;
+						}
+					}
+					if (sellerSalesStock == null) {
+						Dialogues.alert(logger, "Nobody is selling labour Power");
+					}
 				} else {
 					Circuit seller = DataManager.circuitByProductUseValue(useValueName);
 					sellerMoneyStock = seller.getMoneyStock();
@@ -113,7 +120,7 @@ public class Trade extends Simulation implements Command {
 		for (SocialClass buyer : socialClasses) {
 			String buyerName = buyer.getSocialClassName();
 			Reporter.report(logger, 2, "  Purchasing for the social class [%s]", buyerName);
-			for(UseValue consumptionUseValue:DataManager.useValuesByType(UseValue.USEVALUETYPE.CONSUMPTION)) {
+			for (UseValue consumptionUseValue : DataManager.useValuesByType(UseValue.USEVALUETYPE.CONSUMPTION)) {
 				Circuit seller = DataManager.circuitByProductUseValue("Consumption");
 				if (seller == null) {
 					Dialogues.alert(logger, "NOBODY IS SELLING CONSUMPTION GOODS ");
@@ -134,12 +141,12 @@ public class Trade extends Simulation implements Command {
 				double allocatedDemand = consumptionStock.getQuantityDemanded();
 				double quantityAdded = allocatedDemand;
 				double maximumQuantityAdded = buyerMoneyStock.getQuantity() / consumptionUseValue.getUnitPrice();
-				double epsilon=Simulation.getEpsilon();
-				if (maximumQuantityAdded < quantityAdded-epsilon) {
-					Dialogues.alert(logger, buyer.getSocialClassName()+" does not have enough money. This is a progamme error. See log for details");
+				double epsilon = Simulation.getEpsilon();
+				if (maximumQuantityAdded < quantityAdded - epsilon) {
+					Dialogues.alert(logger, buyer.getSocialClassName() + " do not have enough money. This is a progamme error. See log for details");
 					quantityAdded = maximumQuantityAdded;
 				}
-				Reporter.report(logger, 2, "   The social class [%s] is buying %.2f units of Consumption goods for %.2f", 
+				Reporter.report(logger, 2, "  The social class [%s] is buying %.2f units of Consumption goods for %.2f",
 						buyerName, quantityAdded, quantityAdded * unitPrice);
 				try {
 					transferStock(sellerSalesStock, consumptionStock, quantityAdded);
@@ -148,8 +155,8 @@ public class Trade extends Simulation implements Command {
 					logger.error("ERROR: TRANSFER MIS-SPECIFIED:" + r.getMessage());
 					r.printStackTrace();
 				}
-				double usedUpRevenue=quantityAdded*unitPrice;
-				buyer.setRevenue(buyer.getRevenue()-usedUpRevenue);
+				double usedUpRevenue = quantityAdded * unitPrice;
+				buyer.setRevenue(buyer.getRevenue() - usedUpRevenue);
 				Reporter.report(logger, 2, "  Disposable revenue reduced by $%.2f", usedUpRevenue);
 			}
 		}
@@ -190,27 +197,27 @@ public class Trade extends Simulation implements Command {
 		// another little consistency check
 
 		if (toQuantity != 0) {
-			if (!Precision.equals(toPrice / toQuantity,unitPrice,epsilon)) {
+			if (!Precision.equals(toPrice / toQuantity, unitPrice, epsilon)) {
 				throw new RuntimeException(String.format("ERROR: The unit price of the source stock [%s] is %.2f and the unit price of its use value is  %.2f",
 						to.getUseValueName(), toPrice / toQuantity, unitPrice));
 			}
-			if (!Precision.equals(toValue/ toQuantity,unitValue,epsilon)) {
+			if (!Precision.equals(toValue / toQuantity, unitValue, epsilon)) {
 				throw new RuntimeException(String.format("ERROR: The unit price of the source stock [%s] is %.2f and the unit price of its use value is  %.2f",
 						to.getUseValueName(), toPrice / toQuantity, unitPrice));
 			}
 		}
 		if (fromQuantity != 0) {
-			if (!Precision.equals(fromPrice / fromQuantity,unitPrice,epsilon)) {
+			if (!Precision.equals(fromPrice / fromQuantity, unitPrice, epsilon)) {
 				throw new RuntimeException(String.format("ERROR: The unit price of the target stock [%s] is %.2f and the unit price of its use value is  %.2f",
 						from.getUseValueName(), fromPrice / fromQuantity, unitPrice));
 			}
-			if (!Precision.equals(fromValue/ fromQuantity,unitValue,epsilon)) {
+			if (!Precision.equals(fromValue / fromQuantity, unitValue, epsilon)) {
 				throw new RuntimeException(String.format("ERROR: The unit price of the target stock [%s] is %.2f and the unit price of its use value is  %.2f",
 						from.getUseValueName(), fromPrice / fromQuantity, unitPrice));
 			}
 		}
 		logger.debug(String.format("   Transfer %.2f from [%s] in [%s] to [%s] in [%s]",
-				quantityTransferred, from.getUseValueName(), from.getCircuit(), to.getUseValueName(), to.getCircuit()));
+				quantityTransferred, from.getUseValueName(), from.getOwner(), to.getUseValueName(), to.getOwner()));
 		logger.debug(String.format("   Recipient [%s] size is: %.2f", to.getUseValueName(), to.getQuantity()));
 		logger.debug(String.format("   Donor [%s] size is: %.2f ", from.getUseValueName(), from.getQuantity()));
 

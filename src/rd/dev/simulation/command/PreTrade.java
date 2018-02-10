@@ -34,7 +34,6 @@ public class PreTrade extends Simulation implements Command {
 	 */
 	public void execute() {
 		int startTimeStamp =Simulation.timeStampIDCurrent;
-		ActionStates.M_C_Supply.getCommand().execute();
 		ActionStates.M_C_Demand.getCommand().execute();
 		ActionStates.M_C_Constrain.getCommand().execute();
 		ActionStates.M_C_Trade.getCommand().execute();

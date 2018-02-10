@@ -1,52 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<fx:root maxWidth="1.7976931348623157E308" type="javafx.scene.layout.VBox" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1">
+<fx:root maxWidth="1.7976931348623157E308" type="javafx.scene.layout.VBox"
+	xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1">
 	<TabPane tabClosingPolicy="UNAVAILABLE">
 		<tabs>
 			<Tab text="Main Tables">
 				<content>
 					<VBox prefHeight="700.0" prefWidth="600.0">
 						<children>
-							<TableView fx:id="useValuesTable" prefHeight="195.0" prefWidth="700.0">
-								<columns>
-									<TableColumn fx:id="useValueValuePriceSuperColumn" prefWidth="75.0" text="Values and Prices">
-										<graphic>
-											<ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-												<image>
-													<Image url="@../../../../../img/surplus.png" />
-												</image>
-											</ImageView>
-										</graphic>
-									</TableColumn>
-									<TableColumn fx:id="useValueDemandSupplySuperColumn" prefWidth="75.0" text="Demand and Supply" />
-									<TableColumn fx:id="useValueCapitalProfitSuperColumn" prefWidth="75.0" text="Capital and Profit" />
-								</columns>
+							<TableView fx:id="useValuesTable" prefHeight="195.0"
+								prefWidth="700.0">
 								<columnResizePolicy>
 									<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
 								</columnResizePolicy>
 							</TableView>
-							<TableView fx:id="dynamicCircuitTable" prefHeight="150.0" prefWidth="750.0">
+							<TableView fx:id="dynamicCircuitTable" prefHeight="150.0"
+								prefWidth="750.0">
 								<columnResizePolicy>
 									<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
 								</columnResizePolicy>
 							</TableView>
-							<TableView fx:id="circuitsTable" prefHeight="125.0" prefWidth="750.0">
+							<TableView fx:id="circuitsTable" prefHeight="125.0"
+								prefWidth="750.0">
 								<columnResizePolicy>
 									<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
 								</columnResizePolicy>
 							</TableView>
-							<TableView fx:id="socialClassesTable" prefHeight="150.0" prefWidth="542.0">
+							<TableView fx:id="socialClassesTable" prefHeight="150.0"
+								prefWidth="542.0">
 								<columnResizePolicy>
 									<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
 								</columnResizePolicy>
@@ -57,55 +45,52 @@
 			</Tab>
 			<Tab text="Stocks">
 				<content>
-					<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0">
+					<VBox prefHeight="700.0" prefWidth="600.0">
 						<children>
-							<VBox maxHeight="1.7976931348623157E308" prefHeight="641.0">
-								<children>
-									<TableView fx:id="salesStockTable" minHeight="-Infinity" prefHeight="160.0">
-										<columns>
-											<TableColumn fx:id="salesStockHeaderColumn" prefWidth="75.0" styleClass="table-column-right" text="Sales Stock" />
-										</columns>
-										<columnResizePolicy>
-											<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-										</columnResizePolicy>
-									</TableView>
-									<HBox VBox.vgrow="ALWAYS">
-										<children>
-											<TableView fx:id="moneyStockTable" prefHeight="200.0" prefWidth="508.0">
-												<columns>
-													<TableColumn fx:id="moneyStockHeaderColumn" prefWidth="75.0" text="Money">
-													</TableColumn>
-												</columns>
-												<columnResizePolicy>
-													<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-												</columnResizePolicy>
-											</TableView>
-											<TableView fx:id="consumptionStockTable" prefHeight="200.0" prefWidth="582.0">
-												<columns>
-													<TableColumn fx:id="consumptionStockHeaderColumn" prefWidth="75.0" text="Necessities">
-														</TableColumn>
-												</columns>
-												<HBox.margin>
-													<Insets left="5.0" />
-												</HBox.margin>
-												<columnResizePolicy>
-													<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-												</columnResizePolicy>
-											</TableView>
-										</children>
-									</HBox>
-									<TableView fx:id="productiveStockTable" prefHeight="295.0" prefWidth="750.0">
-										<columns>
-											<TableColumn fx:id="productiveStockHeaderColumn" prefWidth="75.0" text="Productive Stocks" />
-										</columns>
-										<columnResizePolicy>
-											<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-										</columnResizePolicy>
-									</TableView>
-								</children>
-							</VBox>
+							<TableView fx:id="salesStockTable" prefHeight="160.0"
+								prefWidth="750.0">
+								<columns>
+									<TableColumn fx:id="salesStockHeaderColumn"
+										prefWidth="750.0" styleClass="table-column-right" text="Sales Stock" />
+								</columns>
+								<columnResizePolicy>
+									<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+								</columnResizePolicy>
+							</TableView>
+							<TableView fx:id="moneyStockTable" prefHeight="160.0"
+								prefWidth="750.0">
+								<columns>
+									<TableColumn fx:id="moneyStockHeaderColumn"
+										prefWidth="750.0" text="Money">
+									</TableColumn>
+								</columns>
+								<columnResizePolicy>
+									<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+								</columnResizePolicy>
+							</TableView>
+							<TableView fx:id="consumptionStockTable" prefHeight="160.0"
+								prefWidth="750.0" >
+								<columns>
+									<TableColumn fx:id="consumptionStockHeaderColumn"
+										prefWidth="750.0" text="Consumer Goods">
+									</TableColumn>
+								</columns>
+								<columnResizePolicy>
+									<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+								</columnResizePolicy>
+							</TableView>
+							<TableView fx:id="productiveStockTable" prefHeight="160.0"
+								prefWidth="750.0">
+								<columns>
+									<TableColumn fx:id="productiveStockHeaderColumn"
+										prefWidth="750.0" text="Productive Stocks" />
+								</columns>
+								<columnResizePolicy>
+									<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+								</columnResizePolicy>
+							</TableView>
 						</children>
-					</AnchorPane>
+					</VBox>
 				</content>
 			</Tab>
 		</tabs>

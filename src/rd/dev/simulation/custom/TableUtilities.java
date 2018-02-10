@@ -100,6 +100,7 @@ public class TableUtilities {
 	public static void addGraphicToColummnHeader(TableColumn<?, ?> column, String imageURL, String toolTip) {
 		Label label = new Label();
 		label.setText(column.getText());
+		column.setText("");
 		if (toolTip!=null)
 			label.setTooltip(new Tooltip(toolTip));
 		column.setGraphic(label);

@@ -73,28 +73,39 @@ public class Stock extends Observable implements Serializable {
 	@EmbeddedId protected StockPK pk;
 	@Column(name = "ownertype") private OWNERTYPE ownerType;
 	@Column(name = "quantity") private double quantity;
-	@Column(name = "coefficient") private double coefficient;
 	@Column(name = "quantityDemanded") private double quantityDemanded;
 	@Column(name = "value") private double value;
 	@Column(name = "price") private double price;
 
-	// These transient variables are used to construct the dynamic circuit table. See the documentation there for more explanation
+	// the proportion of this stock used up in producing one unit of output.
+	// ONLY relevant if this is of stockType PRODUCTIVE (in which case the owner will be an industry)
+	
+	@Column(name = "productionCoefficient") private double productionCoefficient;
+
+	// the proportion of the revenue of a class that will be spent on this stock in one period.
+	// ONLY relevant if this is of stockType CONSUMPTION (in which case the owner will be a social class)
+
+	@Column(name= "consumptionCoefficient") private double consumptionCoefficient;
+
+	// This transient variable is used to compare stock magnitudes from different time periods
+	// It is the basic mechanism whereby changes and differences are displayed in the main and stock tables
 	@Transient protected Stock comparator;
 
 	/**
 	 * Readable constants to refer to the methods which provide information about the persistent members of the class
 	 */
 	public enum Selector {
-		//@// @formatter:off
+		// @formatter:off
 		CIRCUIT("Owner",null,null), 
 		OWNERTYPE("Owner Type",null,null), 
 		USEVALUE("Commodity Produced",null,null), 
 		STOCKTYPE("Stock Type",null,null), 
-		QUANTITY("Quantity",null,null), 
-		COEFFICIENT("Coefficient",null,null), 
-		QUANTITYDEMANDED("Demand",null,null), 
-		VALUE("Value",null,null), 
-		PRICE("Price",null,null);
+		QUANTITY("Quantity",null,"quantity.png"), 
+		PRODUCTION_COEFFICIENT("Coefficient",null,null), 
+		CONSUMPTION_COEFFICIENT("Coefficient",null,null),
+		QUANTITYDEMANDED("Demand",null,"demand.png"), 
+		VALUE("Value",null,"value.png"), 
+		PRICE("Price",null,"price.png");
 		// @formatter:on
 		String text;
 		String imageName;
@@ -115,7 +126,14 @@ public class Stock extends Observable implements Serializable {
 		}
 	}
 
-	// SQL type ENUM ('PRODUCTIVE', 'CONSUMPTION', 'SALES', 'MONEY')
+	/**
+	 * 
+	 * SQL type ENUM ('PRODUCTIVE', 'CONSUMPTION', 'SALES', 'MONEY')
+	 * NOTE: here is a bug in H2 which prevents an enum type being used in a primary key;
+	 * in consequence, the type of the persistent field 'stockType' is, confusingly, String and not StockType.
+	 * For code transparency, this enum provides the text that is used in SQL queries, via its 'text' method
+	 * See for example {@link Datamanager#stockProductiveByNameSingle}
+	 */
 	public enum STOCKTYPE {
 		PRODUCTIVE("Productive"), CONSUMPTION("Consumption"), SALES("Sales"), MONEY("Money");
 		private String text;
@@ -129,6 +147,10 @@ public class Stock extends Observable implements Serializable {
 		}
 	}
 
+	/**
+	 * Owners can be of two main types: industries, which produce things by employing labour
+	 * and classes, which provide labour, and consume revenue.
+	 */
 	public enum OWNERTYPE {
 		CLASS("Social Class"), CIRCUIT("Industry");
 		private String text;
@@ -208,7 +230,8 @@ public class Stock extends Observable implements Serializable {
 		pk.useValue = stockTemplate.pk.useValue;
 		pk.stockType = stockTemplate.pk.stockType;
 		ownerType = stockTemplate.ownerType;
-		coefficient = stockTemplate.coefficient;
+		productionCoefficient = stockTemplate.productionCoefficient;
+		consumptionCoefficient=stockTemplate.consumptionCoefficient;
 		quantity = stockTemplate.quantity;
 		quantityDemanded = stockTemplate.quantityDemanded;
 		price = stockTemplate.price;
@@ -232,6 +255,7 @@ public class Stock extends Observable implements Serializable {
 	 *            the quantity to be added to the size of the stock (negative if subtracted)
 	 */
 	public void modifyBy(double extraQuantity) {
+		double melt = DataManager.getGlobal().getMelt();
 
 		// TODO check that if both quantities are rounded properly, this test will work
 
@@ -255,6 +279,9 @@ public class Stock extends Observable implements Serializable {
 		quantity = newQuantity;
 		value = newValue;
 		price = newPrice;
+		Reporter.report(logger, 2,
+				"  Size of commodity [%s], of type [%s], owned by [%s]: is %.0f. Value set to $%.0f (intrinsic %.0f), and price to %.0f (intrinsic %.0f)",
+				pk.useValue, pk.stockType, pk.owner, quantity, value, value / melt, price, price / melt);
 	}
 
 	/**
@@ -278,8 +305,7 @@ public class Stock extends Observable implements Serializable {
 	 *            the quantity to be added to the size of the stock (negative if subtracted)
 	 */
 	public void modifyTo(double newQuantity) {
-		Global global = DataManager.getGlobal();
-		double melt = global.getMelt();
+		double melt = DataManager.getGlobal().getMelt();
 		double unitValue = unitValue();
 		double unitPrice = unitPrice();
 		double newValue = Precision.round(newQuantity * unitValue, Simulation.getRoundingPrecision());
@@ -288,7 +314,7 @@ public class Stock extends Observable implements Serializable {
 		value = newValue;
 		price = newPrice;
 		Reporter.report(logger, 2,
-				"  Size of commodity [%s], of type [%s], owned by [%s]: is %.2f. Value set to $%.2f (intrinsic %.2f), and price to %.2f (intrinsic %.2f)",
+				"  Size of commodity [%s], of type [%s], owned by [%s]: is %.0f. Value set to $%.0f (intrinsic %.0f), and price to %.0f (intrinsic %.0f)",
 				pk.useValue, pk.stockType, pk.owner, quantity, value, value / melt, price, price / melt);
 	}
 
@@ -343,8 +369,10 @@ public class Stock extends Observable implements Serializable {
 					String.format(ViewManager.largeNumbersFormatString, ViewManager.valueExpression(price, ViewManager.pricesExpressionDisplay)));
 		case QUANTITYDEMANDED:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, quantityDemanded));
-		case COEFFICIENT:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, coefficient));
+		case PRODUCTION_COEFFICIENT:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, productionCoefficient));
+		case CONSUMPTION_COEFFICIENT:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, consumptionCoefficient));
 		default:
 			return null;
 		}
@@ -396,8 +424,10 @@ public class Stock extends Observable implements Serializable {
 			return price != comparator.price;
 		case QUANTITYDEMANDED:
 			return quantityDemanded != comparator.quantityDemanded;
-		case COEFFICIENT:
-			return coefficient != comparator.quantityDemanded;
+		case PRODUCTION_COEFFICIENT:
+			return productionCoefficient != comparator.productionCoefficient;
+		case CONSUMPTION_COEFFICIENT:
+			return consumptionCoefficient!= comparator.consumptionCoefficient;
 		default:
 			return false;
 		}
@@ -475,14 +505,22 @@ public class Stock extends Observable implements Serializable {
 		return getUseValue().getUnitValue();
 	}
 
-	public double getCoefficient() {
-		return this.coefficient;
+	public double getProductionCoefficient() {
+		return this.productionCoefficient;
 	}
 
-	public void setCoefficient(double coefficient) {
-		this.coefficient = coefficient;
+	public void setProductionCoefficient(double productionCoefficient) {
+		this.productionCoefficient = productionCoefficient;
 	}
 
+	public double getConsumptionCoefficient() {
+		return consumptionCoefficient;
+	}
+	
+	public void setConsumptionCoefficient(double consumptionCoefficient) {
+		this.consumptionCoefficient=consumptionCoefficient;
+	}
+	
 	public double getQuantity() {
 		return this.quantity;
 	}
@@ -515,7 +553,7 @@ public class Stock extends Observable implements Serializable {
 		pk.useValue = useValueName;
 	}
 
-	public String getCircuit() {
+	public String getOwner() {
 		return pk.owner;
 	}
 

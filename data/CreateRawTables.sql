@@ -17,12 +17,12 @@
  DROP table if exists stocks;
  CREATE TABLE stocks ( project int default 1 not null, timeStamp VARCHAR (10) DEFAULT '1' not null, OWNER varchar(45) not NULL, OWNERTYPE ENUM('CLASS','CIRCUIT') DEFAULT NULL, 
  usevalue varchar(45) not NULL, stockType varchar(45) DEFAULT NULL, quantity double DEFAULT NULL, value double DEFAULT null, PRICE double DEFAULT NULL, 
- coefficient double DEFAULT NULL, quantityDemanded double DEFAULT NULL, primary key (project, timeStamp, owner, usevalue, stocktype) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ productionCoefficient double DEFAULT 0, consumptionCoefficient double DEFAULT 0, quantityDemanded double DEFAULT NULL, primary key (project, timeStamp, owner, usevalue, stocktype) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
  
  DROP table if exists useValues;
  CREATE TABLE useValues ( project int default 1 not null, timeStamp VARCHAR (10) DEFAULT '1' not null, useValueName varchar(45) not NULL,
  useValueCircuitType ENUM('SOCIAL','CAPITALIST','MONEY') DEFAULT NULL, unitValue double DEFAULT NULL, unitPrice double DEFAULT NULL, 
- turnoverTime double DEFAULT NULL, totalSupply double default NULL, totalDemand double default NULL, surplusProduct double DEFAULT 0, 
+ turnoverTime double DEFAULT NULL, surplusProduct double DEFAULT 0, 
  allocationShare double default null, useValueType ENUM('LABOURPOWER','MONEY','PRODUCTIVE','CONSUMPTION')DEFAULT null, stockUsedUp double default 0, 
  stockProduced double default 0, imageName VARCHAR(45) default null, primary key (project, timeStamp, useValueName) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
  
@@ -60,6 +60,6 @@
  -- and because it greatly simplifies the code.
  -- possibly, in a future version, separate tables could be introduced for each type of stock, with proper functional abstraction to deal with the variety among them.
  
- insert into stocks (PROJECT, TIMESTAMP, OWNER, OWNERTYPE, USEVALUE, STOCKTYPE, QUANTITY, COEFFICIENT) 
- select PROJECT, TIMESTAMP, OWNER, OWNERTYPE, USEVALUE, STOCKTYPE, QUANTITY, COEFFICIENT from CSVREAD('~/Documents/Capsim/data/stocks.csv');
+ insert into stocks (PROJECT, TIMESTAMP, OWNER, OWNERTYPE, USEVALUE, STOCKTYPE, QUANTITY, PRODUCTIONCOEFFICIENT, CONSUMPTIONCOEFFICIENT) 
+ select PROJECT, TIMESTAMP, OWNER, OWNERTYPE, USEVALUE, STOCKTYPE, QUANTITY, PRODUCTIONCOEFFICIENT,CONSUMPTIONCOEFFICIENT from CSVREAD('~/Documents/Capsim/data/stocks.csv');
  

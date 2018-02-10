@@ -89,8 +89,8 @@ public class Constrain extends Simulation implements Command {
 			double allocationShare = u.getAllocationShare();
 			double newQuantityDemanded = s.getQuantityDemanded() * allocationShare;
 			newQuantityDemanded = Precision.round(newQuantityDemanded, Simulation.getRoundingPrecision());
-			Reporter.report(logger, 2, "  Demand for [%s] in circuit [%s] was %.2f and is now %.2f",
-					useValueType, s.getCircuit(), s.getQuantityDemanded(), newQuantityDemanded);
+			Reporter.report(logger, 2, "  Demand for [%s] in circuit [%s] was %.0f and is now %.0f",
+					useValueType, s.getOwner(), s.getQuantityDemanded(), newQuantityDemanded);
 			s.setQuantityDemanded(newQuantityDemanded);
 		}
 	}
@@ -117,7 +117,7 @@ public class Constrain extends Simulation implements Command {
 				double existingQuantity = s.getQuantity();
 				double quantityDemanded = s.getQuantityDemanded();
 				double quantityAvailable = existingQuantity + s.getQuantityDemanded();
-				double coefficient = s.getCoefficient();
+				double coefficient = s.getProductionCoefficient();
 				double possibleOutput = Precision.round(quantityAvailable / coefficient ,roundingPrecision);
 				if (possibleOutput < desiredOutputLevel) {
 					Reporter.report(logger, 2, "  Constraining output to %.2f because stock [%s] has a supply of %.2f ",
@@ -143,8 +143,8 @@ public class Constrain extends Simulation implements Command {
 		Reporter.report(logger, 0, "CALCULATE ALLOCATION SHARES");
 	
 		for (UseValue u : DataManager.useValuesAll()) {
-			double totalDemand = u.getTotalDemand();
-			double totalSupply = u.getTotalSupply();
+			double totalDemand = u.totalDemand();
+			double totalSupply = u.totalSupply();
 			double allocationShare = totalSupply / totalDemand;
 			allocationShare = (allocationShare > 1 ? 1 : allocationShare);
 			Reporter.report(logger, 1, " Allocation share for commodity [%s] is %.2f", u.getUseValueName(), allocationShare);

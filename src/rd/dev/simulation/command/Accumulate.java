@@ -48,6 +48,7 @@ public class Accumulate extends Simulation implements Command {
 		advanceOneStep(ActionStates.C_M_Accumulate.getText(), ActionStates.C_M_Distribute.getText());
 		calculateSurplus();
 		allocateProfits();
+		setCapitals(); // starting another period so recompute the initial capital
 
 		// Investment.
 		// One of several possible algorithms, to be generalised later.

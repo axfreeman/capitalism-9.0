@@ -47,54 +47,55 @@ public class TabbedTableViewer extends VBox {
 
 	public static Stock.ValueExpression displayAttribute = Stock.ValueExpression.PRICE;
 
-	// Stock Tables
+	// Stock Tables and header coulumns
 
 	@FXML private TableView<Stock> productiveStockTable;
 	@FXML private TableColumn<Stock, String> productiveStockHeaderColumn;
-
 	@FXML private TableView<Stock> moneyStockTable;
-	@FXML private TableColumn<Stock,String> moneyStockHeaderColumn;
-
+	@FXML private TableColumn<Stock, String> moneyStockHeaderColumn;
 	@FXML private TableView<Stock> salesStockTable;
-	@FXML private TableColumn<Stock,String> salesStockHeaderColumn;
-
+	@FXML private TableColumn<Stock, String> salesStockHeaderColumn;
 	@FXML private TableView<Stock> consumptionStockTable;
-	@FXML private TableColumn<Stock,String> consumptionStockHeaderColumn;
+	@FXML private TableColumn<Stock, String> consumptionStockHeaderColumn;
 
-	// The UseValues table
+	// The UseValues table and its header columns
 
 	@FXML protected TableView<UseValue> useValuesTable;
-	@FXML private TableColumn<UseValue,String> useValueDemandSupplySuperColumn;
-	@FXML private TableColumn<UseValue,String> useValueCapitalProfitSuperColumn;
-	@FXML private TableColumn<UseValue,String> useValueValuePriceSuperColumn;
-	
-	private TableColumn<UseValue,String> useValueTotalPriceColumn;
-	private TableColumn<UseValue,String> useValueAllocationShareColumn;
-	private TableColumn<UseValue,String> useValueProfitRateColumn;
-	
-	// Circuits Tables
+	private TableColumn<UseValue, String> useValueDemandSupplySuperColumn;
+	private TableColumn<UseValue, String> useValueCapitalProfitSuperColumn;
+	private TableColumn<UseValue, String> useValueValuePriceSuperColumn;
+
+	private TableColumn<UseValue, String> useValueTotalPriceColumn;
+	private TableColumn<UseValue, String> useValueAllocationShareColumn;
+	private TableColumn<UseValue, String> useValueProfitRateColumn;
+
+	// Circuits Tables and their header columns
 
 	@FXML private TableView<Circuit> circuitsTable;
 	@FXML private TableView<Circuit> dynamicCircuitTable;
 	@FXML private TableView<SocialClass> socialClassesTable;
 
 	/**
-	 * a simple static list of all the tables, so utilities can get at them
+	 * Simple static lists of tables, so utilities can get at them
 	 */
 
 	private static ArrayList<TableView<?>> tabbedTables = new ArrayList<TableView<?>>();
-	private static ArrayList<TableView<?>> dynamicTables = new ArrayList<TableView<?>>();
-	
+
 	public static enum HEADER_TOOL_TIPS {
-		USEVALUE ("A commodity is anything that that society makes use of, and has established a quantitative measure for"),
-		INDUSTRY("A producer is a business, or group of businesses, who make one commodity with similar technologies. \n" + 
-				"Two producers can make the same commodity, but would normally be distinguished apart because their technology differs.\n" + 
-				"This can help study the effect of technological change"),
+		// @formatter:off
+		USEVALUE("A commodity is anything that that society makes use of, and has established a quantitative measure for"), 
+		INDUSTRY("A producer is a business, or group of businesses, who make one commodity with similar technologies. \n" +
+				 "Two producers can make the same commodity, but would normally be distinguished apart because their technology differs.\n" +
+				 "This can help study the effect of technological change"), 
 		SOCIALCLASS("A social class is a group of people with the same source of revenue, defined by the type of property that they specialise in");
+		// @formatter:on
+
 		String text;
-		HEADER_TOOL_TIPS(String text){
-			this.text=text;
+
+		HEADER_TOOL_TIPS(String text) {
+			this.text = text;
 		}
+
 		public String text() {
 			return text;
 		}
@@ -118,11 +119,11 @@ public class TabbedTableViewer extends VBox {
 		buildTables();
 	}
 
-	/** 
+	/**
 	 * completely reconstruct all the tables from scratch
 	 * Called at startup, and when switching a project (because the dynamic columns may change)
 	 */
-	
+
 	public void buildTables() {
 		makeProductiveStocksViewTable();
 		makeMoneyStocksViewTable();
@@ -130,9 +131,9 @@ public class TabbedTableViewer extends VBox {
 		makeConsumptionStocksViewTable();
 		makeUseValuesViewTable();
 		makeCircuitsViewTable();
-		makeDynamicCircuitsTable();	
+		makeDynamicCircuitsTable();
 		makeSocialClassesViewTable();
-		
+
 		tabbedTables.clear();
 		tabbedTables.add(productiveStockTable);
 		tabbedTables.add(moneyStockTable);
@@ -142,119 +143,126 @@ public class TabbedTableViewer extends VBox {
 		tabbedTables.add(useValuesTable);
 		tabbedTables.add(circuitsTable);
 		tabbedTables.add(socialClassesTable);
-		
 		tabbedTables.add(dynamicCircuitTable);
-		dynamicTables.add(dynamicCircuitTable);
-		dynamicTables.add(socialClassesTable);
-		
-		TableUtilities.doctorColumnHeaders(tabbedTables);  // doctor all the tables so the graphics can be switched
-		TableUtilities.setSuperColumnHandler(useValueValuePriceSuperColumn,useValueTotalPriceColumn);
-		TableUtilities.setSuperColumnHandler(useValueDemandSupplySuperColumn,useValueAllocationShareColumn);
-		TableUtilities.setSuperColumnHandler(useValueCapitalProfitSuperColumn,useValueProfitRateColumn);
+
+		TableUtilities.setSuperColumnHandler(useValueValuePriceSuperColumn, useValueTotalPriceColumn);
+		TableUtilities.setSuperColumnHandler(useValueDemandSupplySuperColumn, useValueAllocationShareColumn);
+		TableUtilities.setSuperColumnHandler(useValueCapitalProfitSuperColumn, useValueProfitRateColumn);
 	}
-	
-	/** 
-	 * rebuild the tables with variable numbers of columns (for example when switching projects)
-	 */
-	public void reBuildDynamicTables() {
-		dynamicCircuitTable.getColumns().clear();
-		socialClassesTable.getColumns().clear();
-		makeDynamicCircuitsTable();	
-		makeSocialClassesViewTable();
-		TableUtilities.doctorColumnHeaders(dynamicTables);
-	}
-	
+
 	/**
 	 * Initialize the Productive Stocks tableView and cellFactories
 	 */
 	public void makeProductiveStocksViewTable() {
-		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.CIRCUIT));
-		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.USEVALUE));
-		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.QUANTITY));
-		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.VALUE));
-		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.PRICE));
-		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.COEFFICIENT));
-		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.QUANTITYDEMANDED));
+		productiveStockHeaderColumn.getColumns().clear();
+		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.CIRCUIT,true));
+		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.USEVALUE,true));
+		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.QUANTITY,false));
+		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.VALUE,false));
+		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.PRICE,false));
+		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.PRODUCTION_COEFFICIENT,false));
+		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.QUANTITYDEMANDED,false));
 	}
 
 	/**
 	 * Initialize the Money Stocks tableView and cellFactories
 	 */
 	public void makeMoneyStocksViewTable() {
-		moneyStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.OWNERTYPE));
-		moneyStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.CIRCUIT));
-		moneyStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.QUANTITY));
-		moneyStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.VALUE));
-		moneyStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.PRICE));
+		moneyStockHeaderColumn.getColumns().clear();
+		moneyStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.OWNERTYPE,true));
+		moneyStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.CIRCUIT,true));
+		moneyStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.QUANTITY,false));
+		moneyStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.VALUE,false));
+		moneyStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.PRICE,false));
 	}
 
 	/**
 	 * Initialize the Sales Stocks tableView and cellFactories
 	 */
 	public void makeSalesStocksViewTable() {
-		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.OWNERTYPE));
-		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.CIRCUIT));
-		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.USEVALUE));
-		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.QUANTITY));
-		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.VALUE));
-		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.PRICE));
+		salesStockHeaderColumn.getColumns().clear();
+		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.OWNERTYPE,true));
+		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.CIRCUIT,true));
+		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.USEVALUE,false));
+		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.QUANTITY,false));
+		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.VALUE,false));
+		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.PRICE,false));
 	}
 
 	/**
 	 * Initialize the Consumption Stocks tableView and cellFactories
 	 */
 	public void makeConsumptionStocksViewTable() {
-		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.CIRCUIT));
-		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.QUANTITY));
-		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.VALUE));
-		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.PRICE));
-		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.QUANTITYDEMANDED));
+		consumptionStockHeaderColumn.getColumns().clear();
+		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.CIRCUIT,true));
+		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.USEVALUE,true));
+		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.QUANTITY,false));
+		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.VALUE,false));
+		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.PRICE,false));
+		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.QUANTITYDEMANDED,false));
+		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.CONSUMPTION_COEFFICIENT,false));
 	}
 
 	/**
 	 * Initialize the UseValues tableView and cellFactories
 	 */
 	public void makeUseValuesViewTable() {
-		useValuesTable.getColumns().add(0,new UseValueColumn(UseValue.USEVALUE_SELECTOR.USEVALUENAME,true));
-		useValuesTable.getColumns().add(1,new UseValueColumn(UseValue.USEVALUE_SELECTOR.USEVALUETYPE,true));
-		useValuesTable.getColumns().add(2,new UseValueColumn(UseValue.USEVALUE_SELECTOR.TOTALQUANTITY,false));
-		useValuesTable.getColumns().add(3,new UseValueColumn(UseValue.USEVALUE_SELECTOR.TURNOVERTIME,false));
-		useValueValuePriceSuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.UNITVALUE,false));
-		useValueValuePriceSuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.UNITPRICE,false));
-		useValueValuePriceSuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.TOTALVALUE,false));
-		useValueTotalPriceColumn=new UseValueColumn(UseValue.USEVALUE_SELECTOR.TOTALPRICE,false);
+		useValuesTable.getColumns().clear();
+
+		// Create the header columns
+		// Assume Garbage collector will dispose of the detached subColumns
+		useValueValuePriceSuperColumn=new TableColumn<UseValue,String>("Values and Prices");
+		useValueDemandSupplySuperColumn=new TableColumn<UseValue,String>("Demand and Supply");
+		useValueCapitalProfitSuperColumn=new TableColumn<UseValue,String>("CapitalAndProfit");
+		
+		useValuesTable.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.USEVALUENAME, true));
+		useValuesTable.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.USEVALUETYPE, true));
+		useValuesTable.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.TOTALQUANTITY, false));
+		useValuesTable.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.TURNOVERTIME, false));
+
+		useValuesTable.getColumns().add(useValueValuePriceSuperColumn);
+		useValueValuePriceSuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.UNITVALUE, false));
+		useValueValuePriceSuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.UNITPRICE, false));
+		useValueValuePriceSuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.TOTALVALUE, false));
+		useValueTotalPriceColumn = new UseValueColumn(UseValue.USEVALUE_SELECTOR.TOTALPRICE, false);
 		useValueValuePriceSuperColumn.getColumns().add(useValueTotalPriceColumn);
-		useValueDemandSupplySuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.TOTALSUPPLY,false));
-		useValueDemandSupplySuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.TOTALDEMAND,false));
-		useValueAllocationShareColumn=new UseValueColumn(UseValue.USEVALUE_SELECTOR.ALLOCATIONSHARE,false);
+
+		useValuesTable.getColumns().add(useValueDemandSupplySuperColumn);
+		useValueDemandSupplySuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.TOTALSUPPLY, false));
+		useValueDemandSupplySuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.TOTALDEMAND, false));
+		useValueAllocationShareColumn = new UseValueColumn(UseValue.USEVALUE_SELECTOR.ALLOCATIONSHARE, false);
 		useValueDemandSupplySuperColumn.getColumns().add(useValueAllocationShareColumn);
-		useValueCapitalProfitSuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.INITIALCAPITAL,false));
-		useValueCapitalProfitSuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.PROFIT,false));
-		useValueProfitRateColumn=new UseValueColumn(UseValue.USEVALUE_SELECTOR.PROFITRATE,false);
+
+		useValuesTable.getColumns().add(useValueCapitalProfitSuperColumn);
+		useValueCapitalProfitSuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.INITIALCAPITAL, false));
+		useValueCapitalProfitSuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.PROFIT, false));
+		useValueProfitRateColumn = new UseValueColumn(UseValue.USEVALUE_SELECTOR.PROFITRATE, false);
 		useValueCapitalProfitSuperColumn.getColumns().add(useValueProfitRateColumn);
-		useValueCapitalProfitSuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.SURPLUS,false));
+		useValueCapitalProfitSuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.SURPLUS, false));
 	}
 
 	/**
 	 * Initialize the Social Classes tableView and cellFactories
 	 */
 	public void makeSocialClassesViewTable() {
+		socialClassesTable.getColumns().clear();
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SOCIALCLASSNAME));
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SIZE));
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SALES));
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.MONEY));
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.TOTAL));
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.REVENUE));
-		for (UseValue u:DataManager.useValuesByType(UseValue.USEVALUETYPE.CONSUMPTION)) {
-			socialClassesTable.getColumns().add(new SocialClassColumn(u.getUseValueName()));		}
+		for (UseValue u : DataManager.useValuesByType(UseValue.USEVALUETYPE.CONSUMPTION)) {
+			socialClassesTable.getColumns().add(new SocialClassColumn(u.getUseValueName()));
+		}
 	}
 
 	/**
 	 * Build the Circuits tableView and cellFactories.
 	 * Only call this when we want to rebuild the display from scratch, for example when starting up or switching projects
 	 */
-	
 	public void makeCircuitsViewTable() {
+		circuitsTable.getColumns().clear();
 		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.PRODUCTUSEVALUENAME));
 		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.INITIALCAPITAL));
 		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.SALESSTOCK));
@@ -265,16 +273,15 @@ public class TabbedTableViewer extends VBox {
 		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.PROFITRATE));
 	}
 
-	
 	/**
 	 * Build the DynamicCircuitTable and cellFactories.
 	 * Only call this when we want to rebuild the display from scratch, for example when starting up or switching projects
 	 */
-	
 	private void makeDynamicCircuitsTable() {
+		dynamicCircuitTable.getColumns().clear();
 		dynamicCircuitTable.getColumns().add(new CircuitColumn(Circuit.Selector.PRODUCTUSEVALUENAME));
-		dynamicCircuitTable.getColumns().add(new CircuitColumn(Circuit.Selector.CONSTRAINEDOUTPUT));
 		dynamicCircuitTable.getColumns().add(new CircuitColumn(Circuit.Selector.PROPOSEDOUTPUT));
+		dynamicCircuitTable.getColumns().add(new CircuitColumn(Circuit.Selector.CONSTRAINEDOUTPUT));
 		dynamicCircuitTable.getColumns().add(new CircuitColumn(Circuit.Selector.GROWTHRATE));
 
 		for (UseValue u : DataManager.useValuesByType(UseValue.USEVALUETYPE.PRODUCTIVE)) {
@@ -289,7 +296,6 @@ public class TabbedTableViewer extends VBox {
 	 * refresh the data in all the tabbed tables. Do not rebuild them.
 	 * 
 	 */
-
 	public void repopulateTabbedTables() {
 		productiveStockTable.setItems(olProvider.stocksByStockTypeObservable("Productive"));
 		moneyStockTable.setItems(olProvider.stocksByStockTypeObservable("Money"));
@@ -308,7 +314,7 @@ public class TabbedTableViewer extends VBox {
 	 */
 
 	public void refreshTables() {
-		for (TableView<?>table:tabbedTables) {
+		for (TableView<?> table : tabbedTables) {
 			table.refresh();
 		}
 	}
@@ -329,17 +335,4 @@ public class TabbedTableViewer extends VBox {
 		TabbedTableViewer.displayAttribute = displayAttribute;
 	}
 
-	/**
-	 * @return an array of all the tables, so the utilities and other providers can service the objects in them
-	 */
-	public ArrayList<TableView<?>> getTabbedTables() {
-		return tabbedTables;
-	}
-
-	/**
-	 * @return the useValuesTable
-	 */
-	public TableView<UseValue> getUseValuesTable() {
-		return useValuesTable;
-	}
 }
