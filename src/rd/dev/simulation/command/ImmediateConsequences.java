@@ -24,10 +24,10 @@ import org.apache.commons.math3.util.Precision;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import rd.dev.simulation.Capitalism;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.ActionStates;
 import rd.dev.simulation.datamanagement.DataManager;
+import rd.dev.simulation.datamanagement.SelectionsProvider;
 import rd.dev.simulation.model.Circuit;
 import rd.dev.simulation.model.Global;
 import rd.dev.simulation.model.Project;
@@ -47,7 +47,7 @@ public class ImmediateConsequences extends Simulation implements Command {
 	 * TODO CHECK INVARIANTS AT THIS POINT?
 	 */
 	public void execute() {
-		currentProject=Capitalism.selectionsProvider.projectSingle(projectCurrent);		
+		currentProject=SelectionsProvider.projectSingle(projectCurrent);		
 		Reporter.report(logger, 0, "Recompute unit values and prices and hence the Monetary Expression of Value");
 		Reporter.report(logger, 0, "Price dynamics are set to %s ", currentProject.getPriceDynamics());
 		advanceOneStep(ActionStates.C_P_ImmediateConsequences.getText(), ActionStates.C_P_Produce.getText());

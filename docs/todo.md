@@ -1,6 +1,6 @@
 # TODO 2/11/2018 6:41:20 AM  
 
-Major overhaul of visuals and database, to accomodate multiple consumption goods, is complete
+Major overhaul of visuals and database, to accommodate multiple consumption goods, is complete
 However now need to work through the various projects, all of which except 1 are manifesting quirks.
 
 ## MINOR

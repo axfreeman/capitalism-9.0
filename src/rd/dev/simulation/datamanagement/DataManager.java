@@ -29,8 +29,6 @@ import javax.persistence.TypedQuery;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import rd.dev.simulation.Capitalism;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.ActionButtonsBox;
 import rd.dev.simulation.model.Circuit;
@@ -168,6 +166,23 @@ public class DataManager {
 
 	// GLOBAL QUERIES
 
+	/**
+	 * retrieve the global record for the specified timeStamp and the current Project
+	 * 
+	 * @param timeStamp
+	 * 		the specified timeStamp
+	 * @return the global record for the current project and the current timeStamp, null if it does not exist (which is an error)
+	 */
+	public static Global getGlobal(int timeStamp) {
+		globalQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
+		try {
+			return globalQuery.getSingleResult();
+		} catch (javax.persistence.NoResultException e) {
+			return null;// because this query throws a fit if it doesn't find anything
+		}
+	}
+	
+	
 	/**
 	 * retrieve the global record at the current timeStamp and project
 	 * 
@@ -666,7 +681,7 @@ public class DataManager {
 			logger.debug("The user switched to project {} which  is already current. No action was taken", newProjectID);
 			return;
 		}
-		Project newProject = Capitalism.selectionsProvider.projectSingle(newProjectID);
+		Project newProject = SelectionsProvider.projectSingle(newProjectID);
 		if ((newProject.getPriceDynamics() == Project.PRICEDYNAMICS.DYNAMIC) || (newProject.getPriceDynamics() == Project.PRICEDYNAMICS.EQUALISE)) {
 			Dialogues.alert(logger, "Sorry, the Dynamic and Equalise options for price dynamics are not ready yet");
 			return;
@@ -674,7 +689,7 @@ public class DataManager {
 
 		// record the current timeStamp, timeStampDisplayCursor and buttonState in the current project record, and persist it to the database
 
-		Project thisProject = Capitalism.selectionsProvider.projectSingle(Simulation.projectCurrent);
+		Project thisProject = SelectionsProvider.projectSingle(Simulation.projectCurrent);
 
 		projectEntityManager.getTransaction().begin();
 
@@ -700,6 +715,7 @@ public class DataManager {
 
 	/**
 	 * for all persistent entities at the given timeStamp, set comparators that refer to the timeStampComparatorCursor
+	 * TODO previousComparator not yet properly implemented.
 	 * 
 	 * @param timeStampID
 	 *            all persistent records at this timeStampID will be given comparators equal to the timeStampComparatorCursor
@@ -708,30 +724,44 @@ public class DataManager {
 	public static void setComparators(int timeStampID) {
 		try {
 			for (Stock s : stocksAll(timeStampID)) {
-				s.setComparator(stockByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), s.getOwner(), s.getUseValueName(),
-						s.getStockType()));
+				s.setPreviousComparator(stockByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), s.getOwner(), s.getUseValueName(),s.getStockType()));
+				s.setStartComparator(stockByPrimaryKey(Simulation.projectCurrent, 1, s.getOwner(), s.getUseValueName(),s.getStockType()));
+				s.setEndComparator(stockByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, s.getOwner(), s.getUseValueName(),s.getStockType()));
+				s.setCustomComparator(stockByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, s.getOwner(), s.getUseValueName(),s.getStockType()));
 			}
 			useValuesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStampID);
 			for (UseValue u : useValuesAllQuery.getResultList()) {
-				u.setComparator(useValueByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), u.getUseValueName()));
+				u.setPreviousComparator(useValueByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), u.getUseValueName()));
+				u.setStartComparator(useValueByPrimaryKey(Simulation.projectCurrent, 1, u.getUseValueName()));
+				u.setEndComparator(useValueByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, u.getUseValueName()));
+				u.setCustomComparator(useValueByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, u.getUseValueName()));
 			}
 			for (Circuit c : circuitsAll(timeStampID)) {
-				c.setComparator(circuitByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), c.getProductUseValueName()));
+				c.setPreviousComparator(circuitByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), c.getProductUseValueName()));
+				c.setStartComparator(circuitByPrimaryKey(Simulation.projectCurrent, 1, c.getProductUseValueName()));
+				c.setEndComparator(circuitByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, c.getProductUseValueName()));
+				c.setCustomComparator(circuitByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, c.getProductUseValueName()));
 			}
 			socialClassAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStampID);
 			for (SocialClass sc : socialClassAllQuery.getResultList()) {
-				sc.setComparator(socialClassByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), sc.getSocialClassName()));
+				sc.setPreviousComparator(socialClassByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), sc.getSocialClassName()));
+				sc.setStartComparator(socialClassByPrimaryKey(Simulation.projectCurrent, 1, sc.getSocialClassName()));
+				sc.setEndComparator(socialClassByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, sc.getSocialClassName()));
+				sc.setCustomComparator(socialClassByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, sc.getSocialClassName()));
 			}
-			globalQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.getTimeStampComparatorCursor());
-			Global comparator = globalQuery.getSingleResult();
+			
 			globalQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStampID);
 			Global currentGlobal = globalQuery.getSingleResult();
-			currentGlobal.setComparator(comparator);
+			currentGlobal.setPreviousComparator(getGlobal(Simulation.getTimeStampComparatorCursor()));
+			currentGlobal.setStartComparator(getGlobal(1));
+			currentGlobal.setPreviousComparator(getGlobal(Simulation.timeStampIDCurrent));
+			currentGlobal.setCustomComparator(getGlobal(Simulation.timeStampIDCurrent));
+		
 		} catch (Exception e) {
 			Dialogues.alert(logger, "Database fubar. Sorry, please contact developer");
 		}
 	}
-
+	
 	// NON-QUERY GETTERS AND SETTERS
 
 	public static EntityManager getTimeStampEntityManager() {

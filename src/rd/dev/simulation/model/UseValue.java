@@ -68,6 +68,11 @@ public class UseValue extends Observable implements Serializable {
 	@Column(name = "imageName") private String imageName; // a graphical image that can be used in column headers in place of text
 
 	@Transient private UseValue comparator;
+	@Transient private UseValue previousComparator;
+	@Transient private UseValue startComparator;
+	@Transient private UseValue customComparator;
+	@Transient private UseValue endComparator;
+
 
 	/**
 	 * Types of commodities, basis of a rudimentary typology for use values
@@ -209,54 +214,6 @@ public class UseValue extends Observable implements Serializable {
 				pk.useValueName, totalQuantity, totalPrice, totalValue);
 	}
 
-	/**
-	 * informs the display whether the selected member of this entity has changed, compared with the 'comparator' UseValue which normally
-	 * comes from a different timeStamp.
-	 * 
-	 * We don't mind the hardwiring because we don't really intend this code to be re-usable, it's not hard to modify, and it results in compact
-	 * and readable usage code (see (@link TabbedTableViewer#populateUseValuesViewTable})
-	 * 
-	 * @param uSEVALUE_SELECTOR
-	 *            chooses which member to evaluate
-	 * @return whether this member has changed or not. False if selector is unavailable here
-	 */
-
-	public boolean changed(USEVALUE_SELECTOR uSEVALUE_SELECTOR) {
-		switch (uSEVALUE_SELECTOR) {
-		case USEVALUENAME:
-			return false;
-		case USEVALUECIRCUITTYPE:
-			return false;
-		case UNITPRICE:
-			return unitPrice != comparator.getUnitPrice();
-		case UNITVALUE:
-			return unitValue != comparator.getUnitValue();
-		case TOTALVALUE:
-			return totalValue() != comparator.totalValue();
-		case TOTALPRICE:
-			return totalPrice() != comparator.totalPrice();
-		case TOTALQUANTITY:
-			return totalQuantity() != comparator.totalQuantity();
-		case TOTALSUPPLY:
-			return totalSupply() != comparator.totalSupply();
-		case TOTALDEMAND:
-			return totalDemand() != comparator.totalDemand();
-		case SURPLUS:
-			return surplusProduct != comparator.surplusProduct;
-		case TURNOVERTIME:
-			return turnoverTime != comparator.getTurnoverTime();
-		case ALLOCATIONSHARE:
-			return allocationShare != comparator.allocationShare;
-		case INITIALCAPITAL:
-			return initialCapital() != comparator.initialCapital();
-		case PROFIT:
-			return profit() != comparator.profit();
-		case PROFITRATE:
-			return profitRate()!=comparator.profitRate();
-		default:
-			return false;
-		}
-	}
 
 	/**
 	 * provides a wrapped version of the selected member which the display will recognise, as a ReadOnlyStringWrapper.
@@ -264,13 +221,13 @@ public class UseValue extends Observable implements Serializable {
 	 * We don't mind the hardwiring because we don't really intend this code to be re-usable, it's not hard to modify, and it results in compact
 	 * and readable usage code (see (@link TabbedTableViewer#populateUseValuesViewTable})
 	 * 
-	 * @param uSEVALUE_SELECTOR
+	 * @param USEVALUE_SELECTOR
 	 *            chooses which member to evaluate
 	 * @return a String representation of the members, formatted according to the relevant format string
 	 */
 
-	public ReadOnlyStringWrapper wrappedString(USEVALUE_SELECTOR uSEVALUE_SELECTOR) {
-		switch (uSEVALUE_SELECTOR) {
+	public ReadOnlyStringWrapper wrappedString(USEVALUE_SELECTOR USEVALUE_SELECTOR) {
+		switch (USEVALUE_SELECTOR) {
 		case USEVALUENAME:
 			return new ReadOnlyStringWrapper(pk.useValueName);
 		case USEVALUECIRCUITTYPE:
@@ -307,6 +264,56 @@ public class UseValue extends Observable implements Serializable {
 			return null;
 		}
 	}
+	/**
+	 * informs the display whether the selected member of this entity has changed, compared with the 'comparator' UseValue which normally
+	 * comes from a different timeStamp.
+	 * 
+	 * We don't mind the hardwiring because we don't really intend this code to be re-usable, it's not hard to modify, and it results in compact
+	 * and readable usage code (see (@link TabbedTableViewer#populateUseValuesViewTable})
+	 * 
+	 * @param uSEVALUE_SELECTOR
+	 *            chooses which member to evaluate
+	 * @return whether this member has changed or not. False if selector is unavailable here
+	 */
+
+	public boolean changed(USEVALUE_SELECTOR uSEVALUE_SELECTOR) {
+		chooseComparison();
+		switch (uSEVALUE_SELECTOR) {
+		case USEVALUENAME:
+			return false;
+		case USEVALUECIRCUITTYPE:
+			return false;
+		case UNITPRICE:
+			return unitPrice != comparator.getUnitPrice();
+		case UNITVALUE:
+			return unitValue != comparator.getUnitValue();
+		case TOTALVALUE:
+			return totalValue() != comparator.totalValue();
+		case TOTALPRICE:
+			return totalPrice() != comparator.totalPrice();
+		case TOTALQUANTITY:
+			return totalQuantity() != comparator.totalQuantity();
+		case TOTALSUPPLY:
+			return totalSupply() != comparator.totalSupply();
+		case TOTALDEMAND:
+			return totalDemand() != comparator.totalDemand();
+		case SURPLUS:
+			return surplusProduct != comparator.surplusProduct;
+		case TURNOVERTIME:
+			return turnoverTime != comparator.getTurnoverTime();
+		case ALLOCATIONSHARE:
+			return allocationShare != comparator.allocationShare;
+		case INITIALCAPITAL:
+			return initialCapital() != comparator.initialCapital();
+		case PROFIT:
+			return profit() != comparator.profit();
+		case PROFITRATE:
+			return profitRate()!=comparator.profitRate();
+		default:
+			return false;
+		}
+	}
+
 
 	/**
 	 * If the selected field has changed, return the difference between the current value and the former value
@@ -321,6 +328,7 @@ public class UseValue extends Observable implements Serializable {
 	 */
 
 	public String showDelta(String item, USEVALUE_SELECTOR useValueSelector) {
+		chooseComparison();
 		if (!changed(useValueSelector))
 			return item;
 		switch (useValueSelector) {
@@ -355,6 +363,27 @@ public class UseValue extends Observable implements Serializable {
 			return item;
 		}
 	}
+	
+	/**
+	 * chooses the comparator depending on the state set in the {@code ViewManager.comparatorToggle} radio buttons
+	 */
+	
+	private void chooseComparison(){
+		switch(ViewManager.getComparatorState()) {
+		case CUSTOM:
+			comparator=customComparator;
+			break;
+		case END:
+			comparator=endComparator;
+			break;
+		case PREVIOUS:
+			comparator=previousComparator;
+			break;
+		case START:
+			comparator=startComparator;
+		}
+	}
+
 
 	/**
 	 * 
@@ -571,4 +600,59 @@ public class UseValue extends Observable implements Serializable {
 		return imageName;
 	}
 
+	/**
+	 * @return the previousComparator
+	 */
+	public UseValue getPreviousComparator() {
+		return previousComparator;
+	}
+
+	/**
+	 * @param previousComparator the previousComparator to set
+	 */
+	public void setPreviousComparator(UseValue previousComparator) {
+		this.previousComparator = previousComparator;
+	}
+
+	/**
+	 * @return the startComparator
+	 */
+	public UseValue getStartComparator() {
+		return startComparator;
+	}
+
+	/**
+	 * @param startComparator the startComparator to set
+	 */
+	public void setStartComparator(UseValue startComparator) {
+		this.startComparator = startComparator;
+	}
+
+	/**
+	 * @return the customComparator
+	 */
+	public UseValue getCustomComparator() {
+		return customComparator;
+	}
+
+	/**
+	 * @param customComparator the customComparator to set
+	 */
+	public void setCustomComparator(UseValue customComparator) {
+		this.customComparator = customComparator;
+	}
+
+	/**
+	 * @return the endComparator
+	 */
+	public UseValue getEndComparator() {
+		return endComparator;
+	}
+
+	/**
+	 * @param endComparator the endComparator to set
+	 */
+	public void setEndComparator(UseValue endComparator) {
+		this.endComparator = endComparator;
+	}
 }

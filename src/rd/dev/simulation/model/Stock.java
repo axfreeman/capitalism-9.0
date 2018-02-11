@@ -87,9 +87,13 @@ public class Stock extends Observable implements Serializable {
 
 	@Column(name= "consumptionCoefficient") private double consumptionCoefficient;
 
-	// This transient variable is used to compare stock magnitudes from different time periods
+	// Thes transient variables are used to compare stock magnitudes from different time periods
 	// It is the basic mechanism whereby changes and differences are displayed in the main and stock tables
-	@Transient protected Stock comparator;
+	@Transient private Stock comparator;
+	@Transient private Stock previousComparator;
+	@Transient private Stock startComparator;
+	@Transient private Stock customComparator;
+	@Transient private Stock endComparator;
 
 	/**
 	 * Readable constants to refer to the methods which provide information about the persistent members of the class
@@ -350,6 +354,7 @@ public class Stock extends Observable implements Serializable {
 	 */
 
 	public ReadOnlyStringWrapper wrappedString(Selector selector) {
+		chooseComparison();
 		switch (selector) {
 		case CIRCUIT:
 			return new ReadOnlyStringWrapper(pk.owner);
@@ -386,6 +391,7 @@ public class Stock extends Observable implements Serializable {
 	 * @return true if the selected attribute is different from the corresponding attribute of the comparator stock.
 	 */
 	public boolean changed(ValueExpression a) {
+		chooseComparison();
 		switch (a) {
 		case QUANTITY:
 			return quantity != comparator.quantity;
@@ -411,6 +417,7 @@ public class Stock extends Observable implements Serializable {
 	 */
 
 	public boolean changed(Selector selector) {
+		chooseComparison();
 		switch (selector) {
 		case CIRCUIT:
 		case USEVALUE:
@@ -445,6 +452,7 @@ public class Stock extends Observable implements Serializable {
 	 * @return the original item if nothing has changed, otherwise the change, as an appropriately formatted string
 	 */
 	public String showDelta(String item, ValueExpression valueExpression) {
+		chooseComparison();
 		if (!changed(valueExpression))
 			return item;
 		switch (valueExpression) {
@@ -459,8 +467,28 @@ public class Stock extends Observable implements Serializable {
 		}
 	}
 
+	/**
+	 * chooses the comparator depending on the state set in the {@code ViewManager.comparatorToggle} radio buttons
+	 */
 	
+	private void chooseComparison(){
+		switch(ViewManager.getComparatorState()) {
+		case CUSTOM:
+			comparator=customComparator;
+			break;
+		case END:
+			comparator=endComparator;
+			break;
+		case PREVIOUS:
+			comparator=previousComparator;
+			break;
+		case START:
+			comparator=startComparator;
+		}
+	}
 
+	
+	
 	/**
 	 * Part of primitive typology of use values
 	 * 
@@ -622,5 +650,63 @@ public class Stock extends Observable implements Serializable {
 	public void setComparator(Stock comparator) {
 		this.comparator = comparator;
 	}
+
+	/**
+	 * @return the previousComparator
+	 */
+	public Stock getPreviousComparator() {
+		return previousComparator;
+	}
+
+	/**
+	 * @param previousComparator the previousComparator to set
+	 */
+	public void setPreviousComparator(Stock previousComparator) {
+		this.previousComparator = previousComparator;
+	}
+
+	/**
+	 * @return the startComparator
+	 */
+	public Stock getStartComparator() {
+		return startComparator;
+	}
+
+	/**
+	 * @param startComparator the startComparator to set
+	 */
+	public void setStartComparator(Stock startComparator) {
+		this.startComparator = startComparator;
+	}
+
+	/**
+	 * @return the customComparator
+	 */
+	public Stock getCustomComparator() {
+		return customComparator;
+	}
+
+	/**
+	 * @param customComparator the customComparator to set
+	 */
+	public void setCustomComparator(Stock customComparator) {
+		this.customComparator = customComparator;
+	}
+
+	/**
+	 * @return the endComparator
+	 */
+	public Stock getEndComparator() {
+		return endComparator;
+	}
+
+	/**
+	 * @param endComparator the endComparator to set
+	 */
+	public void setEndComparator(Stock endComparator) {
+		this.endComparator = endComparator;
+	}
+	
+	
 
 }

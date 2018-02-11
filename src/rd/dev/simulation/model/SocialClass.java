@@ -56,9 +56,13 @@ public class SocialClass extends Observable implements Serializable {
 	@Column(name = "Revenue") protected double revenue; // the money that this class will spend in the current period
 
 	@Transient private SocialClass comparator;
+	@Transient private SocialClass previousComparator;
+	@Transient private SocialClass startComparator;
+	@Transient private SocialClass customComparator;
+	@Transient private SocialClass endComparator;
 
 	public enum Selector {
-		//@// @formatter:off
+		// @formatter:off
 		SOCIALCLASSNAME("Social Class",null,TabbedTableViewer.HEADER_TOOL_TIPS.SOCIALCLASS.text()), 
 		SIZE("Population","population.png",null), 
 		CONSUMPTIONPERPERSON("Consumption per person","",null), 
@@ -205,6 +209,7 @@ public class SocialClass extends Observable implements Serializable {
 	 */
 
 	public boolean changed(Selector selector, Stock.ValueExpression valueExpression) {
+		chooseComparison();
 		switch (selector) {
 		case SOCIALCLASSNAME:
 			return false;
@@ -242,6 +247,7 @@ public class SocialClass extends Observable implements Serializable {
 	 */
 
 	public String showDelta(String item, Selector selector, ValueExpression displayAttribute) {
+		chooseComparison();
 		if (!changed(selector, displayAttribute))
 			return item;
 		switch (selector) {
@@ -394,8 +400,26 @@ public class SocialClass extends Observable implements Serializable {
 		Stock s = getConsumptionStock();
 		return s == null ? Float.NaN : s.getQuantityDemanded();
 	}
+	/**
+	 * chooses the comparator depending on the state set in the {@code ViewManager.comparatorToggle} radio buttons
+	 */
+	
+	private void chooseComparison(){
+		switch(ViewManager.getComparatorState()) {
+		case CUSTOM:
+			comparator=customComparator;
+			break;
+		case END:
+			comparator=endComparator;
+			break;
+		case PREVIOUS:
+			comparator=previousComparator;
+			break;
+		case START:
+			comparator=startComparator;
+		}
+	}
 
-	// METHODS THAT SET ATTRIBUTES OF STOCKS
 
 	/**
 	 * set the quantity demanded of the Stock of consumption good owned by this social class. Report if the stock cannot be found (which is an error)
@@ -547,16 +571,58 @@ public class SocialClass extends Observable implements Serializable {
 	}
 
 	/**
-	 * say whether the attribute (total value or total price) selected by a has changed
-	 * 
-	 * @param a
-	 *            one of Stock.ValueExpression.QUANTITY,Stock.ValueExpression.VALUE,Stock.ValueExpression.PRICE
-	 * @return whether total value has changed if a=VALUE, whether total price has changed if a=PRICE and false N if a=QUANTITY
+	 * @return the previousComparator
 	 */
+	public SocialClass getPreviousComparator() {
+		return previousComparator;
+	}
 
-	public boolean changedTotalByAttribute(Stock.ValueExpression a) {
-		double now = totalAttribute(a);
-		double then = comparator.totalAttribute(a);
-		return now != then;
+	/**
+	 * @param previousComparator the previousComparator to set
+	 */
+	public void setPreviousComparator(SocialClass previousComparator) {
+		this.previousComparator = previousComparator;
+	}
+
+	/**
+	 * @return the startComparator
+	 */
+	public SocialClass getStartComparator() {
+		return startComparator;
+	}
+
+	/**
+	 * @param startComparator the startComparator to set
+	 */
+	public void setStartComparator(SocialClass startComparator) {
+		this.startComparator = startComparator;
+	}
+
+	/**
+	 * @return the customComparator
+	 */
+	public SocialClass getCustomComparator() {
+		return customComparator;
+	}
+
+	/**
+	 * @param customComparator the customComparator to set
+	 */
+	public void setCustomComparator(SocialClass customComparator) {
+		this.customComparator = customComparator;
+	}
+
+	/**
+	 * @return the endComparator
+	 */
+	public SocialClass getEndComparator() {
+		return endComparator;
+	}
+
+	/**
+	 * @param endComparator the endComparator to set
+	 */
+	public void setEndComparator(SocialClass endComparator) {
+		this.endComparator = endComparator;
 	}
 }

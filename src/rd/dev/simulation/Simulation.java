@@ -114,7 +114,7 @@ public class Simulation {
 
 			// fetch this project's current timeStamp record (which must exist in the database or we flag an error but try to correct it)
 
-			timeStampCurrentRecord = Capitalism.selectionsProvider.timeStampSingle(timeStampIDCurrent);
+			timeStampCurrentRecord = SelectionsProvider.timeStampSingle(timeStampIDCurrent);
 			if (timeStampCurrentRecord == null) {
 				Reporter.report(logger, 1, "There is no initial timeStamp record for project %d, will create a record and carry on from there",
 						p.getDescription());
@@ -210,8 +210,8 @@ public class Simulation {
 		// do not create a new project record - modify the existing one.
 
 		DataManager.getProjectEntityManager().getTransaction().begin();
-		Capitalism.selectionsProvider.setTimeStampOfProject(projectCurrent, timeStampIDCurrent+1);
-		Capitalism.selectionsProvider.setTimeStampCursorOfProject(projectCurrent, timeStampDisplayCursor);
+		SelectionsProvider.setTimeStampOfProject(projectCurrent, timeStampIDCurrent+1);
+		SelectionsProvider.setTimeStampCursorOfProject(projectCurrent, timeStampDisplayCursor);
 		DataManager.getProjectEntityManager().getTransaction().commit();
 
 		// persist a new version of all simulation entities, with the same project, and the new timeStamp...

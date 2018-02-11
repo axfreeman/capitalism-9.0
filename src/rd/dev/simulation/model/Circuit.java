@@ -74,6 +74,10 @@ public class Circuit extends Observable implements Serializable {
 	@Column(name = "costOfLPForExpansion") private double costOfLPForExpansion; // investment in Labour Power needed to achieve proposed expansion
 
 	@Transient private Circuit comparator;
+	@Transient private Circuit previousComparator;
+	@Transient private Circuit startComparator;
+	@Transient private Circuit customComparator;
+	@Transient private Circuit endComparator;
 
 	/**
 	 * Readable constants to refer to the methods which provide information about the persistent members of the class
@@ -333,6 +337,7 @@ public class Circuit extends Observable implements Serializable {
 	 */
 
 	public boolean changed(Selector selector, Stock.ValueExpression valueExpression) {
+		chooseComparison();
 		switch (selector) {
 		case PRODUCTUSEVALUENAME:
 			return false;
@@ -381,6 +386,7 @@ public class Circuit extends Observable implements Serializable {
 	 */
 
 	public String showDelta(String item, Selector selector, Stock.ValueExpression valueExpression) {
+		chooseComparison();
 		if (!changed(selector, valueExpression))
 			return item;
 		switch (selector) {
@@ -701,9 +707,6 @@ public class Circuit extends Observable implements Serializable {
 		return contents;
 	}
 
-	public void setComparator(Circuit comparator) {
-		this.comparator = comparator;
-	}
 
 	/**
 	 * The current capital of this circult.
@@ -794,4 +797,91 @@ public class Circuit extends Observable implements Serializable {
 		proposedOutput = constrainedOutput + extraStock / mP.getProductionCoefficient();
 		calculateOutputCosts();
 	}
+	
+	/**
+	 * chooses the comparator depending on the state set in the {@code ViewManager.comparatorToggle} radio buttons
+	 */
+	
+	private void chooseComparison(){
+		switch(ViewManager.getComparatorState()) {
+		case CUSTOM:
+			comparator=customComparator;
+			break;
+		case END:
+			comparator=endComparator;
+			break;
+		case PREVIOUS:
+			comparator=previousComparator;
+			break;
+		case START:
+			comparator=startComparator;
+		}
+	}
+
+	/**
+	 * set the comparator Circuit of this Circuit. When a TableCell displays a value from this Circuit, it asks the Circuit 
+	 * to tell it whether the value has changed in comparison with another timeStamp, and by how much.
+	 * The comparator allows the Circuit to determine what information is provided
+	 * @param comparator the comparator
+	 */
+	public void setComparator(Circuit comparator) {
+		this.comparator = comparator;
+	}
+
+	/**
+	 * @return the previousComparator
+	 */
+	public Circuit getPreviousComparator() {
+		return previousComparator;
+	}
+
+	/**
+	 * @param previousComparator the previousComparator to set
+	 */
+	public void setPreviousComparator(Circuit previousComparator) {
+		this.previousComparator = previousComparator;
+	}
+
+	/**
+	 * @return the startComparator
+	 */
+	public Circuit getStartComparator() {
+		return startComparator;
+	}
+
+	/**
+	 * @param startComparator the startComparator to set
+	 */
+	public void setStartComparator(Circuit startComparator) {
+		this.startComparator = startComparator;
+	}
+
+	/**
+	 * @return the customComparator
+	 */
+	public Circuit getCustomComparator() {
+		return customComparator;
+	}
+
+	/**
+	 * @param customComparator the customComparator to set
+	 */
+	public void setCustomComparator(Circuit customComparator) {
+		this.customComparator = customComparator;
+	}
+
+	/**
+	 * @return the endComparator
+	 */
+	public Circuit getEndComparator() {
+		return endComparator;
+	}
+
+	/**
+	 * @param endComparator the endComparator to set
+	 */
+	public void setEndComparator(Circuit endComparator) {
+		this.endComparator = endComparator;
+	}
+	
 }

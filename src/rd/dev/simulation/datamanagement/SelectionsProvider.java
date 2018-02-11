@@ -41,7 +41,7 @@ public class SelectionsProvider extends DataManager {
 	 *            the projectID of a single project
 	 * @return the project record containing this project
 	 */
-	public Project projectSingle(int projectID) {
+	public static Project projectSingle(int projectID) {
 		projectByPrimaryKeyQuery.setParameter("project", projectID);
 		return projectByPrimaryKeyQuery.getSingleResult();
 	}
@@ -53,7 +53,7 @@ public class SelectionsProvider extends DataManager {
 	 *            the projectID of a single project
 	 * @return the timeStamp last created by this project, null if the project does not exist
 	 */
-	public int timeStampOfProject(int projectID) {
+	public static int timeStampOfProject(int projectID) {
 		Project project = projectSingle(projectID);
 		if (project == null) {
 			return 0;
@@ -69,7 +69,7 @@ public class SelectionsProvider extends DataManager {
 	 *            the projectID of a single project
 	 * @return the timeStamp last created by this project, null if the project does not exist
 	 */
-	public int timeStampCursorOfProject(int projectID) {
+	public static int timeStampCursorOfProject(int projectID) {
 		Project project = projectSingle(projectID);
 		if (project == null) {
 			return 0;
@@ -85,7 +85,7 @@ public class SelectionsProvider extends DataManager {
 	 * @return the TimeStamp that has this timeStampID and the current project
 	 */
 
-	public TimeStamp timeStampSingle(int timeStampID) {
+	public static TimeStamp timeStampSingle(int timeStampID) {
 		timeStampByPrimarykeyQuery.setParameter("project", Simulation.projectCurrent);
 		timeStampByPrimarykeyQuery.setParameter("timeStamp", timeStampID);
 		return timeStampByPrimarykeyQuery.getSingleResult();
@@ -100,7 +100,7 @@ public class SelectionsProvider extends DataManager {
 		return projectAllQuery.getResultList();
 	}
 
-	public static ObservableList<TimeStamp> timeStampsBySuperState(int project, int period, String superStateName) {
+	public static ObservableList<TimeStamp> timeStampsBySuperState(int period, String superStateName) {
 		ObservableList<TimeStamp> timeStamps = FXCollections.observableArrayList();
 		timeStampSuperStatesQuery.setParameter("project",Simulation.projectCurrent).setParameter("superState", superStateName).setParameter("period", period);
 		for (TimeStamp timeStamp : timeStampSuperStatesQuery.getResultList())
@@ -108,7 +108,7 @@ public class SelectionsProvider extends DataManager {
 		return timeStamps;
 	}
 
-	public static ObservableList<TimeStamp> timeStampsAll(int project) {
+	public static ObservableList<TimeStamp> timeStampsAll() {
 		ObservableList<TimeStamp> timeStamps = FXCollections.observableArrayList();
 		timeStampsAllQuery.setParameter("project", 1);
 		for (TimeStamp timeStamp : timeStampsAllQuery.getResultList())
@@ -121,7 +121,7 @@ public class SelectionsProvider extends DataManager {
 	 * 
 	 * @return a list of timeStamps for the current project
 	 */
-	public List<TimeStamp> timeStampsByProject() {
+	public static List<TimeStamp> timeStampsByProject() {
 		timeStampsAllByProjectQuery.setParameter("project", Simulation.projectCurrent);
 		return timeStampsAllByProjectQuery.getResultList();
 	}
@@ -135,7 +135,7 @@ public class SelectionsProvider extends DataManager {
 	 *            the timeStamp to be set for this project - normally, the timeStamp when the user switches a simulation
 	 * @return 0 if fail, the timeStamp otherwise
 	 */
-	public int setTimeStampOfProject(int projectID, int timeStamp) {
+	public static int setTimeStampOfProject(int projectID, int timeStamp) {
 		Project project = projectSingle(projectID);
 		if (project == null) {
 			return 0;
@@ -154,7 +154,7 @@ public class SelectionsProvider extends DataManager {
 	 *            the timeStampDisplayCursor to be set for this project - normally, the timeStampDisplayCursor when the user switches a simulation
 	 * @return 0 if fail, the timeStampDisplayCursor otherwise
 	 */
-	public int setTimeStampCursorOfProject(int projectID, int timeStampCursor) {
+	public static int setTimeStampCursorOfProject(int projectID, int timeStampCursor) {
 		Project project = projectSingle(projectID);
 		if (project == null) {
 			return 0;

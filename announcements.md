@@ -1,5 +1,10 @@
 # Capitalism 9.0 announcements
 
+## 2/11/2018 11:01:05 AM 
+
+Comparator radio buttons working.
+'Custom' may not be working fully(it's identical to 'Previous') but Start, End and Previous seem to be OK.
+
 ## 2/11/2018 6:40:25 AM 
 
 fixed 'switch projects' bug; restart now seems to work fine also.

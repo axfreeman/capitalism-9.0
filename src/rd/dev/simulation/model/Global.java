@@ -35,13 +35,11 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
-
 import org.apache.commons.math3.util.Precision;
-
-import rd.dev.simulation.Capitalism;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.view.ViewManager;
+import rd.dev.simulation.datamanagement.SelectionsProvider;
 
 /**
  *
@@ -85,6 +83,10 @@ public class Global extends Observable implements Serializable {
 	}
 
 	@Transient private Global comparator = null;
+	@Transient private Global previousComparator;
+	@Transient private Global startComparator;
+	@Transient private Global  customComparator;
+	@Transient private Global  endComparator;
 
 	public Global() {
 		pk = new GlobalPK();
@@ -103,7 +105,7 @@ public class Global extends Observable implements Serializable {
 	}
 
 	public String value(GLOBAL_SELECTOR selector) {
-		Project currentProject = Capitalism.selectionsProvider.projectSingle(Simulation.projectCurrent);
+		Project currentProject = SelectionsProvider.projectSingle(Simulation.projectCurrent);
 
 		switch (selector) {
 		case CURRENTCAPITAL:
@@ -144,6 +146,7 @@ public class Global extends Observable implements Serializable {
 	 */
 
 	public String showDelta(String item, GLOBAL_SELECTOR selector) {
+		chooseComparison();
 		switch (selector) {
 		case CURRENTCAPITAL:
 			return String.format(ViewManager.largeNumbersFormatString,  currentCapital() - comparator.currentCapital());
@@ -178,6 +181,7 @@ public class Global extends Observable implements Serializable {
 	 */
 
 	public boolean changed(GLOBAL_SELECTOR selector) {
+		chooseComparison();
 		switch (selector) {
 		case CURRENTCAPITAL:
 			return currentCapital() != comparator.currentCapital();
@@ -329,6 +333,27 @@ public class Global extends Observable implements Serializable {
 		return true;
 	}
 
+	
+	/**
+	 * chooses the comparator depending on the state set in the {@code ViewManager.comparatorToggle} radio buttons
+	 */
+	
+	private void chooseComparison(){
+		switch(ViewManager.getComparatorState()) {
+		case CUSTOM:
+			comparator=customComparator;
+			break;
+		case END:
+			comparator=endComparator;
+			break;
+		case PREVIOUS:
+			comparator=previousComparator;
+			break;
+		case START:
+			comparator=startComparator;
+		}
+	}
+
 	@Override public String toString() {
 		return "demo.Globals[ persistent globalsPK=" + pk + " ]";
 	}
@@ -408,7 +433,76 @@ public class Global extends Observable implements Serializable {
 		this.quantitySymbol = quantitySymbol;
 	}
 
+	/**
+	 * @return the comparator
+	 */
+	public Global getComparator() {
+		return comparator;
+	}
+
+	/**
+	 * @param comparator the comparator to set
+	 */
 	public void setComparator(Global comparator) {
 		this.comparator = comparator;
 	}
+
+	/**
+	 * @return the previousComparator
+	 */
+	public Global  getPreviousComparator() {
+		return previousComparator;
+	}
+
+	/**
+	 * @param previousComparator the previousComparator to set
+	 */
+	public void setPreviousComparator(Global previousComparator) {
+		this.previousComparator = previousComparator;
+	}
+
+	/**
+	 * @return the startComparator
+	 */
+	public Global  getStartComparator() {
+		return startComparator;
+	}
+
+	/**
+	 * @param startComparator the startComparator to set
+	 */
+	public void setStartComparator(Global startComparator) {
+		this.startComparator = startComparator;
+	}
+
+	/**
+	 * @return the customComparator
+	 */
+	public Global  getCustomComparator() {
+		return customComparator;
+	}
+
+	/**
+	 * @param customComparator the customComparator to set
+	 */
+	public void setCustomComparator(Global customComparator) {
+		this.customComparator = customComparator;
+	}
+
+	/**
+	 * @return the endComparator
+	 */
+	public Global  getEndComparator() {
+		return endComparator;
+	}
+
+	/**
+	 * @param endComparator the endComparator to set
+	 */
+	public void setEndComparator(Global  endComparator) {
+		this.endComparator = endComparator;
+	}
+
+	
+	
 }

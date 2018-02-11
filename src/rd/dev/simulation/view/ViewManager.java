@@ -80,12 +80,12 @@ public class ViewManager {
 	// This enum and the following variables determine whether values, and prices, are displayed in units of money or time
 	// They control the 'hints' colouring of the columns and the symbols (eg '$', '#') placed before price and value magnitudes in the tables display
 
-	public enum DisplayAsExpression {
+	public enum DISPLAY_AS_EXPRESSION {
 		MONEY, TIME;
 	}
 
-	public static DisplayAsExpression valuesExpressionDisplay = DisplayAsExpression.MONEY;
-	public static DisplayAsExpression pricesExpressionDisplay = DisplayAsExpression.MONEY;
+	public static DISPLAY_AS_EXPRESSION valuesExpressionDisplay = DISPLAY_AS_EXPRESSION.MONEY;
+	public static DISPLAY_AS_EXPRESSION pricesExpressionDisplay = DISPLAY_AS_EXPRESSION.MONEY;
 	public static boolean displayHints = false;
 	public static boolean displayDeltas = false;
 
@@ -147,11 +147,22 @@ public class ViewManager {
 
 	// Radio Buttons 2
 
+	public enum COMPARATOR_STATE{
+		END("End"),START("Start"),PREVIOUS("Previous"),CUSTOM("Custom");
+		String text;
+		private COMPARATOR_STATE(String text) {
+			this.text=text;
+		}
+		public String text() {
+			return text;
+		}
+	}
 	@FXML private RadioButton startSelectorButton;
 	@FXML private RadioButton endSelectorButton;
 	@FXML private RadioButton customSelectorButton;
 	@FXML private RadioButton previousSelectorButton;
 	ToggleGroup comparatorToggle = new ToggleGroup();
+	static COMPARATOR_STATE comparatorState=COMPARATOR_STATE.PREVIOUS;
 
 	// Check Box
 	@FXML private CheckBox deltasCheckBox;
@@ -265,34 +276,34 @@ public class ViewManager {
 		endSelectorButton.setToggleGroup(comparatorToggle);
 		customSelectorButton.setToggleGroup(comparatorToggle);
 		previousSelectorButton.setToggleGroup(comparatorToggle);
-		startSelectorButton.setUserData("START");
-		endSelectorButton.setUserData("END");
-		customSelectorButton.setUserData("CUSTOM");
-		previousSelectorButton.setUserData("PREVIOUS");
+		startSelectorButton.setUserData(COMPARATOR_STATE.START);
+		endSelectorButton.setUserData(COMPARATOR_STATE.END);
+		customSelectorButton.setUserData(COMPARATOR_STATE.CUSTOM);
+		previousSelectorButton.setUserData(COMPARATOR_STATE.PREVIOUS);
 		previousSelectorButton.setSelected(true);
 		comparatorToggle.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
 			@Override public void changed(ObservableValue<? extends Toggle> ov, Toggle old_toggle, Toggle new_toggle) {
 				if (comparatorToggle.getSelectedToggle() != null) {
-					String selected = comparatorToggle.getSelectedToggle().getUserData().toString();
+					comparatorState= (COMPARATOR_STATE) comparatorToggle.getSelectedToggle().getUserData();
+					
 					logger.debug(comparatorToggle.getSelectedToggle().getUserData().toString());
-					switch (selected) {
-					case "END":
+					switch (comparatorState) {
+					case END:
 						Simulation.setTimeStampComparatorCursor(Simulation.timeStampIDCurrent);
 						break;
-					case "START":
+					case START:
 						Simulation.setTimeStampComparatorCursor(1);
 						break;
-					case "PREVIOUS":
+					case PREVIOUS:
 						int cursor = Simulation.timeStampDisplayCursor;
-						;
 						cursor = cursor < 2 ? 1 : cursor - 1;
 						Simulation.setTimeStampComparatorCursor(cursor);
 						break;
-					case "CUSTOM":
+					case CUSTOM:
 						Simulation.setTimeStampComparatorCursor(Simulation.timeStampDisplayCursor);
 						break;
 					default:
-						logger.error("Unknown radio button {} selected ", selected);
+						logger.error("Unknown radio button {} selected ");
 						break;
 					}
 					refreshDisplay();
@@ -421,7 +432,7 @@ public class ViewManager {
 	 */
 	private void initializeProjectCombo() {
 		ObservableList<Project> projects = ol.observableProjects();
-		Project currentProject = Capitalism.selectionsProvider.projectSingle(Simulation.projectCurrent);
+		Project currentProject = SelectionsProvider.projectSingle(Simulation.projectCurrent);
 		String currentProjectDescription = currentProject.getDescription();
 		projectCombo = new ProjectCombo(projects, currentProjectDescription);
 		displayControlsBox.getChildren().add(0, projectCombo);
@@ -529,13 +540,13 @@ public class ViewManager {
 	}
 
 	private void togglePriceExpression() {
-		if (pricesExpressionDisplay == DisplayAsExpression.MONEY) {
-			pricesExpressionDisplay = DisplayAsExpression.TIME;
+		if (pricesExpressionDisplay == DISPLAY_AS_EXPRESSION.MONEY) {
+			pricesExpressionDisplay = DISPLAY_AS_EXPRESSION.TIME;
 			pricesExpressionSymbol = quantityExpressionSymbol;
 			togglePricesExpressionButton.setText("$Prices");
 			setTip(togglePricesExpressionButton, "Display Prices as money instead of time");
 		} else {
-			pricesExpressionDisplay = DisplayAsExpression.MONEY;
+			pricesExpressionDisplay = DISPLAY_AS_EXPRESSION.MONEY;
 			pricesExpressionSymbol = moneyExpressionSymbol;
 			togglePricesExpressionButton.setText("#Prices");
 			setTip(togglePricesExpressionButton, "Display Prices as time instead of money");
@@ -545,13 +556,13 @@ public class ViewManager {
 	}
 
 	private void toggleValueExpression() {
-		if (valuesExpressionDisplay == DisplayAsExpression.MONEY) {
-			valuesExpressionDisplay = DisplayAsExpression.TIME;
+		if (valuesExpressionDisplay == DISPLAY_AS_EXPRESSION.MONEY) {
+			valuesExpressionDisplay = DISPLAY_AS_EXPRESSION.TIME;
 			valuesExpressionSymbol = quantityExpressionSymbol;
 			toggleValuesExpressionButton.setText("$Values");
 			setTip(toggleValuesExpressionButton, "Display Prices as money instead of time");
 		} else {
-			valuesExpressionDisplay = DisplayAsExpression.MONEY;
+			valuesExpressionDisplay = DISPLAY_AS_EXPRESSION.MONEY;
 			valuesExpressionSymbol = moneyExpressionSymbol;
 			toggleValuesExpressionButton.setText("#Values");
 			setTip(toggleValuesExpressionButton, "Display Prices as time instead of money");
@@ -571,8 +582,8 @@ public class ViewManager {
 	 * @return the requested expression of the value magnitude - unchanged if expressionDisplay is TIME but divided by MELT if expressionDisplay is MONEY
 	 */
 
-	public static double valueExpression(double intrinsicValueExpression, DisplayAsExpression valuesExpressionDisplay) {
-		if (valuesExpressionDisplay == DisplayAsExpression.MONEY) {
+	public static double valueExpression(double intrinsicValueExpression, DISPLAY_AS_EXPRESSION valuesExpressionDisplay) {
+		if (valuesExpressionDisplay == DISPLAY_AS_EXPRESSION.MONEY) {
 			return intrinsicValueExpression;
 		} else {
 			Global global = DataManager.getGlobal();
@@ -679,7 +690,7 @@ public class ViewManager {
 					// these are taken from the timeStamp table, not the actionState table. Thus, we only add the states that have been reached in the
 					// simulation
 
-					for (TimeStamp childStamp : SelectionsProvider.timeStampsBySuperState(Simulation.projectCurrent, thisPeriod, a.text)) {
+					for (TimeStamp childStamp : SelectionsProvider.timeStampsBySuperState(thisPeriod, a.text)) {
 						logger.debug("Processing the timestamp called {}", childStamp.getDescription());
 						TimeStampViewItem childState = new TimeStampViewItem(childStamp);
 
@@ -695,9 +706,9 @@ public class ViewManager {
 		controlsVBox.getChildren().add(1, tree);
 	}
 
-	public int getLastPeriod(int project) {
+	public static int getLastPeriod(int project) {
 		int p = 0;
-		for (TimeStamp t : SelectionsProvider.timeStampsAll(project)) {
+		for (TimeStamp t : SelectionsProvider.timeStampsAll()) {
 			if (t.getPeriod() > p)
 				p = t.getPeriod();
 		}
@@ -734,4 +745,13 @@ public class ViewManager {
 	public static TabbedTableViewer getTabbedTableViewer() {
 		return tabbedTableViewer;
 	}
+
+	/**
+	 * @return the comparatorState
+	 */
+	public static COMPARATOR_STATE getComparatorState() {
+		return comparatorState;
+	}
+	
+	
 }

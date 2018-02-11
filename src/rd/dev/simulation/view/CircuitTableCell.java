@@ -26,7 +26,6 @@ import javafx.scene.control.TableCell;
 import javafx.scene.paint.Color;
 import rd.dev.simulation.custom.TabbedTableViewer;
 import rd.dev.simulation.model.Circuit;
-
 public class CircuitTableCell extends TableCell<Circuit, String> {
 	static final Logger logger = LogManager.getLogger("CircuitTableCell");
 
