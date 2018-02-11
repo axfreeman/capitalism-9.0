@@ -663,32 +663,35 @@ public class DataManager {
 	 */
 	public static void switchProjects(int newProjectID, ActionButtonsBox actionButtonsBox) {
 		if (newProjectID == Simulation.projectCurrent) {
-			logger.error("The programme attempted to switch to project {} which  is already current", newProjectID);
+			logger.debug("The user switched to project {} which  is already current. No action was taken", newProjectID);
+			return;
+		}
+		Project newProject = Capitalism.selectionsProvider.projectSingle(newProjectID);
+		if ((newProject.getPriceDynamics() == Project.PRICEDYNAMICS.DYNAMIC) || (newProject.getPriceDynamics() == Project.PRICEDYNAMICS.EQUALISE)) {
+			Dialogues.alert(logger, "Sorry, the Dynamic and Equalise options for price dynamics are not ready yet");
 			return;
 		}
 
 		// record the current timeStamp, timeStampDisplayCursor and buttonState in the current project record, and persist it to the database
 
 		Project thisProject = Capitalism.selectionsProvider.projectSingle(Simulation.projectCurrent);
-		if ((thisProject.getPriceDynamics() == Project.PRICEDYNAMICS.DYNAMIC) || (thisProject.getPriceDynamics() == Project.PRICEDYNAMICS.EQUALISE)) {
-			Dialogues.alert(logger, "Sorry, the Dynamic and Equalise options for price dynamics are not ready yet");
-			return;
-		}
+
 		projectEntityManager.getTransaction().begin();
 
 		thisProject.setTimeStamp(Simulation.timeStampIDCurrent);
 		thisProject.setTimeStampDisplayCursor(Simulation.timeStampDisplayCursor);
 		thisProject.setTimeStampComparatorCursor(Simulation.getTimeStampComparatorCursor());
 		thisProject.setButtonState(actionButtonsBox.getLastAction().getText());
+		thisProject.setPeriod(Simulation.getPeriodCurrent());
 
 		projectEntityManager.getTransaction().commit();
 
-		// retrieve the selected project record, and copy its timeStamp and its timeStampDisplayCursor into the simulation timeStamp and timeStampDisplayCursor
+		// retrieve the selected project record, and copy its various cursors and into the simulation cursors
 
-		Project newProject = Capitalism.selectionsProvider.projectSingle(newProjectID);
 		Simulation.timeStampIDCurrent = newProject.getTimeStamp();
 		Simulation.timeStampDisplayCursor = newProject.getTimeStampDisplayCursor();
 		Simulation.setTimeStampComparatorCursor(newProject.getTimeStampComparatorCursor());
+		Simulation.setPeriodCurrent(newProject.getPeriod());
 		actionButtonsBox.setActionStateFromLabel(newProject.getButtonState());
 		Simulation.projectCurrent = newProjectID;
 		Reporter.report(logger, 0, "SWITCHED TO PROJECT %s (%s)", newProjectID, newProject.getDescription());

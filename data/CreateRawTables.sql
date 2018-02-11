@@ -28,7 +28,8 @@
  
  DROP table if exists projects;
  CREATE TABLE projects ( ProjectID INT NOT NULL, Description VARCHAR(45) NULL, priceDynamics ENUM('SIMPLE','EQUALISE','DYNAMIC') DEFAULT 'SIMPLE',
- currentTimeStamp INT DEFAULT 1, currentTimeStampCursor INT DEFAULT 1, currentTimeStampComparatorCursor INT DEFAULT 1, ButtonState VARCHAR(20) DEFAULT NULL, PRIMARY KEY (ProjectID));
+ currentTimeStamp INT DEFAULT 1, currentTimeStampCursor INT DEFAULT 1, currentTimeStampComparatorCursor INT DEFAULT 1,
+ period INT DEFAULT 1, ButtonState VARCHAR(20) DEFAULT NULL, PRIMARY KEY (ProjectID));
  
  DROP table if exists timeStamps;
  CREATE TABLE timeStamps (timeStampID int Default 1 NOT NULL, projectFK INT default 1 NOT NULL, period INT DEFAULT NULL,superState VARCHAR(45) default NULL, 

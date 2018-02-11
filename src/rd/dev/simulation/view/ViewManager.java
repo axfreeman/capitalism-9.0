@@ -611,11 +611,17 @@ public class ViewManager {
 		if (newValue.getProjectID() != Simulation.projectCurrent) {
 			logger.debug("Requested switch to project with ID {} and description {} ", newValue.getProjectID(), newValue.getDescription());
 			DataManager.switchProjects(newValue.getProjectID(), actionButtonsBox);
+			
+			// user has the option to choose the monetary unit and its visual expression
 			setExpressionSymbols();
+			
+			// the timeStamp has been reset in DataManager. Our responsibility is to display the consequences of the change
 			refreshTimeStampTable();
 			
 			// rebuild all the tables, because the number of columnns might have changed
 			tabbedTableViewer.buildTables();
+			
+			// repopulate the tables we just built. Probably superfluous
 			refreshDisplay();
 		}
 	}

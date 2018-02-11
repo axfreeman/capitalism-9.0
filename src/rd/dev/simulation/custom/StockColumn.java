@@ -40,6 +40,7 @@ public class StockColumn extends TableColumn<Stock,String>{
 	 * 
 	 * @param selector
 	 * an enum specifying which field to display
+	 * @param leftAlign true if the text in the field should be left aligned (right align is the default)
 	 * 
 	 */
 	StockColumn(Stock.Selector selector,boolean leftAlign) {

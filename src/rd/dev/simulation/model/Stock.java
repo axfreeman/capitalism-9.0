@@ -132,7 +132,7 @@ public class Stock extends Observable implements Serializable {
 	 * NOTE: here is a bug in H2 which prevents an enum type being used in a primary key;
 	 * in consequence, the type of the persistent field 'stockType' is, confusingly, String and not StockType.
 	 * For code transparency, this enum provides the text that is used in SQL queries, via its 'text' method
-	 * See for example {@link Datamanager#stockProductiveByNameSingle}
+	 * See for example {@link DataManager#stockProductiveByNameSingle(int, String, String) stockProductiveByNameSingle}
 	 */
 	public enum STOCKTYPE {
 		PRODUCTIVE("Productive"), CONSUMPTION("Consumption"), SALES("Sales"), MONEY("Money");

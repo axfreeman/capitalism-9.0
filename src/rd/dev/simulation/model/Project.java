@@ -46,6 +46,7 @@ public class Project implements Serializable {
 	@Column(name = "currentTimeStamp") private int timeStamp;
 	@Column(name = "currentTimeStampCursor") private int timeStampDisplayCursor;
 	@Column(name = "currentTimeStampComparatorCursor") private int timeStampComparatorCursor;
+	@Column(name = "period") private int period;
 	/**
 	 * @return the priceDynamics
 	 */
@@ -171,4 +172,19 @@ public class Project implements Serializable {
 	public String toString() {
 		return description;
 	}
+
+	/**
+	 * @return the period
+	 */
+	public int getPeriod() {
+		return period;
+	}
+
+	/**
+	 * @param period the period to set
+	 */
+	public void setPeriod(int period) {
+		this.period = period;
+	}
+	
 }

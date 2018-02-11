@@ -364,4 +364,18 @@ public class Simulation {
 	public static void setEpsilon(double epsilon) {
 		Simulation.epsilon = epsilon;
 	}
+
+	/**
+	 * @return the periodCurrent
+	 */
+	public static int getPeriodCurrent() {
+		return periodCurrent;
+	}
+
+	/**
+	 * @param periodCurrent the periodCurrent to set
+	 */
+	public static void setPeriodCurrent(int periodCurrent) {
+		Simulation.periodCurrent = periodCurrent;
+	}
 }

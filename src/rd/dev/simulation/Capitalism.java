@@ -40,6 +40,7 @@ import rd.dev.simulation.datamanagement.SelectionsProvider;
 import rd.dev.simulation.utils.DBHandler;
 import rd.dev.simulation.utils.Reporter;
 import rd.dev.simulation.view.ViewManager;
+import rd.dev.simulation.command.Demand;
 
 public class Capitalism extends Application {
 
@@ -127,9 +128,9 @@ public class Capitalism extends Application {
 	}
 
 	/**
-	 * Initialise the {@link ActionStates} enum class. This class is central to the operation of the simulation.
-	 * It defines the possible actions of the simulation, which are of two types: (1) sub-actions such as {@link Supply} which carry out
-	 * primitive actions;(2) super-actions such as {@link PreTrade} which conducts a series of primitive actions. The super-Actions correspond to normal
+	 * Initialise the {@link ActionStates ActionStates } enum class. This class is central to the operation of the simulation.
+	 * It defines the possible actions of the simulation, which are of two types: (1) sub-actions such as {@link Demand Demand} which carry out
+	 * primitive actions;(2) super-actions such as {@link PreTrade PreTrade} which conducts a series of primitive actions. The super-Actions correspond to normal
 	 * economic phases or 'aspects' of the reproduction of an economy namely the purchase of commodities, the production of commodities, and the distribution of
 	 * revenues. The primitives don't have a distinct economic meaning but can help understand the logical components of a complete economic activity. This is
 	 * given visual representation at several places in the simulation, notably in the logfile and in the actionButtons, which have a tree structure so that the

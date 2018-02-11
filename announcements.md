@@ -1,5 +1,10 @@
 # Capitalism 9.0 announcements
 
+## 2/11/2018 6:40:25 AM 
+
+fixed 'switch projects' bug; restart now seems to work fine also.
+No new executable
+
 ## 2/10/2018 4:40:33 PM 
 
 Overhaul of database infrastructure for supply demand and trade involving substantial simplification.

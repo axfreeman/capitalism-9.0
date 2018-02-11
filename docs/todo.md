@@ -1,38 +1,11 @@
-# TODO 2/2/2018 3:45:18 PM 
+# TODO 2/11/2018 6:41:20 AM  
 
-## 2/5/2018 9:25:58 AM 
-
-See 'announcements' for overview of changes. Technically:
-
-The principle is that all aggregate magnitudes (total value, capital, profit and so on) are calculated on the fly from the underlying stocks.
-This greatly reduces the risk of errors caused by improperly updating these aggregate magnitudes as the simulation proceeds.
-It also greatly simplifies the code.
-It may have a cost in terms of speed; this has to be seen
-At this point, we don't use the database to calculate the sums, but do it ourselves. 
-
-## 2/3/2018 8:25:54 PM 
-
-Visuals now working
-Partial overhaul of DataManager
-
-## 2/2/2018 3:46:21 PM 
-
-Major overhaul of tabbedTableDisplay
-now working as I think this kind of thing is intended to work.
-(though it is not editable)
-
-
-## 2/2/2018 3:45:31 PM 
-
-Projects 1-4 now working.
-This is the basic test set.
-However for real completeness we should do expanded reproduction 2 (with rising OCC)
-And ideally, Simple reproduction with Department IIa (Luxury goods)
+Major overhaul of visuals and database, to accomodate multiple consumption goods, is complete
+However now need to work through the various projects, all of which except 1 are manifesting quirks.
 
 ## MINOR
 
 Need to calculate, and display, the rate of exploitation. It follows from the wage.
-Globals Differencing
 Proper shutdown.
 
 ## MAJOR
@@ -43,7 +16,7 @@ Dockable windows
 
 ## BUGS
 
-Tree carries ghost of previous simulations after restart
+All projects except 1 have bugs or quirks
 
 ###VALIDATION (USER DATA)
 
@@ -77,14 +50,10 @@ The following invariants should be preserved:
 
 Further invariants to be listed following the document 'Mathematical Foundations of the Value Theory of Finance GitHub version.doc' in the docs folder
 
-## FLIGHT TEST
-
-Some more projects: in priority order
-1. Marx's simple reproduction DONE 11/11/2017 3:55:11 PM but buggy for stocks see above
-2. Bortkiewicz's 'counterexample' done correctly according to Marx, not Sweezy
-
 ## FIXED
-FIXED2/3/2018 8:27:11 PM Hints have gone wobbly
+FIXED 2/11/2018 6:42:50 AM Tree carries ghost of previous simulations after restart
+FIXED 2/11/2018 6:42:33 AM Globals Differencing
+FIXED 2/3/2018 8:27:11 PM Hints have gone wobbly
 GONE 2/2/2018 3:46:00 PM double-clicking a column to resize it provokes a fetch of a null table row
 FIXED 2/2/2018 3:44:35 PM graphics switching finally sorted, plus consistent loading of tables without redrawing 
 FIXED (Partly) 1/29/2018 3:43:58 PM Configure the name of the consumption good and perhaps workers/capitalists/labour power
