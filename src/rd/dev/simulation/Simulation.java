@@ -22,6 +22,8 @@ package rd.dev.simulation;
 
 import java.util.List;
 import javax.persistence.PersistenceException;
+
+import org.apache.commons.math3.util.Precision;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,6 +38,7 @@ import rd.dev.simulation.model.TimeStamp;
 import rd.dev.simulation.model.UseValue;
 import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.Reporter;
+import rd.dev.simulation.utils.StringStuff;
 
 public class Simulation {
 
@@ -60,25 +63,27 @@ public class Simulation {
 
 	// the precision for decimal calculations with large amounts (that is, anything except coefficients, the melt, rate of profit, etc)
 
-	protected static int roundingPrecision=4;
-	protected static double epsilon=10^(1/roundingPrecision);
+	protected static int roundingPrecision = 4;
+	protected static double epsilon = 10 ^ (1 / roundingPrecision);
 
 	// Determines the way that the supply of labour power responds to demand
 	// a primitive response function to be expanded and hopefully user-customized
 	// if FLEXIBLE, labour power will expand to meet demand (reserve army)
 	// if FIXED, labour power cannot expand to meet demand and provides a supply constraint on output
-	
-	public static enum LABOUR_SUPPLY_RESPONSE{
+
+	public static enum LABOUR_SUPPLY_RESPONSE {
 		FLEXIBLE("Flexible"), FIXED("Fixed");
 		String text;
+
 		private LABOUR_SUPPLY_RESPONSE(String text) {
-			this.text=text;
+			this.text = text;
 		}
+
 		public String text() {
-			return  text;
+			return text;
 		}
 	}
-	
+
 	public Simulation() {
 	}
 
@@ -140,6 +145,14 @@ public class Simulation {
 			// Set the initial comparators for every project, circuit, class, use value and stock .
 			// Since the comparator cursor and the cursor are already 1, this amounts to setting it to 1
 			DataManager.setComparators(1);
+
+			// little tweak to handle currency symbols encoded in UTF8
+
+			Global global = DataManager.getGlobal(p.getProjectID(), 1);
+			logger.debug("Character Symbol for Project {} is {}", global.getCurrencySymbol());
+			String utfjava = StringStuff.convertFromUTF8(global.getCurrencySymbol());
+			logger.debug("Character symbol after conversion is {}", utfjava);
+			global.setCurrencySymbol(utfjava);
 		}
 
 		// There will normally be more than one project. Choose the first.
@@ -190,11 +203,24 @@ public class Simulation {
 	 */
 
 	public void advanceOneStep(String description, String superState) {
+
+		// a little consistency check
+
+		for (Stock s : DataManager.stocksAll()) {
+			if (s.getQuantity() < 0 - epsilon) {
+				if (s.getStockType().equals(Stock.STOCKTYPE.MONEY.text())) {
+					Dialogues.alert(logger, "The owner %s has run out of money. "
+							+ "This may be a data error:try giving it more. "
+							+ "If the problem persists, contact the developer", s.getOwner());
+				}
+			}
+		}
+
 		timeStampComparatorCursor = timeStampIDCurrent;
-		timeStampDisplayCursor=timeStampIDCurrent+1;
+		timeStampDisplayCursor = timeStampIDCurrent + 1;
 		logger.debug("Move One Step in project {} by creating a new timeStamp {} called {}", projectCurrent, timeStampIDCurrent, description);
 
-		TimeStamp newTimeStamp = new TimeStamp(timeStampIDCurrent+1, projectCurrent, periodCurrent, superState, timeStampIDCurrent, description);
+		TimeStamp newTimeStamp = new TimeStamp(timeStampIDCurrent + 1, projectCurrent, periodCurrent, superState, timeStampIDCurrent, description);
 
 		try {
 			DataManager.getTimeStampEntityManager().getTransaction().begin();
@@ -210,7 +236,7 @@ public class Simulation {
 		// do not create a new project record - modify the existing one.
 
 		DataManager.getProjectEntityManager().getTransaction().begin();
-		SelectionsProvider.setTimeStampOfProject(projectCurrent, timeStampIDCurrent+1);
+		SelectionsProvider.setTimeStampOfProject(projectCurrent, timeStampIDCurrent + 1);
 		SelectionsProvider.setTimeStampCursorOfProject(projectCurrent, timeStampDisplayCursor);
 		DataManager.getProjectEntityManager().getTransaction().commit();
 
@@ -224,61 +250,61 @@ public class Simulation {
 
 		// Use values
 
-		logger.debug(" Persisting a new set of use values with timeStamp {}", timeStampIDCurrent+1);
+		logger.debug(" Persisting a new set of use values with timeStamp {}", timeStampIDCurrent + 1);
 		UseValue newUseValue;
 		for (UseValue u : DataManager.useValuesAll()) {
 			newUseValue = new UseValue();
 			newUseValue.copyUseValue(u);
-			newUseValue.setTimeStamp(timeStampIDCurrent+1);
+			newUseValue.setTimeStamp(timeStampIDCurrent + 1);
 			DataManager.getUseValueEntityManager().persist(newUseValue);
 		}
 
 		// Stocks
 
-		logger.debug(" Persisting a new set of stocks with timeStamp {} ", timeStampIDCurrent+1);
+		logger.debug(" Persisting a new set of stocks with timeStamp {} ", timeStampIDCurrent + 1);
 		Stock newStock;
 		for (Stock s : DataManager.stocksAll()) {
 			logger.log(Level.ALL, "   Persisting " + s.primaryKeyAsString());
 			newStock = new Stock();
 			newStock.copyStock(s);
-			newStock.setTimeStamp(timeStampIDCurrent+1);
+			newStock.setTimeStamp(timeStampIDCurrent + 1);
 			DataManager.getStocksEntityManager().persist(newStock);
 		}
 
 		// Circuits
 
-		logger.debug(" Persisting a new set of circuits with timeStamp ", timeStampIDCurrent+1);
+		logger.debug(" Persisting a new set of circuits with timeStamp ", timeStampIDCurrent + 1);
 		Circuit newCircuit;
 		for (Circuit c : DataManager.circuitsAll()) {
 			logger.debug("  Persisting a circuit whose use value is " + c.getProductUseValueName());
 			newCircuit = new Circuit();
 			newCircuit.copyCircuit(c);
-			newCircuit.setTimeStamp(timeStampIDCurrent+1);
+			newCircuit.setTimeStamp(timeStampIDCurrent + 1);
 			DataManager.getCircuitEntityManager().persist(newCircuit);
 		}
 
 		// Social Classes
 
-		logger.debug(" Persisting a new set of social classes with timeStamp {}", timeStampIDCurrent+1);
+		logger.debug(" Persisting a new set of social classes with timeStamp {}", timeStampIDCurrent + 1);
 		SocialClass newSocialClass;
 		for (SocialClass sc : DataManager.socialClassesAll()) {
 			logger.debug("  Persisting a social class whose name is " + sc.getSocialClassName());
 			newSocialClass = new SocialClass();
 			newSocialClass.copySocialClass(sc);
-			newSocialClass.setTimeStamp(timeStampIDCurrent+1);
+			newSocialClass.setTimeStamp(timeStampIDCurrent + 1);
 			DataManager.getSocialClassEntityManager().persist(newSocialClass);
 		}
 
 		// Globals
 
-		logger.debug(" Persisting a new globals record with timeStamp {} ", timeStampIDCurrent+1);
+		logger.debug(" Persisting a new globals record with timeStamp {} ", timeStampIDCurrent + 1);
 		Global g = DataManager.getGlobal();
 		Global newGlobal = new Global();
 		newGlobal.copyGlobal(g);
-		newGlobal.setTimeStamp(timeStampIDCurrent+1);
+		newGlobal.setTimeStamp(timeStampIDCurrent + 1);
 		DataManager.getGlobalEntityManager().persist(newGlobal);
 
-		DataManager.setComparators(timeStampIDCurrent+1);
+		DataManager.setComparators(timeStampIDCurrent + 1);
 
 		DataManager.getSocialClassEntityManager().getTransaction().commit();
 		DataManager.getCircuitEntityManager().getTransaction().commit();
@@ -287,6 +313,7 @@ public class Simulation {
 		DataManager.getGlobalEntityManager().getTransaction().commit();
 
 		timeStampIDCurrent++;
+
 		logger.debug("Done Persisting: exit AdvanceOneStep");
 	}
 
@@ -310,10 +337,12 @@ public class Simulation {
 		Global global = DataManager.getGlobal();
 		for (Circuit c : DataManager.circuitsAll()) {
 			double initialCapital = c.currentCapital();
-			Reporter.report(logger, 2, "  The initial capital of the industry[%s] is now $%.0f (intrinsic %.0f)", c.getProductUseValueName(),initialCapital,initialCapital/global.getMelt());
+			Reporter.report(logger, 2, "  The initial capital of the industry[%s] is now $%.0f (intrinsic %.0f)", c.getProductUseValueName(), initialCapital,
+					initialCapital / global.getMelt());
 			c.setInitialCapital(initialCapital);
 		}
-		Reporter.report(logger, 2, "  Total initial capital is now $%.0f (intrinsic %.0f)", global.initialCapital(),global.initialCapital()/global.getMelt());
+		Reporter.report(logger, 2, "  Total initial capital is now $%.0f (intrinsic %.0f)", global.initialCapital(),
+				global.initialCapital() / global.getMelt());
 	}
 
 	public void advanceOnePeriod() {
@@ -359,7 +388,8 @@ public class Simulation {
 	}
 
 	/**
-	 * @param epsilon the epsilon to set
+	 * @param epsilon
+	 *            the epsilon to set
 	 */
 	public static void setEpsilon(double epsilon) {
 		Simulation.epsilon = epsilon;
@@ -373,7 +403,8 @@ public class Simulation {
 	}
 
 	/**
-	 * @param periodCurrent the periodCurrent to set
+	 * @param periodCurrent
+	 *            the periodCurrent to set
 	 */
 	public static void setPeriodCurrent(int periodCurrent) {
 		Simulation.periodCurrent = periodCurrent;

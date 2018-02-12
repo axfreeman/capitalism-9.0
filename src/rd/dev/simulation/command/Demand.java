@@ -120,22 +120,26 @@ public class Demand extends Simulation implements Command {
 
 			Reporter.report(logger, 1, " Total cost of an output of %.0f is $%.0f and $%.0f is available.",
 					proposedOutput, totalCost, moneyAvailable);
-
+			double anticipatedMoneyFromSales=c.getSalesPrice();
+			double resources=moneyAvailable+anticipatedMoneyFromSales;
+			
 			// check for monetary constraints
 
-			if (totalCost < moneyAvailable + Simulation.epsilon) {
+			if (totalCost < resources + Simulation.epsilon) {
 				Reporter.report(logger, 2, "  Output is unconstrained by cost");
 				constrainedOutput = proposedOutput;
 			} else {
 
 				// TODO the code below may not work, because cost is not a linear function of output if there are pre-existing stocks
 				// the problem is that in these circumstances we will underestimate the cost.
-
-				Reporter.report(logger, 1, " Output is constrained by cost");
-				proposedOutput = proposedOutput * moneyAvailable / totalCost;
+				// maybe at this point we should just give up and say the industry is insolvent, or bankrupt, or both.
+				
+				proposedOutput = proposedOutput * resources/ totalCost;
 				double revisedTotalCost = c.computeOutputCosts(constrainedOutput).costOfOutput();
-				if (revisedTotalCost < moneyAvailable + Simulation.epsilon)
-					Dialogues.alert(logger, "There is not enough money to finance the required level of output by industry %s", c.getProductUseValueName());
+				Reporter.report(logger, 1, " Output is constrained by cost");
+				resources = moneyAvailable+anticipatedMoneyFromSales;
+				if (revisedTotalCost < resources + Simulation.epsilon)
+					Dialogues.alert(logger, "Industry %s is unable to finance its expected level of output", c.getProductUseValueName());
 			}
 
 			c.setConstrainedOutput(constrainedOutput);

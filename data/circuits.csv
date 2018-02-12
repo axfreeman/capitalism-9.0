@@ -5,13 +5,13 @@ project,timeStamp,ProductUseValueName,ProposedOutput,GrowthRate
 2,1,Consumption,3000,0
 3,1,Means of Production,3000,0
 3,1,Consumption,1500,0
-4,1,Fixed,500,0
-4,1,Circulating,200,0
-4,1,Consumption,500,0
+7,1,Fixed,500,0
+7,1,Circulating,200,0
+7,1,Consumption,500,0
 5,1,Means of Production,6000,0.1
 5,1,Consumption,3000,0.1
 6,1,Means of Production,6000,0
 6,1,Consumption,3000,0
-7,1,Means of Production,6000,0
-7,1,Luxuries,3000,0
-7,1,Necessities,3000,0
+4,1,Means of Production,6000,0
+4,1,Luxuries,3000,0
+4,1,Necessities,3000,0

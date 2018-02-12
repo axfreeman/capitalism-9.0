@@ -3,19 +3,10 @@
 <Properties>
 	<Property name="UserDataDir" value="${sys:user.home}\\Documents\\Capsim"></Property>
 </Properties>
-	<Customlevel name="OVERVIEW" intlevel="350"/>
-	<Customlevel name="DETAIL" intlevel = "550"/>
 	<Appenders>
-		<File name="Detail" fileName="${UserDataDir}\\logfiles\\detail.log">
-			<PatternLayout pattern="[%-20c{1}] %msg%n" />
-		</File>
-	
 		<Console name="Console" target="SYSTEM_OUT">
 			<PatternLayout pattern="[CAPITALISM] %-5c{1} - %msg%n" />
 		</Console>
-		<File name="Archive" fileName="${UserDataDir}\\logfiles\\archive.log">
-			<PatternLayout pattern="[%-20c{1}] %msg%n" />
-		</File>
 		<File name="Debug" fileName="${UserDataDir}\\logfiles\\debug.log">
 			<PatternLayout pattern="[%-20c{1}] %msg%n" />
 			</File>
@@ -25,11 +16,9 @@
 	</Appenders>
 	<Loggers>
 		<Root level="trace">
-			<AppenderRef ref="Console" />
-			<AppenderRef ref="Archive" />
+			<AppenderRef ref="Console" level ="DEBUG"/>
 			<AppenderRef ref="Debug" level = "DEBUG"/>
-			<AppenderRef ref="Userview" level="OVERVIEW"/>
-			<AppenderRef ref="Detail" level=  "ALL"/>
+			<AppenderRef ref="Userview" level="INFO"/>
 		</Root>
 	</Loggers>
 </Configuration>

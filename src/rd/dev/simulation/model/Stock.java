@@ -28,7 +28,6 @@ import org.apache.logging.log4j.Logger;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.datamanagement.DataManager;
-import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.Reporter;
 import rd.dev.simulation.view.ViewManager;
 import org.apache.commons.math3.util.Precision;
@@ -138,7 +137,7 @@ public class Stock extends Observable implements Serializable {
 	 * For code transparency, this enum provides the text that is used in SQL queries, via its 'text' method
 	 * See for example {@link DataManager#stockProductiveByNameSingle(int, String, String) stockProductiveByNameSingle}
 	 */
-	public enum STOCKTYPE {
+	public static enum STOCKTYPE {
 		PRODUCTIVE("Productive"), CONSUMPTION("Consumption"), SALES("Sales"), MONEY("Money");
 		private String text;
 
@@ -218,7 +217,7 @@ public class Stock extends Observable implements Serializable {
 	public UseValue getUseValue() {
 		return DataManager.useValueByName(pk.timeStamp, pk.useValue);
 	}
-
+	
 	/**
 	 * Make a carbon copy of the stock.
 	 * At present, this is used to construct a comparator stock, so that changes can be highlighted ('differencing') in the display tables.
@@ -260,29 +259,18 @@ public class Stock extends Observable implements Serializable {
 	 */
 	public void modifyBy(double extraQuantity) {
 		double melt = DataManager.getGlobal().getMelt();
-
 		// TODO check that if both quantities are rounded properly, this test will work
 
 		double unitValue = unitValue();
 		double unitPrice = unitPrice();
-		double extraValue = Precision.round(extraQuantity * unitValue, Simulation.getRoundingPrecision());
-		double extraPrice = Precision.round(extraQuantity * unitPrice, Simulation.getRoundingPrecision());
+		double extraValue = extraQuantity * unitValue;
+		double extraPrice = extraQuantity * unitPrice;
 		double newValue = value + extraValue;
 		double newPrice = price + extraPrice;
 		double newQuantity = quantity + extraQuantity;
-
-		// a little consistency check
-
-		if (newQuantity < -Simulation.getEpsilon()) {
-			Dialogues.alert(logger, "Stock of " + pk.useValue + " owned by " + pk.owner + " has fallen below zero. ");
-		} else if (newValue < -Simulation.getEpsilon()) {
-			Dialogues.alert(logger, "Value of " + pk.useValue + " owned by " + pk.owner + " has fallen below zero. ");
-		} else if (newPrice < -Simulation.getEpsilon()) {
-			Dialogues.alert(logger, "Price of " + pk.useValue + " owned by " + pk.owner + " has fallen below zero. ");
-		}
-		quantity = newQuantity;
-		value = newValue;
-		price = newPrice;
+		quantity = Precision.round(newQuantity,Simulation.getRoundingPrecision());
+		value = Precision.round(newValue,Simulation.getRoundingPrecision());
+		price = Precision.round(newPrice,Simulation.getRoundingPrecision());
 		Reporter.report(logger, 2,
 				"    Memo: commodity [%s], of type [%s], owned by [%s]: is now %.0f. Its value is now $%.0f (intrinsic %.0f), and its price is %.0f (intrinsic %.0f)",
 				pk.useValue, pk.stockType, pk.owner, quantity, value, value / melt, price, price / melt);
@@ -312,11 +300,11 @@ public class Stock extends Observable implements Serializable {
 		double melt = DataManager.getGlobal().getMelt();
 		double unitValue = unitValue();
 		double unitPrice = unitPrice();
-		double newValue = Precision.round(newQuantity * unitValue, Simulation.getRoundingPrecision());
-		double newPrice = Precision.round(newQuantity * unitPrice, Simulation.getRoundingPrecision());
-		quantity = newQuantity;
-		value = newValue;
-		price = newPrice;
+		double newValue = newQuantity * unitValue;
+		double newPrice = newQuantity * unitPrice;
+		quantity = Precision.round(newQuantity,Simulation.getRoundingPrecision());
+		value = Precision.round(newValue,Simulation.getRoundingPrecision());
+		price = Precision.round(newPrice,Simulation.getRoundingPrecision());
 		Reporter.report(logger, 2,
 				"  Size of commodity [%s], of type [%s], owned by [%s]: is %.0f. Value set to $%.0f (intrinsic %.0f), and price to %.0f (intrinsic %.0f)",
 				pk.useValue, pk.stockType, pk.owner, quantity, value, value / melt, price, price / melt);

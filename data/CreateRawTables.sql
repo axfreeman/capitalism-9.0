@@ -2,7 +2,7 @@
  CREATE TABLE globals ( project int default 1 not null, timeStamp VARCHAR (10) DEFAULT '1' not null, RateOfExploitation double DEFAULT NULL, 
  MELT double DEFAULT NULL, initialCapital double DEFAULT NULL, currentCapital double DEFAULT NULL, profit double DEFAULT NULL, ProfitRate double DEFAULT NULL, 
  PopulationGrowthRate double DEFAULT NULL, totalValue double DEFAULT 0, totalPrice double DEFAULT 0, investmentRatio double DEFAULT 0.0, 
- labourSupplyResponse ENUM('FLEXIBLE','FIXED') DEFAULT 'FIXED', CurrencySymbol VARCHAR(10) DEFAULT '$', quantitySymbol VARCHAR(10) DEFAULT '#', 
+ labourSupplyResponse ENUM('FLEXIBLE','FIXED') DEFAULT 'FIXED', CurrencySymbol VARCHAR(10) DEFAULT '£', quantitySymbol VARCHAR(10) DEFAULT '#', 
  Primary Key (project, timeStamp) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
  
  DROP table if exists socialClasses;

@@ -44,9 +44,10 @@ public class CircuitColumn extends TableColumn<Circuit, String> {
 	 * 
 	 * @param selector
 	 *            an enum specifying which field to display
-	 * 
+	 * @param alignedLeft
+	 *            true if the field data is to be displayed aligned left (typically text strings such as the names of commodities or owners)
 	 */
-	CircuitColumn(Circuit.Selector selector,boolean alignedLeft) {
+	CircuitColumn(Circuit.Selector selector, boolean alignedLeft) {
 		super(selector.text());
 		setCellFactory(new Callback<TableColumn<Circuit, String>, TableCell<Circuit, String>>() {
 			@Override public TableCell<Circuit, String> call(TableColumn<Circuit, String> col) {
@@ -58,7 +59,8 @@ public class CircuitColumn extends TableColumn<Circuit, String> {
 		// tailor the visual appearance of the column header
 
 		setPrefWidth(75.0);
-		if (!alignedLeft) getStyleClass().add("table-column-right");
+		if (!alignedLeft)
+			getStyleClass().add("table-column-right");
 		TableUtilities.addGraphicToColummnHeader(this, selector.imageName(), selector.tooltip());
 	}
 

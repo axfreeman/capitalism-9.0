@@ -167,10 +167,28 @@ public class DataManager {
 	// GLOBAL QUERIES
 
 	/**
+	 * retrieve the global record for the specified timeStamp and project
+	 * 
+	 * @param project
+	 *            the specified project
+	 * @param timeStamp
+	 *            the specified timeStamp
+	 * @return the global record for the specified timeStamp and project
+	 */
+	public static Global getGlobal(int project, int timeStamp) {
+		globalQuery.setParameter("project", project).setParameter("timeStamp", timeStamp);
+		try {
+			return globalQuery.getSingleResult();
+		} catch (javax.persistence.NoResultException e) {
+			return null;// because this query throws a fit if it doesn't find anything
+		}
+	}
+
+	/**
 	 * retrieve the global record for the specified timeStamp and the current Project
 	 * 
 	 * @param timeStamp
-	 * 		the specified timeStamp
+	 *            the specified timeStamp
 	 * @return the global record for the current project and the current timeStamp, null if it does not exist (which is an error)
 	 */
 	public static Global getGlobal(int timeStamp) {
@@ -181,8 +199,7 @@ public class DataManager {
 			return null;// because this query throws a fit if it doesn't find anything
 		}
 	}
-	
-	
+
 	/**
 	 * retrieve the global record at the current timeStamp and project
 	 * 
@@ -346,7 +363,7 @@ public class DataManager {
 		stocksByOwnerAndTypeQuery.setParameter("owner", socialClass).setParameter("stockType", Stock.STOCKTYPE.CONSUMPTION.text());
 		return stocksByOwnerAndTypeQuery.getResultList();
 	}
-	
+
 	/**
 	 * the single stock of a consumer good of the given use value owned by the given social class, at the current project and a given timeStamp
 	 *
@@ -594,7 +611,7 @@ public class DataManager {
 	 * TODO get this working
 	 * 
 	 * @param timeStamp
-	 * 		the timeStamp
+	 *            the timeStamp
 	 * 
 	 * @return the sum of the initial capital in all circuits
 	 */
@@ -724,10 +741,13 @@ public class DataManager {
 	public static void setComparators(int timeStampID) {
 		try {
 			for (Stock s : stocksAll(timeStampID)) {
-				s.setPreviousComparator(stockByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), s.getOwner(), s.getUseValueName(),s.getStockType()));
-				s.setStartComparator(stockByPrimaryKey(Simulation.projectCurrent, 1, s.getOwner(), s.getUseValueName(),s.getStockType()));
-				s.setEndComparator(stockByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, s.getOwner(), s.getUseValueName(),s.getStockType()));
-				s.setCustomComparator(stockByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, s.getOwner(), s.getUseValueName(),s.getStockType()));
+				s.setPreviousComparator(stockByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), s.getOwner(),
+						s.getUseValueName(), s.getStockType()));
+				s.setStartComparator(stockByPrimaryKey(Simulation.projectCurrent, 1, s.getOwner(), s.getUseValueName(), s.getStockType()));
+				s.setEndComparator(
+						stockByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, s.getOwner(), s.getUseValueName(), s.getStockType()));
+				s.setCustomComparator(
+						stockByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, s.getOwner(), s.getUseValueName(), s.getStockType()));
 			}
 			useValuesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStampID);
 			for (UseValue u : useValuesAllQuery.getResultList()) {
@@ -744,24 +764,25 @@ public class DataManager {
 			}
 			socialClassAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStampID);
 			for (SocialClass sc : socialClassAllQuery.getResultList()) {
-				sc.setPreviousComparator(socialClassByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), sc.getSocialClassName()));
+				sc.setPreviousComparator(
+						socialClassByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), sc.getSocialClassName()));
 				sc.setStartComparator(socialClassByPrimaryKey(Simulation.projectCurrent, 1, sc.getSocialClassName()));
 				sc.setEndComparator(socialClassByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, sc.getSocialClassName()));
 				sc.setCustomComparator(socialClassByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, sc.getSocialClassName()));
 			}
-			
+
 			globalQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStampID);
 			Global currentGlobal = globalQuery.getSingleResult();
 			currentGlobal.setPreviousComparator(getGlobal(Simulation.getTimeStampComparatorCursor()));
 			currentGlobal.setStartComparator(getGlobal(1));
 			currentGlobal.setPreviousComparator(getGlobal(Simulation.timeStampIDCurrent));
 			currentGlobal.setCustomComparator(getGlobal(Simulation.timeStampIDCurrent));
-		
+
 		} catch (Exception e) {
 			Dialogues.alert(logger, "Database fubar. Sorry, please contact developer");
 		}
 	}
-	
+
 	// NON-QUERY GETTERS AND SETTERS
 
 	public static EntityManager getTimeStampEntityManager() {

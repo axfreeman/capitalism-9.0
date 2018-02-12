@@ -35,7 +35,6 @@ import rd.dev.simulation.view.LogWindow;
 
 public class Reporter {
 	private static final Logger logger = LogManager.getLogger(Reporter.class);
-	public static Level OVERVIEW = Level.getLevel("OVERVIEW");
 	public static LogWindow logWindow = new LogWindow();				// used by ViewManager and Reporter to tell the user what's going on.
 
 	public Reporter() {
@@ -43,7 +42,7 @@ public class Reporter {
 	}
 	
 	/**
-	 * Report a message at the overview level. This is both a helper function to simplify the logging code, and a wrapper to allow us to display what is going
+	 * Report a message at the INFO level. This is both a helper function to simplify the logging code, and a wrapper to allow us to display what is going
 	 * on to the user in a structured way without the tortuous business of writing funky logging appenders. The full functionality of the logging API is not
 	 * really needed in this project. Thus, the log4j files and the reporting window are completely disconnected and their only relation to each other is
 	 * that this method sends the same message to both of them.
@@ -61,9 +60,9 @@ public class Reporter {
 	public static void report(Logger logger, int level, String formatString, Object... args) {
 		String message = String.format(formatString, args);
 		if (level==0) {
-			logger.log(OVERVIEW, "");
+			logger.log(Level.INFO, "");
 		}
-		logger.log(OVERVIEW, message);
+		logger.log(Level.INFO, message);
 		logWindow.addItem(message,level);
 	}
 	
@@ -78,7 +77,6 @@ public class Reporter {
 
 		String logFile1 = logFilesBase + "userview.log";
 		String logFile2 = logFilesBase + "debug.log";
-		String logFile3 = logFilesBase + "detail.log";
 		try {
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 			LocalDateTime now = LocalDateTime.now();
@@ -86,17 +84,14 @@ public class Reporter {
 			String str = "Start of new log at" + dtf.format(now) + "\n";
 			BufferedWriter writer1 = new BufferedWriter(new FileWriter(logFile1));
 			BufferedWriter writer2 = new BufferedWriter(new FileWriter(logFile2));
-			BufferedWriter writer3 = new BufferedWriter(new FileWriter(logFile3));
 			writer1.write(str);
 			writer2.write(str);
-			writer3.write(str);
 			writer1.close();
 			writer2.close();
-			writer3.close();
 		} catch (FileNotFoundException f) {
-			logger.error("ERROR: The log file was not found because of " + f.getMessage());
+			logger.error("The log file was not found because of " + f.getMessage());
 		} catch (IOException i) {
-			logger.error("ERROR: The log file could not be initialised beause of" + i.getMessage());
+			logger.error("The log file could not be initialised beause of" + i.getMessage());
 		}
 	}
 }

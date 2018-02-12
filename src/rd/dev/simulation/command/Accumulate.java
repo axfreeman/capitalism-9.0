@@ -87,12 +87,12 @@ public class Accumulate extends Simulation implements Command {
 		
 		// first allocate to the industries that are creating means of production 
 		double costsInDepartmentI = allocateToCircuitsOfType(Circuit.INDUSTRYTYPE.MEANSOFPRODUCTION);
-		Reporter.report(logger, 1, " After allocating $%.0f to department I, $%.0f worth of Means of Production remain ", 
+		Reporter.report(logger, 1, " $%.0f will be allocated to department I to finance accumulation. $%.0f worth of Means of Production remain ", 
 				costsInDepartmentI, surplusMeansOfProduction);
 
 		// when done, allocate any remaining funds to industries that are creating means of consumption
 		double costsInDepartmentII= allocateToCircuitsOfType(Circuit.INDUSTRYTYPE.NECESSITIES);
-		Reporter.report(logger, 2, " After allocating $%.0f to department II, $%.0f worth of Means of Production remain ", 
+		Reporter.report(logger, 1, " $%.0f will be allocated to department II to finance accumulation. $%.0f worth of Means of Production remain ", 
 				costsInDepartmentII, surplusMeansOfProduction);
 	}
 
@@ -127,9 +127,6 @@ public class Accumulate extends Simulation implements Command {
 					
 					// This is the additional funding required
 					Circuit.ExpansionCosts accumulationCosts=Circuit.extraCosts(existingCosts,proposedCosts);
-					
-					Reporter.report(logger, 1, " The additional funds required by [%s] for accumulation are $%.0f", 
-							c.getProductUseValueName(), accumulationCosts.costOfOutput());
 					fundsAllocatedToThisIndustry=accumulationCosts.costOfOutput();// Allocate the money to the total expansion requested
 					fundsAllocated +=fundsAllocatedToThisIndustry; 
 					Reporter.report(logger, 2, "  Industry [%s] has received $%.0f from the capitalist class to accumulate, of which $%.0f for means of production ",
@@ -160,10 +157,10 @@ public class Accumulate extends Simulation implements Command {
 					
 					// This is the additional funding required
 					Circuit.ExpansionCosts accumulationCosts=Circuit.extraCosts(existingCosts,proposedCosts);
-					
+				
 					fundsAllocatedToThisIndustry = accumulationCosts.costOfOutput();
 					fundsAllocated+=fundsAllocatedToThisIndustry;
-					Reporter.report(logger, 2, "Industry [%s] has been allocated $%.0f of which $%.0f for means of production",
+					Reporter.report(logger, 2, "Industry [%s] has received $%.0f from the capitalist class to accumulate, of which $%.0f for means of production",
 							c.getProductUseValueName(), fundsAllocatedToThisIndustry, accumulationCosts.costOfMP);
 					recipient = c.getMoneyStock();
 					recipient.modifyBy(fundsAllocatedToThisIndustry);
