@@ -1,5 +1,10 @@
 # Capitalism 9.0 announcements
 
+## 2/11/2018 7:14:21 PM 
+
+All three benchmark projects now working (SR, Expanded SR, SR with halved period), with new visualisation and database infrastructure.
+Hence new executable.
+
 ## 2/11/2018 11:01:05 AM 
 
 Comparator radio buttons working.

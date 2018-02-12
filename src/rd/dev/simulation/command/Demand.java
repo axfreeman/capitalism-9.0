@@ -59,9 +59,9 @@ public class Demand extends Simulation implements Command {
 
 	public void execute() {
 		advanceOneStep(ActionStates.M_C_Demand.getText(), ActionStates.M_C_PreTrade.getText());
-		registerProductiveDemand();
+		computeProductiveDemand();
 		registerLabourResponse(DataManager.getGlobal().getLabourSupplyResponse());
-		registerSocialClassDemand();
+		computeSocialClassDemand();
 	}
 
 	/**
@@ -88,8 +88,8 @@ public class Demand extends Simulation implements Command {
 	 * 
 	 * NOTE that the constrained output is not set at this point; that is done by 'Constrain' (for illustrative purposes - the two could be combined)
 	 */
-	public void registerProductiveDemand() {
-		Reporter.report(logger, 0, "REGISTER PRODUCTIVE DEMAND");
+	public void computeProductiveDemand() {
+		Reporter.report(logger, 0, "COMPUTE PRODUCTIVE DEMAND");
 
 		// First, set demand to zero for all stocks
 
@@ -101,8 +101,7 @@ public class Demand extends Simulation implements Command {
 		// NOTE: social class demand for consumption goods is calculated separately
 		// in SocialClass.registerDemand() which is called immediately after this
 
-		List<Circuit> results = DataManager.circuitsAll();
-		for (Circuit c : results) {
+		for (Circuit c : DataManager.circuitsAll()) {
 			double totalCost = 0;
 			logger.debug(" Estimating demand for productive stocks byindustry {}", c.getProductUseValueName());
 			double moneyAvailable = c.getMoneyQuantity();
@@ -115,10 +114,9 @@ public class Demand extends Simulation implements Command {
 			double constrainedOutput = 0;
 			double proposedOutput = c.getProposedOutput();
 
-			// cost the entirety of the proposed output (by setting currentOutput to zero)
+			// cost the entirety of the proposed output
 
-			c.calculateOutputCosts();
-			totalCost = c.getCostOfExpansion();
+			totalCost = c.computeOutputCosts(0.0).costOfOutput();
 
 			Reporter.report(logger, 1, " Total cost of an output of %.0f is $%.0f and $%.0f is available.",
 					proposedOutput, totalCost, moneyAvailable);
@@ -135,8 +133,7 @@ public class Demand extends Simulation implements Command {
 
 				Reporter.report(logger, 1, " Output is constrained by cost");
 				proposedOutput = proposedOutput * moneyAvailable / totalCost;
-				c.calculateOutputCosts();
-				double revisedTotalCost = c.getCostOfExpansion();
+				double revisedTotalCost = c.computeOutputCosts(constrainedOutput).costOfOutput();
 				if (revisedTotalCost < moneyAvailable + Simulation.epsilon)
 					Dialogues.alert(logger, "There is not enough money to finance the required level of output by industry %s", c.getProductUseValueName());
 			}
@@ -156,18 +153,20 @@ public class Demand extends Simulation implements Command {
 				String useValueName = s.getUseValueName();
 				UseValue u = s.getUseValue();
 				if (u == null) {
-					logger.error("THE USE VALUE [" + useValueName + "] DOES NOT EXIST. Cannot calculate the demand for it");
+					logger.error("The Use Value [" + useValueName + "] does not exist. Please check your data, otherwise contact the Developer");
 				} else {
 					double existingStock = s.getQuantity();
 					double requiredStockLevel = constrainedOutput * coefficient * u.getTurnoverTime();
 					double newDemand = requiredStockLevel - existingStock;
 					double totalDemandForThisUseValue = u.totalDemand();
 					double newDemandForThisUseValue = totalDemandForThisUseValue + newDemand;
-					Reporter.report(logger, 2, "  Productive stock [%s] requires $%.0f to adjust its proposed output level from %.0f to %.0f",
-							useValueName, newDemand, existingStock, requiredStockLevel);
-					Reporter.report(logger, 2, "  The demand for commodity [%s] was %.0f and is now %.0f",
-							useValueName, totalDemandForThisUseValue, newDemandForThisUseValue);
-					s.setQuantityDemanded(Precision.round(newDemand, roundingPrecision));
+					if (newDemand !=0) {
+						Reporter.report(logger, 2, "  Productive stock [%s] requires $%.0f to adjust its proposed output level from %.0f to %.0f",
+								useValueName, newDemand, existingStock, requiredStockLevel);
+						Reporter.report(logger, 2, "  The demand for commodity [%s] was %.0f and is now %.0f",
+								useValueName, totalDemandForThisUseValue, newDemandForThisUseValue);
+						s.setQuantityDemanded(Precision.round(newDemand, roundingPrecision));
+					}
 				}
 			}
 		}
@@ -235,8 +234,8 @@ public class Demand extends Simulation implements Command {
 	 * this simulation, they are supplied with money, not goods. They then spend this money to get the goods.
 	 * 
 	 */
-	public void registerSocialClassDemand() {
-		Reporter.report(logger, 0, "REGISTER DEMAND FROM CLASSES");
+	public void computeSocialClassDemand() {
+		Reporter.report(logger, 0, "COMPUTE DEMAND FROM CLASSES");
 		for (SocialClass sc:DataManager.socialClassesAll()) {
 			Reporter.report(logger, 1, " Calculating demand of the social Class [%s] whose revenue is %.0f", 
 					sc.getSocialClassName(),sc.getRevenue());

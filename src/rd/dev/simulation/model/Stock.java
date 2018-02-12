@@ -284,7 +284,7 @@ public class Stock extends Observable implements Serializable {
 		value = newValue;
 		price = newPrice;
 		Reporter.report(logger, 2,
-				"  Size of commodity [%s], of type [%s], owned by [%s]: is %.0f. Value set to $%.0f (intrinsic %.0f), and price to %.0f (intrinsic %.0f)",
+				"    Memo: commodity [%s], of type [%s], owned by [%s]: is now %.0f. Its value is now $%.0f (intrinsic %.0f), and its price is %.0f (intrinsic %.0f)",
 				pk.useValue, pk.stockType, pk.owner, quantity, value, value / melt, price, price / melt);
 	}
 

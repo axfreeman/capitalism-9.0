@@ -424,7 +424,7 @@ public class UseValue extends Observable implements Serializable {
 
 	public double totalSupply() {
 		double supply =0.0;
-		for (Stock s:DataManager.stocksByUseValue(pk.timeStamp, pk.useValueName)) {
+		for (Stock s:DataManager.stocksSalesByUseValue(pk.timeStamp, pk.useValueName)) {
 			supply+=s.getQuantity();
 		}
 		return supply;

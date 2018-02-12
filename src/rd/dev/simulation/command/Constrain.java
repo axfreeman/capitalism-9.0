@@ -24,12 +24,10 @@ import java.util.List;
 import org.apache.commons.math3.util.Precision;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.ActionStates;
 import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.Circuit;
-import rd.dev.simulation.model.SocialClass;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.model.UseValue;
 import rd.dev.simulation.utils.Reporter;
@@ -54,7 +52,7 @@ public class Constrain extends Simulation implements Command {
 		advanceOneStep(ActionStates.M_C_Constrain.getText(), ActionStates.M_C_PreTrade.getText());
 
 		// calculate what proportion of demand can actually be satisfied
-		
+
 		calculateAllocationShare();
 
 		// Tell all stocks that are sources of demand (Productive and Consumption but not Sales or Money)
@@ -65,7 +63,7 @@ public class Constrain extends Simulation implements Command {
 		// Then tell the capital circuits to constrain their output
 
 		constrainOutput();
-		
+
 		// There is no call to separately ask the classes to constrain themselves. They just tighten their belts.
 		// TODO introduce some demographics - at some point of course restricted demand will impact population
 		// though in possibly unexpected ways, eg by converting capitalists into workers, or paupers, or both.
@@ -109,70 +107,44 @@ public class Constrain extends Simulation implements Command {
 		List<Circuit> circuits = DataManager.circuitsAll();
 		for (Circuit c : circuits) {
 			double desiredOutputLevel = c.getProposedOutput();
-			Reporter.report(logger, 1, " Estimating supply-constrained output for industry [%s] with unconstrained output %.2f",
+			Reporter.report(logger, 1, " Estimating supply-constrained output for industry [%s] with unconstrained output %.0f",
 					c.getProductUseValueName(), desiredOutputLevel);
 			List<Stock> managedStocks = DataManager.stocksProductiveByCircuit(timeStampIDCurrent, c.getProductUseValueName());
 			for (Stock s : managedStocks) {
-//				UseValue useValue = DataManager.useValueByName(timeStampIDCurrent, s.getUseValueName());
 				double existingQuantity = s.getQuantity();
 				double quantityDemanded = s.getQuantityDemanded();
 				double quantityAvailable = existingQuantity + s.getQuantityDemanded();
 				double coefficient = s.getProductionCoefficient();
-				double possibleOutput = Precision.round(quantityAvailable / coefficient ,roundingPrecision);
-				if (possibleOutput < desiredOutputLevel) {
-					Reporter.report(logger, 2, "  Constraining output to %.2f because stock [%s] has a supply of %.2f ",
-							possibleOutput, s.getUseValueName(), quantityDemanded);
-					desiredOutputLevel = possibleOutput;
-				} else {
-					Reporter.report(logger, 2, "  Output was not constrained by the stock of [%s] which can supply %.2f allowing for output of %.2f",
-							s.getUseValueName(), quantityAvailable, possibleOutput);
+				if (coefficient > 0) {
+					double possibleOutput = Precision.round(quantityAvailable / coefficient, roundingPrecision);
+					if (possibleOutput < desiredOutputLevel) {
+						Reporter.report(logger, 2, "  Constraining output to %.0f because stock [%s] has a supply of %.0f ",
+								possibleOutput, s.getUseValueName(), quantityDemanded);
+						desiredOutputLevel = possibleOutput;
+					} else {
+						Reporter.report(logger, 2, "  Output was not constrained by the stock of [%s] which can supply %.0f allowing for output of %.0f",
+								s.getUseValueName(), quantityAvailable, possibleOutput);
+					}
 				}
 			}
-			Reporter.report(logger, 1, " Output of [%s] has been constrained to %.2f; unconstrained output was %.2f",
+			Reporter.report(logger, 1, " Output of [%s] has been constrained to %.0f; unconstrained output was %.0f",
 					c.getProductUseValueName(), desiredOutputLevel, c.getProposedOutput());
 			c.setConstrainedOutput(desiredOutputLevel);
 		}
 	}
-
 
 	/**
 	 * given supply and demand, calculate what proportion of demand can actually be satisfied.
 	 * 
 	 */
 	public void calculateAllocationShare() {
-		Reporter.report(logger, 0, "CALCULATE ALLOCATION SHARES");
-	
 		for (UseValue u : DataManager.useValuesAll()) {
 			double totalDemand = u.totalDemand();
 			double totalSupply = u.totalSupply();
 			double allocationShare = totalSupply / totalDemand;
 			allocationShare = (allocationShare > 1 ? 1 : allocationShare);
-			Reporter.report(logger, 1, " Allocation share for commodity [%s] is %.2f", u.getUseValueName(), allocationShare);
+			Reporter.report(logger, 1, " Allocation share for commodity [%s] is %.4f", u.getUseValueName(), allocationShare);
 			u.setAllocationShare(allocationShare);
-		}
-	}
-
-	
-	/**
-	 * the classes also have to constrain their consumption corresponding to any shortages
-	 * 
-	 */
-
-	public void constrainClasses() {
-		Reporter.report(logger, 1, " Constraining consumption by classes");
-		for (UseValue u:DataManager.useValuesByType(UseValue.USEVALUETYPE.CONSUMPTION)){
-			double allocationShare = u.getAllocationShare();
-			for (SocialClass sc : DataManager.socialClassesAll()) {
-				double quantityDemanded = sc.consumptionQuantityDemanded();
-				if (allocationShare != 1) {
-					quantityDemanded = Precision.round(quantityDemanded, Simulation.getRoundingPrecision());
-					Reporter.report(logger, 2, "  Consumption of class [%s] will be cut from %.2f to %.2f",
-							sc.getSocialClassName(), quantityDemanded, quantityDemanded * allocationShare);
-					sc.setConsumptionQuantityDemanded(quantityDemanded * allocationShare);
-				} else {
-					Reporter.report(logger, 2, "  Consumption of class [%s] is unchanged at %.2f", sc.getSocialClassName(), quantityDemanded);
-				}
-			}
 		}
 	}
 }

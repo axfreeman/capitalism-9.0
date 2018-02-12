@@ -18,7 +18,7 @@ import rd.dev.simulation.command.Demand;
 import rd.dev.simulation.command.Trade;
 
 /**
- * This class is central to the operation of the simulation. See al{@link Capitalism#initializeActionStates()}.
+ * This class is central to the operation of the simulation. See also {@link Capitalism#initializeActionStates()}.
  * It defines the possible actions of the simulation, which are of two types: (1) sub-actions such as {@link Demand} which carry out
  * primitive actions;(2) super-actions such as {@link PreTrade} which conducts a series of primitive actions. The super-Actions correspond to normal
  * economic phases or 'aspects' of the reproduction of an economy namely the purchase of commodities, the production of commodities, and the distribution of

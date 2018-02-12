@@ -41,14 +41,14 @@ public class Revenue extends Simulation implements Command {
 
 		// Revenue properly speaking.
 		// Capitalists receive profits.
-		// Workers' revenue is *already* known because it was a price, paid for in trade
+		// Workers' revenue is already known by know because it was a price, paid for in trade. We calculated it in that phase of the simulation
 		// Main principle is thus that working class revenue is spent in the current period, but capitalist revenue is spent in the next period. 
 		// Everything becomes clear once this is grasped.
-		// TODO bankers landlords and merchants will receive revenue at this point
-		// that is, before accumulation.
+		// TODO bankers landlords and merchants will receive revenue at this point, that is, before accumulation.
 
 		// first, give the capitalists their profits
-		// they will accumulate some of it and consume the rest. this happens in the Accumulate phase
+		// they will accumulate some of it and consume the rest. Accumualation is taken care of in the Accumulate phase
+		// consumption will take place in the next period
 		
 		allocateProfits();
 	}
@@ -56,25 +56,29 @@ public class Revenue extends Simulation implements Command {
 	private void allocateProfits() {
 		SocialClass capitalists = DataManager.socialClassByName("Capitalists");
 		double capitalistRevenue=0.0;
+		Stock recipient = capitalists.getMoneyStock();
 		for (Circuit c : DataManager.circuitsAll()) {
 			double profit = c.profit();
 
 			// transfer all profits to the capitalist class. In the Accumulate phase, part of this revenue
 			// will be put back into the circuits to invest
 
-			Stock recipient = capitalists.getMoneyStock();
 			Stock donor = c.getMoneyStock();
 			recipient.modifyBy(profit);
 			donor.modifyBy(-profit);
-			Reporter.report(logger, 1, " Capitalist class has received $%.2f from circuit [%s]",
+			Reporter.report(logger, 1, " Capitalist class has received $%.0f from industry [%s]",
 					profit, c.getProductUseValueName());
 
 			// Note: revenue is in effect a memo item, not a stock.
-			// its use is to determine what classes consume
+			// its use is to determine what classes consume.
+			// TODO allow any class to receive property revenue so we allow for mixed classes
+			// TODO a stricter approach to the relation between money and revenue
 
 			capitalistRevenue+=profit;
+			
 		}
-		Reporter.report(logger, 1, "  Capitalist revenue (disposable income) set to $%.2f", capitalistRevenue);
+		Reporter.report(logger, 1, " Capitalist revenue (disposable income) is now $%.0f", capitalistRevenue);
+		
 		capitalists.setRevenue(capitalistRevenue);
 	}
 }

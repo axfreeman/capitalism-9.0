@@ -48,7 +48,7 @@ public class LogWindow {
 
 		TreeItem<Label> rootItem = new TreeItem<Label>(new Label("Log"));
 		TreeItem<Label> firstLevel1Item=new TreeItem<Label>(new Label("STARTUP"));
-		TreeItem<Label> secondLevelItem=new TreeItem<Label>(new Label("LOGGER STARTUP"));
+		TreeItem<Label> secondLevelItem=new TreeItem<Label>(new Label("Log Window Startup"));
 		rootItem.setExpanded(true);
 
 		treeView = new TreeView<Label>(rootItem);

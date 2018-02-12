@@ -29,6 +29,7 @@ import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.TabbedTableViewer;
 import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.Stock.ValueExpression;
+import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.Reporter;
 import rd.dev.simulation.view.ViewManager;
 
@@ -285,12 +286,14 @@ public class SocialClass extends Observable implements Serializable {
 	 */
 
 	public void regenerate() {
-		Reporter.report(logger, 1, " Reproducing the class [%s]", pk.socialClassName);
+		Reporter.report(logger, 1, " Reproducing the sales stock of the class [%s]", pk.socialClassName);
 	
 		Stock salesStock = getSalesStock();
 		if (salesStock!=null) {
 			double existingLabourPower = salesStock.getQuantity();
-			double newLabourPower = size* participationRatio;
+			UseValue useValue=DataManager.useValueByName(pk.timeStamp, salesStock.getUseValueName());
+			double turnoverTime=useValue.getTurnoverTime();
+			double newLabourPower = size* participationRatio/turnoverTime;
 			double extraLabourPower = newLabourPower - existingLabourPower;
 			if (extraLabourPower > 0) {
 				Reporter.report(logger, 2, "  The labour power of the class [%s] was %.0f and is now %.0f", pk.socialClassName, existingLabourPower,
@@ -306,6 +309,7 @@ public class SocialClass extends Observable implements Serializable {
 	 */
 
 	public void consume() {
+		Reporter.report(logger, 1, " Replenishing the consumptions stocks of the class [%s]", pk.socialClassName);
 		for (Stock s:DataManager.stocksConsumptionByClass(Simulation.timeStampIDCurrent,pk.socialClassName)){
 			double quantityConsumed = s.getQuantity();
 			s.modifyBy(-quantityConsumed);
@@ -567,6 +571,13 @@ public class SocialClass extends Observable implements Serializable {
 	 *            the revenue to set
 	 */
 	public void setRevenue(double revenue) {
+		
+		// a little consistency check
+		
+		if(revenue<0) {
+			Dialogues.alert(logger, "Capitalist revenue will fall below zero if $%.0f is deducted from it. This is probably a programme error. Contact the developer",revenue);
+			return;
+		}
 		this.revenue = revenue;
 	}
 

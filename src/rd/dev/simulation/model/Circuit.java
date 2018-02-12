@@ -70,8 +70,6 @@ public class Circuit extends Observable implements Serializable {
 	@Column(name = "ProposedOutput") private double proposedOutput;
 	@Column(name = "InitialCapital") private double initialCapital;
 	@Column(name = "Growthrate") private double growthRate;
-	@Column(name = "costOfMPForExpansion") private double costOfMPForExpansion; // investment in Means of Production needed to achieve proposed expansion
-	@Column(name = "costOfLPForExpansion") private double costOfLPForExpansion; // investment in Labour Power needed to achieve proposed expansion
 
 	@Transient private Circuit comparator;
 	@Transient private Circuit previousComparator;
@@ -139,6 +137,37 @@ public class Circuit extends Observable implements Serializable {
 	 */
 	public Circuit() {
 		this.pk = new CircuitPK();
+	}
+
+	/**
+	 * tiny little class to encapsulate the cost of attaining a level of output
+	 * 
+	 * @author afree
+	 *
+	 */
+	public static class ExpansionCosts {
+		public double costOfLP;
+		public double costOfMP;
+
+		public double costOfOutput() {
+			return costOfLP + costOfMP;
+		}
+	}
+
+	/**
+	 * calculate the extra cost, and its components, of expandedCosts compared to currentCosts
+	 * 
+	 * @param currentCosts
+	 *            the smaller of the two cost vectors
+	 * @param expandedCosts
+	 *            the larger of the two cost vectors
+	 * @return a cost vector giving the difference between the components, and the total, of the two vectors
+	 */
+	public static ExpansionCosts extraCosts(ExpansionCosts currentCosts, ExpansionCosts expandedCosts) {
+		ExpansionCosts difference = new ExpansionCosts();
+		difference.costOfLP = expandedCosts.costOfLP - currentCosts.costOfLP;
+		difference.costOfMP = expandedCosts.costOfMP - currentCosts.costOfMP;
+		return difference;
 	}
 
 	/**
@@ -422,22 +451,24 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	/**
-	 * calculates the cost of producing at level proposedOutput, given constrainedOutput and the current level of productive inputs
+	 * calculates the cost of producing at level proposedOutput, given the current level of productive inputs.
 	 * NOTE this cannot be reduced to a simple multiple of existing stocks, because some stocks may already exist. It is thus a non-linear function of Output
-	 * NOTE the 'marginal' nature of this calculation doe`s not arise from the non-linearity of the production function itself (though in future extensions it
-	 * could).
+	 * NOTE the 'marginal' nature of this calculation doesn't arise from the non-linearity of the production function (though in future extensions it could).
 	 * It arises because some stocks already exist, so that the cost rises as a step function once the output level exceeds the required stock of each input
+	 * 
+	 * @param anOutput
+	 *            the output level whose cost we wish to establish
+	 * @return the cost of reaching this output level
 	 */
 
-	public void calculateOutputCosts() {
-
-		costOfMPForExpansion = 0.0;
-		costOfLPForExpansion = 0.0;
+	public ExpansionCosts computeOutputCosts(double anOutput) {
+		ExpansionCosts expansionCosts = new ExpansionCosts();
+		expansionCosts.costOfMP = 0.0;
+		expansionCosts.costOfLP = 0.0;
 
 		// ask each productive stock to tell us how much it would cost to increase that stock's size sufficient to produce the required output
-		double proposedExpansion = proposedOutput - constrainedOutput;
-		Reporter.report(logger, 1, " Calculating the cost to industry [%s] of expanding output by %.0f to %.0f from an output of %.0f",
-				pk.productUseValueName, proposedExpansion, proposedOutput, constrainedOutput);
+		Reporter.report(logger, 1, " Calculating the cost to industry [%s] of acquiring sufficient stocks to produce an output of %.0f ",
+				pk.productUseValueName, anOutput);
 		for (Stock s : DataManager.stocksProductiveByCircuit(Simulation.timeStampIDCurrent, pk.productUseValueName)) {
 			UseValue u = s.getUseValue();
 			if (u == null) {
@@ -445,32 +476,31 @@ public class Circuit extends Observable implements Serializable {
 			} else {
 				double coefficient = s.getProductionCoefficient();
 				double stockNewPrice = 0;
-				double stockLevelRequired = coefficient * u.getTurnoverTime() * proposedExpansion;
+				double stockLevelRequired = coefficient * u.getTurnoverTime() * anOutput;
 				double stockLevelExisting = s.getQuantity();
 				double stockNewRequired = stockLevelRequired - stockLevelExisting;
+				stockNewPrice = stockNewRequired * u.getUnitPrice();
+				if (s.useValueType() == USEVALUETYPE.LABOURPOWER) {
+					expansionCosts.costOfLP += stockNewPrice;
+				} else {
+					expansionCosts.costOfMP += stockNewPrice;
+				}
 				if (stockNewRequired < 0) {
 					Reporter.report(logger, 2,
-							"  Circuit [%s] already has %.2f of productive input [%s] which is sufficient to produce at level %.2f, so incurs no extra cost",
+							"  Circuit [%s] already has %.0f of productive input [%s] which is sufficient to produce at level %.0f, so incurs no extra cost",
 							pk.productUseValueName, stockLevelExisting, s.getUseValueName(), proposedOutput);
 					stockNewRequired = 0;
 				} else {
-					Reporter.report(logger, 2, "  Circuit [%s] has %.2f of productive input [%s] which requires an addition of %.2f to produce at level %.0f",
-							pk.productUseValueName, stockLevelExisting, s.getUseValueName(), stockNewRequired, proposedOutput);
+					Reporter.report(logger, 2,
+							"  Circuit [%s] has %.0f of productive input [%s] which requires %.0f more, costing $%.0f to produce output of %.0f",
+							pk.productUseValueName, stockLevelExisting, s.getUseValueName(), stockNewRequired, stockNewPrice, anOutput);
 				}
-				stockNewPrice = stockNewRequired * u.getUnitPrice();
-				if (s.useValueType() == USEVALUETYPE.LABOURPOWER) {
-					costOfLPForExpansion += stockNewPrice;
-				} else {
-					costOfMPForExpansion += stockNewPrice;
-				}
-				Reporter.report(logger, 2,
-						"  Cost of sufficient stock of [%s] at unit price $%.2f is $%.2f of which Means of Production $%.2f and Labour Power $%.2f",
-						s.getUseValueName(), u.getUnitPrice(), stockNewPrice, costOfMPForExpansion, costOfLPForExpansion);
 			}
 		}
 		Reporter.report(logger, 1,
-				" Circuit [%s] would spend $%.2f on means of production and $%.2f on labour power (totalling $%.2f), \n  to expand production by %.0f and attain an output of %.0f ",
-				pk.productUseValueName, costOfMPForExpansion, costOfLPForExpansion, getCostOfExpansion(), proposedExpansion, proposedOutput);
+				" It would cost industry [%s] $%.0f for means of production and $%.0f for labour power (totalling $%.0f), to produce at a level of %.0f ",
+				pk.productUseValueName, expansionCosts.costOfMP, expansionCosts.costOfLP, expansionCosts.costOfOutput(), proposedOutput);
+		return expansionCosts;
 	}
 
 	/**
@@ -707,7 +737,6 @@ public class Circuit extends Observable implements Serializable {
 		return contents;
 	}
 
-
 	/**
 	 * The current capital of this circult.
 	 * this is the sum of all outlays (including mone), that is to say, it is everything that has to be engaged in the business to keep it going
@@ -759,70 +788,51 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	/**
-	 * @return the costOfExpansion
-	 */
-	public double getCostOfExpansion() {
-		return costOfMPForExpansion + costOfLPForExpansion;
-	}
-
-	/**
-	 * @return the costOfMPForExpansion
-	 */
-	public double getCostOfMPForExpansion() {
-		return costOfMPForExpansion;
-	}
-
-	/**
-	 * @return the costOfLPForExpansion
-	 */
-	public double getCostOfLPForExpansion() {
-		return costOfLPForExpansion;
-	}
-
-	/**
 	 * given the means of production available for investment, determine the possible level of output
 	 * and then calculate the additional cost of labour power needed to achieve this.
 	 * 
 	 * TOODO this is a rudimentary procedure written on the assumption there is only a single stock of type Means of Production.
 	 * It needs to be generalised.
 	 * 
-	 * @param surplusMeansOfProduction
-	 *            the additional Means of Production available for investment once the requirements of simple reproduction have been satisfied.
+	 * @param extraMeansOfProduction
+	 *            the additional Means of Production which it is proposed this circuit should acquire.
+	 * @return the output level that can be attained by acquiring extraMeansOfProduction
 	 */
-	public void computePossibleOutput(double surplusMeansOfProduction) {
+	public double computePossibleOutput(double extraMeansOfProduction) {
 		Stock mP = productiveStock("Means of Production");
 		UseValue u = mP.getUseValue();
 		double price = u.getUnitPrice();
-		double extraStock = surplusMeansOfProduction / price;
-		proposedOutput = constrainedOutput + extraStock / mP.getProductionCoefficient();
-		calculateOutputCosts();
+		double extraStock = extraMeansOfProduction / price;
+		return constrainedOutput + extraStock / mP.getProductionCoefficient();
 	}
-	
+
 	/**
 	 * chooses the comparator depending on the state set in the {@code ViewManager.comparatorToggle} radio buttons
 	 */
-	
-	private void chooseComparison(){
-		switch(ViewManager.getComparatorState()) {
+
+	private void chooseComparison() {
+		switch (ViewManager.getComparatorState()) {
 		case CUSTOM:
-			comparator=customComparator;
+			comparator = customComparator;
 			break;
 		case END:
-			comparator=endComparator;
+			comparator = endComparator;
 			break;
 		case PREVIOUS:
-			comparator=previousComparator;
+			comparator = previousComparator;
 			break;
 		case START:
-			comparator=startComparator;
+			comparator = startComparator;
 		}
 	}
 
 	/**
-	 * set the comparator Circuit of this Circuit. When a TableCell displays a value from this Circuit, it asks the Circuit 
+	 * set the comparator Circuit of this Circuit. When a TableCell displays a value from this Circuit, it asks the Circuit
 	 * to tell it whether the value has changed in comparison with another timeStamp, and by how much.
 	 * The comparator allows the Circuit to determine what information is provided
-	 * @param comparator the comparator
+	 * 
+	 * @param comparator
+	 *            the comparator
 	 */
 	public void setComparator(Circuit comparator) {
 		this.comparator = comparator;
@@ -836,7 +846,8 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param previousComparator the previousComparator to set
+	 * @param previousComparator
+	 *            the previousComparator to set
 	 */
 	public void setPreviousComparator(Circuit previousComparator) {
 		this.previousComparator = previousComparator;
@@ -850,7 +861,8 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param startComparator the startComparator to set
+	 * @param startComparator
+	 *            the startComparator to set
 	 */
 	public void setStartComparator(Circuit startComparator) {
 		this.startComparator = startComparator;
@@ -864,7 +876,8 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param customComparator the customComparator to set
+	 * @param customComparator
+	 *            the customComparator to set
 	 */
 	public void setCustomComparator(Circuit customComparator) {
 		this.customComparator = customComparator;
@@ -878,10 +891,11 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param endComparator the endComparator to set
+	 * @param endComparator
+	 *            the endComparator to set
 	 */
 	public void setEndComparator(Circuit endComparator) {
 		this.endComparator = endComparator;
 	}
-	
+
 }

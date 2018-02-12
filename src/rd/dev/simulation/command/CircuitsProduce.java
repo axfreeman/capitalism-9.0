@@ -70,7 +70,7 @@ public class CircuitsProduce extends Simulation implements Command {
 			UseValue useValue = c.getUseValue();
 			double output = c.getConstrainedOutput();
 			double valueAdded = 0;
-			Reporter.report(logger, 1, " Industry [%s] is producing output %.2f.; the melt is %.2f", useValueType, output, melt);
+			Reporter.report(logger, 1, " Industry [%s] is producing %.0f. units of its output; the melt is %.4f", useValueType, output, melt);
 
 			for (Stock s : DataManager.stocksProductiveByCircuit(timeStampIDCurrent, useValueType)) {
 
@@ -96,11 +96,13 @@ public class CircuitsProduce extends Simulation implements Command {
 
 				// the stock is reduced by what was used up, and account of this is registered with its use value
 				UseValue u = s.getUseValue();
-				Reporter.report(logger, 2, "  %.0f of input [%s] was used up in producing the output [%s]", stockUsedUp, u.getUseValueName(),
+				if (stockUsedUp>0) {
+				Reporter.report(logger, 2, "  %.0f units of [%s] were used up in producing the output [%s]", stockUsedUp, u.getUseValueName(),
 						c.getProductUseValueName());
 				double stockOfUSoFarUsedUp = u.getStockUsedUp();
 				u.setStockUsedUp(stockOfUSoFarUsedUp + stockUsedUp);
 				s.modifyBy(-stockUsedUp);
+				}
 			}
 
 			// to set the value of the output, we now use an overloaded version of modifyBy which only sets the value

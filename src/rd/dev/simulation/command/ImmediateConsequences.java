@@ -62,14 +62,14 @@ public class ImmediateConsequences extends Simulation implements Command {
 		double globalTotalPrice = 0.0;
 		Global global = DataManager.getGlobal();
 		for (UseValue u :  DataManager.useValuesAll()) {
-			Reporter.report(logger, 1, "Commodity [%s] Total value is %.2f, and total price is %.2f", u.getUseValueName(),u.totalValue(), u.totalPrice());
+			Reporter.report(logger, 1, "Commodity [%s] Total value is %.0f, and total price is %.0f", u.getUseValueName(),u.totalValue(), u.totalPrice());
 			globalTotalValue += u.totalValue();
 			globalTotalPrice += u.totalPrice();
 		}
-		Reporter.report(logger, 1, "Global total value is %.2f, and total price is %.2f", globalTotalValue, globalTotalPrice);
+		Reporter.report(logger, 1, "Global total value is %.0f, and total price is %.0f", globalTotalValue, globalTotalPrice);
 
-		logger.debug("Recorded global total value is %.2f, and total value calculated from use values is %.2f", global.totalValue(), globalTotalValue);
-		logger.debug("Recorded global total price is %.2f, and total price calculated from use values is %.2f", global.totalPrice(), globalTotalPrice);
+		logger.debug("Recorded global total value is %.0f, and total value calculated from use values is %.0f", global.totalValue(), globalTotalValue);
+		logger.debug("Recorded global total price is %.0f, and total price calculated from use values is %.0f", global.totalPrice(), globalTotalPrice);
 		
 		if (globalTotalValue != global.totalValue())
 			Dialogues.alert(logger, "The total value of stocks is out of sync");
@@ -88,7 +88,7 @@ public class ImmediateConsequences extends Simulation implements Command {
 		double adjustmentFactor = globalTotalPrice / globalTotalValue;
 		double newMelt = oldMelt * (adjustmentFactor);
 
-		Reporter.report(logger, 1, "MELT was %.2f and will be reset to %.2f", oldMelt, newMelt);
+		Reporter.report(logger, 1, "MELT was %.4f and will be reset to %.4f", oldMelt, newMelt);
 		global.setMelt(newMelt);
 
 		// Reset all unit values on the basis of the total value and total quantity of this commodity in existence
@@ -97,7 +97,7 @@ public class ImmediateConsequences extends Simulation implements Command {
 			if (u.getUseValueType() != UseValue.USEVALUETYPE.MONEY) {
 				double quantity = u.totalQuantity();
 				double newUnitValue = Precision.round(adjustmentFactor * u.totalValue() / quantity, Simulation.roundingPrecision);
-				Reporter.report(logger, 2, "The unit value of commodity [%s] was %.2f, and will be reset to %.2f", u.getUseValueName(),u.getUnitValue(), newUnitValue);
+				Reporter.report(logger, 2, "The unit value of commodity [%s] was %.4f, and will be reset to %.4f", u.getUseValueName(),u.getUnitValue(), newUnitValue);
 				u.setUnitValue(newUnitValue);
 			}
 		}
@@ -121,7 +121,7 @@ public class ImmediateConsequences extends Simulation implements Command {
 		case EQUALISE:
 			Reporter.report(logger, 0, "Setting prices to equalise profit rates");
 			Global global =DataManager.getGlobal();
-			Reporter.report(logger, 1, "Average Profit Rate is currently recorded as %.2f", global.profitRate());
+			Reporter.report(logger, 1, "Average Profit Rate is currently recorded as %.4f", global.profitRate());
 
 			// there may be more than one producer of the same commodity.
 			// we can only set the profit rate for the sector as a whole,which means we work from the per-useValue profit rates
@@ -132,7 +132,7 @@ public class ImmediateConsequences extends Simulation implements Command {
 					Reporter.report(logger, 2, " Note: circuit %s produces this use value", c.getProductUseValueName());
 				}
 				double newUnitPrice=u.initialCapital()*(1+global.profitRate())/u.totalQuantity();
-				Reporter.report(logger, 2, "  Unit price changed from %.2f to %.2f", u.getUnitPrice(),newUnitPrice);
+				Reporter.report(logger, 2, "  Unit price changed from %.4f to %.4f", u.getUnitPrice(),newUnitPrice);
 				u.setUnitPrice(newUnitPrice);
 			}
 		}

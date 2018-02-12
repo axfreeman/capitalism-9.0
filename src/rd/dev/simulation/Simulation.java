@@ -87,7 +87,7 @@ public class Simulation {
 	 * TODO validate user data at this point
 	 */
 	public void startup() {
-		Reporter.report(logger, 1, "Simulation startup: initialise data from user-supplied inputs");
+		Reporter.report(logger, 0, "INITIALISE DATA FROM USER-DEFINED PROJECTS");
 
 		TimeStamp timeStampCurrentRecord;
 
@@ -98,7 +98,7 @@ public class Simulation {
 
 		// Initialise all projects at the start
 		for (Project p : SelectionsProvider.projectsAll()) {
-			Reporter.report(logger, 0, "INITIALISING THE PROJECT WITH ID %d WHOSE DESCRIPTION IS %s", p.getProjectID(), p.getDescription());
+			Reporter.report(logger, 0, " Initialising project %d whose name is %s", p.getProjectID(), p.getDescription());
 			projectCurrent = p.getProjectID();
 
 			// initialise each project record so that its cursors are 1
@@ -116,7 +116,7 @@ public class Simulation {
 
 			timeStampCurrentRecord = SelectionsProvider.timeStampSingle(timeStampIDCurrent);
 			if (timeStampCurrentRecord == null) {
-				Reporter.report(logger, 1, "There is no initial timeStamp record for project %d, will create a record and carry on from there",
+				Reporter.report(logger, 1, " There is no initial timeStamp record for project %d, will create a record and carry on from there",
 						p.getDescription());
 				try {
 					DataManager.getTimeStampEntityManager().getTransaction().begin();
@@ -129,7 +129,7 @@ public class Simulation {
 			}
 			if (timeStampCurrentRecord.getTimeStampID() != 1) {
 				Reporter.report(logger, 1,
-						"The initial timeStamp record for project %d should have an ID of 1 but instead has  %d. We will try to carry on with the new ID",
+						" The initial timeStamp record for project %d should have an ID of 1 but instead has  %d. We will try to carry on with the new ID",
 						p.getDescription(), timeStampCurrentRecord);
 			}
 
@@ -164,9 +164,9 @@ public class Simulation {
 			double listedValue = u.totalValue();
 			double calculatedValue = listedQuantity * unitValue;
 			if (listedValue != calculatedValue) {
-				logger.error("ERROR: listed price is {} and total price is {}", listedValue, calculatedValue);
+				logger.error("Listed price is {} and total price is {}", listedValue, calculatedValue);
 			} else {
-				logger.debug("listed price of {} matches calculated price at  {}", u.getUseValueName(), calculatedValue);
+				logger.debug("Listed price of {} matches calculated price at  {}", u.getUseValueName(), calculatedValue);
 			}
 		}
 	}

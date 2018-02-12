@@ -28,7 +28,6 @@ import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.ActionStates;
 import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.Circuit;
-import rd.dev.simulation.model.Global;
 import rd.dev.simulation.model.SocialClass;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.model.UseValue;
@@ -37,14 +36,13 @@ import rd.dev.simulation.utils.Reporter;
 public class Accumulate extends Simulation implements Command {
 	private static final Logger logger = LogManager.getLogger(Accumulate.class);
 
-	Global global;
+	double surplusMeansOfProduction;
 
 	public Accumulate() {
 	}
 
 	public void execute() {
-		global = DataManager.getGlobal();
-		Reporter.report(logger, 0, "ACCUMULATE");
+		Reporter.report(logger, 0, "ACCUMULATE: MOSES AND THE PROPHETS");
 		advanceOneStep(ActionStates.C_M_Accumulate.getText(), ActionStates.C_M_Distribute.getText());
 		calculateSurplus();
 		allocateProfits();
@@ -69,19 +67,14 @@ public class Accumulate extends Simulation implements Command {
 	 * calculate the surplus of means of production that are available to invest in
 	 */
 	private void calculateSurplus() {
-
-		// calculate the total surplus of means of production
-
 		Reporter.report(logger, 1, " Calculating the surplus of means of production available for expansion");
-		double surplusMeansOfProduction = 0.0;
 		for (UseValue u : DataManager.useValuesByType(UseValue.USEVALUETYPE.PRODUCTIVE)) {
 				double thisSurplusMeansOfProduction = Precision.round(u.getSurplusProduct() * u.getUnitPrice(), Simulation.roundingPrecision);
-				Reporter.report(logger, 2, "  The surplus of commodity [%s] is %.2f and its price is $%.2f", u.getUseValueName(), u.getSurplusProduct(),
+				Reporter.report(logger, 2, "  The surplus of commodity [%s] is %.0f and its price is $%.0f", u.getUseValueName(), u.getSurplusProduct(),
 						thisSurplusMeansOfProduction);
 				surplusMeansOfProduction += thisSurplusMeansOfProduction;
 		}
-		Reporter.report(logger, 1, " Total surplus of means of production available for investment is $%.2f", surplusMeansOfProduction);
-		global.setSurplusMeansOfProduction(surplusMeansOfProduction);
+		Reporter.report(logger, 1, " Total surplus of means of production available for investment is $%.0f", surplusMeansOfProduction);
 	}
 
 	/**
@@ -91,44 +84,61 @@ public class Accumulate extends Simulation implements Command {
 	 */
 	private void allocateProfits() {
 		Reporter.report(logger, 1, " Allocating capitalist profits to industries in order to expand production");
-		double meansOfProductionRemaining = global.getSurplusMeansOfProduction();
-		double meansOfProductionAccountedFor = allocateToCircuitsOfType(meansOfProductionRemaining, Circuit.INDUSTRYTYPE.MEANSOFPRODUCTION);
-		meansOfProductionRemaining -= meansOfProductionAccountedFor;
-		Reporter.report(logger, 2, " After allocating accumulation funds to Department I, %.2f remains to be allocated", meansOfProductionRemaining);
-		meansOfProductionAccountedFor -= allocateToCircuitsOfType(meansOfProductionRemaining, Circuit.INDUSTRYTYPE.NECESSITIES);
+		
+		// first allocate to the industries that are creating means of production 
+		double costsInDepartmentI = allocateToCircuitsOfType(Circuit.INDUSTRYTYPE.MEANSOFPRODUCTION);
+		Reporter.report(logger, 1, " After allocating $%.0f to department I, $%.0f worth of Means of Production remain ", 
+				costsInDepartmentI, surplusMeansOfProduction);
+
+		// when done, allocate any remaining funds to industries that are creating means of consumption
+		double costsInDepartmentII= allocateToCircuitsOfType(Circuit.INDUSTRYTYPE.NECESSITIES);
+		Reporter.report(logger, 2, " After allocating $%.0f to department II, $%.0f worth of Means of Production remain ", 
+				costsInDepartmentII, surplusMeansOfProduction);
 	}
 
 	/**
-	 * 
-	 * @param meansOfProductionRemaining
-	 *            the remaining surplus of means of production available for productive investment, after allocating funds to other circuits
+	 * TODO write specific queries to deliver circuits of the required industry type and then split this method into two,
+	 * since it's really a syncretic amalgam of two algorithms, once for Department I and the other for Department II
 	 * @param type
 	 *            the industry type of the circuit
 	 * @return the amount that was allocated
 	 */
-	private double allocateToCircuitsOfType(double meansOfProductionRemaining, Circuit.INDUSTRYTYPE type) {
+	private double allocateToCircuitsOfType(Circuit.INDUSTRYTYPE type) {
 		SocialClass capitalists = DataManager.socialClassByName( "Capitalists");
 		Stock donor = capitalists.getMoneyStock();
 		Stock recipient = null;
 		double fundsAllocated = 0;
-
-		// TODO write custom queries to get these specific circuits (or sets of circults in the general case)
-
+		
 		switch (type) {
 		case MEANSOFPRODUCTION:
 
 			// in this case, allocate funds to finance proposed growth
-
 			for (Circuit c : DataManager.circuitsAll()) {
 				if (c.industryType() == type) {
+					double fundsAllocatedToThisIndustry=0;
 					double proposedOutput = c.getConstrainedOutput() * (1 + c.getGrowthRate());
 					c.setProposedOutput(proposedOutput);
-					c.calculateOutputCosts();
-					fundsAllocated = c.getCostOfExpansion(); // Allocate the money to the total expansion requested
-					Reporter.report(logger, 2, "  Industry [%s] has been allocated $%.2f of which %.2f for means of production ",
-							c.getProductUseValueName(), fundsAllocated, c.getCostOfMPForExpansion());
+					
+					// The existing costs will be taken care of next period without allocating any additional funds
+					Circuit.ExpansionCosts existingCosts=c.computeOutputCosts(c.getConstrainedOutput());
+					
+					// This is what the circuit will need if it is going to be able to expand to a higher output level
+					Circuit.ExpansionCosts proposedCosts=c.computeOutputCosts(proposedOutput);
+					
+					// This is the additional funding required
+					Circuit.ExpansionCosts accumulationCosts=Circuit.extraCosts(existingCosts,proposedCosts);
+					
+					Reporter.report(logger, 1, " The additional funds required by [%s] for accumulation are $%.0f", 
+							c.getProductUseValueName(), accumulationCosts.costOfOutput());
+					fundsAllocatedToThisIndustry=accumulationCosts.costOfOutput();// Allocate the money to the total expansion requested
+					fundsAllocated +=fundsAllocatedToThisIndustry; 
+					Reporter.report(logger, 2, "  Industry [%s] has received $%.0f from the capitalist class to accumulate, of which $%.0f for means of production ",
+							c.getProductUseValueName(), fundsAllocatedToThisIndustry, accumulationCosts.costOfMP);
 					recipient = c.getMoneyStock();
-					global.setSurplusMeansOfProduction(global.getSurplusMeansOfProduction() - c.getCostOfMPForExpansion());
+					recipient.modifyBy(fundsAllocatedToThisIndustry);
+					donor.modifyBy(-fundsAllocatedToThisIndustry);
+					capitalists.setRevenue(capitalists.getRevenue() - fundsAllocatedToThisIndustry);
+					surplusMeansOfProduction -= accumulationCosts.costOfMP;
 				}
 			}
 			break;
@@ -138,25 +148,34 @@ public class Accumulate extends Simulation implements Command {
 
 			for (Circuit c : DataManager.circuitsAll()) {
 				if (c.industryType() == type) {
-					c.computePossibleOutput(global.getSurplusMeansOfProduction());
-					fundsAllocated = c.getCostOfExpansion();
-					Reporter.report(logger, 2, "Industry [%s] has been allocated %.2f of which %.2f for means of production",
-							c.getProductUseValueName(), fundsAllocated, c.getCostOfMPForExpansion());
+					double fundsAllocatedToThisIndustry=0;
+					double proposedOutput=c.computePossibleOutput(surplusMeansOfProduction);
+					c.setProposedOutput(proposedOutput);
+					
+					// The existing costs will be taken care of next period without allocating any additional funds
+					Circuit.ExpansionCosts existingCosts=c.computeOutputCosts(c.getConstrainedOutput());
+					
+					// This is what the circuit will need if it is going to be able to expand to a higher output level
+					Circuit.ExpansionCosts proposedCosts=c.computeOutputCosts(proposedOutput);
+					
+					// This is the additional funding required
+					Circuit.ExpansionCosts accumulationCosts=Circuit.extraCosts(existingCosts,proposedCosts);
+					
+					fundsAllocatedToThisIndustry = accumulationCosts.costOfOutput();
+					fundsAllocated+=fundsAllocatedToThisIndustry;
+					Reporter.report(logger, 2, "Industry [%s] has been allocated $%.0f of which $%.0f for means of production",
+							c.getProductUseValueName(), fundsAllocatedToThisIndustry, accumulationCosts.costOfMP);
 					recipient = c.getMoneyStock();
+					recipient.modifyBy(fundsAllocatedToThisIndustry);
+					donor.modifyBy(-fundsAllocatedToThisIndustry);
+					capitalists.setRevenue(capitalists.getRevenue() - fundsAllocatedToThisIndustry);
+					surplusMeansOfProduction -= accumulationCosts.costOfMP;
 				}
 			}
 			break;
 		default:
 			return 0;
 		}
-		// transfer enough profits from the capitalist class to grow to the industry's proposed output
-		// Give up if there isn't enough
-		// Reduce revenue correspondingly
-
-		recipient.modifyBy(fundsAllocated);
-		donor.modifyBy(-fundsAllocated);
-		Reporter.report(logger, 2, " Industry [%s] has received $%.2f from the capitalist class to accumulate", recipient.getUseValueName(), fundsAllocated);
-		capitalists.setRevenue(capitalists.getRevenue() - fundsAllocated);
 		return fundsAllocated;
 	}
 }
