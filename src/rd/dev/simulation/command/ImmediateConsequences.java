@@ -68,12 +68,12 @@ public class ImmediateConsequences extends Simulation implements Command {
 		}
 		Reporter.report(logger, 1, "Global total value is %.0f, and total price is %.0f", globalTotalValue, globalTotalPrice);
 
-		logger.debug("Recorded global total value is %.0f, and total value calculated from use values is %.0f", global.totalValue(), globalTotalValue);
-		logger.debug("Recorded global total price is %.0f, and total price calculated from use values is %.0f", global.totalPrice(), globalTotalPrice);
+		logger.debug("Recorded global total value is {}, and total value calculated from use values is {}", global.totalValue(), globalTotalValue);
+		logger.debug("Recorded global total price is {}, and total price calculated from use values is {}", global.totalPrice(), globalTotalPrice);
 		
-		if (globalTotalValue != global.totalValue())
+		if (!Precision.equals(globalTotalValue,global.totalValue(),Simulation.roundingPrecision))
 			Dialogues.alert(logger, "The total value of stocks is out of sync");
-		if (globalTotalPrice != global.totalPrice())
+		if (!Precision.equals(globalTotalPrice,global.totalPrice(),Simulation.roundingPrecision))
 			Dialogues.alert(logger, "The total price of stocks is out of sync");
 
 		// ... end of the consistency check

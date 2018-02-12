@@ -103,7 +103,7 @@ public class Demand extends Simulation implements Command {
 
 		for (Circuit c : DataManager.circuitsAll()) {
 			double totalCost = 0;
-			logger.debug(" Estimating demand for productive stocks byindustry {}", c.getProductUseValueName());
+			logger.debug(" Estimating demand for productive stocks by industry {}", c.getProductUseValueName());
 			double moneyAvailable = c.getMoneyQuantity();
 
 			// at this stage, proposedOutput has been set in the Accumulate phase of the past period using plausible private plans for expansion.
@@ -116,7 +116,7 @@ public class Demand extends Simulation implements Command {
 
 			// cost the entirety of the proposed output
 
-			totalCost = c.computeOutputCosts(0.0).costOfOutput();
+			totalCost = c.computeOutputCosts(proposedOutput).costOfOutput();
 
 			Reporter.report(logger, 1, " Total cost of an output of %.0f is $%.0f and $%.0f is available.",
 					proposedOutput, totalCost, moneyAvailable);

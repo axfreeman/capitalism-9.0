@@ -46,7 +46,7 @@ public class CircuitColumn extends TableColumn<Circuit, String> {
 	 *            an enum specifying which field to display
 	 * 
 	 */
-	CircuitColumn(Circuit.Selector selector) {
+	CircuitColumn(Circuit.Selector selector,boolean alignedLeft) {
 		super(selector.text());
 		setCellFactory(new Callback<TableColumn<Circuit, String>, TableCell<Circuit, String>>() {
 			@Override public TableCell<Circuit, String> call(TableColumn<Circuit, String> col) {
@@ -58,7 +58,7 @@ public class CircuitColumn extends TableColumn<Circuit, String> {
 		// tailor the visual appearance of the column header
 
 		setPrefWidth(75.0);
-		getStyleClass().add("table-column-right");
+		if (!alignedLeft) getStyleClass().add("table-column-right");
 		TableUtilities.addGraphicToColummnHeader(this, selector.imageName(), selector.tooltip());
 	}
 

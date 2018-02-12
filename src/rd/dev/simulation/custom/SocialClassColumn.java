@@ -45,7 +45,7 @@ public class SocialClassColumn extends TableColumn<SocialClass,String>{
 	 * @param selector
 	 * an enum specifying which field to display
 	 */
-	SocialClassColumn(SocialClass.Selector selector) {
+	SocialClassColumn(SocialClass.Selector selector, boolean alignedLeft) {
 		super(selector.text());
 		setCellFactory(new Callback<TableColumn<SocialClass, String>, TableCell<SocialClass, String>>() {
 			@Override public TableCell<SocialClass, String> call(TableColumn<SocialClass, String> col) {
@@ -57,7 +57,7 @@ public class SocialClassColumn extends TableColumn<SocialClass,String>{
 		// tailor the visual appearance of the column header
 
 		setPrefWidth(75.0);
-		getStyleClass().add("table-column-right");
+		if(!alignedLeft) getStyleClass().add("table-column-right");
 		TableUtilities.addGraphicToColummnHeader(this, selector.imageName(),selector.tooltip());
 	}
 	

@@ -1,8 +1,13 @@
 # Capitalism 9.0 announcements
 
+## 2/11/2018 8:31:03 PM 
+
+Four benchmark projects now working (SR, Expanded Reproduction, SR with low initial MELT, SR with halved period)
+New executable.
+
 ## 2/11/2018 7:14:21 PM 
 
-All three benchmark projects now working (SR, Expanded SR, SR with halved period), with new visualisation and database infrastructure.
+All three benchmark projects now working (SR, Expanded R, SR with halved period), with new visualisation and database infrastructure.
 Hence new executable.
 
 ## 2/11/2018 11:01:05 AM 

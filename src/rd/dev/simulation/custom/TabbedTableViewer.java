@@ -246,12 +246,12 @@ public class TabbedTableViewer extends VBox {
 	 */
 	public void makeSocialClassesViewTable() {
 		socialClassesTable.getColumns().clear();
-		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SOCIALCLASSNAME));
-		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SIZE));
-		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SALES));
-		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.MONEY));
-		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.TOTAL));
-		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.REVENUE));
+		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SOCIALCLASSNAME,true));
+		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SIZE,false));
+		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SALES,false));
+		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.MONEY,false));
+		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.TOTAL,false));
+		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.REVENUE,false));
 		for (UseValue u : DataManager.useValuesByType(UseValue.USEVALUETYPE.CONSUMPTION)) {
 			socialClassesTable.getColumns().add(new SocialClassColumn(u.getUseValueName()));
 		}
@@ -263,14 +263,14 @@ public class TabbedTableViewer extends VBox {
 	 */
 	public void makeCircuitsViewTable() {
 		circuitsTable.getColumns().clear();
-		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.PRODUCTUSEVALUENAME));
-		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.INITIALCAPITAL));
-		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.SALESSTOCK));
-		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.PRODUCTIVESTOCKS));
-		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.MONEYSTOCK));
-		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.CURRENTCAPITAL));
-		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.PROFIT));
-		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.PROFITRATE));
+		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.PRODUCTUSEVALUENAME,true));
+		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.INITIALCAPITAL,false));
+		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.SALESSTOCK,false));
+		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.PRODUCTIVESTOCKS,false));
+		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.MONEYSTOCK,false));
+		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.CURRENTCAPITAL,false));
+		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.PROFIT,false));
+		circuitsTable.getColumns().add(new CircuitColumn(Circuit.Selector.PROFITRATE,false));
 	}
 
 	/**
@@ -279,10 +279,10 @@ public class TabbedTableViewer extends VBox {
 	 */
 	private void makeDynamicCircuitsTable() {
 		dynamicCircuitTable.getColumns().clear();
-		dynamicCircuitTable.getColumns().add(new CircuitColumn(Circuit.Selector.PRODUCTUSEVALUENAME));
-		dynamicCircuitTable.getColumns().add(new CircuitColumn(Circuit.Selector.PROPOSEDOUTPUT));
-		dynamicCircuitTable.getColumns().add(new CircuitColumn(Circuit.Selector.CONSTRAINEDOUTPUT));
-		dynamicCircuitTable.getColumns().add(new CircuitColumn(Circuit.Selector.GROWTHRATE));
+		dynamicCircuitTable.getColumns().add(new CircuitColumn(Circuit.Selector.PRODUCTUSEVALUENAME,true));
+		dynamicCircuitTable.getColumns().add(new CircuitColumn(Circuit.Selector.PROPOSEDOUTPUT,false));
+		dynamicCircuitTable.getColumns().add(new CircuitColumn(Circuit.Selector.CONSTRAINEDOUTPUT,false));
+		dynamicCircuitTable.getColumns().add(new CircuitColumn(Circuit.Selector.GROWTHRATE,false));
 
 		for (UseValue u : DataManager.useValuesByType(UseValue.USEVALUETYPE.PRODUCTIVE)) {
 			dynamicCircuitTable.getColumns().add(new CircuitColumn(u.getUseValueName()));

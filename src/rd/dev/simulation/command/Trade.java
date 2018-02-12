@@ -146,13 +146,17 @@ public class Trade extends Simulation implements Command {
 					break;
 				}
 				if (buyer.getRevenue() > quantityAdded * unitPrice+Simulation.epsilon) {
+					logger.debug("Class {} has revenue {} and money {}",
+							buyer.getSocialClassName(), buyer.getRevenue(),quantityAdded * unitPrice);
 					Dialogues.alert(logger,
-							"Class %s has more revenue than money. This is most likely a data error, but if it persists, contact the developer",
+							"Class %s has more revenue than money. This is most likely a data error; try giving them more money.If the problem persists, contact the developer",
 							buyer.getSocialClassName());
 					break;
 				}
 				if (maximumQuantityAdded < quantityAdded - epsilon) {
-					Dialogues.alert(logger, " [%s] do not have enough money. This is a progamme error. Contact the developer", buyer.getSocialClassName());
+					logger.debug("Class {} cannot buy {} and instead has to buy {} with money {}",
+							buyer.getSocialClassName(), quantityAdded,maximumQuantityAdded,buyer.getMoneyQuantity());
+					Dialogues.alert(logger, " [%s] do not have enough money. This could be a data error; try giving them more money. If the problem persists, contact the developer", buyer.getSocialClassName());
 					quantityAdded = maximumQuantityAdded;
 					break;
 				}
