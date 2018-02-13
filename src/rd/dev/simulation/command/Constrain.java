@@ -138,12 +138,13 @@ public class Constrain extends Simulation implements Command {
 	 * 
 	 */
 	public void calculateAllocationShare() {
+		Reporter.report(logger, 1, " Computing the proportion of demand that can be satisfied by supply, for each commodity type");
 		for (UseValue u : DataManager.useValuesAll()) {
 			double totalDemand = u.totalDemand();
 			double totalSupply = u.totalSupply();
 			double allocationShare = totalSupply / totalDemand;
 			allocationShare = (allocationShare > 1 ? 1 : allocationShare);
-			Reporter.report(logger, 1, " Allocation share for commodity [%s] is %.4f", u.getUseValueName(), allocationShare);
+			Reporter.report(logger, 2, "  Allocation share for commodity [%s] is %.4f", u.getUseValueName(), allocationShare);
 			u.setAllocationShare(allocationShare);
 		}
 	}

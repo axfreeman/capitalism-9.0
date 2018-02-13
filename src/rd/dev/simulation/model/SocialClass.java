@@ -53,7 +53,10 @@ public class SocialClass extends Observable implements Serializable {
 	@EmbeddedId protected SocialClassPK pk;
 	@Column(name = "Size") protected double size;
 	@Column(name = "ConsumptionPerPerson") protected double consumptionStocksRequiredPerPerson;
-	@Column(name = "ParticipationRatio") protected double participationRatio; // the proportion of the population of this class that supplies labour power
+
+	// The proportion of the population of this class that supplies labour power
+	// Not yet used, but intended for 'mixed' classes (eg small producers, pension-holders)
+	@Column(name = "ParticipationRatio") protected double participationRatio;
 	@Column(name = "Revenue") protected double revenue; // the money that this class will spend in the current period
 
 	@Transient private SocialClass comparator;
@@ -75,21 +78,25 @@ public class SocialClass extends Observable implements Serializable {
 		REVENUE("Revenue","glass-and-bottle-of-wine.png",null), 
 		TOTAL("Assets","TotalCapital.png",null);
 		// @formatter:on
-		
+
 		String text;
 		String imageName;
 		String toolTip;
-		Selector(String text, String imageName, String toolTip){
-			this.text=text;
-			this.imageName=imageName;
-			this.toolTip=toolTip;
+
+		Selector(String text, String imageName, String toolTip) {
+			this.text = text;
+			this.imageName = imageName;
+			this.toolTip = toolTip;
 		}
+
 		public String text() {
 			return text;
 		}
+
 		public String imageName() {
 			return imageName;
 		}
+
 		public String tooltip() {
 			return toolTip;
 		}
@@ -177,7 +184,7 @@ public class SocialClass extends Observable implements Serializable {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * The value-expression of the magnitude of a named consumption Stock owned by this class
 	 * 
@@ -189,14 +196,13 @@ public class SocialClass extends Observable implements Serializable {
 
 	public ReadOnlyStringWrapper wrappedString(String consumptionStockName) {
 		try {
-			Stock namedStock = DataManager.stockConsumptionByClassSingle(pk.timeStamp, pk.socialClassName, consumptionStockName);
+			Stock namedStock = DataManager.stockConsumptionByUseValueAndClassSingle(pk.timeStamp, pk.socialClassName, consumptionStockName);
 			String result = String.format(ViewManager.largeNumbersFormatString, namedStock.get(TabbedTableViewer.displayAttribute));
 			return new ReadOnlyStringWrapper(result);
 		} catch (Exception e) {
 			return null;
 		}
 	}
-
 
 	/**
 	 * informs the display whether the selected member of this entity has changed, compared with the 'comparator' UseValue which normally
@@ -287,13 +293,13 @@ public class SocialClass extends Observable implements Serializable {
 
 	public void regenerate() {
 		Reporter.report(logger, 1, " Reproducing the sales stock of the class [%s]", pk.socialClassName);
-	
+
 		Stock salesStock = getSalesStock();
-		if (salesStock!=null) {
+		if (salesStock != null) {
 			double existingLabourPower = salesStock.getQuantity();
-			UseValue useValue=DataManager.useValueByName(pk.timeStamp, salesStock.getUseValueName());
-			double turnoverTime=useValue.getTurnoverTime();
-			double newLabourPower = size* participationRatio/turnoverTime;
+			UseValue useValue = DataManager.useValueByName(pk.timeStamp, salesStock.getUseValueName());
+			double turnoverTime = useValue.getTurnoverTime();
+			double newLabourPower = size * participationRatio / turnoverTime;
 			double extraLabourPower = newLabourPower - existingLabourPower;
 			if (extraLabourPower > 0) {
 				Reporter.report(logger, 2, "  The labour power of the class [%s] was %.0f and is now %.0f", pk.socialClassName, existingLabourPower,
@@ -310,25 +316,40 @@ public class SocialClass extends Observable implements Serializable {
 
 	public void consume() {
 		Reporter.report(logger, 1, " Replenishing the consumptions stocks of the class [%s]", pk.socialClassName);
-		for (Stock s:DataManager.stocksConsumptionByClass(Simulation.timeStampIDCurrent,pk.socialClassName)){
+		for (Stock s : DataManager.stocksConsumptionByClass(Simulation.timeStampIDCurrent, pk.socialClassName)) {
 			double quantityConsumed = s.getQuantity();
 			s.modifyBy(-quantityConsumed);
 			Reporter.report(logger, 2, "  Consumption stock of class [%s] reduced to zero from %.0f", pk.socialClassName, quantityConsumed);
 		}
 	}
-	
+
 	/**
 	 * temporary fix to yield the stock of necessities, while we convert to multiple consumption goods
 	 * TODO phase this out
+	 * 
 	 * @return a Single Consumption Stock called either "COnsumption" or "Necessities" if one of these exists, null otherwise
 	 */
-	
+
 	public Stock getConsumptionStock() {
-		for (Stock s:DataManager.stocksConsumptionByClass(Simulation.timeStampIDCurrent,pk.socialClassName)) {
-			if (s.getUseValueName().equals("Consumption")) return s;
-			if (s.getUseValueName().equals("Necessities")) return s;
+		for (Stock s : DataManager.stocksConsumptionByClass(Simulation.timeStampIDCurrent, pk.socialClassName)) {
+			if (s.getUseValueName().equals("Consumption"))
+				return s;
+			if (s.getUseValueName().equals("Necessities"))
+				return s;
 		}
 		return null;
+	}
+
+	/**
+	 * Get the consumption stock of the named useValue that is owned by this class
+	 * 
+	 * @param useValueName
+	 *            the name of the prescribed consumer good
+	 * @return the Stock of the consumer good named useValue that this class owns
+	 */
+
+	public Stock getConsumptionStock(String useValueName) {
+		return DataManager.stockConsumptionByUseValueAndClassSingle(pk.timeStamp, pk.socialClassName, useValueName);
 	}
 
 	// METHODS THAT RETRIEVE ATTRIBUTES OF STOCKS
@@ -340,7 +361,7 @@ public class SocialClass extends Observable implements Serializable {
 	 */
 	public double getMoneyQuantity() {
 		Stock s = getMoneyStock();
-		return s == null ? 0: s.getQuantity();
+		return s == null ? 0 : s.getQuantity();
 	}
 
 	/**
@@ -350,7 +371,7 @@ public class SocialClass extends Observable implements Serializable {
 	 */
 	public double getMoneyValue() {
 		Stock s = getMoneyStock();
-		return s == null ? 0: s.getValue();
+		return s == null ? 0 : s.getValue();
 	}
 
 	/**
@@ -360,7 +381,7 @@ public class SocialClass extends Observable implements Serializable {
 	 */
 	public double getMoneyPrice() {
 		Stock s = getMoneyStock();
-		return s == null ? 0: s.getPrice();
+		return s == null ? 0 : s.getPrice();
 	}
 
 	/**
@@ -370,11 +391,11 @@ public class SocialClass extends Observable implements Serializable {
 	 */
 	public double getSalesQuantity() {
 		Stock s = getSalesStock();
-		return s == null ? 0: s.getQuantity();
+		return s == null ? 0 : s.getQuantity();
 	}
 
 	/**
-	 * return the value of the sales stock owned by this social class. Return 0 if the stock cannot be found 
+	 * return the value of the sales stock owned by this social class. Return 0 if the stock cannot be found
 	 * 
 	 * @return the value of the sales stock owned by this social class
 	 */
@@ -394,36 +415,36 @@ public class SocialClass extends Observable implements Serializable {
 	}
 
 	/**
-	 * return the quantity demanded of the Stock of consumption good owned by this social class. 
+	 * return the quantity demanded of the Stock of consumption good owned by this social class.
 	 * Return NaN if the stock cannot be found (which is an error)
 	 * 
 	 * @return the quantity demanded of the consumption goods owned by this social class
 	 */
 	public double consumptionQuantityDemanded() {
-		
+
 		Stock s = getConsumptionStock();
 		return s == null ? Float.NaN : s.getQuantityDemanded();
 	}
+
 	/**
 	 * chooses the comparator depending on the state set in the {@code ViewManager.comparatorToggle} radio buttons
 	 */
-	
-	private void chooseComparison(){
-		switch(ViewManager.getComparatorState()) {
+
+	private void chooseComparison() {
+		switch (ViewManager.getComparatorState()) {
 		case CUSTOM:
-			comparator=customComparator;
+			comparator = customComparator;
 			break;
 		case END:
-			comparator=endComparator;
+			comparator = endComparator;
 			break;
 		case PREVIOUS:
-			comparator=previousComparator;
+			comparator = previousComparator;
 			break;
 		case START:
-			comparator=startComparator;
+			comparator = startComparator;
 		}
 	}
-
 
 	/**
 	 * set the quantity demanded of the Stock of consumption good owned by this social class. Report if the stock cannot be found (which is an error)
@@ -518,8 +539,8 @@ public class SocialClass extends Observable implements Serializable {
 	 * @return the quantity of sales stock if a=QUANTITY, etc. If there is no sales Stock return zero.
 	 */
 	public double salesAttribute(Stock.ValueExpression a) {
-		Stock salesStock=getSalesStock();
-		return salesStock==null?0:salesStock.get(a);
+		Stock salesStock = getSalesStock();
+		return salesStock == null ? 0 : salesStock.get(a);
 	}
 
 	/**
@@ -571,11 +592,12 @@ public class SocialClass extends Observable implements Serializable {
 	 *            the revenue to set
 	 */
 	public void setRevenue(double revenue) {
-		
+
 		// a little consistency check
-		
-		if(revenue<0) {
-			Dialogues.alert(logger, "Capitalist revenue will fall below zero if $%.0f is deducted from it. This is probably a programme error. Contact the developer",revenue);
+
+		if (revenue < 0) {
+			Dialogues.alert(logger,
+					"Capitalist revenue will fall below zero if $%.0f is deducted from it. This is probably a programme error. Contact the developer", revenue);
 			return;
 		}
 		this.revenue = revenue;
@@ -589,7 +611,8 @@ public class SocialClass extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param previousComparator the previousComparator to set
+	 * @param previousComparator
+	 *            the previousComparator to set
 	 */
 	public void setPreviousComparator(SocialClass previousComparator) {
 		this.previousComparator = previousComparator;
@@ -603,7 +626,8 @@ public class SocialClass extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param startComparator the startComparator to set
+	 * @param startComparator
+	 *            the startComparator to set
 	 */
 	public void setStartComparator(SocialClass startComparator) {
 		this.startComparator = startComparator;
@@ -617,7 +641,8 @@ public class SocialClass extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param customComparator the customComparator to set
+	 * @param customComparator
+	 *            the customComparator to set
 	 */
 	public void setCustomComparator(SocialClass customComparator) {
 		this.customComparator = customComparator;
@@ -631,7 +656,8 @@ public class SocialClass extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param endComparator the endComparator to set
+	 * @param endComparator
+	 *            the endComparator to set
 	 */
 	public void setEndComparator(SocialClass endComparator) {
 		this.endComparator = endComparator;

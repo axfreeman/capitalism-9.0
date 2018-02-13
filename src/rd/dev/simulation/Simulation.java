@@ -23,7 +23,6 @@ package rd.dev.simulation;
 import java.util.List;
 import javax.persistence.PersistenceException;
 
-import org.apache.commons.math3.util.Precision;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

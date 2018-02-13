@@ -118,7 +118,7 @@ public class Demand extends Simulation implements Command {
 
 			totalCost = c.computeOutputCosts(proposedOutput).costOfOutput();
 
-			Reporter.report(logger, 1, " Total cost of an output of %.0f is $%.0f and $%.0f is available.",
+			Reporter.report(logger, 2, "  Total cost of an output of %.0f is $%.0f and $%.0f is available.",
 					proposedOutput, totalCost, moneyAvailable);
 			double anticipatedMoneyFromSales=c.getSalesPrice();
 			double resources=moneyAvailable+anticipatedMoneyFromSales;

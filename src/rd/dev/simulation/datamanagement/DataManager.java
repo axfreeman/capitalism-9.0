@@ -358,7 +358,6 @@ public class DataManager {
 	 * @return a list of the consumption stocks owned by this social class
 	 */
 	public static List<Stock> stocksConsumptionByClass(int timeStamp, String socialClass) {
-		logger.log(Level.ALL, "  Fetching productive stocks for the circuit " + socialClass);
 		stocksByOwnerAndTypeQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
 		stocksByOwnerAndTypeQuery.setParameter("owner", socialClass).setParameter("stockType", Stock.STOCKTYPE.CONSUMPTION.text());
 		return stocksByOwnerAndTypeQuery.getResultList();
@@ -375,8 +374,7 @@ public class DataManager {
 	 *            the required use value
 	 * @return the single consumption stocks of the given useValue that is owned by this social class
 	 */
-	public static Stock stockConsumptionByClassSingle(int timeStamp, String socialClass, String useValue) {
-		logger.debug("  Fetching consumption stocks for the owner {}", socialClass);
+	public static Stock stockConsumptionByUseValueAndClassSingle(int timeStamp, String socialClass, String useValue) {
 		stockByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
 		stockByPrimaryKeyQuery.setParameter("owner", socialClass).setParameter("stockType", Stock.STOCKTYPE.CONSUMPTION.text()).setParameter("useValue",
 				useValue);
@@ -386,7 +384,7 @@ public class DataManager {
 			return null;// because this query throws a fit if it doesn't find anything
 		}
 	}
-
+	
 	/**
 	 * a list of sales Stock of a given use value for the current project and a given timeStamp.
 	 * NOTE only the circuit will vary, and at present only one of these circuits will produce this use value. However in general more than one circuit may

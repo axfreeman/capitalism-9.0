@@ -100,7 +100,9 @@ PROJECT,TIMESTAMP,OWNER,OWNERTYPE,USEVALUE,STOCKTYPE,QUANTITY,PRODUCTIONCOEFFICI
 6,1,Workers,CLASS,Consumption,Consumption,0,0,1
 6,1,Workers,CLASS,Labour Power,Sales,1500,0,0
 6,1,Workers,CLASS,Money,Money,1500,0,0
-4,1,Capitalists,CLASS,Money,Money,1500,0,0
+4,1,Capitalists,CLASS,Money,Money,3000,0,0
+4,1,Capitalists,CLASS,Luxuries,Consumption,0,0,.4
+4,1,Capitalists,CLASS,Necessities,Consumption,0,0,.6
 4,1,Luxuries,CIRCUIT,Luxuries,Productive,0,0,0
 4,1,Luxuries,CIRCUIT,Necessities,Productive,0,0,0
 4,1,Luxuries,CIRCUIT,Money,Money,3000,0,0
@@ -119,9 +121,7 @@ PROJECT,TIMESTAMP,OWNER,OWNERTYPE,USEVALUE,STOCKTYPE,QUANTITY,PRODUCTIONCOEFFICI
 4,1,Necessities,CIRCUIT,Necessities,Productive,0,0,0
 4,1,Necessities,CIRCUIT,Necessities,Sales,3000,0,0
 4,1,Necessities,CIRCUIT,Means of Production,Productive,0,0.666666667,0
-4,1,Capitalists,CLASS,Luxuries,Consumption,0,0,1
-4,1,Capitalists,CLASS,Necessities,Consumption,0,0,0
 4,1,Workers,CLASS,Luxuries,Consumption,0,0,0
 4,1,Workers,CLASS,Necessities,Consumption,0,0,1
 4,1,Workers,CLASS,Money,Money,1500,0,0
-4,1,Workers,CLASS,Labour Power,Sales,1500,0,0
+4,1,Workers,CLASS,Labour Power,Sales,3000,0,0

@@ -1,12 +1,12 @@
 # Capitalism 9.0 announcements
 
-## 2/12/2018 5:31:41 PM 
+## 2/13/2018 8:49:42 AM 
 
 There are now seven projects.
-Of these, four benchmark projects now working (SR, Expanded Reproduction, SR with low initial MELT, SR with halved period)
+Of these, five benchmark projects are working (see below)
+The spreadsheet for expanded reproduction (in the 'docs' folder) now also contains a worksheet for simple reproduction,
+and more extended annotations.
 New executable.
-Working on multiple consumption goods.
-First task is to update user guide - lots of new features, and most bugs fixed
 
 ## 2/12/2018 5:32:32 PM 
 Previous announcements consolidated  - can be found in the earlier history of this repository
@@ -26,12 +26,12 @@ Of these, four are now working
 2. Simple Reproduction with halved period (shows the relation between stocks, flows, and turnover time)
 3. Simple Reproduction with low initial MELT (illustrates a temporal process)
 4. Expanded Reproduction (illustrates accumulation and a number of other features)
+5. Simple Reproduction with two consumption goods
 
 The goal is to complete work on
-5. Simple Reproduction with two consumption goods
-6. Expanded Reproduction with changing technology
-7. Profit Rate equalization
-8. Dynamic market adjustment (the original simulation)
+6. Profit Rate equalization
+7. Dynamic market adjustment (the original simulation)
+8. Expanded Reproduction with changing technology
 
-Of these, the data for 6 have not yet been incorporated
+The data for project 8 have not yet been incorporated
 

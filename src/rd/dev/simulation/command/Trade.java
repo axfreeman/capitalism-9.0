@@ -60,7 +60,7 @@ public class Trade extends Simulation implements Command {
 	 */
 	private void productivePurchasesTrade() {
 		List<Circuit> circuits = DataManager.circuitsAll();
-		Reporter.report(logger, 1, " The %d industries will now try to purchase the stocks they need. ", circuits.size());
+		Reporter.report(logger, 0, " The %d industries will now try to purchase the stocks they need. ", circuits.size());
 
 		for (Circuit buyer : circuits) {
 			String buyerName = buyer.getProductUseValueName();
@@ -118,7 +118,7 @@ public class Trade extends Simulation implements Command {
 	 * each social class purchases the consumption goods that it needs
 	 */
 	private void socialClassesTrade() {
-		Reporter.report(logger, 1, " Purchasing for social classes");
+		Reporter.report(logger, 0, " Social Classes will now try to purchase the stocks they need");
 		for (SocialClass buyer : DataManager.socialClassesAll()) {
 			String buyerName = buyer.getSocialClassName();
 			Reporter.report(logger, 1, " Purchasing for the social class [%s]", buyerName);
@@ -128,7 +128,7 @@ public class Trade extends Simulation implements Command {
 					Dialogues.alert(logger, "Nobody seems to be selling the consumption good called [%s]", u.getUseValueName());
 					break;
 				}
-				Stock consumptionStock = buyer.getConsumptionStock();
+				Stock consumptionStock = buyer.getConsumptionStock(u.getUseValueName());
 				Stock buyerMoneyStock = buyer.getMoneyStock();
 				Stock sellerSalesStock = seller.getSalesStock();
 				Stock sellerMoneyStock = seller.getMoneyStock();
@@ -145,12 +145,14 @@ public class Trade extends Simulation implements Command {
 					Dialogues.alert(logger, "A stock required by [%s] to meet its needs is missing", buyerName);
 					break;
 				}
-				if (buyer.getRevenue() > quantityAdded * unitPrice+Simulation.epsilon) {
+				if (buyer.getRevenue() > buyer.getMoneyQuantity()+Simulation.epsilon) {
 					logger.debug("Class {} has revenue {} and money {}",
-							buyer.getSocialClassName(), buyer.getRevenue(),quantityAdded * unitPrice);
+							buyer.getSocialClassName(), buyer.getRevenue(),buyer.getMoneyQuantity());
 					Dialogues.alert(logger,
-							"Class %s has more revenue than money. This is most likely a data error; try giving them more money.If the problem persists, contact the developer",
-							buyer.getSocialClassName());
+							"Class %s has more revenue than money while purchasing the commodity %s. "
+							+ "This is most probably a data error; try giving them more money."
+							+ "If the problem persists, contact the developer",
+							buyer.getSocialClassName(),u.getUseValueName());
 					break;
 				}
 				if (maximumQuantityAdded < quantityAdded - epsilon) {
@@ -168,6 +170,7 @@ public class Trade extends Simulation implements Command {
 				try {
 					transferStock(sellerSalesStock, consumptionStock, quantityAdded);
 					transferStock(buyerMoneyStock, sellerMoneyStock, quantityAdded * unitPrice);
+					
 				} catch (RuntimeException r) {
 					logger.error("Transfer mis-specified:" + r.getMessage());
 					r.printStackTrace();
