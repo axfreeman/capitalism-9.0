@@ -49,33 +49,33 @@ import rd.dev.simulation.utils.Reporter;
 import rd.dev.simulation.view.ViewManager;
 
 @Entity
-@Table(name = "circuits")
+@Table(name = "industries")
 @NamedQueries({
-		@NamedQuery(name = "All", query = "Select c from Circuit c where c.pk.project = :project and c.pk.timeStamp = :timeStamp"),
-		@NamedQuery(name = "Primary", query = "Select c from Circuit c where c.pk.project= :project and c.pk.timeStamp = :timeStamp and c.pk.productUseValueName= :productUseValueName"),
-		@NamedQuery(name = "InitialCapital", query = "Select sum(c.initialCapital) from Circuit c where c.pk.project=:project and c.pk.timeStamp=:timeStamp")
+		@NamedQuery(name = "All", query = "Select c from Industry c where c.pk.project = :project and c.pk.timeStamp = :timeStamp"),
+		@NamedQuery(name = "Primary", query = "Select c from Industry c where c.pk.project= :project and c.pk.timeStamp = :timeStamp and c.pk.industryName= :industryName"),
+		@NamedQuery(name = "InitialCapital", query = "Select sum(c.initialCapital) from Industry c where c.pk.project=:project and c.pk.timeStamp=:timeStamp")
 })
 
 @XmlRootElement
-public class Circuit extends Observable implements Serializable {
+public class Industry extends Observable implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = LogManager.getLogger("Industry"); // TODO change name throughout to 'industry'
 
-	// TODO at present it's not possible to have multiple circuits producing the same use value. It should be.
-	// TODO circuits should have a name that is distinct from what they produce
+	// TODO at present it's not possible to have multiple industries producing the same use value. It should be.
+	// TODO industries should have a name that is distinct from what they produce
 
-	@EmbeddedId protected CircuitPK pk;
+	@EmbeddedId protected IndustryPK pk;
 	@Column(name = "ConstrainedOutput") private double constrainedOutput;
 	@Column(name = "ProposedOutput") private double proposedOutput;
 	@Column(name = "InitialCapital") private double initialCapital;
 	@Column(name = "Growthrate") private double growthRate;
 
-	@Transient private Circuit comparator;
-	@Transient private Circuit previousComparator;
-	@Transient private Circuit startComparator;
-	@Transient private Circuit customComparator;
-	@Transient private Circuit endComparator;
+	@Transient private Industry comparator;
+	@Transient private Industry previousComparator;
+	@Transient private Industry startComparator;
+	@Transient private Industry customComparator;
+	@Transient private Industry endComparator;
 
 	/**
 	 * Readable constants to refer to the methods which provide information about the persistent members of the class
@@ -120,39 +120,85 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	/**
-	 * Says whether the industry produces means of production, necessities or luxuries.
-	 * Not (yet) a persistent variable hence we have a method that reports on this.
-	 * TODO fully abstract this from the text description of the industry.
-	 * 
-	 * @author afree
-	 *
+	 * Says whether the industry produces means of production or means of consumption.
+	 * NOTE we work this out by looking at the use value.
+	 * A separate field of this entity could result in duplication, unless it is carefully initialised.
+	 * The value 'ERROR' is a precaution - there should be no situation in which this would be returned,
+	 * that is to say, the useValue should always be either productive or consumption
 	 */
-	public enum INDUSTRYTYPE {
-		MEANSOFPRODUCTION, NECESSITIES, LUXURIES
+	public enum OUTPUTTYPE {
+		PRODUCTIONGOODS, CONSUMPTIONGOODS, ERROR
 	}
 
 	/**
 	 * A 'bare constructor' is required by JPA and this is it. However, when the new socialClass is constructed, the constructor does not automatically create a
 	 * new PK entity. So we create a 'hollow' primary key which must then be populated by the caller before persisting the entity
 	 */
-	public Circuit() {
-		this.pk = new CircuitPK();
+	public Industry() {
+		this.pk = new IndustryPK();
 	}
 
 	/**
-	 * tiny little class to encapsulate the cost of attaining a level of output
-	 * 
-	 * @author afree
-	 *
+	 * Report this industry's OUTPUTTYPE (production goods or consumer goods)
+	 * NOTE we work this out by looking at the use value.
+	 * A separate field of this entity could result in duplication, unless it is carefully initialised
 	 */
-	public static class ExpansionCosts {
-		public double costOfLP;
-		public double costOfMP;
 
-		public double costOfOutput() {
-			return costOfLP + costOfMP;
+	public OUTPUTTYPE outputType() {
+		UseValue u = getUseValue();
+		switch (u.getUseValueType()) {
+		case PRODUCTIVE:
+			return OUTPUTTYPE.PRODUCTIONGOODS;
+		case CONSUMPTION:
+			return OUTPUTTYPE.CONSUMPTIONGOODS;
+		default:
+			return OUTPUTTYPE.ERROR;
 		}
 	}
+
+
+	/**
+	 * tiny little class to encapsulate the components of demand
+	 */
+	public static class DemandComponents {
+		public double costOfReplenishmentTotal;
+		public double costOfExpansionLP;
+		public double costOfExpansionMP;
+
+		DemandComponents() {
+			costOfExpansionLP = 0;
+			costOfExpansionMP = 0;
+			costOfReplenishmentTotal = 0;
+		}
+
+		public double costOfExpansionOutput() {
+			return costOfExpansionLP + costOfExpansionMP;
+		}
+	}
+	
+	/**
+	 * Estimate the replenishment and expansion requirements associated with two possible levels of output,
+	 * of which the first corresponds to replenishment (continuing at the existing level of output) and the
+	 * second to expansion (raising output to a proposed higher level). The replenishment output level is
+	 * simply that which was last used (constrainedOutput) while the second is the parameter expandedOutput.
+	 * 
+	 * The replenishmentDemand of all productive stocks of this industry, including labour power, is set at
+	 * a level which will deliver constrainedOutput.
+	 * 
+	 * The expansionDemand of these stocks records the additional quantity of these stocks required, over and
+	 * above replenishmentDemand, in order to deliver expandedOutput.
+	 * 
+	 * Since the totals of both replenishment and expansion demand can be calculated by summing them, as can
+	 * their costs, there is no return result.
+	 */
+
+	public void computeDemand(double extraOutput) {
+		for (Stock s : productiveStocks()) {
+			s.setReplenishmentDemand(constrainedOutput * s.getProductionCoefficient());
+			s.setExpansionDemand(extraOutput*s.getProductionCoefficient());
+		}
+	}
+
 
 	/**
 	 * calculate the extra cost, and its components, of expandedCosts compared to currentCosts
@@ -163,41 +209,28 @@ public class Circuit extends Observable implements Serializable {
 	 *            the larger of the two cost vectors
 	 * @return a cost vector giving the difference between the components, and the total, of the two vectors
 	 */
-	public static ExpansionCosts extraCosts(ExpansionCosts currentCosts, ExpansionCosts expandedCosts) {
-		ExpansionCosts difference = new ExpansionCosts();
-		difference.costOfLP = expandedCosts.costOfLP - currentCosts.costOfLP;
-		difference.costOfMP = expandedCosts.costOfMP - currentCosts.costOfMP;
+	public static DemandComponents extraCosts(DemandComponents currentCosts, DemandComponents expandedCosts) {
+		DemandComponents difference = new DemandComponents();
+		difference.costOfExpansionLP = expandedCosts.costOfExpansionLP - currentCosts.costOfExpansionLP;
+		difference.costOfExpansionMP = expandedCosts.costOfExpansionMP - currentCosts.costOfExpansionMP;
 		return difference;
 	}
 
 	/**
-	 * make a carbon copy of a circuit template
+	 * make a carbon copy of an industry template
 	 * 
-	 * @param circuitTemplate
-	 *            the circuit to be copied into this one.
+	 * @param industryTemplate
+	 *            the industry to be copied into this one.
 	 *            TODO get BeanUtils to do this, or find some other way. There must be a better way but many people complain about it
 	 */
-	public void copyCircuit(Circuit circuitTemplate) {
-		pk.productUseValueName = circuitTemplate.getProductUseValueName();
-		pk.timeStamp = circuitTemplate.getTimeStamp();
-		pk.project = circuitTemplate.getProject();
-		constrainedOutput = circuitTemplate.constrainedOutput;
-		proposedOutput = circuitTemplate.proposedOutput;
-		growthRate = circuitTemplate.growthRate;
-		initialCapital = circuitTemplate.initialCapital;
-	}
-
-	/**
-	 * @return what type of circuit this is
-	 *         TODO improve on this
-	 */
-
-	public INDUSTRYTYPE industryType() {
-		if (pk.productUseValueName.equals("Consumption"))
-			return INDUSTRYTYPE.NECESSITIES;
-		if (pk.productUseValueName.equals("Luxuries"))
-			return INDUSTRYTYPE.LUXURIES;
-		return INDUSTRYTYPE.MEANSOFPRODUCTION;
+	public void copyIndustry(Industry industryTemplate) {
+		pk.industryName = industryTemplate.getProductUseValueName();
+		pk.timeStamp = industryTemplate.getTimeStamp();
+		pk.project = industryTemplate.getProject();
+		constrainedOutput = industryTemplate.constrainedOutput;
+		proposedOutput = industryTemplate.proposedOutput;
+		growthRate = industryTemplate.growthRate;
+		initialCapital = industryTemplate.initialCapital;
 	}
 
 	/**
@@ -223,12 +256,12 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	/**
-	 * Calculate an aggregate, which may be price or value, of the stocks owned by this circuit excluding money
+	 * Calculate an aggregate, which may be price or value, of the stocks owned by this industry excluding money
 	 * NOTE it is the responsibility of the caller to commit any changes to persistent memory
 	 * 
 	 * @param a
 	 *            an attribute from the enum class Stock.ValueExpression: selects one of QUANTITY, VALUE or PRICE. If QUANTITY, NaN is returned
-	 * @return the total of the selected attribute owned by this circuit excluding money
+	 * @return the total of the selected attribute owned by this industry excluding money
 	 */
 	public double totalAttribute(Stock.ValueExpression a) {
 		if (a == Stock.ValueExpression.QUANTITY) {
@@ -237,54 +270,55 @@ public class Circuit extends Observable implements Serializable {
 		return salesAttribute(a) + productiveStocksAttribute(a);
 	}
 
-	// METHODS THAT REPORT THINGS WE NEED TO KNOW ABOUT THIS CIRCUIT BY INTERROGATING ITS STOCKS
+	// METHODS THAT REPORT THINGS WE NEED TO KNOW ABOUT THIS INDUSTRY BY INTERROGATING ITS STOCKS
 
 	/**
-	 * Retrieve the UseValue entity that this circuit produces
+	 * Retrieve the UseValue entity that this industry produces
+	 * TODO separate this from the industry name
 	 * 
-	 * @return the UseValue that this circuit produces
+	 * @return the UseValue that this industry produces
 	 */
 	public UseValue getUseValue() {
-		return DataManager.useValueByPrimaryKey(pk.project, pk.timeStamp, pk.productUseValueName);
+		return DataManager.useValueByPrimaryKey(pk.project, pk.timeStamp, pk.industryName);
 	}
 
 	/**
-	 * Retrieve the total quantity, value or price of the productive stocks owned by this circuit, depending on the attribute
+	 * Retrieve the total quantity, value or price of the productive stocks owned by this industry, depending on the attribute
 	 * 
-	 * @return the total quantity, value or price of the productive stocks owned by this circuit, depending on the attribute
+	 * @return the total quantity, value or price of the productive stocks owned by this industry, depending on the attribute
 	 * @param a
 	 *            an attribute from the enum class Stock.ValueExpression: selects one of QUANTITY, VALUE or PRICE. If QUANTITY, NaN is returned
-	 * @return the total of the selected attribute owned by this circuit
+	 * @return the total of the selected attribute owned by this industry
 	 */
 	public Double productiveStocksAttribute(Stock.ValueExpression a) {
 		if (a == Stock.ValueExpression.QUANTITY) {
 			return Double.NaN;
 		}
 		double total = 0;
-		for (Stock s : DataManager.stocksProductiveByCircuit(pk.timeStamp, pk.productUseValueName)) {
+		for (Stock s : DataManager.stocksProductiveByIndustry(pk.timeStamp, pk.industryName)) {
 			total += s.get(a);
 		}
 		return total;
 	}
 
 	/**
-	 * get the Stock of money owned by this circuit. If this stock does not exist (which is an error) return null.
+	 * get the Stock of money owned by this industry. If this stock does not exist (which is an error) return null.
 	 * 
 	 * @return the money stock that is owned by this social class.
 	 */
 	public Stock getMoneyStock() {
-		return DataManager.stockMoneyByCircuitSingle(pk.timeStamp, pk.productUseValueName);
+		return DataManager.stockMoneyByIndustrySingle(pk.timeStamp, pk.industryName);
 	}
 
 	/**
-	 * retrieve the sales Stock owned by this circuit. If this stock does not exist (which is an error) return null.
+	 * retrieve the sales Stock owned by this industry. If this stock does not exist (which is an error) return null.
 	 * 
-	 * @return the sales stock owned by this circuit
+	 * @return the sales stock owned by this industry
 	 */
 	public Stock getSalesStock() {
-		// TODO the product and the circuit have the same name, because the circuit is selling its own product
-		// but if there are multiple producers of the same thing, the circuit should have an independent name of its own
-		return DataManager.stockByPrimaryKey(Simulation.projectCurrent, pk.timeStamp, pk.productUseValueName, pk.productUseValueName,
+		// TODO the product and the industry have the same name, because the industry is selling its own product
+		// but if there are multiple producers of the same thing, the industry should have an independent name of its own
+		return DataManager.stockByPrimaryKey(Simulation.projectCurrent, pk.timeStamp, pk.industryName, pk.industryName,
 				Stock.STOCKTYPE.SALES.text());
 	}
 
@@ -304,7 +338,7 @@ public class Circuit extends Observable implements Serializable {
 	public ReadOnlyStringWrapper wrappedString(Selector selector, Stock.ValueExpression valueExpression) {
 		switch (selector) {
 		case PRODUCTUSEVALUENAME:
-			return new ReadOnlyStringWrapper(pk.productUseValueName);
+			return new ReadOnlyStringWrapper(pk.industryName);
 		case INITIALCAPITAL:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, initialCapital));
 		case CONSTRAINEDOUTPUT:
@@ -333,7 +367,7 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	/**
-	 * The value-expression of the magnitude of a named productive Stock managed by this circuit
+	 * The value-expression of the magnitude of a named productive Stock managed by this industry
 	 * 
 	 * @param productiveStockName
 	 *            the useValue of the productive Stock
@@ -343,7 +377,7 @@ public class Circuit extends Observable implements Serializable {
 
 	public ReadOnlyStringWrapper wrappedString(String productiveStockName) {
 		try {
-			Stock namedStock = DataManager.stockProductiveByNameSingle(pk.timeStamp, pk.productUseValueName, productiveStockName);
+			Stock namedStock = DataManager.stockProductiveByNameSingle(pk.timeStamp, pk.industryName, productiveStockName);
 			String result = String.format(ViewManager.largeNumbersFormatString, namedStock.get(TabbedTableViewer.displayAttribute));
 			return new ReadOnlyStringWrapper(result);
 		} catch (Exception e) {
@@ -461,15 +495,15 @@ public class Circuit extends Observable implements Serializable {
 	 * @return the cost of reaching this output level
 	 */
 
-	public ExpansionCosts computeOutputCosts(double anOutput) {
-		ExpansionCosts expansionCosts = new ExpansionCosts();
-		expansionCosts.costOfMP = 0.0;
-		expansionCosts.costOfLP = 0.0;
+	public DemandComponents computeOutputCosts(double anOutput) {
+		DemandComponents demandComponents = new DemandComponents();
+		demandComponents.costOfExpansionMP = 0.0;
+		demandComponents.costOfExpansionLP = 0.0;
 
 		// ask each productive stock to tell us how much it would cost to increase that stock's size sufficient to produce the required output
 		Reporter.report(logger, 1, " Calculating the cost to industry [%s] of acquiring sufficient stocks to produce an output of %.0f ",
-				pk.productUseValueName, anOutput);
-		for (Stock s : DataManager.stocksProductiveByCircuit(Simulation.timeStampIDCurrent, pk.productUseValueName)) {
+				pk.industryName, anOutput);
+		for (Stock s : DataManager.stocksProductiveByIndustry(Simulation.timeStampIDCurrent, pk.industryName)) {
 			UseValue u = s.getUseValue();
 			if (u == null) {
 				Dialogues.alert(logger, "The use value [%s] does not exist", s.getUseValueName());
@@ -481,32 +515,33 @@ public class Circuit extends Observable implements Serializable {
 				double stockNewRequired = stockLevelRequired - stockLevelExisting;
 				stockNewPrice = stockNewRequired * u.getUnitPrice();
 				if (s.useValueType() == USEVALUETYPE.LABOURPOWER) {
-					expansionCosts.costOfLP += stockNewPrice;
+					demandComponents.costOfExpansionLP += stockNewPrice;
 				} else {
-					expansionCosts.costOfMP += stockNewPrice;
+					demandComponents.costOfExpansionMP += stockNewPrice;
 				}
 				if (stockNewRequired < 0) {
 					Reporter.report(logger, 2,
-							"  Circuit [%s] already has %.0f of productive input [%s] which is sufficient to produce at level %.0f, so incurs no extra cost",
-							pk.productUseValueName, stockLevelExisting, s.getUseValueName(), proposedOutput);
+							"  Industry [%s] already has %.0f of productive input [%s] which is sufficient to produce at level %.0f, so incurs no extra cost",
+							pk.industryName, stockLevelExisting, s.getUseValueName(), proposedOutput);
 					stockNewRequired = 0;
 				} else {
 					Reporter.report(logger, 2,
-							"  Circuit [%s] has %.0f of productive input [%s] which requires %.0f more, costing $%.0f to produce output of %.0f",
-							pk.productUseValueName, stockLevelExisting, s.getUseValueName(), stockNewRequired, stockNewPrice, anOutput);
+							"  Industry [%s] has %.0f of productive input [%s] which requires %.0f more, costing $%.0f to produce output of %.0f",
+							pk.industryName, stockLevelExisting, s.getUseValueName(), stockNewRequired, stockNewPrice, anOutput);
 				}
 			}
 		}
 		Reporter.report(logger, 1,
 				" It would cost industry [%s] $%.0f for means of production and $%.0f for labour power (totalling $%.0f), to produce at a level of %.0f ",
-				pk.productUseValueName, expansionCosts.costOfMP, expansionCosts.costOfLP, expansionCosts.costOfOutput(), proposedOutput);
-		return expansionCosts;
+				pk.industryName, demandComponents.costOfExpansionMP, demandComponents.costOfExpansionLP, demandComponents.costOfExpansionOutput(),
+				proposedOutput);
+		return demandComponents;
 	}
 
 	/**
-	 * get the quantity of the Stock of money owned by this circuit. Return NaN if the stock cannot be found (which is an error)
+	 * get the quantity of the Stock of money owned by this industry. Return NaN if the stock cannot be found (which is an error)
 	 * 
-	 * @return the quantity of money owned by this circuit.
+	 * @return the quantity of money owned by this industry.
 	 */
 	public double getMoneyQuantity() {
 		Stock s = getMoneyStock();
@@ -514,9 +549,9 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	/**
-	 * get the value of the Stock of money owned by this circuit. Return NaN if the stock cannot be found (which is an error)
+	 * get the value of the Stock of money owned by this industry. Return NaN if the stock cannot be found (which is an error)
 	 * 
-	 * @return the quantity of money owned by this circuit.
+	 * @return the quantity of money owned by this industry.
 	 */
 	public double getMoneyValue() {
 		Stock s = getMoneyStock();
@@ -524,9 +559,9 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	/**
-	 * get the price of the Stock of money owned by this circuit. Return NaN if the stock cannot be found (which is an error)
+	 * get the price of the Stock of money owned by this industry. Return NaN if the stock cannot be found (which is an error)
 	 * 
-	 * @return the price of money owned by this circuit.
+	 * @return the price of money owned by this industry.
 	 */
 	public double getMoneyPrice() {
 		Stock s = getMoneyStock();
@@ -534,9 +569,9 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	/**
-	 * return the quantity of the Stock of sales owned by this circuit. Return NaN if the stock cannot be found (which is an error)
+	 * return the quantity of the Stock of sales owned by this industry. Return NaN if the stock cannot be found (which is an error)
 	 * 
-	 * @return the quantity of sales stock owned by this circuit
+	 * @return the quantity of sales stock owned by this industry
 	 */
 	public double getSalesQuantity() {
 		Stock s = getSalesStock();
@@ -544,9 +579,9 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	/**
-	 * return the value of the sales stock owned by this circuit. Return NaN if the stock cannot be found (which is an error)
+	 * return the value of the sales stock owned by this industry. Return NaN if the stock cannot be found (which is an error)
 	 * 
-	 * @return the value of the sales stock owned by this circuit
+	 * @return the value of the sales stock owned by this industry
 	 */
 	public double getSalesValue() {
 		Stock s = getSalesStock();
@@ -554,9 +589,9 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	/**
-	 * return the price of the Stock of sales owned by this circuit. Return NaN if the stock cannot be found (which is an error)
+	 * return the price of the Stock of sales owned by this industry. Return NaN if the stock cannot be found (which is an error)
 	 * 
-	 * @return the quantity of sales stock owned by this circuit
+	 * @return the quantity of sales stock owned by this industry
 	 */
 	public double getSalesPrice() {
 		Stock s = getSalesStock();
@@ -574,7 +609,7 @@ public class Circuit extends Observable implements Serializable {
 		if (s != null) {
 			s.setQuantity(quantity);
 		} else {
-			logger.error("ERROR: Circuit {} attempted to set the quantity demanded of its consumption stock, but it does not have one", pk.productUseValueName);
+			logger.error("ERROR: Industry {} attempted to set the quantity demanded of its consumption stock, but it does not have one", pk.industryName);
 		}
 	}
 
@@ -589,17 +624,17 @@ public class Circuit extends Observable implements Serializable {
 		if (s != null) {
 			s.setQuantity(quantity);
 		} else {
-			logger.error("ERROR: Circuit {} attempted to set the quantity demanded of its consumption stock, but it does not have one", pk.productUseValueName);
+			logger.error("ERROR: Industry {} attempted to set the quantity demanded of its consumption stock, but it does not have one", pk.industryName);
 		}
 	}
 
 	/**
-	 * provide a list of the productive stocks owned (managed) by this circuit
+	 * provide a list of the productive stocks owned (managed) by this industry
 	 * 
-	 * @return a list of the productive stocks owned (managed) by this circuit
+	 * @return a list of the productive stocks owned (managed) by this industry
 	 */
 	public List<Stock> productiveStocks() {
-		return DataManager.stocksProductiveByCircuit(pk.timeStamp, pk.productUseValueName);
+		return DataManager.stocksProductiveByIndustry(pk.timeStamp, pk.industryName);
 	}
 
 	/**
@@ -610,7 +645,7 @@ public class Circuit extends Observable implements Serializable {
 	 *            the name of the stock
 	 */
 	public Stock productiveStock(String name) {
-		return DataManager.stockProductiveByNameSingle(pk.timeStamp, pk.productUseValueName, name);
+		return DataManager.stockProductiveByNameSingle(pk.timeStamp, pk.industryName, name);
 	}
 
 	public Integer getProject() {
@@ -626,7 +661,7 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	public String getProductUseValueName() {
-		return pk.productUseValueName;
+		return pk.industryName;
 	}
 
 	public double getConstrainedOutput() {
@@ -652,10 +687,10 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	@Override public boolean equals(Object object) {
-		if (!(object instanceof Circuit)) {
+		if (!(object instanceof Industry)) {
 			return false;
 		}
-		Circuit other = (Circuit) object;
+		Industry other = (Industry) object;
 		if ((this.pk == null && other.pk != null)
 				|| (this.pk != null && !this.pk.equals(other.pk))) {
 			return false;
@@ -664,17 +699,17 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	/**
-	 * @return String representation of the circuit and its stocks
+	 * @return String representation of the industry and its stocks
 	 *         TODO decide how this should be formatted
 	 */
 	@Override public String toString() {
-		return "Capital circuit called" + pk.productUseValueName;
+		return "Industry called" + pk.industryName;
 	}
 
 	/**
 	 * add up the values of all the productive stocks and return them as a result
 	 * 
-	 * @return the total value of the productive stocks owned by this circuit
+	 * @return the total value of the productive stocks owned by this industry
 	 */
 	public double productiveStockValue() {
 		double result = 0.0;
@@ -687,7 +722,7 @@ public class Circuit extends Observable implements Serializable {
 	/**
 	 * add up the prices of all the productive stocks and return them as a result
 	 * 
-	 * @return the total price of the productive stocks owned by this circuit
+	 * @return the total price of the productive stocks owned by this industry
 	 */
 	public double productiveStockPrice() {
 		double result = 0.0;
@@ -713,16 +748,16 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	/**
-	 * Data for one circuit as an arraylist, for flexibility. At the current project and the given timeStamp
+	 * Data for one industry as an arraylist, for flexibility. At the current project and the given timeStamp
 	 * 
-	 * @return One record, giving a dump of this circuit, including its productive stocks, as an arrayList
+	 * @return One record, giving a dump of this industry, including its productive stocks, as an arrayList
 	 */
 
-	public ArrayList<String> circuitContentsAsArrayList() {
+	public ArrayList<String> industryContentsAsArrayList() {
 		ArrayList<String> contents = new ArrayList<>();
 		contents.add(Integer.toString(pk.timeStamp));
 		contents.add(Integer.toString(pk.project));
-		contents.add((pk.productUseValueName));
+		contents.add((pk.industryName));
 		for (Stock s : productiveStocks()) {
 			contents.add(String.format("%.2f", s.getQuantity()));
 			contents.add(String.format("%.2f", s.getPrice()));
@@ -742,7 +777,7 @@ public class Circuit extends Observable implements Serializable {
 	 * this is the sum of all outlays (including mone), that is to say, it is everything that has to be engaged in the business to keep it going
 	 * it is always calculated using the price expression of these outlays
 	 * 
-	 * @return the current capital of this circuit
+	 * @return the current capital of this industry
 	 * 
 	 * 
 	 */
@@ -751,12 +786,12 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	/**
-	 * The profit of this circuit.
+	 * The profit of this industry.
 	 * This is the current capital less the initial capital. It is thus a simple difference independent of sales,
 	 * and hence makes no assumption that profit is realised.
 	 * Like all capital, it is calculated using the price expression of the magnitudes involved.
 	 * 
-	 * @return the profit (so far) of this circuit.
+	 * @return the profit (so far) of this industry.
 	 */
 	public double profit() {
 		return currentCapital() - initialCapital;
@@ -795,7 +830,7 @@ public class Circuit extends Observable implements Serializable {
 	 * It needs to be generalised.
 	 * 
 	 * @param extraMeansOfProduction
-	 *            the additional Means of Production which it is proposed this circuit should acquire.
+	 *            the additional Means of Production which it is proposed this industry should acquire.
 	 * @return the output level that can be attained by acquiring extraMeansOfProduction
 	 */
 	public double computePossibleOutput(double extraMeansOfProduction) {
@@ -827,21 +862,21 @@ public class Circuit extends Observable implements Serializable {
 	}
 
 	/**
-	 * set the comparator Circuit of this Circuit. When a TableCell displays a value from this Circuit, it asks the Circuit
+	 * set the comparator Industry of this Industry. When a TableCell displays a value from this Industry, it asks the Industry
 	 * to tell it whether the value has changed in comparison with another timeStamp, and by how much.
-	 * The comparator allows the Circuit to determine what information is provided
+	 * The comparator allows the Industry to determine what information is provided
 	 * 
 	 * @param comparator
 	 *            the comparator
 	 */
-	public void setComparator(Circuit comparator) {
+	public void setComparator(Industry comparator) {
 		this.comparator = comparator;
 	}
 
 	/**
 	 * @return the previousComparator
 	 */
-	public Circuit getPreviousComparator() {
+	public Industry getPreviousComparator() {
 		return previousComparator;
 	}
 
@@ -849,14 +884,14 @@ public class Circuit extends Observable implements Serializable {
 	 * @param previousComparator
 	 *            the previousComparator to set
 	 */
-	public void setPreviousComparator(Circuit previousComparator) {
+	public void setPreviousComparator(Industry previousComparator) {
 		this.previousComparator = previousComparator;
 	}
 
 	/**
 	 * @return the startComparator
 	 */
-	public Circuit getStartComparator() {
+	public Industry getStartComparator() {
 		return startComparator;
 	}
 
@@ -864,14 +899,14 @@ public class Circuit extends Observable implements Serializable {
 	 * @param startComparator
 	 *            the startComparator to set
 	 */
-	public void setStartComparator(Circuit startComparator) {
+	public void setStartComparator(Industry startComparator) {
 		this.startComparator = startComparator;
 	}
 
 	/**
 	 * @return the customComparator
 	 */
-	public Circuit getCustomComparator() {
+	public Industry getCustomComparator() {
 		return customComparator;
 	}
 
@@ -879,14 +914,14 @@ public class Circuit extends Observable implements Serializable {
 	 * @param customComparator
 	 *            the customComparator to set
 	 */
-	public void setCustomComparator(Circuit customComparator) {
+	public void setCustomComparator(Industry customComparator) {
 		this.customComparator = customComparator;
 	}
 
 	/**
 	 * @return the endComparator
 	 */
-	public Circuit getEndComparator() {
+	public Industry getEndComparator() {
 		return endComparator;
 	}
 
@@ -894,7 +929,7 @@ public class Circuit extends Observable implements Serializable {
 	 * @param endComparator
 	 *            the endComparator to set
 	 */
-	public void setEndComparator(Circuit endComparator) {
+	public void setEndComparator(Industry endComparator) {
 		this.endComparator = endComparator;
 	}
 

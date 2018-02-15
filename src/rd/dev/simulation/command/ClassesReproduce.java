@@ -33,7 +33,7 @@ public class ClassesReproduce extends Simulation implements Command {
 	private static final Logger logger = LogManager.getLogger(ClassesReproduce.class);
 
 	/**
-	 * Social circuit consumption is underdeveloped. See notes in 'registerDemand'.
+	 * Social consumption is underdeveloped. See notes in 'registerDemand'.
 	 * Basically the workers are assumed to consume everything they have and the capitalists are assumed to
 	 * consume a quantity proportional to their size (a primitive propensity to consume).
 	 * The level of consumption of the capitalists in the event of shortage has already been fixed by registerAllocation.

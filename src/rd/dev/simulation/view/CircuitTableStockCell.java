@@ -25,11 +25,11 @@ import javafx.scene.control.TableCell;
 import javafx.scene.paint.Color;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.datamanagement.DataManager;
-import rd.dev.simulation.model.Circuit;
+import rd.dev.simulation.model.Industry;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.custom.TabbedTableViewer;
 
-public class CircuitTableStockCell extends TableCell<Circuit, String> {
+public class CircuitTableStockCell extends TableCell<Industry, String> {
 	static final Logger logger = LogManager.getLogger("CircuitTableCell");
 
 	String stockValueUseName;
@@ -42,12 +42,12 @@ public class CircuitTableStockCell extends TableCell<Circuit, String> {
 		super.updateItem(item, empty);
 		if (item == null)
 			return;
-		Circuit circuit = getTableView().getItems().get(getIndex());
-		if (circuit == null) {
-			logger.debug(" Null Circuit");
+		Industry industry = getTableView().getItems().get(getIndex());
+		if (industry == null) {
+			logger.debug(" Null Industry");
 			return;
 		}
-		Stock theStock = DataManager.stockProductiveByNameSingle(Simulation.timeStampDisplayCursor, circuit.getProductUseValueName(), stockValueUseName);
+		Stock theStock = DataManager.stockProductiveByNameSingle(Simulation.timeStampDisplayCursor, industry.getProductUseValueName(), stockValueUseName);
 		
 		String deltaModifier="";
 		

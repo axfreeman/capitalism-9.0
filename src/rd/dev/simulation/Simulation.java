@@ -28,7 +28,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.datamanagement.SelectionsProvider;
-import rd.dev.simulation.model.Circuit;
+import rd.dev.simulation.model.Industry;
 import rd.dev.simulation.model.Global;
 import rd.dev.simulation.model.Project;
 import rd.dev.simulation.model.SocialClass;
@@ -141,7 +141,7 @@ public class Simulation {
 			setCapitals();
 			checkInvariants();
 
-			// Set the initial comparators for every project, circuit, class, use value and stock .
+			// Set the initial comparators for every project, industry, class, use value and stock .
 			// Since the comparator cursor and the cursor are already 1, this amounts to setting it to 1
 			DataManager.setComparators(1);
 
@@ -243,7 +243,7 @@ public class Simulation {
 
 		DataManager.getUseValueEntityManager().getTransaction().begin();
 		DataManager.getStocksEntityManager().getTransaction().begin();
-		DataManager.getCircuitEntityManager().getTransaction().begin();
+		DataManager.getIndustryEntityManager().getTransaction().begin();
 		DataManager.getSocialClassEntityManager().getTransaction().begin();
 		DataManager.getGlobalEntityManager().getTransaction().begin();
 
@@ -270,16 +270,16 @@ public class Simulation {
 			DataManager.getStocksEntityManager().persist(newStock);
 		}
 
-		// Circuits
+		// industries
 
-		logger.debug(" Persisting a new set of circuits with timeStamp ", timeStampIDCurrent + 1);
-		Circuit newCircuit;
-		for (Circuit c : DataManager.circuitsAll()) {
-			logger.debug("  Persisting a circuit whose use value is " + c.getProductUseValueName());
-			newCircuit = new Circuit();
-			newCircuit.copyCircuit(c);
-			newCircuit.setTimeStamp(timeStampIDCurrent + 1);
-			DataManager.getCircuitEntityManager().persist(newCircuit);
+		logger.debug(" Persisting a new set of industries with timeStamp ", timeStampIDCurrent + 1);
+		Industry newIndustry;
+		for (Industry c : DataManager.industriesAll()) {
+			logger.debug("  Persisting an industry whose use value is " + c.getProductUseValueName());
+			newIndustry = new Industry();
+			newIndustry.copyIndustry(c);
+			newIndustry.setTimeStamp(timeStampIDCurrent + 1);
+			DataManager.getIndustryEntityManager().persist(newIndustry);
 		}
 
 		// Social Classes
@@ -306,7 +306,7 @@ public class Simulation {
 		DataManager.setComparators(timeStampIDCurrent + 1);
 
 		DataManager.getSocialClassEntityManager().getTransaction().commit();
-		DataManager.getCircuitEntityManager().getTransaction().commit();
+		DataManager.getIndustryEntityManager().getTransaction().commit();
 		DataManager.getStocksEntityManager().getTransaction().commit();
 		DataManager.getUseValueEntityManager().getTransaction().commit();
 		DataManager.getGlobalEntityManager().getTransaction().commit();
@@ -328,13 +328,13 @@ public class Simulation {
 	}
 
 	/**
-	 * initialise the initialCapital of each circuit to be the price of its stocks when the period starts.
+	 * initialise the initialCapital of each industry to be the price of its stocks when the period starts.
 	 * Initialise the currentCapital to be the same.
-	 * Called at startup and thereafter afterAccumulate (i.e. at the very end of the whole circuit and start of the next)
+	 * Called at startup and thereafter afterAccumulate (i.e. at the very end of the whole industry and start of the next)
 	 */
 	protected void setCapitals() {
 		Global global = DataManager.getGlobal();
-		for (Circuit c : DataManager.circuitsAll()) {
+		for (Industry c : DataManager.industriesAll()) {
 			double initialCapital = c.currentCapital();
 			Reporter.report(logger, 2, "  The initial capital of the industry[%s] is now $%.0f (intrinsic %.0f)", c.getProductUseValueName(), initialCapital,
 					initialCapital / global.getMelt());

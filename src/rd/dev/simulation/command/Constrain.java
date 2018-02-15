@@ -27,7 +27,7 @@ import org.apache.logging.log4j.Logger;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.ActionStates;
 import rd.dev.simulation.datamanagement.DataManager;
-import rd.dev.simulation.model.Circuit;
+import rd.dev.simulation.model.Industry;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.model.UseValue;
 import rd.dev.simulation.utils.Reporter;
@@ -39,8 +39,8 @@ public class Constrain extends Simulation implements Command {
 	}
 
 	/**
-	 * An algorithm (eventually user-defined) to allocate the goods supplied between demanders. All circuits adjust their proposed outputs in accordance with
-	 * what they can get their hands on. It is not possible to acquire goods that do not exist.Also, circuits cannot increase output above what they initially
+	 * An algorithm (eventually user-defined) to allocate the goods supplied between demanders. All industries adjust their proposed outputs in accordance with
+	 * what they can get their hands on. It is not possible to acquire goods that do not exist.Also, industries cannot increase output above what they initially
 	 * ask for, even if it is available. This is an investment function, and is to be dealt with under the distribution of the surplus.
 	 * At present, just a simple share; there is space here for user-supplied algorithms corresponding to various models.
 	 * 
@@ -60,7 +60,7 @@ public class Constrain extends Simulation implements Command {
 
 		allocateToStocks();
 
-		// Then tell the capital circuits to constrain their output
+		// Then tell the industries to constrain their output
 
 		constrainOutput();
 
@@ -85,11 +85,11 @@ public class Constrain extends Simulation implements Command {
 			String useValueType = s.getUseValueName();
 			UseValue u = s.getUseValue();
 			double allocationShare = u.getAllocationShare();
-			double newQuantityDemanded = s.getQuantityDemanded() * allocationShare;
+			double newQuantityDemanded = s.getReplenishmentDemand() * allocationShare;
 			newQuantityDemanded = Precision.round(newQuantityDemanded, Simulation.getRoundingPrecision());
-			Reporter.report(logger, 2, "  Demand for [%s] in circuit [%s] was %.0f and is now %.0f",
-					useValueType, s.getOwner(), s.getQuantityDemanded(), newQuantityDemanded);
-			s.setQuantityDemanded(newQuantityDemanded);
+			Reporter.report(logger, 2, "  Demand for [%s] in industry [%s] was %.0f and is now %.0f",
+					useValueType, s.getOwner(), s.getReplenishmentDemand(), newQuantityDemanded);
+			s.setReplenishmentDemand(newQuantityDemanded);
 		}
 	}
 
@@ -104,16 +104,16 @@ public class Constrain extends Simulation implements Command {
 	public void constrainOutput() {
 		Reporter.report(logger, 1, " Adjusting the output of each industry");
 
-		List<Circuit> circuits = DataManager.circuitsAll();
-		for (Circuit c : circuits) {
+		List<Industry> industries = DataManager.industriesAll();
+		for (Industry c : industries) {
 			double desiredOutputLevel = c.getProposedOutput();
 			Reporter.report(logger, 1, " Estimating supply-constrained output for industry [%s] with unconstrained output %.0f",
 					c.getProductUseValueName(), desiredOutputLevel);
-			List<Stock> managedStocks = DataManager.stocksProductiveByCircuit(timeStampIDCurrent, c.getProductUseValueName());
+			List<Stock> managedStocks = DataManager.stocksProductiveByIndustry(timeStampIDCurrent, c.getProductUseValueName());
 			for (Stock s : managedStocks) {
 				double existingQuantity = s.getQuantity();
-				double quantityDemanded = s.getQuantityDemanded();
-				double quantityAvailable = existingQuantity + s.getQuantityDemanded();
+				double quantityDemanded = s.getReplenishmentDemand();
+				double quantityAvailable = existingQuantity + s.getReplenishmentDemand();
 				double coefficient = s.getProductionCoefficient();
 				if (coefficient > 0) {
 					double possibleOutput = Precision.round(quantityAvailable / coefficient, roundingPrecision);
@@ -140,7 +140,7 @@ public class Constrain extends Simulation implements Command {
 	public void calculateAllocationShare() {
 		Reporter.report(logger, 1, " Computing the proportion of demand that can be satisfied by supply, for each commodity type");
 		for (UseValue u : DataManager.useValuesAll()) {
-			double totalDemand = u.totalDemand();
+			double totalDemand = u.replenishmentDemand();
 			double totalSupply = u.totalSupply();
 			double allocationShare = totalSupply / totalDemand;
 			allocationShare = (allocationShare > 1 ? 1 : allocationShare);

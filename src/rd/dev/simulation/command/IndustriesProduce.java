@@ -26,45 +26,45 @@ import org.apache.logging.log4j.Logger;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.ActionStates;
 import rd.dev.simulation.datamanagement.DataManager;
-import rd.dev.simulation.model.Circuit;
+import rd.dev.simulation.model.Industry;
 import rd.dev.simulation.model.Global;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.model.UseValue;
-import rd.dev.simulation.model.UseValue.USEVALUECIRCUITTYPE;
+import rd.dev.simulation.model.UseValue.USEVALUEINDUSTRYTYPE;
 import rd.dev.simulation.model.UseValue.USEVALUETYPE;
 import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.Reporter;
 
-public class CircuitsProduce extends Simulation implements Command {
+public class IndustriesProduce extends Simulation implements Command {
 	private static final Logger logger = LogManager.getLogger("Industry Production");
 
 	/**
-	 * For each circuit decrease the stocks and increase the sales stocks, using the coefficient to decide how much gets used up.
-	 * For each social circuit decrease the stock of consumption goods and decide, on Malthusian principles, what happens to the classes
+	 * For each industry decrease the stocks and increase the sales stocks, using the coefficient to decide how much gets used up.
+	 * For each social class decrease the stock of consumption goods and decide, on Malthusian principles, what happens to the classes
 	 * (user algorithms could play a big role here). Recalculate the value produced (=C*MELT +L)
 	 * 
 	 * TODO should usevalues re-calculate the unit value when all producers are done?
 	 */
 	public void execute() {
 		Reporter.report(logger, 0, "INDUSTRY PRODUCTION");
-		advanceOneStep(ActionStates.C_P_CircuitsProduce.getText(), ActionStates.C_P_Produce.getText());
+		advanceOneStep(ActionStates.C_P_IndustriesProduce.getText(), ActionStates.C_P_Produce.getText());
 		Global global = DataManager.getGlobal();
 		double melt = global.getMelt();
 
 		// initialise the accounting for how much of this useValue is used up and how much is created in production in the current period
 		// so we can calculate how much surplus of it resulted from production in this period.
 
-		for (UseValue u : DataManager.useValuesByCircuitType(USEVALUECIRCUITTYPE.CAPITALIST)) {
+		for (UseValue u : DataManager.useValuesByIndustryType(USEVALUEINDUSTRYTYPE.CAPITALIST)) {
 			u.setStockUsedUp(0);
 			u.setStockProduced(0);
 		}
 		
 		// Now do the actual production: value process then production process
-		// all productive stocks except a stock of type labour power now contribute value to the product of the circuit that owns them,
+		// all productive stocks except a stock of type labour power now contribute value to the product of the industry that owns them,
 		// equal to their price at this time except stocks of type labour power, which contribute their magnitude, multiplied by their complexity, divided by the MELT
 		// (TODO incorporate labour complexity)
 		
-		for (Circuit c : DataManager.circuitsAll()) {
+		for (Industry c : DataManager.industriesAll()) {
 			String useValueType = c.getProductUseValueName();
 			Stock salesStock = c.getSalesStock();
 			UseValue useValue = c.getUseValue();
@@ -72,7 +72,7 @@ public class CircuitsProduce extends Simulation implements Command {
 			double valueAdded = 0;
 			Reporter.report(logger, 1, " Industry [%s] is producing %.0f. units of its output; the melt is %.4f", useValueType, output, melt);
 
-			for (Stock s : DataManager.stocksProductiveByCircuit(timeStampIDCurrent, useValueType)) {
+			for (Stock s : DataManager.stocksProductiveByIndustry(timeStampIDCurrent, useValueType)) {
 
 				// a little consistency check ...
 				if (!s.getStockType().equals("Productive")) {
@@ -119,7 +119,7 @@ public class CircuitsProduce extends Simulation implements Command {
 
 		// now (and only now) we can calculate the surplus (if any) of each of the use values
 
-		for (UseValue u : DataManager.useValuesByCircuitType(USEVALUECIRCUITTYPE.CAPITALIST)) {
+		for (UseValue u : DataManager.useValuesByIndustryType(USEVALUEINDUSTRYTYPE.CAPITALIST)) {
 			u.setSurplusProduct(u.getStockProduced() - u.getStockUsedUp());
 		}
 	}

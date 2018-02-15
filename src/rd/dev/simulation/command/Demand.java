@@ -27,7 +27,7 @@ import org.apache.logging.log4j.Logger;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.ActionStates;
 import rd.dev.simulation.datamanagement.DataManager;
-import rd.dev.simulation.model.Circuit;
+import rd.dev.simulation.model.Industry;
 import rd.dev.simulation.model.SocialClass;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.model.UseValue;
@@ -67,16 +67,16 @@ public class Demand extends Simulation implements Command {
 	/**
 	 * Registers productive demand - the demand that arises because producers need stocks of inputs. One of the most complex methods in the simulation. Its
 	 * purpose is to calculate 'constrained output', which is the output level that can be achieved, given the money in the producers' possession and the supply
-	 * of the stocks they need. Each circuit manages a set of productive stocks. The coefficient of each stock specifies how much of it the circuit must own, in
-	 * order to produce one unit of output, the circuit first calculates how much money is needed to produce one unit of output, by calculating what it must
-	 * spend on each stock to be in a position to make one unit of output. When the circuit has worked out the number of units of output it can produce, it then
+	 * of the stocks they need. Each industry manages a set of productive stocks. The coefficient of each stock specifies how much of it the industry must own, in
+	 * order to produce one unit of output, the industry first calculates how much money is needed to produce one unit of output, by calculating what it must
+	 * spend on each stock to be in a position to make one unit of output. When the industry has worked out the number of units of output it can produce, it then
 	 * calculates the amount of each stock it would need, ideally, to produce at this level. At this stage (of developing the code) no attempt is made to
 	 * estimate the likely demand for the product: this means that the price/supply/demand mechanism alone constrains suppliers. this may or may not be
 	 * realistic butit's the simplest assumption, hence the best basis on which to start.
 	 * <p>
-	 * The response of circuits to demand is taken care of separately, in the distribution stage. The circuit first tries to maintain its existing level of
+	 * The response of industries to demand is taken care of separately, in the distribution stage. The industry first tries to maintain its existing level of
 	 * production (at the outset, specified by the initial conditions,subsequently by what it last achieved). The price then responds to shortages or excesses.
-	 * If the circuit has money left over at the end of the period (= the start of the next period), it then tries to invest it. A reaction function then
+	 * If the industry has money left over at the end of the period (= the start of the next period), it then tries to invest it. A reaction function then
 	 * imposes price increases or decreases according to the discrepancy between the two. More complex adjustment mechanisms can and should be developed, but a
 	 * major purpose of the simulation is to assess what can be achieved with a very generic reaction function.
 	 * 
@@ -94,14 +94,14 @@ public class Demand extends Simulation implements Command {
 		// First, set demand to zero for all stocks
 
 		for (Stock s : DataManager.stocksAll()) {
-			s.setQuantityDemanded(0);
+			s.setReplenishmentDemand(0);
 		}
 
-		// Now, ask all the circuits to estimate how much of each of their productive stocks they would like to purchase
+		// Now, ask all the industries to estimate how much of each of their productive stocks they would like to purchase
 		// NOTE: social class demand for consumption goods is calculated separately
 		// in SocialClass.registerDemand() which is called immediately after this
 
-		for (Circuit c : DataManager.circuitsAll()) {
+		for (Industry c : DataManager.industriesAll()) {
 			double totalCost = 0;
 			logger.debug(" Estimating demand for productive stocks by industry {}", c.getProductUseValueName());
 			double moneyAvailable = c.getMoneyQuantity();
@@ -116,7 +116,7 @@ public class Demand extends Simulation implements Command {
 
 			// cost the entirety of the proposed output
 
-			totalCost = c.computeOutputCosts(proposedOutput).costOfOutput();
+			totalCost = c.computeOutputCosts(proposedOutput).costOfExpansionOutput();
 
 			Reporter.report(logger, 2, "  Total cost of an output of %.0f is $%.0f and $%.0f is available.",
 					proposedOutput, totalCost, moneyAvailable);
@@ -135,7 +135,7 @@ public class Demand extends Simulation implements Command {
 				// maybe at this point we should just give up and say the industry is insolvent, or bankrupt, or both.
 				
 				proposedOutput = proposedOutput * resources/ totalCost;
-				double revisedTotalCost = c.computeOutputCosts(constrainedOutput).costOfOutput();
+				double revisedTotalCost = c.computeOutputCosts(constrainedOutput).costOfExpansionOutput();
 				Reporter.report(logger, 1, " Output is constrained by cost");
 				resources = moneyAvailable+anticipatedMoneyFromSales;
 				if (revisedTotalCost < resources + Simulation.epsilon)
@@ -150,7 +150,7 @@ public class Demand extends Simulation implements Command {
 			Reporter.report(logger, 1, " Demand will now be set for each stock owned by industry [%s] for an output level of %.0f",
 					c.getProductUseValueName(), constrainedOutput);
 
-			List<Stock> managedStocks = DataManager.stocksProductiveByCircuit(Simulation.timeStampIDCurrent, c.getProductUseValueName());
+			List<Stock> managedStocks = DataManager.stocksProductiveByIndustry(Simulation.timeStampIDCurrent, c.getProductUseValueName());
 
 			for (Stock s : managedStocks) {
 				double coefficient = s.getProductionCoefficient();
@@ -162,14 +162,14 @@ public class Demand extends Simulation implements Command {
 					double existingStock = s.getQuantity();
 					double requiredStockLevel = constrainedOutput * coefficient * u.getTurnoverTime();
 					double newDemand = requiredStockLevel - existingStock;
-					double totalDemandForThisUseValue = u.totalDemand();
+					double totalDemandForThisUseValue = u.replenishmentDemand();
 					double newDemandForThisUseValue = totalDemandForThisUseValue + newDemand;
 					if (newDemand !=0) {
 						Reporter.report(logger, 2, "  Productive stock [%s] requires $%.0f to adjust its proposed output level from %.0f to %.0f",
 								useValueName, newDemand, existingStock, requiredStockLevel);
 						Reporter.report(logger, 2, "  The demand for commodity [%s] was %.0f and is now %.0f",
 								useValueName, totalDemandForThisUseValue, newDemandForThisUseValue);
-						s.setQuantityDemanded(Precision.round(newDemand, roundingPrecision));
+						s.setReplenishmentDemand(Precision.round(newDemand, roundingPrecision));
 					}
 				}
 			}
@@ -186,7 +186,7 @@ public class Demand extends Simulation implements Command {
 	 */
 	private void registerLabourResponse(Simulation.LABOUR_SUPPLY_RESPONSE response) {
 		UseValue labourPower = DataManager.useValueByType(UseValue.USEVALUETYPE.LABOURPOWER);
-		double demandForLabourPower = labourPower.totalDemand();
+		double demandForLabourPower = labourPower.replenishmentDemand();
 		double supplyOfLabourPower = labourPower.totalSupply();
 		switch (response) {
 		case FLEXIBLE:
@@ -247,7 +247,7 @@ public class Demand extends Simulation implements Command {
 				double demand = sc.getRevenue()*s.getConsumptionCoefficient();
 				Reporter.report(logger, 2, "  The demand for [%s] is %.0f%% of revenue, which is %.0f", 
 						s.getUseValueName(), s.getConsumptionCoefficient()*100,demand);
-				s.setQuantityDemanded(demand);
+				s.setReplenishmentDemand(demand);
 			}
 		}
 	}

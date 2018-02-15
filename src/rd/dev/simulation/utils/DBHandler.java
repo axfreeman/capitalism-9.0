@@ -137,7 +137,7 @@ public class DBHandler {
 	 */
 	public void exportDataFiles() {
 		copyDataFilesToUserDirectory(Capitalism.userBasePath, "data/", "globals.csv");
-		copyDataFilesToUserDirectory(Capitalism.userBasePath, "data/", "circuits.csv");
+		copyDataFilesToUserDirectory(Capitalism.userBasePath, "data/", "industries.csv");
 		copyDataFilesToUserDirectory(Capitalism.userBasePath, "data/", "socialClasses.csv");
 		copyDataFilesToUserDirectory(Capitalism.userBasePath, "data/", "projects.csv");
 		copyDataFilesToUserDirectory(Capitalism.userBasePath, "data/", "stocks.csv");
@@ -158,7 +158,7 @@ public class DBHandler {
 	 *            the directory in which to save the files
 	 */
 	public void saveDataBase(File saveDirectory) {
-		String[] standardFiles = { "timeStamps", "projects", "globals", "useValues", "stocks", "socialClasses", "circuits" };
+		String[] standardFiles = { "timeStamps", "projects", "globals", "useValues", "stocks", "socialClasses", "industries" };
 
 		String baseDirectoryURL;
 		try {

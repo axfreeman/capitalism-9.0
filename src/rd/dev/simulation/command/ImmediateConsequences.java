@@ -28,7 +28,7 @@ import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.ActionStates;
 import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.datamanagement.SelectionsProvider;
-import rd.dev.simulation.model.Circuit;
+import rd.dev.simulation.model.Industry;
 import rd.dev.simulation.model.Global;
 import rd.dev.simulation.model.Project;
 import rd.dev.simulation.model.Stock;
@@ -126,10 +126,10 @@ public class ImmediateConsequences extends Simulation implements Command {
 			// there may be more than one producer of the same commodity.
 			// we can only set the profit rate for the sector as a whole,which means we work from the per-useValue profit rates
 	
-			for (UseValue u:DataManager.useValuesByCircuitType(UseValue.USEVALUECIRCUITTYPE.CAPITALIST)) {
+			for (UseValue u:DataManager.useValuesByIndustryType(UseValue.USEVALUEINDUSTRYTYPE.CAPITALIST)) {
 				Reporter.report(logger, 1, " Setting profit-equalizing price for use value [%s]", u.getUseValueName());
-				for (Circuit c:DataManager.circuitsByProductUseValue(u.getUseValueName())) {
-					Reporter.report(logger, 2, " Note: circuit %s produces this use value", c.getProductUseValueName());
+				for (Industry c:DataManager.industriesByProductUseValue(u.getUseValueName())) {
+					Reporter.report(logger, 2, " Note: industry %s produces this use value", c.getProductUseValueName());
 				}
 				double newUnitPrice=u.initialCapital()*(1+global.profitRate())/u.totalQuantity();
 				Reporter.report(logger, 2, "  Unit price changed from %.4f to %.4f", u.getUnitPrice(),newUnitPrice);

@@ -134,7 +134,7 @@ public class SocialClass extends Observable implements Serializable {
 	 * @return the money stock that is owned by this social class.
 	 */
 	public Stock getMoneyStock() {
-		return DataManager.stockMoneyByCircuitSingle(pk.timeStamp, pk.socialClassName);
+		return DataManager.stockMoneyByIndustrySingle(pk.timeStamp, pk.socialClassName);
 	}
 
 	/**
@@ -423,7 +423,7 @@ public class SocialClass extends Observable implements Serializable {
 	public double consumptionQuantityDemanded() {
 
 		Stock s = getConsumptionStock();
-		return s == null ? Float.NaN : s.getQuantityDemanded();
+		return s == null ? Float.NaN : s.getReplenishmentDemand();
 	}
 
 	/**
@@ -456,7 +456,7 @@ public class SocialClass extends Observable implements Serializable {
 	public void setConsumptionQuantityDemanded(double quantityDemanded) {
 		Stock s = getConsumptionStock();
 		if (s != null) {
-			s.setQuantityDemanded(quantityDemanded);
+			s.setReplenishmentDemand(quantityDemanded);
 		} else {
 			logger.error("ERROR: Social class {} attempted to set the quantity demanded of its consumption stock, but it does not have one",
 					pk.socialClassName);

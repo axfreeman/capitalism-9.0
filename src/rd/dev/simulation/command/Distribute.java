@@ -30,13 +30,13 @@ public class Distribute extends Simulation implements Command {
 
 	/**
 	 * distribute profit.
-	 * This is the residual money in the circuits, after deducting the money they owned at the start.
+	 * This is the residual money in the industries, after deducting the money they owned at the start.
 	 * NOTE this may not be the same as the value profit;see Maldonado-Filho on release and tie-up of capital.
 	 * In fact one purpose of the simulation is to track what happens to the value in distribution.
 	 * The current basis is that the capitalists will take what they need for consumption.
-	 * As a result, additional capital will remain in the circuits for investment.
-	 * TODO decide how the profits from each circuit are allocated - is this decision located in the circuits, or the capitalist class(es)?
-	 * Essentially, the various classes place demands on the circuits (tax, rent, interest etc) which are the revenues of the classes
+	 * As a result, additional capital will remain in the industries for investment.
+	 * TODO decide how the profits from each industry are allocated - is this decision located in the industries, or the capitalist class(es)?
+	 * Essentially, the various classes place demands on industry profits (tax, rent, interest etc) which are the revenues of the classes
 	 * What is left is invested.
 	 * 
 	 */

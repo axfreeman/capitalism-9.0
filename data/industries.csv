@@ -1,4 +1,4 @@
-project,timeStamp,ProductUseValueName,ProposedOutput,GrowthRate
+project,timeStamp,industryName,ProposedOutput,GrowthRate
 1,1,Means of Production,6000,0
 1,1,Consumption,3000,0
 2,1,Means of Production,6000,0
@@ -15,3 +15,6 @@ project,timeStamp,ProductUseValueName,ProposedOutput,GrowthRate
 7,1,Fixed,500,0
 7,1,Circulating,200,0
 7,1,Consumption,500,0
+8,1,Fixed,3000,0
+8,1,Consumption,3000,0
+8,1,Raw Materials,3000,0

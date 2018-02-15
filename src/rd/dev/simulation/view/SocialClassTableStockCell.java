@@ -45,7 +45,7 @@ public class SocialClassTableStockCell extends TableCell<SocialClass, String> {
 			return;
 		SocialClass socialClass= getTableView().getItems().get(getIndex());
 		if (socialClass == null) {
-			logger.debug(" Null Circuit");
+			logger.debug(" Null Industry");
 			return;
 		}
 		Stock theStock = DataManager.stockConsumptionByUseValueAndClassSingle(Simulation.timeStampDisplayCursor, socialClass.getSocialClassName(), stockValueUseName);

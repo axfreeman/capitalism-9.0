@@ -27,7 +27,7 @@ import rd.dev.simulation.Capitalism;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.ActionStates;
 import rd.dev.simulation.datamanagement.DataManager;
-import rd.dev.simulation.model.Circuit;
+import rd.dev.simulation.model.Industry;
 import rd.dev.simulation.model.SocialClass;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.model.UseValue;
@@ -41,25 +41,43 @@ public class Accumulate extends Simulation implements Command {
 	public Accumulate() {
 	}
 
+	/**
+	 * Investment. One of several possible algorithms, to be generalised by allowing developers to write plugins
+	 * 
+	 * Starting point is to find out where there is a surplus of means of production of any type. Investment then
+	 * consists in allocating funds, so that this surplus can be used up by producing something.
+	 * 
+	 * Next step is to accept, at face value, each industry's proposal for growth. We estimate the expansion demand
+	 * that would arise, if these proposals were accepted, and the cost of accepting them.
+	 * 
+	 * Expansion can be constrained if the total expansion demand exceeds the surplus. Alternatively, it may not
+	 * consume the entire surplus.
+	 * 
+	 * So, first, we compare the expansionDemand with the available surplus for each means of production. If there is 
+	 * a shortfall, we reduce the proposed outputs of every industry in proportion. (If that doesn't work, the funds
+	 * will simply be allocated industry by industry in the (somewhat random) order that the industries are dealt with
+	 * by the simulation, and the industries at the bottom of the pecking order will lose out).
+	 * 
+	 * if there is a surplus (more usual if the data is not pathological) this goes to the consumption good industries. This procedure
+	 * follows Marx's expanded reproduction schemas, as I interpret them, though other interpretations are possible. In
+	 * particular it deals with the fact that growth, in these schemas, is NOT balanced as often supposed. It becomes
+	 * balanced after period 3, but this is a result of the calculation not a presupposition, as far as I can see.
+	 * 
+	 * TODO if consumer industries are overproducing, in the Demand stage they might reduce their output. But this is for later.
+	 * 
+	 * Finally, the question of funding: again, before allocating funds, we compare the cost with the available revenue and
+	 * reduce proportionately if not. Again, this should not occur unless the data is somewhat pathological at least for those
+	 * early and specific cases where the pricing mechanism is 'SIMPLE' and not 'DYNAMIC'. The allocation mechanism should then
+	 * be correspondingly restricted, because the purpose of such simpe examples is education in the general principles, not
+	 * yet the working simulation of an actual economy.
+	 * 
+	 */
 	public void execute() {
 		Reporter.report(logger, 0, "ACCUMULATE: MOSES AND THE PROPHETS");
 		advanceOneStep(ActionStates.C_M_Accumulate.getText(), ActionStates.C_M_Distribute.getText());
 		calculateSurplus();
 		allocateProfits();
 		setCapitals(); // starting another period so recompute the initial capital
-
-		// Investment.
-		// One of several possible algorithms, to be generalised later.
-		// First (so as to implement Marx's schema of expanded reproduction) try to satisfy the investment demand of circuits producing Means of Production
-		// TODO write a named query to deliver these specific circuits, for now use 'if' clauses
-		// to this end, give each circuit enough to satisfy what it asked for; if there is insufficient profit,
-		// first dole out enough to satisfy the requests for means of production.
-		// if there are any means of production left over, give money to the consumption circuits to buy them and also the additional labour power required to
-		// use them.
-		// (The reason is that the aim is to purchase all the available MP)
-		// What remains in capitalist hands is their revenue.
-		// Anticipated consumption demand on the basis of this revenue is finally reset.
-
 		Capitalism.simulation.advanceOnePeriod();
 	}
 
@@ -86,87 +104,87 @@ public class Accumulate extends Simulation implements Command {
 		Reporter.report(logger, 1, " Allocating capitalist profits to industries in order to expand production");
 		
 		// first allocate to the industries that are creating means of production 
-		double costsInDepartmentI = allocateToCircuitsOfType(Circuit.INDUSTRYTYPE.MEANSOFPRODUCTION);
+		double costsInDepartmentI = allocateToIndustriesOfType(Industry.OUTPUTTYPE.PRODUCTIONGOODS);
 		Reporter.report(logger, 1, " $%.0f will be allocated to department I to finance accumulation. $%.0f worth of Means of Production remain ", 
 				costsInDepartmentI, surplusMeansOfProduction);
 
 		// when done, allocate any remaining funds to industries that are creating means of consumption
-		double costsInDepartmentII= allocateToCircuitsOfType(Circuit.INDUSTRYTYPE.NECESSITIES);
+		double costsInDepartmentII= allocateToIndustriesOfType(Industry.OUTPUTTYPE.CONSUMPTIONGOODS);
 		Reporter.report(logger, 1, " $%.0f will be allocated to department II to finance accumulation. $%.0f worth of Means of Production remain ", 
 				costsInDepartmentII, surplusMeansOfProduction);
 	}
 
 	/**
-	 * TODO write specific queries to deliver circuits of the required industry type and then split this method into two,
+	 * TODO write specific queries to deliver industries of the required industry type and then split this method into two,
 	 * since it's really a syncretic amalgam of two algorithms, once for Department I and the other for Department II
 	 * @param type
-	 *            the industry type of the circuit
+	 *            the industry type of the industry
 	 * @return the amount that was allocated
 	 */
-	private double allocateToCircuitsOfType(Circuit.INDUSTRYTYPE type) {
+	private double allocateToIndustriesOfType(Industry.OUTPUTTYPE type) {
 		SocialClass capitalists = DataManager.socialClassByName( "Capitalists");
 		Stock donor = capitalists.getMoneyStock();
 		Stock recipient = null;
 		double fundsAllocated = 0;
 		
 		switch (type) {
-		case MEANSOFPRODUCTION:
+		case PRODUCTIONGOODS:
 
 			// in this case, allocate funds to finance proposed growth
-			for (Circuit c : DataManager.circuitsAll()) {
-				if (c.industryType() == type) {
+			for (Industry c : DataManager.industriesAll()) {
+				if (c.outputType() == type) {
 					double fundsAllocatedToThisIndustry=0;
 					double proposedOutput = c.getConstrainedOutput() * (1 + c.getGrowthRate());
 					c.setProposedOutput(proposedOutput);
 					
 					// The existing costs will be taken care of next period without allocating any additional funds
-					Circuit.ExpansionCosts existingCosts=c.computeOutputCosts(c.getConstrainedOutput());
+					Industry.DemandComponents existingCosts=c.computeOutputCosts(c.getConstrainedOutput());
 					
-					// This is what the circuit will need if it is going to be able to expand to a higher output level
-					Circuit.ExpansionCosts proposedCosts=c.computeOutputCosts(proposedOutput);
+					// This is what the industry will need if it is going to be able to expand to a higher output level
+					Industry.DemandComponents proposedCosts=c.computeOutputCosts(proposedOutput);
 					
 					// This is the additional funding required
-					Circuit.ExpansionCosts accumulationCosts=Circuit.extraCosts(existingCosts,proposedCosts);
-					fundsAllocatedToThisIndustry=accumulationCosts.costOfOutput();// Allocate the money to the total expansion requested
+					Industry.DemandComponents accumulationCosts=Industry.extraCosts(existingCosts,proposedCosts);
+					fundsAllocatedToThisIndustry=accumulationCosts.costOfExpansionOutput();// Allocate the money to the total expansion requested
 					fundsAllocated +=fundsAllocatedToThisIndustry; 
 					Reporter.report(logger, 2, "  Industry [%s] has received $%.0f from the capitalist class to accumulate, of which $%.0f for means of production ",
-							c.getProductUseValueName(), fundsAllocatedToThisIndustry, accumulationCosts.costOfMP);
+							c.getProductUseValueName(), fundsAllocatedToThisIndustry, accumulationCosts.costOfExpansionMP);
 					recipient = c.getMoneyStock();
 					recipient.modifyBy(fundsAllocatedToThisIndustry);
 					donor.modifyBy(-fundsAllocatedToThisIndustry);
 					capitalists.setRevenue(capitalists.getRevenue() - fundsAllocatedToThisIndustry);
-					surplusMeansOfProduction -= accumulationCosts.costOfMP;
+					surplusMeansOfProduction -= accumulationCosts.costOfExpansionMP;
 				}
 			}
 			break;
-		case NECESSITIES:
+		case CONSUMPTIONGOODS:
 
 			// In this case, allocate all remaining funds to expansion and adjust output accordingly
 
-			for (Circuit c : DataManager.circuitsAll()) {
-				if (c.industryType() == type) {
+			for (Industry c : DataManager.industriesAll()) {
+				if (c.outputType() == type) {
 					double fundsAllocatedToThisIndustry=0;
 					double proposedOutput=c.computePossibleOutput(surplusMeansOfProduction);
 					c.setProposedOutput(proposedOutput);
 					
 					// The existing costs will be taken care of next period without allocating any additional funds
-					Circuit.ExpansionCosts existingCosts=c.computeOutputCosts(c.getConstrainedOutput());
+					Industry.DemandComponents existingCosts=c.computeOutputCosts(c.getConstrainedOutput());
 					
-					// This is what the circuit will need if it is going to be able to expand to a higher output level
-					Circuit.ExpansionCosts proposedCosts=c.computeOutputCosts(proposedOutput);
+					// This is what the industry will need if it is going to be able to expand to a higher output level
+					Industry.DemandComponents proposedCosts=c.computeOutputCosts(proposedOutput);
 					
 					// This is the additional funding required
-					Circuit.ExpansionCosts accumulationCosts=Circuit.extraCosts(existingCosts,proposedCosts);
+					Industry.DemandComponents accumulationCosts=Industry.extraCosts(existingCosts,proposedCosts);
 				
-					fundsAllocatedToThisIndustry = accumulationCosts.costOfOutput();
+					fundsAllocatedToThisIndustry = accumulationCosts.costOfExpansionOutput();
 					fundsAllocated+=fundsAllocatedToThisIndustry;
 					Reporter.report(logger, 2, "Industry [%s] has received $%.0f from the capitalist class to accumulate, of which $%.0f for means of production",
-							c.getProductUseValueName(), fundsAllocatedToThisIndustry, accumulationCosts.costOfMP);
+							c.getProductUseValueName(), fundsAllocatedToThisIndustry, accumulationCosts.costOfExpansionMP);
 					recipient = c.getMoneyStock();
 					recipient.modifyBy(fundsAllocatedToThisIndustry);
 					donor.modifyBy(-fundsAllocatedToThisIndustry);
 					capitalists.setRevenue(capitalists.getRevenue() - fundsAllocatedToThisIndustry);
-					surplusMeansOfProduction -= accumulationCosts.costOfMP;
+					surplusMeansOfProduction -= accumulationCosts.costOfExpansionMP;
 				}
 			}
 			break;

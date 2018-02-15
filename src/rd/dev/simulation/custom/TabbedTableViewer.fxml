@@ -21,13 +21,13 @@
 									<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
 								</columnResizePolicy>
 							</TableView>
-							<TableView fx:id="dynamicCircuitTable" prefHeight="150.0"
+							<TableView fx:id="dynamicIndustryTable" prefHeight="150.0"
 								prefWidth="750.0">
 								<columnResizePolicy>
 									<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
 								</columnResizePolicy>
 							</TableView>
-							<TableView fx:id="circuitsTable" prefHeight="125.0"
+							<TableView fx:id="industriesTable" prefHeight="125.0"
 								prefWidth="750.0">
 								<columnResizePolicy>
 									<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

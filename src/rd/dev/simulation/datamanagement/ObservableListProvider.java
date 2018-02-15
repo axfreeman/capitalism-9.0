@@ -27,7 +27,7 @@ import org.apache.logging.log4j.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import rd.dev.simulation.Simulation;
-import rd.dev.simulation.model.Circuit;
+import rd.dev.simulation.model.Industry;
 import rd.dev.simulation.model.Project;
 import rd.dev.simulation.model.SocialClass;
 import rd.dev.simulation.model.Stock;
@@ -92,15 +92,15 @@ public class ObservableListProvider extends DataManager {
 	}
 
 	/**
-	 * an observable list of type Circuit for display by ViewManager, at the current project and timeStampDisplayCursor. timeStampDisplayCursor, which
+	 * an observable list of type Industry for display by ViewManager, at the current project and timeStampDisplayCursor. timeStampDisplayCursor, which
 	 * may diverge from timeStamp, identifies the row that the user last clicked on.
 	 * 
-	 * @return an ObservableList of circuits
+	 * @return an ObservableList of industries
 	 */
-	public ObservableList<Circuit> circuitsObservable() {
-		circuitAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampDisplayCursor);
-		ObservableList<Circuit> result = FXCollections.observableArrayList();
-		for (Circuit c : circuitAllQuery.getResultList()) {
+	public ObservableList<Industry> industriesObservable() {
+		industriesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampDisplayCursor);
+		ObservableList<Industry> result = FXCollections.observableArrayList();
+		for (Industry c : industriesAllQuery.getResultList()) {
 			result.add(c);
 		}
 		return result;

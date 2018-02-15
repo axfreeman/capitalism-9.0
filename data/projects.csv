@@ -6,3 +6,4 @@ ProjectID,description,PriceDynamics
 2,SR with lower MELT,SIMPLE
 5,Expanded Reproduction,SIMPLE
 4,SR with two consumption goods,SIMPLE
+8,SR with two production goods,SIMPLE

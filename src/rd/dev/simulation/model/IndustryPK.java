@@ -20,11 +20,7 @@
 
 package rd.dev.simulation.model;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 import java.io.Serializable;
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -35,19 +31,19 @@ import javax.persistence.Embeddable;
  * @author afree
  */
 @Embeddable
-public class CircuitPK implements Serializable {
+public class IndustryPK implements Serializable {
 	static final long serialVersionUID = 001L;
 	@Basic(optional = false) @Column(name = "project") protected int project;
 	@Basic(optional = false) @Column(name = "timeStamp") protected int timeStamp;
-	@Basic(optional = false) @Column(name = "productUseValueName") protected String productUseValueName;
+	@Basic(optional = false) @Column(name = "industryName") protected String industryName;
 
-	public CircuitPK() {
+	public IndustryPK() {
 	}
 
-	public CircuitPK(int project, int timeStamp, String productUseValueName) {
+	public IndustryPK(int project, int timeStamp, String industryName) {
 		this.project = project;
 		this.timeStamp = timeStamp;
-		this.productUseValueName = productUseValueName;
+		this.industryName = industryName;
 	}
 	
 	@Override
@@ -55,25 +51,25 @@ public class CircuitPK implements Serializable {
 		int hash = 0;
 		hash += (int) project;
 		hash += timeStamp;
-		hash += (productUseValueName != null ? productUseValueName.hashCode() : 0);
+		hash += (industryName != null ? industryName.hashCode() : 0);
 		return hash;
 	}
 
 	@Override
 	public boolean equals(Object object) {
 		// TODO: Warning - this method won't work in the case the id fields are not set
-		if (!(object instanceof CircuitPK)) {
+		if (!(object instanceof IndustryPK)) {
 			return false;
 		}
-		CircuitPK other = (CircuitPK) object;
+		IndustryPK other = (IndustryPK) object;
 		if (this.project != other.project) {
 			return false;
 		}
 		if (this.timeStamp != other.timeStamp) {
 			return false;
 		}
-		if ((this.productUseValueName == null && other.productUseValueName != null)
-				|| (this.productUseValueName != null && !this.productUseValueName.equals(other.productUseValueName))) {
+		if ((this.industryName == null && other.industryName != null)
+				|| (this.industryName != null && !this.industryName.equals(other.industryName))) {
 			return false;
 		}
 		return true;
@@ -81,7 +77,7 @@ public class CircuitPK implements Serializable {
 
 	@Override
 	public String toString() {
-		return "demo.CapitalcircuitsPK[ project=" + project + ", timeStamp=" + timeStamp + ", productUseValueName=" + productUseValueName + " ]";
+		return "demo.IndustriesPK[ project=" + project + ", timeStamp=" + timeStamp + ", industryName=" + industryName + " ]";
 	}
 
 }

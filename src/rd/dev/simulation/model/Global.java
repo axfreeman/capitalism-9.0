@@ -260,12 +260,12 @@ public class Global extends Observable implements Serializable {
 	 */
 	public double initialCapital() {
 		double initialCapital = 0;
-		for (Circuit c : DataManager.circuitsAll(pk.timeStamp)) {
+		for (Industry c : DataManager.industriesAll(pk.timeStamp)) {
 			initialCapital += c.getInitialCapital();
 		}
 // TODO get this aggregate query working		
 //		double checkInitialCapital;
-//		checkInitialCapital=DataManager.circuitsInitialCapital(pk.timeStamp);
+//		checkInitialCapital=DataManager.industriesInitialCapital(pk.timeStamp);
 		return initialCapital;
 	}
 
@@ -275,7 +275,7 @@ public class Global extends Observable implements Serializable {
 
 	public double currentCapital() {
 		double currentCapital = 0;
-		for (Circuit c : DataManager.circuitsAll(pk.timeStamp)) {
+		for (Industry c : DataManager.industriesAll(pk.timeStamp)) {
 			currentCapital += c.currentCapital();
 		}
 		return currentCapital;

@@ -46,17 +46,17 @@ import rd.dev.simulation.view.ViewManager;
 		@NamedQuery(name = "Primary", query = "SELECT u FROM UseValue u where u.pk.project= :project AND u.pk.timeStamp= :timeStamp and u.pk.useValueName=:useValueName"),
 		@NamedQuery(name = "All", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp"),
 		@NamedQuery(name = "UseValueType", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.useValueType=:useValueType"),
-		@NamedQuery(name = "UseValueCircuitType", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.useValueCircuitType=:useValueCircuitType")
+		@NamedQuery(name = "UseValueIndustryType", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.useValueIndustryType=:useValueIndustryType")
 })
 @Embeddable
 public class UseValue extends Observable implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = LogManager.getLogger("Commodity");
 
-	// The primary key (composite key containing project, timeStamp and productUseValueName)
+	// The primary key (composite key containing project, timeStamp and industryName)
 	@EmbeddedId protected UseValuePK pk;
 
-	@Column(name = "useValueCircuitType") private USEVALUECIRCUITTYPE useValueCircuitType; // whether this is produced by an enterprise or a class
+	@Column(name = "useValueIndustryType") private USEVALUEINDUSTRYTYPE useValueIndustryType; // whether this is produced by an enterprise or a class
 	@Column(name = "useValueType") private USEVALUETYPE useValueType;// see enum USEVALUETYPE for list of possible types
 	@Column(name = "turnoverTime") private double turnoverTime;
 	@Column(name = "unitValue") private double unitValue;
@@ -97,11 +97,11 @@ public class UseValue extends Observable implements Serializable {
 		}
 	};
 
-	public enum USEVALUECIRCUITTYPE {
+	public enum USEVALUEINDUSTRYTYPE {
 		SOCIAL("Social"), CAPITALIST("Capitalist"), MONEY("Money");
 		String text;
 
-		USEVALUECIRCUITTYPE(String text) {
+		USEVALUEINDUSTRYTYPE(String text) {
 			this.text = text;
 		}
 
@@ -121,13 +121,14 @@ public class UseValue extends Observable implements Serializable {
 	public enum USEVALUE_SELECTOR {
 		// @formatter:off
 		USEVALUENAME("Commodity",null,null), 
-		USEVALUECIRCUITTYPE("Owner Type",null,null), 
+		USEVALUEOWNERTYPE("Owner Type",null,null), 
 		TURNOVERTIME("Turnover Time","Turnover.png",null), 
 		UNITVALUE("Unit Value","unitValueTransparent.png",null), 
 		UNITPRICE("Unit Price","unitPrice.png",null), 
 		TOTALSUPPLY("Supply","supply.png",null), 
 		TOTALQUANTITY("Quantity","Quantity.png",null), 
-		TOTALDEMAND("Demand","demand.png",null), 
+		REPLENISHMENT_DEMAND("Replenishment","demand.png",null), 
+		EXPANSION_DEMAND("Expansion","expansiondemand.png",null), 
 		SURPLUS("Surplus","surplus.png",null), 
 		TOTALVALUE("Total Value","Value.png",null), 
 		TOTALPRICE("Total Price","price.png",null), 
@@ -177,7 +178,7 @@ public class UseValue extends Observable implements Serializable {
 		this.pk.timeStamp = useValueTemplate.pk.timeStamp;
 		this.pk.useValueName = useValueTemplate.pk.useValueName;
 		this.pk.project = useValueTemplate.pk.project;
-		this.useValueCircuitType = useValueTemplate.useValueCircuitType;
+		this.useValueIndustryType = useValueTemplate.useValueIndustryType;
 		this.turnoverTime = useValueTemplate.turnoverTime;
 		this.unitValue = useValueTemplate.unitValue;
 		this.unitPrice = useValueTemplate.unitPrice;
@@ -186,8 +187,9 @@ public class UseValue extends Observable implements Serializable {
 		this.useValueType = useValueTemplate.useValueType;
 		this.stockUsedUp = useValueTemplate.stockUsedUp;
 		this.stockProduced = useValueTemplate.stockProduced;
+		this.imageName=useValueTemplate.imageName;
 	}
-
+	
 	/**
 	 * Calculate the total quantity, value and price of this useValue, from the stocks of this useValue
 	 * Validate against existing total if requested
@@ -230,8 +232,8 @@ public class UseValue extends Observable implements Serializable {
 		switch (USEVALUE_SELECTOR) {
 		case USEVALUENAME:
 			return new ReadOnlyStringWrapper(pk.useValueName);
-		case USEVALUECIRCUITTYPE:
-			return new ReadOnlyStringWrapper(useValueCircuitType.getText());
+		case USEVALUEOWNERTYPE:
+			return new ReadOnlyStringWrapper(useValueIndustryType.getText());
 		case UNITPRICE:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, unitPrice));
 		case UNITVALUE:
@@ -244,9 +246,11 @@ public class UseValue extends Observable implements Serializable {
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalQuantity()));
 		case TOTALSUPPLY:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalSupply()));
-		case TOTALDEMAND:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalDemand()));
-		case SURPLUS:
+		case REPLENISHMENT_DEMAND:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, replenishmentDemand()));
+		case EXPANSION_DEMAND:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, expansionDemand()));
+				case SURPLUS:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, surplusProduct));
 		case TURNOVERTIME:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, turnoverTime));
@@ -281,7 +285,7 @@ public class UseValue extends Observable implements Serializable {
 		switch (uSEVALUE_SELECTOR) {
 		case USEVALUENAME:
 			return false;
-		case USEVALUECIRCUITTYPE:
+		case USEVALUEOWNERTYPE:
 			return false;
 		case UNITPRICE:
 			return unitPrice != comparator.getUnitPrice();
@@ -295,8 +299,8 @@ public class UseValue extends Observable implements Serializable {
 			return totalQuantity() != comparator.totalQuantity();
 		case TOTALSUPPLY:
 			return totalSupply() != comparator.totalSupply();
-		case TOTALDEMAND:
-			return totalDemand() != comparator.totalDemand();
+		case REPLENISHMENT_DEMAND:
+			return replenishmentDemand() != comparator.replenishmentDemand();
 		case SURPLUS:
 			return surplusProduct != comparator.surplusProduct;
 		case TURNOVERTIME:
@@ -333,7 +337,7 @@ public class UseValue extends Observable implements Serializable {
 			return item;
 		switch (useValueSelector) {
 		case USEVALUENAME:
-		case USEVALUECIRCUITTYPE:
+		case USEVALUEOWNERTYPE:
 			return item;
 		case UNITPRICE:
 			return String.format(ViewManager.smallNumbersFormatString, (unitPrice - comparator.unitPrice));
@@ -347,8 +351,8 @@ public class UseValue extends Observable implements Serializable {
 			return String.format(ViewManager.largeNumbersFormatString, (totalQuantity() - comparator.totalQuantity()));
 		case TOTALSUPPLY:
 			return String.format(ViewManager.largeNumbersFormatString, (totalSupply() - comparator.totalSupply()));
-		case TOTALDEMAND:
-			return String.format(ViewManager.largeNumbersFormatString, (totalDemand() - comparator.totalDemand()));
+		case REPLENISHMENT_DEMAND:
+			return String.format(ViewManager.largeNumbersFormatString, (replenishmentDemand() - comparator.replenishmentDemand()));
 		case SURPLUS:
 			return String.format(ViewManager.largeNumbersFormatString, (surplusProduct - comparator.surplusProduct));
 		case TURNOVERTIME:
@@ -430,10 +434,28 @@ public class UseValue extends Observable implements Serializable {
 		return supply;
 	}
 
-	public double totalDemand() {
+	/**
+	 * The total replenishment demand from all stocks of this useValue
+	 * @return replenishment demand from all stocks of this useValue
+	 */
+	
+	public double replenishmentDemand() {
 		double demand =0.0;
 		for (Stock s:DataManager.stocksByUseValue(pk.timeStamp, pk.useValueName)) {
-			demand+=s.getQuantityDemanded();
+			demand+=s.getReplenishmentDemand();
+		}
+		return demand;
+	}
+
+	/**
+	 * The total expansion demand from all stocks of this useValue
+	 * @return expansion demand from all stocks of this useValue
+	 */
+	
+	public double expansionDemand() {
+		double demand =0.0;
+		for (Stock s:DataManager.stocksByUseValue(pk.timeStamp, pk.useValueName)) {
+			demand+=s.getExpansionDemand();
 		}
 		return demand;
 	}
@@ -462,12 +484,12 @@ public class UseValue extends Observable implements Serializable {
 		this.unitValue = unitValue;
 	}
 
-	public USEVALUECIRCUITTYPE getUseValueCircuitType() {
-		return this.useValueCircuitType;
+	public USEVALUEINDUSTRYTYPE getUseValueIndustryType() {
+		return this.useValueIndustryType;
 	}
 
-	public void setUseValueCircuitType(USEVALUECIRCUITTYPE useValueCircuitType) {
-		this.useValueCircuitType = useValueCircuitType;
+	public void setUseValueIndustryType(USEVALUEINDUSTRYTYPE useValueIndustryType) {
+		this.useValueIndustryType = useValueIndustryType;
 	}
 
 	public double getAllocationShare() {
@@ -534,19 +556,19 @@ public class UseValue extends Observable implements Serializable {
 	}
 
 	/**
-	 * @return total profit so far in the circuits that produce this use value
+	 * @return total profit so far in the industries that produce this use value
 	 */
 
 	public double profit() {
 		double profit = 0;
-		for (Circuit c : DataManager.circuitsByProductUseValue(pk.timeStamp, pk.useValueName)) {
+		for (Industry c : DataManager.industriesByProductUseValue(pk.timeStamp, pk.useValueName)) {
 			profit += c.profit();
 		}
 		return profit;
 	}
 	 
 	/**
-	 * @return the profit rate so far in the circuits that produce this use value
+	 * @return the profit rate so far in the industries that produce this use value
 	 */
 	public double profitRate() {
 		return profit()/initialCapital();
@@ -557,7 +579,7 @@ public class UseValue extends Observable implements Serializable {
 	 */
 	public double initialCapital() {
 		double capital = 0;
-		for (Circuit c : DataManager.circuitsByProductUseValue(pk.useValueName)) {
+		for (Industry c : DataManager.industriesByProductUseValue(pk.useValueName)) {
 			capital += c.getInitialCapital();
 		}
 		return capital;

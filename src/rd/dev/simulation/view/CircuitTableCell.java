@@ -25,13 +25,13 @@ import org.apache.logging.log4j.Logger;
 import javafx.scene.control.TableCell;
 import javafx.scene.paint.Color;
 import rd.dev.simulation.custom.TabbedTableViewer;
-import rd.dev.simulation.model.Circuit;
-public class CircuitTableCell extends TableCell<Circuit, String> {
+import rd.dev.simulation.model.Industry;
+public class CircuitTableCell extends TableCell<Industry, String> {
 	static final Logger logger = LogManager.getLogger("CircuitTableCell");
 
-	Circuit.Selector selector;
+	Industry.Selector selector;
 
-	public CircuitTableCell(Circuit.Selector selector) {
+	public CircuitTableCell(Industry.Selector selector) {
 		this.selector = selector;
 	}
 
@@ -41,15 +41,15 @@ public class CircuitTableCell extends TableCell<Circuit, String> {
 		if (item == null) {// this happens,it seems, when the tableRow is used for the column header
 			return;
 		}
-		Circuit circuit = getTableView().getItems().get(getIndex());
-		if (circuit == null) {
-			logger.debug(" Null Circuit");
+		Industry industry = getTableView().getItems().get(getIndex());
+		if (industry == null) {
+			logger.debug(" Null Industry");
 			return;
 		}
 		
 		String deltaModifier="";
 		
-		if (circuit.changed(selector,TabbedTableViewer.displayAttribute)) {
+		if (industry.changed(selector,TabbedTableViewer.displayAttribute)) {
 			setTextFill(Color.RED);
 			deltaModifier=(ViewManager.displayDeltas?ViewManager.deltaSymbol:"");
 		}
@@ -58,7 +58,7 @@ public class CircuitTableCell extends TableCell<Circuit, String> {
 		String priceModifier= deltaModifier+ViewManager.pricesExpressionSymbol;
 
 		if(ViewManager.displayDeltas) {
-			item=circuit.showDelta(item, selector,TabbedTableViewer.displayAttribute);
+			item=industry.showDelta(item, selector,TabbedTableViewer.displayAttribute);
 		}
 
 		switch (selector) {

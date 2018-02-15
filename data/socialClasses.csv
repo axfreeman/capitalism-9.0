@@ -14,3 +14,5 @@ Project,timeStamp,SocialClassName,Size,ConsumptionPerPerson,ParticipationRatio,R
 7,1,Bankers,0,1,0,0
 7,1,Capitalists,10,1,0,10
 7,1,Workers,300,1,1,0
+8,1,Capitalists,1500,1,0,1500
+8,1,Workers,3000,1,1,0

@@ -36,9 +36,9 @@
 
 	</persistence-unit>
 
-	<persistence-unit name="DB_CAPITALCIRCUITS"
+	<persistence-unit name="DB_INDUSTRIES"
 		transaction-type="RESOURCE_LOCAL">
-		<class>rd.dev.simulation.model.Circuit</class>
+		<class>rd.dev.simulation.model.Industry</class>
 
 		<properties>
 			<property name="javax.persistence.jdbc.url"

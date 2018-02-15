@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.datamanagement.DataManager;
+import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.Reporter;
 import rd.dev.simulation.view.ViewManager;
 import org.apache.commons.math3.util.Precision;
@@ -72,9 +73,10 @@ public class Stock extends Observable implements Serializable {
 	@EmbeddedId protected StockPK pk;
 	@Column(name = "ownertype") private OWNERTYPE ownerType;
 	@Column(name = "quantity") private double quantity;
-	@Column(name = "quantityDemanded") private double quantityDemanded;
 	@Column(name = "value") private double value;
 	@Column(name = "price") private double price;
+	@Column(name = "replenishmentDemand") private double replenishmentDemand;
+	@Column(name = "expansionDemand") private double expansionDemand;
 
 	// the proportion of this stock used up in producing one unit of output.
 	// ONLY relevant if this is of stockType PRODUCTIVE (in which case the owner will be an industry)
@@ -99,14 +101,15 @@ public class Stock extends Observable implements Serializable {
 	 */
 	public enum Selector {
 		// @formatter:off
-		CIRCUIT("Owner",null,null), 
+		OWNER("Owner",null,null), 
 		OWNERTYPE("Owner Type",null,null), 
 		USEVALUE("Commodity Produced",null,null), 
 		STOCKTYPE("Stock Type",null,null), 
 		QUANTITY("Quantity",null,"quantity.png"), 
 		PRODUCTION_COEFFICIENT("Coefficient",null,null), 
 		CONSUMPTION_COEFFICIENT("Coefficient",null,null),
-		QUANTITYDEMANDED("Demand",null,"demand.png"), 
+		REPLENISHMENTDEMAND("Demand",null,"demand.png"), 
+		EXPANSIONDEMAND("Expansion",null,"expansiondemand.png"),
 		VALUE("Value",null,"value.png"), 
 		PRICE("Price",null,"price.png");
 		// @formatter:on
@@ -155,7 +158,7 @@ public class Stock extends Observable implements Serializable {
 	 * and classes, which provide labour, and consume revenue.
 	 */
 	public enum OWNERTYPE {
-		CLASS("Social Class"), CIRCUIT("Industry");
+		CLASS("Social Class"), INDUSTRY("Industry");
 		private String text;
 
 		OWNERTYPE(String text) {
@@ -232,13 +235,14 @@ public class Stock extends Observable implements Serializable {
 		pk.owner = stockTemplate.pk.owner;
 		pk.useValue = stockTemplate.pk.useValue;
 		pk.stockType = stockTemplate.pk.stockType;
+		price = stockTemplate.price;
+		value = stockTemplate.value;
 		ownerType = stockTemplate.ownerType;
 		productionCoefficient = stockTemplate.productionCoefficient;
 		consumptionCoefficient=stockTemplate.consumptionCoefficient;
 		quantity = stockTemplate.quantity;
-		quantityDemanded = stockTemplate.quantityDemanded;
-		price = stockTemplate.price;
-		value = stockTemplate.value;
+		replenishmentDemand = stockTemplate.replenishmentDemand;
+		expansionDemand = stockTemplate.expansionDemand;
 	}
 
 	/**
@@ -298,16 +302,20 @@ public class Stock extends Observable implements Serializable {
 	 */
 	public void modifyTo(double newQuantity) {
 		double melt = DataManager.getGlobal().getMelt();
-		double unitValue = unitValue();
-		double unitPrice = unitPrice();
-		double newValue = newQuantity * unitValue;
-		double newPrice = newQuantity * unitPrice;
-		quantity = Precision.round(newQuantity,Simulation.getRoundingPrecision());
-		value = Precision.round(newValue,Simulation.getRoundingPrecision());
-		price = Precision.round(newPrice,Simulation.getRoundingPrecision());
-		Reporter.report(logger, 2,
-				"  Size of commodity [%s], of type [%s], owned by [%s]: is %.0f. Value set to $%.0f (intrinsic %.0f), and price to %.0f (intrinsic %.0f)",
-				pk.useValue, pk.stockType, pk.owner, quantity, value, value / melt, price, price / melt);
+		try {
+			double unitValue = unitValue();
+			double unitPrice = unitPrice();
+			double newValue = newQuantity * unitValue;
+			double newPrice = newQuantity * unitPrice;
+			quantity = Precision.round(newQuantity,Simulation.getRoundingPrecision());
+			value = Precision.round(newValue,Simulation.getRoundingPrecision());
+			price = Precision.round(newPrice,Simulation.getRoundingPrecision());
+			Reporter.report(logger, 2,
+					"  Size of commodity [%s], of type [%s], owned by [%s]: is %.0f. Value set to $%.0f (intrinsic %.0f), and price to %.0f (intrinsic %.0f)",
+					pk.useValue, pk.stockType, pk.owner, quantity, value, value / melt, price, price / melt);
+		}catch (Exception e) {
+			Dialogues.alert(logger, "Something went wrong pre-processing the stock called %s. Please check your data.",pk.useValue);
+		}
 	}
 
 	/**
@@ -344,7 +352,7 @@ public class Stock extends Observable implements Serializable {
 	public ReadOnlyStringWrapper wrappedString(Selector selector) {
 		chooseComparison();
 		switch (selector) {
-		case CIRCUIT:
+		case OWNER:
 			return new ReadOnlyStringWrapper(pk.owner);
 		case OWNERTYPE:
 			return new ReadOnlyStringWrapper(ownerType.text());
@@ -360,8 +368,8 @@ public class Stock extends Observable implements Serializable {
 		case PRICE:
 			return new ReadOnlyStringWrapper(
 					String.format(ViewManager.largeNumbersFormatString, ViewManager.valueExpression(price, ViewManager.pricesExpressionDisplay)));
-		case QUANTITYDEMANDED:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, quantityDemanded));
+		case REPLENISHMENTDEMAND:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, replenishmentDemand));
 		case PRODUCTION_COEFFICIENT:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, productionCoefficient));
 		case CONSUMPTION_COEFFICIENT:
@@ -407,7 +415,7 @@ public class Stock extends Observable implements Serializable {
 	public boolean changed(Selector selector) {
 		chooseComparison();
 		switch (selector) {
-		case CIRCUIT:
+		case OWNER:
 		case USEVALUE:
 		case STOCKTYPE:
 			return false;
@@ -417,8 +425,8 @@ public class Stock extends Observable implements Serializable {
 			return value != comparator.value;
 		case PRICE:
 			return price != comparator.price;
-		case QUANTITYDEMANDED:
-			return quantityDemanded != comparator.quantityDemanded;
+		case REPLENISHMENTDEMAND:
+			return replenishmentDemand != comparator.replenishmentDemand;
 		case PRODUCTION_COEFFICIENT:
 			return productionCoefficient != comparator.productionCoefficient;
 		case CONSUMPTION_COEFFICIENT:
@@ -545,12 +553,12 @@ public class Stock extends Observable implements Serializable {
 		this.quantity = quantity;
 	}
 
-	public double getQuantityDemanded() {
-		return quantityDemanded;
+	public double getReplenishmentDemand() {
+		return replenishmentDemand;
 	}
 
-	public void setQuantityDemanded(double quantityDemanded) {
-		this.quantityDemanded = quantityDemanded;
+	public void setReplenishmentDemand(double quantityDemanded) {
+		this.replenishmentDemand = quantityDemanded;
 	}
 
 	public String getStockType() {
@@ -693,6 +701,20 @@ public class Stock extends Observable implements Serializable {
 	 */
 	public void setEndComparator(Stock endComparator) {
 		this.endComparator = endComparator;
+	}
+
+	/**
+	 * @return the expansionDemand
+	 */
+	public double getExpansionDemand() {
+		return expansionDemand;
+	}
+
+	/**
+	 * @param expansionDemand the expansionDemand to set
+	 */
+	public void setExpansionDemand(double expansionDemand) {
+		this.expansionDemand = expansionDemand;
 	}
 	
 	

@@ -29,7 +29,7 @@ import org.apache.logging.log4j.Logger;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.ActionStates;
 import rd.dev.simulation.datamanagement.DataManager;
-import rd.dev.simulation.model.Circuit;
+import rd.dev.simulation.model.Industry;
 import rd.dev.simulation.model.SocialClass;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.model.UseValue;
@@ -56,13 +56,13 @@ public class Trade extends Simulation implements Command {
 	}
 
 	/**
-	 * each productive circuit purchases the stocks that it needs
+	 * each productive industry purchases the stocks that it needs
 	 */
 	private void productivePurchasesTrade() {
-		List<Circuit> circuits = DataManager.circuitsAll();
-		Reporter.report(logger, 0, " The %d industries will now try to purchase the stocks they need. ", circuits.size());
+		List<Industry> industries = DataManager.industriesAll();
+		Reporter.report(logger, 0, " The %d industries will now try to purchase the stocks they need. ", industries.size());
 
-		for (Circuit buyer : circuits) {
+		for (Industry buyer : industries) {
 			String buyerName = buyer.getProductUseValueName();
 			Stock buyerMoneyStock = buyer.getMoneyStock();
 			List<Stock> stocks = buyer.productiveStocks();
@@ -73,7 +73,7 @@ public class Trade extends Simulation implements Command {
 			for (Stock s : stocks) {
 				String useValueName = s.getUseValueName();
 				UseValue stockUseValue = s.getUseValue();
-				double quantityTransferred = s.getQuantityDemanded();
+				double quantityTransferred = s.getReplenishmentDemand();
 				double unitPrice = stockUseValue.getUnitPrice();
 				if (quantityTransferred > 0) {
 					Reporter.report(logger, 1, " Industry [%s] is purchasing %.0f units of [%s] for $%.0f", s.getOwner(), quantityTransferred,
@@ -98,7 +98,7 @@ public class Trade extends Simulation implements Command {
 							Dialogues.alert(logger, "Nobody is selling labour Power");
 						}
 					} else {
-						Circuit seller = DataManager.circuitByProductUseValue(useValueName);
+						Industry seller = DataManager.industryByProductUseValue(useValueName);
 						Reporter.report(logger, 1, " The industry [%s] is selling [%s]", seller.getProductUseValueName(), s.getUseValueName());
 						sellerMoneyStock = seller.getMoneyStock();
 						sellerSalesStock = seller.getSalesStock();
@@ -123,7 +123,7 @@ public class Trade extends Simulation implements Command {
 			String buyerName = buyer.getSocialClassName();
 			Reporter.report(logger, 1, " Purchasing for the social class [%s]", buyerName);
 			for (UseValue u : DataManager.useValuesByType(UseValue.USEVALUETYPE.CONSUMPTION)) {
-				Circuit seller = DataManager.circuitByProductUseValue(u.getUseValueName());
+				Industry seller = DataManager.industryByProductUseValue(u.getUseValueName());
 				if (seller == null) {
 					Dialogues.alert(logger, "Nobody seems to be selling the consumption good called [%s]", u.getUseValueName());
 					break;
@@ -133,7 +133,7 @@ public class Trade extends Simulation implements Command {
 				Stock sellerSalesStock = seller.getSalesStock();
 				Stock sellerMoneyStock = seller.getMoneyStock();
 				double unitPrice = u.getUnitPrice();
-				double allocatedDemand = consumptionStock.getQuantityDemanded();
+				double allocatedDemand = consumptionStock.getReplenishmentDemand();
 				double quantityAdded = allocatedDemand;
 				double maximumQuantityAdded = buyerMoneyStock.getQuantity() / u.getUnitPrice();
 				double epsilon = Simulation.getEpsilon();

@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.ActionStates;
 import rd.dev.simulation.datamanagement.DataManager;
-import rd.dev.simulation.model.Circuit;
+import rd.dev.simulation.model.Industry;
 import rd.dev.simulation.model.SocialClass;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.utils.Reporter;
@@ -57,11 +57,11 @@ public class Revenue extends Simulation implements Command {
 		SocialClass capitalists = DataManager.socialClassByName("Capitalists");
 		double capitalistRevenue=0.0;
 		Stock recipient = capitalists.getMoneyStock();
-		for (Circuit c : DataManager.circuitsAll()) {
+		for (Industry c : DataManager.industriesAll()) {
 			double profit = c.profit();
 
 			// transfer all profits to the capitalist class. In the Accumulate phase, part of this revenue
-			// will be put back into the circuits to invest
+			// will be put back into the industries to invest
 
 			Stock donor = c.getMoneyStock();
 			recipient.modifyBy(profit);

@@ -103,7 +103,7 @@ var activeTableTab = "activeTableTab";
 <li>java.util.Observable</li>
 <li>
 <ul class="inheritance">
-<li>rd.dev.simulation.model.Circuit</li>
+<li>rd.dev.simulation.model.Industry</li>
 </ul>
 </li>
 </ul>
@@ -124,7 +124,7 @@ extends java.util.Observable
 implements java.io.Serializable</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../serialized-form.html#rd.dev.simulation.model.Circuit">Serialized Form</a></dd>
+<dd><a href="../../../../serialized-form.html#rd.dev.simulation.model.Industry">Serialized Form</a></dd>
 </dl>
 </li>
 </ul>
@@ -261,7 +261,7 @@ implements java.io.Serializable</pre>
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../rd/dev/simulation/model/Circuit.html#changed-rd.dev.simulation.model.Circuit.Selector-rd.dev.simulation.model.Stock.ValueExpression-">changed</a></span>(<a href="../../../../rd/dev/simulation/model/Circuit.Selector.html" title="enum in rd.dev.simulation.model">Circuit.Selector</a>&nbsp;selector,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../rd/dev/simulation/model/Circuit.html#changed-rd.dev.simulation.model.Industry.Selector-rd.dev.simulation.model.Stock.ValueExpression-">changed</a></span>(<a href="../../../../rd/dev/simulation/model/Circuit.Selector.html" title="enum in rd.dev.simulation.model">Circuit.Selector</a>&nbsp;selector,
        <a href="../../../../rd/dev/simulation/model/Stock.ValueExpression.html" title="enum in rd.dev.simulation.model">Stock.ValueExpression</a>&nbsp;valueExpression)</code>
 <div class="block">informs the display whether the selected member of this entity has changed, compared with the 'comparator' UseValue which normally
  comes from a different timeStamp.</div>
@@ -294,7 +294,7 @@ implements java.io.Serializable</pre>
 </tr>
 <tr id="i5" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../rd/dev/simulation/model/Circuit.html#copyCircuit-rd.dev.simulation.model.Circuit-">copyCircuit</a></span>(<a href="../../../../rd/dev/simulation/model/Circuit.html" title="class in rd.dev.simulation.model">Circuit</a>&nbsp;circuitTemplate)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../rd/dev/simulation/model/Circuit.html#copyCircuit-rd.dev.simulation.model.Industry-">copyCircuit</a></span>(<a href="../../../../rd/dev/simulation/model/Circuit.html" title="class in rd.dev.simulation.model">Circuit</a>&nbsp;circuitTemplate)</code>
 <div class="block">make a carbon copy of a circuit template</div>
 </td>
 </tr>
@@ -310,7 +310,7 @@ implements java.io.Serializable</pre>
 </tr>
 <tr id="i8" class="altColor">
 <td class="colFirst"><code>static <a href="../../../../rd/dev/simulation/model/Circuit.ExpansionCosts.html" title="class in rd.dev.simulation.model">Circuit.ExpansionCosts</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../rd/dev/simulation/model/Circuit.html#extraCosts-rd.dev.simulation.model.Circuit.ExpansionCosts-rd.dev.simulation.model.Circuit.ExpansionCosts-">extraCosts</a></span>(<a href="../../../../rd/dev/simulation/model/Circuit.ExpansionCosts.html" title="class in rd.dev.simulation.model">Circuit.ExpansionCosts</a>&nbsp;currentCosts,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../rd/dev/simulation/model/Circuit.html#extraCosts-rd.dev.simulation.model.Industry.ExpansionCosts-rd.dev.simulation.model.Industry.ExpansionCosts-">extraCosts</a></span>(<a href="../../../../rd/dev/simulation/model/Circuit.ExpansionCosts.html" title="class in rd.dev.simulation.model">Circuit.ExpansionCosts</a>&nbsp;currentCosts,
           <a href="../../../../rd/dev/simulation/model/Circuit.ExpansionCosts.html" title="class in rd.dev.simulation.model">Circuit.ExpansionCosts</a>&nbsp;expandedCosts)</code>
 <div class="block">calculate the extra cost, and its components, of expandedCosts compared to currentCosts</div>
 </td>
@@ -475,7 +475,7 @@ implements java.io.Serializable</pre>
 </tr>
 <tr id="i40" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../rd/dev/simulation/model/Circuit.html#setComparator-rd.dev.simulation.model.Circuit-">setComparator</a></span>(<a href="../../../../rd/dev/simulation/model/Circuit.html" title="class in rd.dev.simulation.model">Circuit</a>&nbsp;comparator)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../rd/dev/simulation/model/Circuit.html#setComparator-rd.dev.simulation.model.Industry-">setComparator</a></span>(<a href="../../../../rd/dev/simulation/model/Circuit.html" title="class in rd.dev.simulation.model">Circuit</a>&nbsp;comparator)</code>
 <div class="block">set the comparator Circuit of this Circuit.</div>
 </td>
 </tr>
@@ -485,11 +485,11 @@ implements java.io.Serializable</pre>
 </tr>
 <tr id="i42" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../rd/dev/simulation/model/Circuit.html#setCustomComparator-rd.dev.simulation.model.Circuit-">setCustomComparator</a></span>(<a href="../../../../rd/dev/simulation/model/Circuit.html" title="class in rd.dev.simulation.model">Circuit</a>&nbsp;customComparator)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../rd/dev/simulation/model/Circuit.html#setCustomComparator-rd.dev.simulation.model.Industry-">setCustomComparator</a></span>(<a href="../../../../rd/dev/simulation/model/Circuit.html" title="class in rd.dev.simulation.model">Circuit</a>&nbsp;customComparator)</code>&nbsp;</td>
 </tr>
 <tr id="i43" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../rd/dev/simulation/model/Circuit.html#setEndComparator-rd.dev.simulation.model.Circuit-">setEndComparator</a></span>(<a href="../../../../rd/dev/simulation/model/Circuit.html" title="class in rd.dev.simulation.model">Circuit</a>&nbsp;endComparator)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../rd/dev/simulation/model/Circuit.html#setEndComparator-rd.dev.simulation.model.Industry-">setEndComparator</a></span>(<a href="../../../../rd/dev/simulation/model/Circuit.html" title="class in rd.dev.simulation.model">Circuit</a>&nbsp;endComparator)</code>&nbsp;</td>
 </tr>
 <tr id="i44" class="altColor">
 <td class="colFirst"><code>void</code></td>
@@ -507,7 +507,7 @@ implements java.io.Serializable</pre>
 </tr>
 <tr id="i47" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../rd/dev/simulation/model/Circuit.html#setPreviousComparator-rd.dev.simulation.model.Circuit-">setPreviousComparator</a></span>(<a href="../../../../rd/dev/simulation/model/Circuit.html" title="class in rd.dev.simulation.model">Circuit</a>&nbsp;previousComparator)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../rd/dev/simulation/model/Circuit.html#setPreviousComparator-rd.dev.simulation.model.Industry-">setPreviousComparator</a></span>(<a href="../../../../rd/dev/simulation/model/Circuit.html" title="class in rd.dev.simulation.model">Circuit</a>&nbsp;previousComparator)</code>&nbsp;</td>
 </tr>
 <tr id="i48" class="altColor">
 <td class="colFirst"><code>void</code></td>
@@ -521,7 +521,7 @@ implements java.io.Serializable</pre>
 </tr>
 <tr id="i50" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../rd/dev/simulation/model/Circuit.html#setStartComparator-rd.dev.simulation.model.Circuit-">setStartComparator</a></span>(<a href="../../../../rd/dev/simulation/model/Circuit.html" title="class in rd.dev.simulation.model">Circuit</a>&nbsp;startComparator)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../rd/dev/simulation/model/Circuit.html#setStartComparator-rd.dev.simulation.model.Industry-">setStartComparator</a></span>(<a href="../../../../rd/dev/simulation/model/Circuit.html" title="class in rd.dev.simulation.model">Circuit</a>&nbsp;startComparator)</code>&nbsp;</td>
 </tr>
 <tr id="i51" class="rowColor">
 <td class="colFirst"><code>void</code></td>
@@ -529,7 +529,7 @@ implements java.io.Serializable</pre>
 </tr>
 <tr id="i52" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../rd/dev/simulation/model/Circuit.html#showDelta-java.lang.String-rd.dev.simulation.model.Circuit.Selector-rd.dev.simulation.model.Stock.ValueExpression-">showDelta</a></span>(java.lang.String&nbsp;item,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../rd/dev/simulation/model/Circuit.html#showDelta-java.lang.String-rd.dev.simulation.model.Industry.Selector-rd.dev.simulation.model.Stock.ValueExpression-">showDelta</a></span>(java.lang.String&nbsp;item,
          <a href="../../../../rd/dev/simulation/model/Circuit.Selector.html" title="enum in rd.dev.simulation.model">Circuit.Selector</a>&nbsp;selector,
          <a href="../../../../rd/dev/simulation/model/Stock.ValueExpression.html" title="enum in rd.dev.simulation.model">Stock.ValueExpression</a>&nbsp;valueExpression)</code>
 <div class="block">If the selected field has changed, return the difference between the current value and the former value</div>
@@ -548,7 +548,7 @@ implements java.io.Serializable</pre>
 </tr>
 <tr id="i55" class="rowColor">
 <td class="colFirst"><code>javafx.beans.property.ReadOnlyStringWrapper</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../rd/dev/simulation/model/Circuit.html#wrappedString-rd.dev.simulation.model.Circuit.Selector-rd.dev.simulation.model.Stock.ValueExpression-">wrappedString</a></span>(<a href="../../../../rd/dev/simulation/model/Circuit.Selector.html" title="enum in rd.dev.simulation.model">Circuit.Selector</a>&nbsp;selector,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../rd/dev/simulation/model/Circuit.html#wrappedString-rd.dev.simulation.model.Industry.Selector-rd.dev.simulation.model.Stock.ValueExpression-">wrappedString</a></span>(<a href="../../../../rd/dev/simulation/model/Circuit.Selector.html" title="enum in rd.dev.simulation.model">Circuit.Selector</a>&nbsp;selector,
              <a href="../../../../rd/dev/simulation/model/Stock.ValueExpression.html" title="enum in rd.dev.simulation.model">Stock.ValueExpression</a>&nbsp;valueExpression)</code>
 <div class="block">provides a wrapped version of the selected member which the display will recognise, as a ReadOnlyStringWrapper.</div>
 </td>
@@ -597,7 +597,7 @@ implements java.io.Serializable</pre>
 <pre>private static final&nbsp;long serialVersionUID</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../constant-values.html#rd.dev.simulation.model.Circuit.serialVersionUID">Constant Field Values</a></dd>
+<dd><a href="../../../../constant-values.html#rd.dev.simulation.model.Industry.serialVersionUID">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -727,7 +727,7 @@ implements java.io.Serializable</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="extraCosts-rd.dev.simulation.model.Circuit.ExpansionCosts-rd.dev.simulation.model.Circuit.ExpansionCosts-">
+<a name="extraCosts-rd.dev.simulation.model.Industry.ExpansionCosts-rd.dev.simulation.model.Industry.ExpansionCosts-">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -745,7 +745,7 @@ implements java.io.Serializable</pre>
 </dl>
 </li>
 </ul>
-<a name="copyCircuit-rd.dev.simulation.model.Circuit-">
+<a name="copyCircuit-rd.dev.simulation.model.Industry-">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -881,7 +881,7 @@ implements java.io.Serializable</pre>
 </dl>
 </li>
 </ul>
-<a name="wrappedString-rd.dev.simulation.model.Circuit.Selector-rd.dev.simulation.model.Stock.ValueExpression-">
+<a name="wrappedString-rd.dev.simulation.model.Industry.Selector-rd.dev.simulation.model.Stock.ValueExpression-">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -918,7 +918,7 @@ implements java.io.Serializable</pre>
 </dl>
 </li>
 </ul>
-<a name="changed-rd.dev.simulation.model.Circuit.Selector-rd.dev.simulation.model.Stock.ValueExpression-">
+<a name="changed-rd.dev.simulation.model.Industry.Selector-rd.dev.simulation.model.Stock.ValueExpression-">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -940,7 +940,7 @@ implements java.io.Serializable</pre>
 </dl>
 </li>
 </ul>
-<a name="showDelta-java.lang.String-rd.dev.simulation.model.Circuit.Selector-rd.dev.simulation.model.Stock.ValueExpression-">
+<a name="showDelta-java.lang.String-rd.dev.simulation.model.Industry.Selector-rd.dev.simulation.model.Stock.ValueExpression-">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -1405,7 +1405,7 @@ implements java.io.Serializable</pre>
 <div class="block">chooses the comparator depending on the state set in the <code>ViewManager.comparatorToggle</code> radio buttons</div>
 </li>
 </ul>
-<a name="setComparator-rd.dev.simulation.model.Circuit-">
+<a name="setComparator-rd.dev.simulation.model.Industry-">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -1434,7 +1434,7 @@ implements java.io.Serializable</pre>
 </dl>
 </li>
 </ul>
-<a name="setPreviousComparator-rd.dev.simulation.model.Circuit-">
+<a name="setPreviousComparator-rd.dev.simulation.model.Industry-">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -1460,7 +1460,7 @@ implements java.io.Serializable</pre>
 </dl>
 </li>
 </ul>
-<a name="setStartComparator-rd.dev.simulation.model.Circuit-">
+<a name="setStartComparator-rd.dev.simulation.model.Industry-">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -1486,7 +1486,7 @@ implements java.io.Serializable</pre>
 </dl>
 </li>
 </ul>
-<a name="setCustomComparator-rd.dev.simulation.model.Circuit-">
+<a name="setCustomComparator-rd.dev.simulation.model.Industry-">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -1512,7 +1512,7 @@ implements java.io.Serializable</pre>
 </dl>
 </li>
 </ul>
-<a name="setEndComparator-rd.dev.simulation.model.Circuit-">
+<a name="setEndComparator-rd.dev.simulation.model.Industry-">
 <!--   -->
 </a>
 <ul class="blockListLast">

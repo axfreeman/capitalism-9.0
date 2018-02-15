@@ -145,20 +145,20 @@ public class Capitalism extends Application {
 		ActionStates.M_C_Demand.setSuccessor(ActionStates.M_C_Constrain);
 		ActionStates.M_C_Constrain.setSuccessor(ActionStates.M_C_Trade);
 		ActionStates.M_C_Trade.setSuccessor(ActionStates.C_P_Produce);
-		ActionStates.C_P_CircuitsProduce.setSuccessor(ActionStates.C_P_ClassesReproduce);
+		ActionStates.C_P_IndustriesProduce.setSuccessor(ActionStates.C_P_ClassesReproduce);
 		ActionStates.C_P_ClassesReproduce.setSuccessor(ActionStates.C_P_ImmediateConsequences);
 		ActionStates.C_P_ImmediateConsequences.setSuccessor(ActionStates.C_M_Distribute);
 		ActionStates.C_M_Revenue.setSuccessor(ActionStates.C_M_Accumulate);
 		ActionStates.C_M_Accumulate.setSuccessor(ActionStates.M_C_PreTrade);
 		
 		ActionStates.M_C_PreTrade.setPermissibleSubAction(ActionStates.M_C_Demand);
-		ActionStates.C_P_Produce.setPermissibleSubAction(ActionStates.C_P_CircuitsProduce);
+		ActionStates.C_P_Produce.setPermissibleSubAction(ActionStates.C_P_IndustriesProduce);
 		ActionStates.C_M_Distribute.setPermissibleSubAction(ActionStates.C_M_Revenue);
 
 		ActionStates.M_C_Demand.setParent(ActionStates.M_C_PreTrade);
 		ActionStates.M_C_Constrain.setParent(ActionStates.M_C_PreTrade);
 		ActionStates.M_C_Trade.setParent(ActionStates.M_C_PreTrade);
-		ActionStates.C_P_CircuitsProduce.setParent(ActionStates.C_P_Produce);
+		ActionStates.C_P_IndustriesProduce.setParent(ActionStates.C_P_Produce);
 		ActionStates.C_P_ClassesReproduce.setParent(ActionStates.C_P_Produce);
 		ActionStates.C_P_ImmediateConsequences.setParent(ActionStates.C_P_Produce);
 		ActionStates.C_M_Revenue.setParent(ActionStates.C_M_Distribute);

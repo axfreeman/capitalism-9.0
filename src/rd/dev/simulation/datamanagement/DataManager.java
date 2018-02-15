@@ -31,7 +31,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.ActionButtonsBox;
-import rd.dev.simulation.model.Circuit;
+import rd.dev.simulation.model.Industry;
 import rd.dev.simulation.model.Global;
 import rd.dev.simulation.model.Project;
 import rd.dev.simulation.model.SocialClass;
@@ -51,7 +51,7 @@ public class DataManager {
 	private EntityManagerFactory timeStampsEntityManagerFactory = Persistence.createEntityManagerFactory("DB_TIMESTAMP");
 	private EntityManagerFactory projectEntityManagerFactory = Persistence.createEntityManagerFactory("DB_PROJECT");
 	private EntityManagerFactory useValuesEntityManagerFactory = Persistence.createEntityManagerFactory("DB_USEVALUES");
-	private EntityManagerFactory capitalCircuitsEntityManagerFactory = Persistence.createEntityManagerFactory("DB_CAPITALCIRCUITS");
+	private EntityManagerFactory industriesEntityManagerFactory = Persistence.createEntityManagerFactory("DB_INDUSTRIES");
 	private EntityManagerFactory socialClassEntityManagerFactory = Persistence.createEntityManagerFactory("DB_SOCIALCLASSES");
 	private EntityManagerFactory globalsEntityManagerFactory = Persistence.createEntityManagerFactory("DB_GLOBALS");
 	private EntityManagerFactory stocksEntityManagerFactory = Persistence.createEntityManagerFactory("DB_STOCKS");
@@ -60,7 +60,7 @@ public class DataManager {
 	protected static EntityManager timeStampEntityManager;
 	protected static EntityManager projectEntityManager;
 	protected static EntityManager useValueEntityManager;
-	protected static EntityManager circuitEntityManager;
+	protected static EntityManager industryEntityManager;
 	protected static EntityManager socialClassEntityManager;
 	protected static EntityManager globalEntityManager;
 	protected static EntityManager stocksEntityManager;
@@ -93,12 +93,12 @@ public class DataManager {
 	protected static TypedQuery<UseValue> useValuesAllQuery;
 	protected static TypedQuery<UseValue> useValuesProductiveQuery;
 	protected static TypedQuery<UseValue> useValuesByTypeQuery;
-	protected static TypedQuery<UseValue> useValuesByCircuitTypeQuery;
+	protected static TypedQuery<UseValue> useValuesByIndustryTypeQuery;
 
-	// Circuit queries
-	protected static TypedQuery<Circuit> circuitPrimaryQuery;
-	protected static TypedQuery<Circuit> circuitAllQuery;
-	protected static TypedQuery<Circuit> circuitInitialCapitalQuery;
+	// Industry queries
+	protected static TypedQuery<Industry> industriesPrimaryQuery;
+	protected static TypedQuery<Industry> industriesAllQuery;
+	protected static TypedQuery<Industry> industryInitialCapitalQuery;
 
 	// Social class queries
 	protected static TypedQuery<SocialClass> socialClassByPrimaryKeyQuery;
@@ -121,7 +121,7 @@ public class DataManager {
 		projectEntityManager = projectEntityManagerFactory.createEntityManager();
 		stocksEntityManager = stocksEntityManagerFactory.createEntityManager();
 		useValueEntityManager = useValuesEntityManagerFactory.createEntityManager();
-		circuitEntityManager = capitalCircuitsEntityManagerFactory.createEntityManager();
+		industryEntityManager = industriesEntityManagerFactory.createEntityManager();
 		socialClassEntityManager = socialClassEntityManagerFactory.createEntityManager();
 		globalEntityManager = globalsEntityManagerFactory.createEntityManager();
 
@@ -153,12 +153,12 @@ public class DataManager {
 		useValueByPrimaryKeyQuery = useValueEntityManager.createNamedQuery("Primary", UseValue.class);
 		useValuesAllQuery = useValueEntityManager.createNamedQuery("All", UseValue.class);
 		useValuesByTypeQuery = useValueEntityManager.createNamedQuery("UseValueType", UseValue.class);
-		useValuesByCircuitTypeQuery = useValueEntityManager.createNamedQuery("UseValueCircuitType", UseValue.class);
+		useValuesByIndustryTypeQuery = useValueEntityManager.createNamedQuery("UseValueIndustryType", UseValue.class);
 
-		// Circuit queries
-		circuitPrimaryQuery = circuitEntityManager.createNamedQuery("Primary", Circuit.class);
-		circuitAllQuery = circuitEntityManager.createNamedQuery("All", Circuit.class);
-		circuitInitialCapitalQuery = circuitEntityManager.createNamedQuery("InitialCapital", Circuit.class);
+		// Industry queries
+		industriesPrimaryQuery = industryEntityManager.createNamedQuery("Primary", Industry.class);
+		industriesAllQuery = industryEntityManager.createNamedQuery("All", Industry.class);
+		industryInitialCapitalQuery = industryEntityManager.createNamedQuery("InitialCapital", Industry.class);
 		// social class queries
 		socialClassByPrimaryKeyQuery = socialClassEntityManager.createNamedQuery("Primary", SocialClass.class);
 		socialClassAllQuery = socialClassEntityManager.createNamedQuery("All", SocialClass.class);
@@ -223,16 +223,16 @@ public class DataManager {
 	 *            the given project
 	 * @param timeStamp
 	 *            the given timeStamp
-	 * @param circuit
-	 *            the name of the owning circuit, as a String
+	 * @param industry
+	 *            the name of the owning industry, as a String
 	 * @param useValue
 	 *            the name of the use value of this stock, as a String
 	 * @param stockType
 	 *            the type of this stock (money, productive, sales, consumption) as a String
 	 * @return the single stock defined by this primary key, null if it does not exist
 	 */
-	public static Stock stockByPrimaryKey(int project, int timeStamp, String circuit, String useValue, String stockType) {
-		stockByPrimaryKeyQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("owner", circuit)
+	public static Stock stockByPrimaryKey(int project, int timeStamp, String industry, String useValue, String stockType) {
+		stockByPrimaryKeyQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("owner", industry)
 				.setParameter("useValue", useValue).setParameter("stockType", stockType);
 		try {
 			return stockByPrimaryKeyQuery.getSingleResult();
@@ -242,17 +242,17 @@ public class DataManager {
 	}
 
 	/**
-	 * the money stock of a Circuit defined by the name of the circuit and the use value it produces, for the current project and a given timeStamp
+	 * the money stock of a Industry defined by the name of the industry and the use value it produces, for the current project and a given timeStamp
 	 * 
 	 * @param timeStamp
 	 *            the given timeStammp
-	 * @param circuit
-	 *            the Circuit to which the stock belongs
+	 * @param industry
+	 *            the Industry to which the stock belongs
 	 * 
-	 * @return the single stock of money owned by the circuit
+	 * @return the single stock of money owned by the industry
 	 */
-	public static Stock stockMoneyByCircuitSingle(int timeStamp, String circuit) {
-		stockByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp).setParameter("owner", circuit)
+	public static Stock stockMoneyByIndustrySingle(int timeStamp, String industry) {
+		stockByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp).setParameter("owner", industry)
 				.setParameter("stockType", Stock.STOCKTYPE.MONEY.text()).setParameter("useValue", "Money");
 		try {
 			return stockByPrimaryKeyQuery.getSingleResult();
@@ -312,35 +312,35 @@ public class DataManager {
 	}
 
 	/**
-	 * a list of all the productive stocks that are managed by a given circuit, at the current project and a given timeStamp
+	 * a list of all the productive stocks that are managed by a given industry, at the current project and a given timeStamp
 	 *
 	 * @param timeStamp
 	 *            the given timeStamp
-	 * @param circuit
-	 *            the circuit that manages these productive stocks
-	 * @return a list of the productive stocks managed by this circuit
+	 * @param industry
+	 *            the industry that manages these productive stocks
+	 * @return a list of the productive stocks managed by this industry
 	 */
-	public static List<Stock> stocksProductiveByCircuit(int timeStamp, String circuit) {
-		logger.log(Level.ALL, "  Fetching productive stocks for the circuit " + circuit);
+	public static List<Stock> stocksProductiveByIndustry(int timeStamp, String industry) {
+		logger.log(Level.ALL, "  Fetching productive stocks for the industry " + industry);
 		stocksByOwnerAndTypeQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
-		stocksByOwnerAndTypeQuery.setParameter("owner", circuit).setParameter("stockType", Stock.STOCKTYPE.PRODUCTIVE.text());
+		stocksByOwnerAndTypeQuery.setParameter("owner", industry).setParameter("stockType", Stock.STOCKTYPE.PRODUCTIVE.text());
 		return stocksByOwnerAndTypeQuery.getResultList();
 	}
 
 	/**
-	 * the single productive stock of a circuit defined by the name of the circuit, the use value it produces, for the current project and a given timeStamp
+	 * the single productive stock of a industry defined by the name of the industry, the use value it produces, for the current project and a given timeStamp
 	 * 
 	 * @param timeStamp
 	 *            the given timeStamp
-	 * @param circuit
-	 *            the circuit to which the stock belongs
+	 * @param industry
+	 *            the industry to which the stock belongs
 	 * @param useValue
 	 *            the useValue of the stock
-	 * @return the single productive stock, with the given useValue, of the named circuit
+	 * @return the single productive stock, with the given useValue, of the named industry
 	 */
-	public static Stock stockProductiveByNameSingle(int timeStamp, String circuit, String useValue) {
+	public static Stock stockProductiveByNameSingle(int timeStamp, String industry, String useValue) {
 		stockByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp)
-				.setParameter("owner", circuit).setParameter("stockType", Stock.STOCKTYPE.PRODUCTIVE.text()).setParameter("useValue", useValue);
+				.setParameter("owner", industry).setParameter("stockType", Stock.STOCKTYPE.PRODUCTIVE.text()).setParameter("useValue", useValue);
 		try {
 			return stockByPrimaryKeyQuery.getSingleResult();
 		} catch (javax.persistence.NoResultException e) {
@@ -387,7 +387,7 @@ public class DataManager {
 	
 	/**
 	 * a list of sales Stock of a given use value for the current project and a given timeStamp.
-	 * NOTE only the circuit will vary, and at present only one of these circuits will produce this use value. However in general more than one circuit may
+	 * NOTE only the industry will vary, and at present only one of these industries will produce this use value. However in general more than one industry may
 	 * produce it so we yield a list here.
 	 * 
 	 * @param timeStamp
@@ -485,124 +485,124 @@ public class DataManager {
 	}
 
 	/**
-	 * a list of all use values of the given circuittype and the given timeStamp
+	 * a list of all use values of the given industrytype and the given timeStamp
 	 * 
-	 * @param useValueCircuitType
+	 * @param useValueIndustryType
 	 *            the type of the UseValue (SOCIAL, CLASS)
-	 * @return a list of circuits at the latest timeStamp that has been persisted.
+	 * @return a list of industries at the latest timeStamp that has been persisted.
 	 * 
 	 */
-	public static List<UseValue> useValuesByCircuitType(UseValue.USEVALUECIRCUITTYPE useValueCircuitType) {
-		useValuesByCircuitTypeQuery.setParameter("project", Simulation.projectCurrent);
-		useValuesByCircuitTypeQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent);
-		useValuesByCircuitTypeQuery.setParameter("useValueCircuitType", useValueCircuitType);
-		return useValuesByCircuitTypeQuery.getResultList();
+	public static List<UseValue> useValuesByIndustryType(UseValue.USEVALUEINDUSTRYTYPE useValueIndustryType) {
+		useValuesByIndustryTypeQuery.setParameter("project", Simulation.projectCurrent);
+		useValuesByIndustryTypeQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent);
+		useValuesByIndustryTypeQuery.setParameter("useValueIndustryType", useValueIndustryType);
+		return useValuesByIndustryTypeQuery.getResultList();
 	}
 
 	/**
-	 * the topmost useValue of the given circuit type
+	 * the topmost useValue of the given industry type
 	 * legacy method for the places where we assume a single use value of a particular type, eg Labour Power
 	 * TODO phase this out
 	 * 
-	 * @param useValueCircuitType
+	 * @param useValueIndustryType
 	 *            the given USEVALUETYPE
 	 * @return the topMost useValue of this type
 	 */
-	public static UseValue useValueByCircuitType(UseValue.USEVALUECIRCUITTYPE useValueCircuitType) {
-		List<UseValue> useValues = useValuesByCircuitType(useValueCircuitType);
+	public static UseValue useValueByIndustryType(UseValue.USEVALUEINDUSTRYTYPE useValueIndustryType) {
+		List<UseValue> useValues = useValuesByIndustryType(useValueIndustryType);
 		return useValues.get(0);
 	}
 
-	// CIRCUIT QUERIES
+	// INDUSTRY QUERIES
 
 	/**
-	 * the circuit that produces a given usevalue, for the current project and a given timeStamp. This is also the primary key of the circuit entity
+	 * the industry that produces a given usevalue, for the current project and a given timeStamp. This is also the primary key of the Industry entity
 	 * 
 	 * @param project
 	 *            the project
 	 * @param timeStamp
 	 *            the timeStamp
 	 * @param useValueName
-	 *            the name of the usevalue that is produced by this circuit
-	 * @return the circuit that produces {@code useValueName}, or null if this does not exist
+	 *            the name of the usevalue that is produced by this industry
+	 * @return the industrythat produces {@code useValueName}, or null if this does not exist
 	 */
-	public static Circuit circuitByPrimaryKey(int project, int timeStamp, String useValueName) {
-		circuitPrimaryQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("productUseValueName", useValueName);
+	public static Industry industryByPrimaryKey(int project, int timeStamp, String useValueName) {
+		industriesPrimaryQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("industryName", useValueName);
 		try {
-			return circuitPrimaryQuery.getSingleResult();
+			return industriesPrimaryQuery.getSingleResult();
 		} catch (javax.persistence.NoResultException n) {
 			return null;// getSingleResult does not return null if it fails; instead, it throws a fit
 		}
 	}
 
 	/**
-	 * a list of circuits, for the current project and timeStamp
+	 * a list of industries, for the current project and timeStamp
 	 * 
-	 * @return a list of circuits for the current project at the latest timeStamp that has been persisted.
+	 * @return a list of industriesfor the current project at the latest timeStamp that has been persisted.
 	 */
-	public static List<Circuit> circuitsAll() {
-		circuitAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
-		return circuitAllQuery.getResultList();
+	public static List<Industry> industriesAll() {
+		industriesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
+		return industriesAllQuery.getResultList();
 	}
 
 	/**
-	 * a list of circuits, for the current project and the given timeStamp
+	 * a list of industries, for the current project and the given timeStamp
 	 * 
 	 * @param timeStamp
 	 *            the given timeStamp
 	 *            *
-	 * @return a list of circuits for the current project at the specified timeStamp (which should, in general, be different from the currentTimeStamp)
+	 * @return a list of industries for the current project at the specified timeStamp (which should, in general, be different from the currentTimeStamp)
 	 */
 
-	public static List<Circuit> circuitsAll(int timeStamp) {
-		circuitAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
-		return circuitAllQuery.getResultList();
+	public static List<Industry> industriesAll(int timeStamp) {
+		industriesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
+		return industriesAllQuery.getResultList();
 	}
 
 	/**
-	 * a list of circuits, for the current project and the current timeStamp, that produce a given use value
+	 * a list of industries, for the current project and the current timeStamp, that produce a given use value
 	 * 
 	 * 
 	 * @param useValueName
-	 *            the name of the use value that these circuits produce
-	 * @return a list of circuits which produce the given use value at the latest timeStamp that has been persisted.
+	 *            the name of the use value that these industries produce
+	 * @return a list of industries which produce the given use value at the latest timeStamp that has been persisted.
 	 */
 
-	public static List<Circuit> circuitsByProductUseValue(String useValueName) {
-		circuitPrimaryQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent)
-				.setParameter("productUseValueName", useValueName);
-		return circuitPrimaryQuery.getResultList();
+	public static List<Industry> industriesByProductUseValue(String useValueName) {
+		industriesPrimaryQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent)
+				.setParameter("industryName", useValueName);
+		return industriesPrimaryQuery.getResultList();
 	}
 
 	/**
-	 * a list of circuits, for the current project and the given timeStamp, that produce a given use value
+	 * a list of industries, for the current project and the given timeStamp, that produce a given use value
 	 * 
 	 * 
 	 * @param useValueName
-	 *            the name of the use value that these circuits produce
+	 *            the name of the use value that these industries produce
 	 * @param timeStamp
 	 *            the given timeStamp
-	 * @return a list of circuits which produce the given use value at the given timeStamp.
+	 * @return a list of industries which produce the given use value at the given timeStamp.
 	 */
 
-	public static List<Circuit> circuitsByProductUseValue(int timeStamp, String useValueName) {
-		circuitPrimaryQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp)
-				.setParameter("productUseValueName", useValueName);
-		return circuitPrimaryQuery.getResultList();
+	public static List<Industry> industriesByProductUseValue(int timeStamp, String useValueName) {
+		industriesPrimaryQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp)
+				.setParameter("industryName", useValueName);
+		return industriesPrimaryQuery.getResultList();
 	}
 
 	/**
-	 * retrieve the topmost circuit that produces a named use value for the current project and at a given timeStamp.
-	 * TODO Note that in general, we must allow for a named use value to be produced by more than one circuit.
+	 * retrieve the topmost industry that produces a named use value for the current project and at a given timeStamp.
+	 * TODO Note that in general, we must allow for a named use value to be produced by more than one industry.
 	 * This method should therefore be phased out.
 	 * 
 	 * @param useValueName
-	 *            the produce that is made by the circuit
-	 * @return the single circuit that produces this product, at the currently-selected timeStamp
+	 *            the produce that is made by the industry
+	 * @return the single industry that produces this product, at the currently-selected timeStamp
 	 */
-	public static Circuit circuitByProductUseValue(String useValueName) {
-		List<Circuit> circuits = circuitsByProductUseValue(useValueName);
-		return circuits.get(0);
+	public static Industry industryByProductUseValue(String useValueName) {
+		List<Industry> industries = industriesByProductUseValue(useValueName);
+		return industries.get(0);
 	}
 
 	/**
@@ -611,12 +611,12 @@ public class DataManager {
 	 * @param timeStamp
 	 *            the timeStamp
 	 * 
-	 * @return the sum of the initial capital in all circuits
+	 * @return the sum of the initial capital in all industries
 	 */
 
-	public static double circuitsInitialCapital(int timeStamp) {
-		circuitInitialCapitalQuery.setParameter("timeStamp", timeStamp).setParameter("project", Simulation.projectCurrent);
-		Object o = circuitInitialCapitalQuery.getSingleResult();
+	public static double industriesInitialCapital(int timeStamp) {
+		industryInitialCapitalQuery.setParameter("timeStamp", timeStamp).setParameter("project", Simulation.projectCurrent);
+		Object o = industryInitialCapitalQuery.getSingleResult();
 		double result = (double) o;
 		return result;
 	}
@@ -754,11 +754,11 @@ public class DataManager {
 				u.setEndComparator(useValueByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, u.getUseValueName()));
 				u.setCustomComparator(useValueByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, u.getUseValueName()));
 			}
-			for (Circuit c : circuitsAll(timeStampID)) {
-				c.setPreviousComparator(circuitByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), c.getProductUseValueName()));
-				c.setStartComparator(circuitByPrimaryKey(Simulation.projectCurrent, 1, c.getProductUseValueName()));
-				c.setEndComparator(circuitByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, c.getProductUseValueName()));
-				c.setCustomComparator(circuitByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, c.getProductUseValueName()));
+			for (Industry c : industriesAll(timeStampID)) {
+				c.setPreviousComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), c.getProductUseValueName()));
+				c.setStartComparator(industryByPrimaryKey(Simulation.projectCurrent, 1, c.getProductUseValueName()));
+				c.setEndComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, c.getProductUseValueName()));
+				c.setCustomComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, c.getProductUseValueName()));
 			}
 			socialClassAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStampID);
 			for (SocialClass sc : socialClassAllQuery.getResultList()) {
@@ -806,10 +806,10 @@ public class DataManager {
 	}
 
 	/**
-	 * @return the circuitEntityManager
+	 * @return the industryEntityManager
 	 */
-	public static EntityManager getCircuitEntityManager() {
-		return circuitEntityManager;
+	public static EntityManager getIndustryEntityManager() {
+		return industryEntityManager;
 	}
 
 	/**

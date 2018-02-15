@@ -24,7 +24,7 @@ import javafx.scene.control.TableColumn;
 import javafx.util.Callback;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.datamanagement.DataManager;
-import rd.dev.simulation.model.Circuit;
+import rd.dev.simulation.model.Industry;
 import rd.dev.simulation.model.UseValue;
 import rd.dev.simulation.view.CircuitTableCell;
 import rd.dev.simulation.view.CircuitTableStockCell;
@@ -33,13 +33,13 @@ import rd.dev.simulation.view.CircuitTableStockCell;
  * A CircuitGraphicsColumn contains the additional information needed to display a switchable graphic and to select the data item for display
  *
  * The data items delivered to the parent TableView for display in its cells are always strings;
- * the type conversion is handled by the Circuit class.
- * TODO parameterise Circuit so we can re-use for other data models
+ * the type conversion is handled by the Industry class.
+ * TODO parameterise Industry so we can re-use for other data models
  */
-public class CircuitColumn extends TableColumn<Circuit, String> {
+public class IndustryColumn extends TableColumn<Industry, String> {
 
 	/**
-	 * Produces a column to be displayed in a Circuit table({@code TableView<Circuit,String>}), whose value is a fixed field in a {@code Circuit} bean
+	 * Produces a column to be displayed in a Industry table({@code TableView<Industry,String>}), whose value is a fixed field in a {@code Industry} bean
 	 * that is chosen by the {@code selector} enum. Use the enum to set the header text and graphic, and prepare the column header so its graphic is switchable.
 	 * 
 	 * @param selector
@@ -47,10 +47,10 @@ public class CircuitColumn extends TableColumn<Circuit, String> {
 	 * @param alignedLeft
 	 *            true if the field data is to be displayed aligned left (typically text strings such as the names of commodities or owners)
 	 */
-	CircuitColumn(Circuit.Selector selector, boolean alignedLeft) {
+	IndustryColumn(Industry.Selector selector, boolean alignedLeft) {
 		super(selector.text());
-		setCellFactory(new Callback<TableColumn<Circuit, String>, TableCell<Circuit, String>>() {
-			@Override public TableCell<Circuit, String> call(TableColumn<Circuit, String> col) {
+		setCellFactory(new Callback<TableColumn<Industry, String>, TableCell<Industry, String>>() {
+			@Override public TableCell<Industry, String> call(TableColumn<Industry, String> col) {
 				return new CircuitTableCell(selector);
 			}
 		});
@@ -65,8 +65,8 @@ public class CircuitColumn extends TableColumn<Circuit, String> {
 	}
 
 	/**
-	 * Produces a column to be displayed in a Circuit table({@code TableView<Circuit,String>}), whose value is a {@code Stock} field referenced by a foreign key
-	 * in a {@code Circuit} bean. The magnitude is selected by the {@code  useValueName} of the Stock.
+	 * Produces a column to be displayed in a Industry table({@code TableView<Industry,String>}), whose value is a {@code Stock} field referenced by a foreign key
+	 * in a {@code Industry} bean. The magnitude is selected by the {@code  useValueName} of the Stock.
 	 * Use Stock itself to set the header text and graphic, and prepare the column header so its graphic is switchable.
 	 * 
 	 * @param productiveStockName
@@ -74,9 +74,9 @@ public class CircuitColumn extends TableColumn<Circuit, String> {
 	 * 
 	 */
 
-	CircuitColumn(String productiveStockName) {
-		setCellFactory(new Callback<TableColumn<Circuit, String>, TableCell<Circuit, String>>() {
-			@Override public TableCell<Circuit, String> call(TableColumn<Circuit, String> col) {
+	IndustryColumn(String productiveStockName) {
+		setCellFactory(new Callback<TableColumn<Industry, String>, TableCell<Industry, String>>() {
+			@Override public TableCell<Industry, String> call(TableColumn<Industry, String> col) {
 				return new CircuitTableStockCell(productiveStockName);
 			}
 		});

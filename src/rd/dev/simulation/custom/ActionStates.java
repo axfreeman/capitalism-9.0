@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import javafx.scene.control.Button;
 import javafx.scene.control.TreeItem;
 import rd.dev.simulation.Capitalism;
-import rd.dev.simulation.command.CircuitsProduce;
+import rd.dev.simulation.command.IndustriesProduce;
 import rd.dev.simulation.command.ClassesReproduce;
 import rd.dev.simulation.command.Command;
 import rd.dev.simulation.command.Distribute;
@@ -41,13 +41,13 @@ public enum ActionStates {
 			"Carry out the purchases determined by the allocation of supply", 
 			true), 
 	C_P_Produce("Production",	new Produce(), 
-			"Circuits produce goods, classes reproduce themselves",	
+			"Industries produce goods, classes reproduce themselves",	
 			false), 
-	C_P_CircuitsProduce("Produce", new CircuitsProduce(), 
-			"Circuits produce goods", 
+	C_P_IndustriesProduce("Produce", new IndustriesProduce(), 
+			"Industries produce goods", 
 			true), 
 	C_P_ClassesReproduce("Reproduce",new ClassesReproduce(), 
-			"Circuits produce goods, consuming productive stocks and labour power",	
+			"industries produce goods, consuming productive stocks and labour power",	
 			true), 
 	C_P_ImmediateConsequences("Consequences", new ImmediateConsequences(),
 			"The combined consequence of production and reproduction is a change in unit values and prices. This action calculates them",

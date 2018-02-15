@@ -31,7 +31,7 @@ public class Produce extends Simulation implements Command {
 	 * combines @link CircuitsProduce and @link ClassesReproduce in one button press
 	 */
 	public void execute() {
-		ActionStates.C_P_CircuitsProduce.getCommand().execute();
+		ActionStates.C_P_IndustriesProduce.getCommand().execute();
 		ActionStates.C_P_ClassesReproduce.getCommand().execute();
 		ActionStates.C_P_ImmediateConsequences.getCommand().execute();
 	 }

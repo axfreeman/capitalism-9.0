@@ -60,7 +60,7 @@ public class UseValueTableCell extends TableCell<UseValue, String> {
 		}
 		switch (useValueSelector) {
 		case ALLOCATIONSHARE:
-		case TOTALDEMAND:
+		case REPLENISHMENT_DEMAND:
 		case TOTALSUPPLY:
 		case TOTALQUANTITY:
 		case PROFITRATE:
