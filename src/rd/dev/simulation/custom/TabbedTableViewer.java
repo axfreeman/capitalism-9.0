@@ -217,7 +217,7 @@ public class TabbedTableViewer extends VBox {
 		useValueCapitalProfitSuperColumn=new TableColumn<UseValue,String>("CapitalAndProfit");
 		
 		useValuesTable.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.USEVALUENAME, true));
-		useValuesTable.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.USEVALUETYPE, true));
+		useValuesTable.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.COMMODITY_FUNCTION_TYPE, true));
 		useValuesTable.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.TOTALQUANTITY, false));
 		useValuesTable.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.TURNOVERTIME, false));
 
@@ -254,8 +254,8 @@ public class TabbedTableViewer extends VBox {
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.MONEY,false));
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.TOTAL,false));
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.REVENUE,false));
-		for (UseValue u : DataManager.useValuesByType(UseValue.USEVALUETYPE.CONSUMPTION)) {
-			socialClassesTable.getColumns().add(new SocialClassColumn(u.getUseValueName()));
+		for (UseValue u : DataManager.useValuesByFunction(UseValue.COMMODITY_FUNCTION_TYPE.CONSUMER_GOOD)) {
+			socialClassesTable.getColumns().add(new SocialClassColumn(u.commodityName()));
 		}
 	}
 
@@ -282,15 +282,12 @@ public class TabbedTableViewer extends VBox {
 	private void makeDynamicIndustriesTable() {
 		dynamicIndustryTable.getColumns().clear();
 		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.PRODUCTUSEVALUENAME,true));
+		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.OUTPUT,false));
 		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.PROPOSEDOUTPUT,false));
-		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.CONSTRAINEDOUTPUT,false));
 		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.GROWTHRATE,false));
 
-		for (UseValue u : DataManager.useValuesByType(UseValue.USEVALUETYPE.PRODUCTIVE)) {
-			dynamicIndustryTable.getColumns().add(new IndustryColumn(u.getUseValueName()));
-		}
-		for (UseValue u : DataManager.useValuesByType(UseValue.USEVALUETYPE.LABOURPOWER)) {
-			dynamicIndustryTable.getColumns().add(new IndustryColumn(u.getUseValueName()));
+		for (UseValue u : DataManager.useValuesByFunction(UseValue.COMMODITY_FUNCTION_TYPE.PRODUCTIVE_INPUT)) {
+			dynamicIndustryTable.getColumns().add(new IndustryColumn(u.commodityName()));
 		}
 	}
 

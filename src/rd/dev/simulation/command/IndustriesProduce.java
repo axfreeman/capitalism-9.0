@@ -20,7 +20,6 @@
 
 package rd.dev.simulation.command;
 
-import org.apache.commons.math3.util.Precision;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import rd.dev.simulation.Simulation;
@@ -30,9 +29,9 @@ import rd.dev.simulation.model.Industry;
 import rd.dev.simulation.model.Global;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.model.UseValue;
-import rd.dev.simulation.model.UseValue.USEVALUEINDUSTRYTYPE;
-import rd.dev.simulation.model.UseValue.USEVALUETYPE;
+import rd.dev.simulation.model.UseValue.COMMODITY_ORIGIN_TYPE;
 import rd.dev.simulation.utils.Dialogues;
+import rd.dev.simulation.utils.MathStuff;
 import rd.dev.simulation.utils.Reporter;
 
 public class IndustriesProduce extends Simulation implements Command {
@@ -54,7 +53,7 @@ public class IndustriesProduce extends Simulation implements Command {
 		// initialise the accounting for how much of this useValue is used up and how much is created in production in the current period
 		// so we can calculate how much surplus of it resulted from production in this period.
 
-		for (UseValue u : DataManager.useValuesByIndustryType(USEVALUEINDUSTRYTYPE.CAPITALIST)) {
+		for (UseValue u : DataManager.useValuesByOriginType(COMMODITY_ORIGIN_TYPE.INDUSTRIALLY_PRODUCED)) {
 			u.setStockUsedUp(0);
 			u.setStockProduced(0);
 		}
@@ -65,10 +64,10 @@ public class IndustriesProduce extends Simulation implements Command {
 		// (TODO incorporate labour complexity)
 		
 		for (Industry c : DataManager.industriesAll()) {
-			String useValueType = c.getProductUseValueName();
+			String useValueType = c.getIndustryName();
 			Stock salesStock = c.getSalesStock();
 			UseValue useValue = c.getUseValue();
-			double output = c.getConstrainedOutput();
+			double output = c.getOutput();
 			double valueAdded = 0;
 			Reporter.report(logger, 1, " Industry [%s] is producing %.0f. units of its output; the melt is %.4f", useValueType, output, melt);
 
@@ -83,22 +82,22 @@ public class IndustriesProduce extends Simulation implements Command {
 
 				double coefficient = s.getProductionCoefficient();
 				double stockUsedUp = output * coefficient;
-				stockUsedUp = Precision.round(stockUsedUp, getRoundingPrecision());
-				if (s.useValueType() == USEVALUETYPE.LABOURPOWER) {
+				stockUsedUp = MathStuff.round(stockUsedUp);
+				if (s.getUseValue().getCommodityOriginType() == COMMODITY_ORIGIN_TYPE.SOCIALlY_PRODUCED) {
 					valueAdded += stockUsedUp * melt;
-					Reporter.report(logger, 2, "  Labour Power has added value amounting to %.0f (intrinsic %.0f) to commodity [%s]", valueAdded, stockUsedUp,c.getProductUseValueName());
+					Reporter.report(logger, 2, "  Labour Power has added value amounting to %.0f (intrinsic %.0f) to commodity [%s]", valueAdded, stockUsedUp,c.getIndustryName());
 				} else {
 					double valueOfStockUsedUp = stockUsedUp * useValue.getUnitValue();
 					Reporter.report(logger, 2, "  Stock [%s] has transferred value $%.0f (intrinsic %.0f) to commodity [%s] ",
-							s.getUseValueName(), valueOfStockUsedUp, valueOfStockUsedUp / melt, c.getProductUseValueName());
+							s.getUseValueName(), valueOfStockUsedUp, valueOfStockUsedUp / melt, c.getIndustryName());
 					valueAdded += valueOfStockUsedUp;
 				}
 
 				// the stock is reduced by what was used up, and account of this is registered with its use value
 				UseValue u = s.getUseValue();
 				if (stockUsedUp>0) {
-				Reporter.report(logger, 2, "  %.0f units of [%s] were used up in producing the output [%s]", stockUsedUp, u.getUseValueName(),
-						c.getProductUseValueName());
+				Reporter.report(logger, 2, "  %.0f units of [%s] were used up in producing the output [%s]", stockUsedUp, u.commodityName(),
+						c.getIndustryName());
 				double stockOfUSoFarUsedUp = u.getStockUsedUp();
 				u.setStockUsedUp(stockOfUSoFarUsedUp + stockUsedUp);
 				s.modifyBy(-stockUsedUp);
@@ -108,18 +107,18 @@ public class IndustriesProduce extends Simulation implements Command {
 			// to set the value of the output, we now use an overloaded version of modifyBy which only sets the value
 
 			double extraSalesQuantity = output;
-			extraSalesQuantity = Precision.round(extraSalesQuantity, getRoundingPrecision());
+			extraSalesQuantity = MathStuff.round(extraSalesQuantity);
 			salesStock.modifyBy(extraSalesQuantity, valueAdded);
 			c.getUseValue().setStockProduced(c.getUseValue().getStockProduced() + extraSalesQuantity);
 			Reporter.report(logger, 2,
 					"  The sales stock of [%s] has grown to %.0f, its value to $%.0f (intrinsic value %.0f) and its price to $%.0f (intrinsic value %.0f)",
-					c.getProductUseValueName(), salesStock.getQuantity(), salesStock.getValue(), salesStock.getValue() / melt, salesStock.getPrice(),
+					c.getIndustryName(), salesStock.getQuantity(), salesStock.getValue(), salesStock.getValue() / melt, salesStock.getPrice(),
 					salesStock.getPrice() / melt);
 		}
 
 		// now (and only now) we can calculate the surplus (if any) of each of the use values
 
-		for (UseValue u : DataManager.useValuesByIndustryType(USEVALUEINDUSTRYTYPE.CAPITALIST)) {
+		for (UseValue u : DataManager.useValuesByOriginType(COMMODITY_ORIGIN_TYPE.INDUSTRIALLY_PRODUCED)) {
 			u.setSurplusProduct(u.getStockProduced() - u.getStockUsedUp());
 		}
 	}

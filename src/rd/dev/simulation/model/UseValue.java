@@ -21,16 +21,16 @@
 package rd.dev.simulation.model;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Observable;
 import javax.persistence.*;
 
-import org.apache.commons.math3.util.Precision;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javafx.beans.property.ReadOnlyStringWrapper;
-import rd.dev.simulation.Simulation;
 import rd.dev.simulation.datamanagement.DataManager;
+import rd.dev.simulation.utils.MathStuff;
 import rd.dev.simulation.utils.Reporter;
 import rd.dev.simulation.view.ViewManager;
 
@@ -45,8 +45,10 @@ import rd.dev.simulation.view.ViewManager;
 @NamedQueries({
 		@NamedQuery(name = "Primary", query = "SELECT u FROM UseValue u where u.pk.project= :project AND u.pk.timeStamp= :timeStamp and u.pk.useValueName=:useValueName"),
 		@NamedQuery(name = "All", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp"),
-		@NamedQuery(name = "UseValueType", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.useValueType=:useValueType"),
-		@NamedQuery(name = "UseValueIndustryType", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.useValueIndustryType=:useValueIndustryType")
+		@NamedQuery(name = "CommodityOriginType", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.commodityOriginType=:commodityOriginType"),
+		@NamedQuery(name = "CommodityFunctionType", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.commodityFunctionType=:commodityFunctionType")
+
+//UseValueFunctionType
 })
 @Embeddable
 public class UseValue extends Observable implements Serializable {
@@ -56,8 +58,8 @@ public class UseValue extends Observable implements Serializable {
 	// The primary key (composite key containing project, timeStamp and industryName)
 	@EmbeddedId protected UseValuePK pk;
 
-	@Column(name = "useValueIndustryType") private USEVALUEINDUSTRYTYPE useValueIndustryType; // whether this is produced by an enterprise or a class
-	@Column(name = "useValueType") private USEVALUETYPE useValueType;// see enum USEVALUETYPE for list of possible types
+	@Column(name = "commodityOriginType") private COMMODITY_ORIGIN_TYPE commodityOriginType; // whether this is produced by an enterprise or a class
+	@Column(name = "commodityFunctionType") private COMMODITY_FUNCTION_TYPE commodityFunctionType;// see enum COMMODITY_FUNCTION_TYPE for list of possible types
 	@Column(name = "turnoverTime") private double turnoverTime;
 	@Column(name = "unitValue") private double unitValue;
 	@Column(name = "unitPrice") private double unitPrice;
@@ -67,6 +69,8 @@ public class UseValue extends Observable implements Serializable {
 	@Column(name = "stockProduced") private double stockProduced; // stock produced in the current period
 	@Column(name = "imageName") private String imageName; // a graphical image that can be used in column headers in place of text
 
+	@Transient double surplusRemaining;// records, temporarily, what remains of the surplus product after an industry has expanded 
+	
 	@Transient private UseValue comparator;
 	@Transient private UseValue previousComparator;
 	@Transient private UseValue startComparator;
@@ -75,16 +79,14 @@ public class UseValue extends Observable implements Serializable {
 
 
 	/**
-	 * Types of commodities, basis of a rudimentary typology for use values
-	 * 
-	 * @author afree
-	 *
+	 * Basic classification of commodity types: how are they used?
+
 	 */
-	public enum USEVALUETYPE {
-		LABOURPOWER("Labour Power"), MONEY("Money"), PRODUCTIVE("Productive Inputs"), CONSUMPTION("Consumer Goods");
+	public enum COMMODITY_FUNCTION_TYPE {
+		MONEY("Money"), PRODUCTIVE_INPUT("Productive Inputs"), CONSUMER_GOOD("Consumer Goods");
 		String text;
 
-		USEVALUETYPE(String text) {
+		COMMODITY_FUNCTION_TYPE(String text) {
 			this.text = text;
 		}
 
@@ -97,11 +99,15 @@ public class UseValue extends Observable implements Serializable {
 		}
 	};
 
-	public enum USEVALUEINDUSTRYTYPE {
-		SOCIAL("Social"), CAPITALIST("Capitalist"), MONEY("Money");
+	/**
+	 * Second Basic classification of commodity types (overlaps COMMODITY_FUNCTION_TYPE): how do they come into being?
+	 *
+	 */
+	public enum COMMODITY_ORIGIN_TYPE {
+		SOCIALlY_PRODUCED("Social"), INDUSTRIALLY_PRODUCED("Capitalist"), MONEY("Money");
 		String text;
 
-		USEVALUEINDUSTRYTYPE(String text) {
+		COMMODITY_ORIGIN_TYPE(String text) {
 			this.text = text;
 		}
 
@@ -112,7 +118,6 @@ public class UseValue extends Observable implements Serializable {
 		public String getText() {
 			return text;
 		}
-
 	}
 
 	/**
@@ -133,7 +138,7 @@ public class UseValue extends Observable implements Serializable {
 		TOTALVALUE("Total Value","Value.png",null), 
 		TOTALPRICE("Total Price","price.png",null), 
 		ALLOCATIONSHARE("Share","Allocation.png",null), 
-		USEVALUETYPE("Commodity Type",null,null), 
+		COMMODITY_FUNCTION_TYPE("Commodity Type",null,null), 
 		INITIALCAPITAL("Initial Capital","capital  2.png",null), 
 		PROFIT("Profit","profit.png",null), 
 		PROFITRATE("Profit Rate","profitRate.png" ,null);
@@ -178,13 +183,13 @@ public class UseValue extends Observable implements Serializable {
 		this.pk.timeStamp = useValueTemplate.pk.timeStamp;
 		this.pk.useValueName = useValueTemplate.pk.useValueName;
 		this.pk.project = useValueTemplate.pk.project;
-		this.useValueIndustryType = useValueTemplate.useValueIndustryType;
+		this.commodityOriginType = useValueTemplate.commodityOriginType;
 		this.turnoverTime = useValueTemplate.turnoverTime;
 		this.unitValue = useValueTemplate.unitValue;
 		this.unitPrice = useValueTemplate.unitPrice;
 		this.surplusProduct = useValueTemplate.surplusProduct;
 		this.allocationShare = useValueTemplate.allocationShare;
-		this.useValueType = useValueTemplate.useValueType;
+		this.commodityFunctionType = useValueTemplate.commodityFunctionType;
 		this.stockUsedUp = useValueTemplate.stockUsedUp;
 		this.stockProduced = useValueTemplate.stockProduced;
 		this.imageName=useValueTemplate.imageName;
@@ -209,9 +214,9 @@ public class UseValue extends Observable implements Serializable {
 			logger.debug(String.format("  Stock of type [%s] with name [%s] has added quantity %.2f; value %.2f, and price %.2f. ",
 					s.getStockType(), s.getOwner(), s.getQuantity(), s.getPrice(), s.getValue()));
 		}
-		totalQuantity = Precision.round(totalQuantity, Simulation.getRoundingPrecision());
-		totalValue = Precision.round(totalValue, Simulation.getRoundingPrecision());
-		totalPrice = Precision.round(totalPrice, Simulation.getRoundingPrecision());
+		totalQuantity = MathStuff.round(totalQuantity);
+		totalValue = MathStuff.round(totalValue);
+		totalPrice = MathStuff.round(totalPrice);
 		Reporter.report(logger, 2, "  Total quantity of the commodity [%s] is %.2f (value %.2f, price %.2f). ",
 				pk.useValueName, totalQuantity, totalPrice, totalValue);
 	}
@@ -233,7 +238,7 @@ public class UseValue extends Observable implements Serializable {
 		case USEVALUENAME:
 			return new ReadOnlyStringWrapper(pk.useValueName);
 		case USEVALUEOWNERTYPE:
-			return new ReadOnlyStringWrapper(useValueIndustryType.getText());
+			return new ReadOnlyStringWrapper(commodityOriginType.getText());
 		case UNITPRICE:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, unitPrice));
 		case UNITVALUE:
@@ -256,8 +261,8 @@ public class UseValue extends Observable implements Serializable {
 			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, turnoverTime));
 		case ALLOCATIONSHARE:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, allocationShare));
-		case USEVALUETYPE:
-			return new ReadOnlyStringWrapper(useValueType.text);
+		case COMMODITY_FUNCTION_TYPE:
+			return new ReadOnlyStringWrapper(commodityFunctionType.text);
 		case INITIALCAPITAL:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, initialCapital()));
 		case PROFIT:
@@ -387,6 +392,13 @@ public class UseValue extends Observable implements Serializable {
 			comparator=startComparator;
 		}
 	}
+	
+	/**
+	 * @return a list of industries that produce this useValue
+	 */
+	public List<Industry> industries(){
+		return DataManager.industriesByProductUseValue(pk.useValueName);
+	}
 
 
 	/**
@@ -403,18 +415,17 @@ public class UseValue extends Observable implements Serializable {
 	}
 
 	/**
-	 * Rudimentary typology of use values
 	 * 
-	 * @return the type of this useValue, as given by the {@code USEVALUENAME} enum
+	 * @return the function of this useValue, as given by the {@code COMMODITY_FUNCTION_TYPE} enum
 	 */
 
-	public USEVALUETYPE getUseValueType() {
-		return useValueType;
+	public COMMODITY_FUNCTION_TYPE getCommodityFunctionType() {
+		return commodityFunctionType;
 	}
 
 	// GETTERS AND SETTERS FOR THE PERSISTENT MEMBERS
 
-	public String getUseValueName() {
+	public String commodityName() {
 		return pk.useValueName;
 	}
 
@@ -484,12 +495,12 @@ public class UseValue extends Observable implements Serializable {
 		this.unitValue = unitValue;
 	}
 
-	public USEVALUEINDUSTRYTYPE getUseValueIndustryType() {
-		return this.useValueIndustryType;
+	public COMMODITY_ORIGIN_TYPE getCommodityOriginType() {
+		return this.commodityOriginType;
 	}
 
-	public void setUseValueIndustryType(USEVALUEINDUSTRYTYPE useValueIndustryType) {
-		this.useValueIndustryType = useValueIndustryType;
+	public void setCommodityOriginType(COMMODITY_ORIGIN_TYPE useValueIndustryType) {
+		this.commodityOriginType = useValueIndustryType;
 	}
 
 	public double getAllocationShare() {

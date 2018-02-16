@@ -1,11 +1,17 @@
 # Capitalism 9.0 announcements
 
+## 2/16/2018 9:59:56 AM 
+
+There are now eight projects. The eighth allows for multiple productive inputs, as a prelude to dealing with profit equalization
+The code for accumulation has been substantially upgraded to deal with multiple means of production.
+The five benchmark projects are working (see below).
+New executable
+
 ## 2/13/2018 8:49:42 AM 
 
 There are now seven projects.
 Of these, five benchmark projects are working (see below)
-The spreadsheet for expanded reproduction (in the 'docs' folder) now also contains a worksheet for simple reproduction,
-and more extended annotations.
+The spreadsheet for expanded reproduction (in the 'docs' folder) now also contains a worksheet for simple reproduction, and more extended annotations.
 New executable.
 
 ## 2/12/2018 5:32:32 PM 

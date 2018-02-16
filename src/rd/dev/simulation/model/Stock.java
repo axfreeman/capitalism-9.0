@@ -26,12 +26,11 @@ import javax.persistence.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import javafx.beans.property.ReadOnlyStringWrapper;
-import rd.dev.simulation.Simulation;
 import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.utils.Dialogues;
+import rd.dev.simulation.utils.MathStuff;
 import rd.dev.simulation.utils.Reporter;
 import rd.dev.simulation.view.ViewManager;
-import org.apache.commons.math3.util.Precision;
 
 /**
  * The persistent class for the stocks database table. It extends the Observable Class so it can provide base data for TableViews.
@@ -79,12 +78,12 @@ public class Stock extends Observable implements Serializable {
 	@Column(name = "expansionDemand") private double expansionDemand;
 
 	// the proportion of this stock used up in producing one unit of output.
-	// ONLY relevant if this is of stockType PRODUCTIVE (in which case the owner will be an industry)
+	// ONLY relevant if this is of stockType PRODUCTIVE_INPUT (in which case the owner will be an industry)
 	
 	@Column(name = "productionCoefficient") private double productionCoefficient;
 
 	// the proportion of the revenue of a class that will be spent on this stock in one period.
-	// ONLY relevant if this is of stockType CONSUMPTION (in which case the owner will be a social class)
+	// ONLY relevant if this is of stockType CONSUMER_GOOD (in which case the owner will be a social class)
 
 	@Column(name= "consumptionCoefficient") private double consumptionCoefficient;
 
@@ -134,7 +133,7 @@ public class Stock extends Observable implements Serializable {
 
 	/**
 	 * 
-	 * SQL type ENUM ('PRODUCTIVE', 'CONSUMPTION', 'SALES', 'MONEY')
+	 * SQL type ENUM ('PRODUCTIVE_INPUT', 'CONSUMER_GOOD', 'SALES', 'MONEY')
 	 * NOTE: here is a bug in H2 which prevents an enum type being used in a primary key;
 	 * in consequence, the type of the persistent field 'stockType' is, confusingly, String and not StockType.
 	 * For code transparency, this enum provides the text that is used in SQL queries, via its 'text' method
@@ -272,9 +271,9 @@ public class Stock extends Observable implements Serializable {
 		double newValue = value + extraValue;
 		double newPrice = price + extraPrice;
 		double newQuantity = quantity + extraQuantity;
-		quantity = Precision.round(newQuantity,Simulation.getRoundingPrecision());
-		value = Precision.round(newValue,Simulation.getRoundingPrecision());
-		price = Precision.round(newPrice,Simulation.getRoundingPrecision());
+		quantity = MathStuff.round(newQuantity);
+		value = MathStuff.round(newValue);
+		price = MathStuff.round(newPrice);
 		Reporter.report(logger, 2,
 				"    Memo: commodity [%s], of type [%s], owned by [%s]: is now %.0f. Its value is now $%.0f (intrinsic %.0f), and its price is %.0f (intrinsic %.0f)",
 				pk.useValue, pk.stockType, pk.owner, quantity, value, value / melt, price, price / melt);
@@ -307,9 +306,9 @@ public class Stock extends Observable implements Serializable {
 			double unitPrice = unitPrice();
 			double newValue = newQuantity * unitValue;
 			double newPrice = newQuantity * unitPrice;
-			quantity = Precision.round(newQuantity,Simulation.getRoundingPrecision());
-			value = Precision.round(newValue,Simulation.getRoundingPrecision());
-			price = Precision.round(newPrice,Simulation.getRoundingPrecision());
+			quantity = MathStuff.round(newQuantity);
+			value = MathStuff.round(newValue);
+			price = MathStuff.round(newPrice);
 			Reporter.report(logger, 2,
 					"  Size of commodity [%s], of type [%s], owned by [%s]: is %.0f. Value set to $%.0f (intrinsic %.0f), and price to %.0f (intrinsic %.0f)",
 					pk.useValue, pk.stockType, pk.owner, quantity, value, value / melt, price, price / melt);
@@ -483,7 +482,70 @@ public class Stock extends Observable implements Serializable {
 		}
 	}
 
-	
+
+	/**
+	 * Helper function transfers quantityTransferred from this Stock to toStock. Also transfers the value of the stock and the price. Carries out checks and
+	 * throws an exception if conditions are violated
+	 * 
+	 * @param to
+	 *            the stock that is gaining the value
+	 * @param quantityTransferred
+	 *            the amount to transfer
+	 */
+	public void transferStock(Stock to, double quantityTransferred) throws RuntimeException {
+		UseValue useValue = getUseValue();
+		if (quantityTransferred == 0) {
+			return;			// Nothing to transfer
+		}
+
+		// a little consistency check
+
+		if (!pk.useValue.equals(to.getUseValueName())) {
+			throw new RuntimeException("ERROR: Attempt to transfer stock between useValues of different types");
+		}
+
+		double unitValue = useValue.getUnitValue();
+		double unitPrice = useValue.getUnitPrice();
+		double toValue = to.getValue();
+		double fromValue = value;
+		double toPrice = to.getPrice();
+		double fromPrice = price;
+		double fromQuantity = quantity;
+		double toQuantity = to.getQuantity();
+
+		// another little consistency check
+
+		if (toQuantity != 0) {
+			if (!MathStuff.equals(toPrice / toQuantity, unitPrice)) {
+				Dialogues.alert(logger, "The unit price of the [%s] is %.2f and the unit price of its use value is  %.2f",
+						to.getUseValueName(), toPrice / toQuantity, unitPrice);
+			}
+			if (!MathStuff.equals(toValue / toQuantity, unitValue)) {
+				Dialogues.alert(logger, "The unit price of the stock [%s] is %.2f and the unit price of its use value is  %.2f",
+						to.getUseValueName(), toPrice / toQuantity, unitPrice);
+			}
+		}
+		if (fromQuantity != 0) {
+			if (!MathStuff.equals(fromPrice / fromQuantity, unitPrice)) {
+				Dialogues.alert(logger, "The unit price of the target stock [%s] is %.2f and the unit price of its use value is  %.2f",
+						pk.useValue, fromPrice / fromQuantity, unitPrice);
+			}
+			if (!MathStuff.equals(fromValue / fromQuantity, unitValue)) {
+				Dialogues.alert(logger, "The unit price of the target stock [%s] is %.2f and the unit price of its use value is  %.2f",
+						pk.useValue, fromPrice / fromQuantity, unitPrice);
+			}
+		}
+		logger.debug(String.format("   Transfer %.2f from [%s] in [%s] to [%s] in [%s]",
+				quantityTransferred, pk.useValue, pk.owner, to.getUseValueName(), to.getOwner()));
+		logger.debug(String.format("   Recipient [%s] size is: %.2f", to.getUseValueName(), to.getQuantity()));
+		logger.debug(String.format("   Donor [%s] size is: %.2f ", pk.useValue, quantity));
+
+		to.modifyBy(quantityTransferred);
+		modifyBy(-quantityTransferred);
+
+		logger.debug(String.format("   Recipient [%s] size is now: %.2f ", to.getUseValueName(), to.getQuantity()));
+		logger.debug(String.format("   Donor [%s] size is now: %.2f ", pk.useValue, quantity));
+	}
 	
 	/**
 	 * Part of primitive typology of use values
@@ -491,8 +553,8 @@ public class Stock extends Observable implements Serializable {
 	 * @return the use value type of this stock
 	 */
 
-	public UseValue.USEVALUETYPE useValueType() {
-		return getUseValue().getUseValueType();
+	public UseValue.COMMODITY_FUNCTION_TYPE useValueType() {
+		return getUseValue().getCommodityFunctionType();
 	}
 
 	/**
@@ -558,7 +620,7 @@ public class Stock extends Observable implements Serializable {
 	}
 
 	public void setReplenishmentDemand(double quantityDemanded) {
-		this.replenishmentDemand = quantityDemanded;
+		this.replenishmentDemand = MathStuff.round(quantityDemanded);
 	}
 
 	public String getStockType() {

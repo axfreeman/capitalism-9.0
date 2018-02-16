@@ -62,7 +62,7 @@ public class CircuitTableCell extends TableCell<Industry, String> {
 		}
 
 		switch (selector) {
-		case CONSTRAINEDOUTPUT:
+		case OUTPUT:
 		case PROPOSEDOUTPUT:
 		case PROFITRATE:
 			if (ViewManager.displayHints)

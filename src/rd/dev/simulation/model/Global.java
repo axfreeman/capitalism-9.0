@@ -35,11 +35,11 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.apache.commons.math3.util.Precision;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.view.ViewManager;
 import rd.dev.simulation.datamanagement.SelectionsProvider;
+import rd.dev.simulation.utils.MathStuff;
 
 /**
  *
@@ -293,7 +293,7 @@ public class Global extends Observable implements Serializable {
 	 */
 
 	public double profitRate() {
-		double initialCapital = Precision.round(initialCapital(), Simulation.getRoundingPrecision());
+		double initialCapital = MathStuff.round(initialCapital());
 		if (initialCapital == 0) {
 			return Double.NaN;
 		}

@@ -92,8 +92,8 @@ public class DataManager {
 	protected static TypedQuery<UseValue> useValueByPrimaryKeyQuery;
 	protected static TypedQuery<UseValue> useValuesAllQuery;
 	protected static TypedQuery<UseValue> useValuesProductiveQuery;
-	protected static TypedQuery<UseValue> useValuesByTypeQuery;
-	protected static TypedQuery<UseValue> useValuesByIndustryTypeQuery;
+	protected static TypedQuery<UseValue> useValuesByOriginTypeQuery;
+	protected static TypedQuery<UseValue> useValuesByFunctionQuery;
 
 	// Industry queries
 	protected static TypedQuery<Industry> industriesPrimaryQuery;
@@ -152,8 +152,8 @@ public class DataManager {
 		// UseValue queries
 		useValueByPrimaryKeyQuery = useValueEntityManager.createNamedQuery("Primary", UseValue.class);
 		useValuesAllQuery = useValueEntityManager.createNamedQuery("All", UseValue.class);
-		useValuesByTypeQuery = useValueEntityManager.createNamedQuery("UseValueType", UseValue.class);
-		useValuesByIndustryTypeQuery = useValueEntityManager.createNamedQuery("UseValueIndustryType", UseValue.class);
+		useValuesByOriginTypeQuery = useValueEntityManager.createNamedQuery("CommodityOriginType", UseValue.class);
+		useValuesByFunctionQuery = useValueEntityManager.createNamedQuery("CommodityFunctionType", UseValue.class);
 
 		// Industry queries
 		industriesPrimaryQuery = industryEntityManager.createNamedQuery("Primary", Industry.class);
@@ -384,7 +384,7 @@ public class DataManager {
 			return null;// because this query throws a fit if it doesn't find anything
 		}
 	}
-	
+
 	/**
 	 * a list of sales Stock of a given use value for the current project and a given timeStamp.
 	 * NOTE only the industry will vary, and at present only one of these industries will produce this use value. However in general more than one industry may
@@ -458,61 +458,49 @@ public class DataManager {
 	}
 
 	/**
-	 * @param useValueType
-	 *            the type of the UseValue (LABOURPOWER, MONEY, PRODUCTIVE, etc)
-	 * @return a list of useValues at the current project and timeStamp, of the given type.
+	 * a list of all use values of the given Origintype at the current timeStamp and project
+	 * 
+	 * @param useValueOriginType
+	 *            the origin type of the UseValue (SOCIALLY_PRODUCED, INDUSTRIALLY_PRODUCED)
+	 * @return a list of industries of the specified origin type, at the latest timeStamp that has been persisted.
 	 * 
 	 */
-	public static List<UseValue> useValuesByType(UseValue.USEVALUETYPE useValueType) {
-		useValuesByTypeQuery.setParameter("project", Simulation.projectCurrent);
-		useValuesByTypeQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent);
-		useValuesByTypeQuery.setParameter("useValueType", useValueType);
-		return useValuesByTypeQuery.getResultList();
+	public static List<UseValue> useValuesByOriginType(UseValue.COMMODITY_ORIGIN_TYPE useValueOriginType) {
+		useValuesByOriginTypeQuery.setParameter("project", Simulation.projectCurrent);
+		useValuesByOriginTypeQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent);
+		useValuesByOriginTypeQuery.setParameter("commodityOriginType", useValueOriginType);
+		return useValuesByOriginTypeQuery.getResultList();
 	}
 
 	/**
-	 * the topmost useValue of the given type
-	 * legacy method for the places where we assume a single use value of a particular type, eg Labour Power
-	 * TODO phase this out
+	 * a list of all use values of the given commodityFunctionType at the current timeStamp and project
 	 * 
-	 * @param useValueType
-	 *            the given USEVALUETYPE
-	 * @return the topMost useValue of this type
+	 * @param commodityFunctionType
+	 *            the function type of the use value (PRODUCTIVE INPUT, CONSUMER GOOD, MONEY)
+	 * @return a list all use values of the given commodityFunctionType at the current timeStamp and project
 	 */
-	public static UseValue useValueByType(UseValue.USEVALUETYPE useValueType) {
-		List<UseValue> useValues = useValuesByType(useValueType);
-		return useValues.get(0);
+	public static List<UseValue> useValuesByFunction(UseValue.COMMODITY_FUNCTION_TYPE commodityFunctionType) {
+		useValuesByFunctionQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent).setParameter("project", Simulation.projectCurrent);
+		useValuesByFunctionQuery.setParameter("commodityFunctionType", commodityFunctionType);
+		return useValuesByFunctionQuery.getResultList();
 	}
 
 	/**
-	 * a list of all use values of the given industrytype and the given timeStamp
-	 * 
-	 * @param useValueIndustryType
-	 *            the type of the UseValue (SOCIAL, CLASS)
-	 * @return a list of industries at the latest timeStamp that has been persisted.
-	 * 
+	 * return a single use value of origin type SOCIALLY_PRODUCED, which will be labour power
+	 * TODO but not immediately; there could conceivably be more than one such
+	 * @return the single use value of origin type SOCIALLY_PRODUCED, which will be labour poweer
 	 */
-	public static List<UseValue> useValuesByIndustryType(UseValue.USEVALUEINDUSTRYTYPE useValueIndustryType) {
-		useValuesByIndustryTypeQuery.setParameter("project", Simulation.projectCurrent);
-		useValuesByIndustryTypeQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent);
-		useValuesByIndustryTypeQuery.setParameter("useValueIndustryType", useValueIndustryType);
-		return useValuesByIndustryTypeQuery.getResultList();
+	public static UseValue labourPower() {
+		useValuesByOriginTypeQuery.setParameter("project", Simulation.projectCurrent);
+		useValuesByOriginTypeQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent);
+		useValuesByOriginTypeQuery.setParameter("commodityOriginType", UseValue.COMMODITY_ORIGIN_TYPE.SOCIALlY_PRODUCED);
+		try {
+			return useValuesByOriginTypeQuery.getSingleResult();
+		} catch (NoResultException r) {
+			return null;
+		}
 	}
-
-	/**
-	 * the topmost useValue of the given industry type
-	 * legacy method for the places where we assume a single use value of a particular type, eg Labour Power
-	 * TODO phase this out
-	 * 
-	 * @param useValueIndustryType
-	 *            the given USEVALUETYPE
-	 * @return the topMost useValue of this type
-	 */
-	public static UseValue useValueByIndustryType(UseValue.USEVALUEINDUSTRYTYPE useValueIndustryType) {
-		List<UseValue> useValues = useValuesByIndustryType(useValueIndustryType);
-		return useValues.get(0);
-	}
-
+	
 	// INDUSTRY QUERIES
 
 	/**
@@ -621,7 +609,7 @@ public class DataManager {
 		return result;
 	}
 
-	// SOCIAL CLASS QUERIES
+	// SOCIALlY_PRODUCED CLASS QUERIES
 
 	/**
 	 * Get a single social class defined by its primary key, including a timeStamp that may differ from the current timeStamp
@@ -749,16 +737,16 @@ public class DataManager {
 			}
 			useValuesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStampID);
 			for (UseValue u : useValuesAllQuery.getResultList()) {
-				u.setPreviousComparator(useValueByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), u.getUseValueName()));
-				u.setStartComparator(useValueByPrimaryKey(Simulation.projectCurrent, 1, u.getUseValueName()));
-				u.setEndComparator(useValueByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, u.getUseValueName()));
-				u.setCustomComparator(useValueByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, u.getUseValueName()));
+				u.setPreviousComparator(useValueByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), u.commodityName()));
+				u.setStartComparator(useValueByPrimaryKey(Simulation.projectCurrent, 1, u.commodityName()));
+				u.setEndComparator(useValueByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, u.commodityName()));
+				u.setCustomComparator(useValueByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, u.commodityName()));
 			}
 			for (Industry c : industriesAll(timeStampID)) {
-				c.setPreviousComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), c.getProductUseValueName()));
-				c.setStartComparator(industryByPrimaryKey(Simulation.projectCurrent, 1, c.getProductUseValueName()));
-				c.setEndComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, c.getProductUseValueName()));
-				c.setCustomComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, c.getProductUseValueName()));
+				c.setPreviousComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), c.getIndustryName()));
+				c.setStartComparator(industryByPrimaryKey(Simulation.projectCurrent, 1, c.getIndustryName()));
+				c.setEndComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, c.getIndustryName()));
+				c.setCustomComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, c.getIndustryName()));
 			}
 			socialClassAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStampID);
 			for (SocialClass sc : socialClassAllQuery.getResultList()) {

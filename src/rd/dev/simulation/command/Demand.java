@@ -19,9 +19,6 @@
 */
 package rd.dev.simulation.command;
 
-import java.util.List;
-
-import org.apache.commons.math3.util.Precision;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import rd.dev.simulation.Simulation;
@@ -32,6 +29,7 @@ import rd.dev.simulation.model.SocialClass;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.model.UseValue;
 import rd.dev.simulation.utils.Dialogues;
+import rd.dev.simulation.utils.MathStuff;
 import rd.dev.simulation.utils.Reporter;
 
 /**
@@ -89,7 +87,7 @@ public class Demand extends Simulation implements Command {
 	 * NOTE that the constrained output is not set at this point; that is done by 'Constrain' (for illustrative purposes - the two could be combined)
 	 */
 	public void computeProductiveDemand() {
-		Reporter.report(logger, 0, "COMPUTE PRODUCTIVE DEMAND");
+		Reporter.report(logger, 0, "COMPUTE PRODUCTIVE_INPUT DEMAND");
 
 		// First, set demand to zero for all stocks
 
@@ -103,76 +101,54 @@ public class Demand extends Simulation implements Command {
 
 		for (Industry c : DataManager.industriesAll()) {
 			double totalCost = 0;
-			logger.debug(" Estimating demand for productive stocks by industry {}", c.getProductUseValueName());
+			Reporter.report(logger, 1, " Estimating demand from industry %s at output level %.0f", 
+					c.getIndustryName(),c.getOutput());
 			double moneyAvailable = c.getMoneyQuantity();
 
-			// at this stage, proposedOutput has been set in the Accumulate phase of the past period using plausible private plans for expansion.
+			// at this stage, constrainedOutput has been set in the Accumulate phase of the past period using plausible private plans for expansion.
 			// In the Constraint phase we will test to see if these private proposals are publicly possible, and if need be, 
 			// constrain them according to supply and the money in the hands of the purchasers. 
 			// At this point we calculate the inputs that would be needed to achieve the proposed levels of output.
 
-			double constrainedOutput = 0;
-			double proposedOutput = c.getProposedOutput();
+			double output = c.getOutput();
 
 			// cost the entirety of the proposed output
-
-			totalCost = c.computeOutputCosts(proposedOutput).costOfExpansionOutput();
-
+			c.computeDemand(0);
+			totalCost=c.replenishmentCosts();
+			
 			Reporter.report(logger, 2, "  Total cost of an output of %.0f is $%.0f and $%.0f is available.",
-					proposedOutput, totalCost, moneyAvailable);
+					output, totalCost, moneyAvailable);
 			double anticipatedMoneyFromSales=c.getSalesPrice();
 			double resources=moneyAvailable+anticipatedMoneyFromSales;
 			
 			// check for monetary constraints
 
-			if (totalCost < resources + Simulation.epsilon) {
+			if (totalCost < resources + MathStuff.epsilon) {
 				Reporter.report(logger, 2, "  Output is unconstrained by cost");
-				constrainedOutput = proposedOutput;
+				c.setOutput(output);
 			} else {
 
-				// TODO the code below may not work, because cost is not a linear function of output if there are pre-existing stocks
-				// the problem is that in these circumstances we will underestimate the cost.
-				// maybe at this point we should just give up and say the industry is insolvent, or bankrupt, or both.
-				
-				proposedOutput = proposedOutput * resources/ totalCost;
-				double revisedTotalCost = c.computeOutputCosts(constrainedOutput).costOfExpansionOutput();
 				Reporter.report(logger, 1, " Output is constrained by cost");
+				
+				output = output * resources/ totalCost;
+				c.setOutput(output);
+
+				// this next little bit is really just a consistency check; we can't do much if we are wrong
+				c.computeDemand(0);
+				double revisedTotalCost = c.replenishmentCosts();
+				
 				resources = moneyAvailable+anticipatedMoneyFromSales;
-				if (revisedTotalCost < resources + Simulation.epsilon)
-					Dialogues.alert(logger, "Industry %s is unable to finance its expected level of output", c.getProductUseValueName());
-			}
-
-			c.setConstrainedOutput(constrainedOutput);
-
-			// now go through all the stocks again, calculating how much of each will be needed
-			// and adding this to the demand for the use value that the stock represents
-
-			Reporter.report(logger, 1, " Demand will now be set for each stock owned by industry [%s] for an output level of %.0f",
-					c.getProductUseValueName(), constrainedOutput);
-
-			List<Stock> managedStocks = DataManager.stocksProductiveByIndustry(Simulation.timeStampIDCurrent, c.getProductUseValueName());
-
-			for (Stock s : managedStocks) {
-				double coefficient = s.getProductionCoefficient();
-				String useValueName = s.getUseValueName();
-				UseValue u = s.getUseValue();
-				if (u == null) {
-					logger.error("The Use Value [" + useValueName + "] does not exist. Please check your data, otherwise contact the Developer");
-				} else {
-					double existingStock = s.getQuantity();
-					double requiredStockLevel = constrainedOutput * coefficient * u.getTurnoverTime();
-					double newDemand = requiredStockLevel - existingStock;
-					double totalDemandForThisUseValue = u.replenishmentDemand();
-					double newDemandForThisUseValue = totalDemandForThisUseValue + newDemand;
-					if (newDemand !=0) {
-						Reporter.report(logger, 2, "  Productive stock [%s] requires $%.0f to adjust its proposed output level from %.0f to %.0f",
-								useValueName, newDemand, existingStock, requiredStockLevel);
-						Reporter.report(logger, 2, "  The demand for commodity [%s] was %.0f and is now %.0f",
-								useValueName, totalDemandForThisUseValue, newDemandForThisUseValue);
-						s.setReplenishmentDemand(Precision.round(newDemand, roundingPrecision));
-					}
+				if (revisedTotalCost < resources + MathStuff.epsilon) {
+					Dialogues.alert(logger, "Industry %s is unable to finance its expected level of output", c.getIndustryName());
+				}else {
+					Reporter.report(logger, 1, " Output has been reduced to %.0f", output);
 				}
 			}
+
+			// TODO we are assuming the industry has sufficient stocks to cope with depletion.
+			// this will result in an error during production if the industry doesn't have enough fixed capital
+			// at present it will be a data error if this is not the case: we should report to the user in this eventuality
+			// in general, however, we assume JIT maintenance of productive stock inventory.
 		}
 	}
 
@@ -185,7 +161,8 @@ public class Demand extends Simulation implements Command {
 	 *            if it is FIXED,supply is unaffected by demand
 	 */
 	private void registerLabourResponse(Simulation.LABOUR_SUPPLY_RESPONSE response) {
-		UseValue labourPower = DataManager.useValueByType(UseValue.USEVALUETYPE.LABOURPOWER);
+		//TODO but not very soon: there may be other socially-produced commodities to worry about
+		UseValue labourPower = DataManager.labourPower();
 		double demandForLabourPower = labourPower.replenishmentDemand();
 		double supplyOfLabourPower = labourPower.totalSupply();
 		switch (response) {

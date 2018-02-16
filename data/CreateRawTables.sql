@@ -11,7 +11,7 @@
  
  DROP table if exists industries;
  CREATE TABLE industries ( project int default 1 not null, timeStamp VARCHAR (10) DEFAULT '1' not null, industryName Varchar(45)not null, 
- constrainedOutput double DEFAULT NULL, proposedOutput double DEFAULT NULL, costOfMPForExpansion double default 0, costOfLPforExpansion double default 0, 
+ output double DEFAULT NULL, proposedOutput double DEFAULT NULL, costOfMPForExpansion double default 0, costOfLPforExpansion double default 0, 
  GrowthRate double DEFAULT 0, InitialCapital double DEFAULT NULL, primary key (project, timeStamp, industryName) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
  
  DROP table if exists stocks;
@@ -22,9 +22,9 @@
  
  DROP table if exists useValues;
  CREATE TABLE useValues ( project int default 1 not null, timeStamp VARCHAR (10) DEFAULT '1' not null, useValueName varchar(45) not NULL,
- useValueIndustryType ENUM('SOCIAL','CAPITALIST','MONEY') DEFAULT NULL, unitValue double DEFAULT NULL, unitPrice double DEFAULT NULL, 
+ commodityOriginType ENUM('SOCIALLY_PRODUCED','INDUSTRIALLY_PRODUCED','MONEY') DEFAULT NULL, unitValue double DEFAULT NULL, unitPrice double DEFAULT NULL, 
  turnoverTime double DEFAULT NULL, surplusProduct double DEFAULT 0, 
- allocationShare double default null, useValueType ENUM('LABOURPOWER','MONEY','PRODUCTIVE','CONSUMPTION')DEFAULT null, stockUsedUp double default 0, 
+ allocationShare double default null, commodityFunctionType ENUM('MONEY','PRODUCTIVE_INPUT','CONSUMER_GOOD') DEFAULT null, stockUsedUp double default 0, 
  stockProduced double default 0, imageName VARCHAR(45) default null, primary key (project, timeStamp, useValueName) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
  
  DROP table if exists projects;
@@ -42,11 +42,11 @@
 
  insert into socialClasses select * from CSVREAD('~/Documents/Capsim/data/socialClasses.csv');	
  
- insert into industries (PROJECT, TIMESTAMP, INDUSTRYNAME, PROPOSEDOUTPUT, GROWTHRATE) select PROJECT, TIMESTAMP, 
- INDUSTRYNAME, PROPOSEDOUTPUT, GROWTHRATE from CSVREAD('~/Documents/Capsim/data/industries.csv');
+ insert into industries (PROJECT, TIMESTAMP, INDUSTRYNAME, OUTPUT, GROWTHRATE) select PROJECT, TIMESTAMP, 
+ INDUSTRYNAME, OUTPUT, GROWTHRATE from CSVREAD('~/Documents/Capsim/data/industries.csv');
  
- insert into useValues (PROJECT, TIMESTAMP, USEVALUENAME,useValueIndustryType,UNITVALUE,UNITPRICE,TURNOVERTIME,USEVALUETYPE,IMAGENAME) 
- select PROJECT, TIMESTAMP, USEVALUENAME,useValueIndustryType,UNITVALUE,UNITPRICE,TURNOVERTIME,USEVALUETYPE,IMAGENAME from CSVREAD('~/Documents/Capsim/data/useValues.csv');
+ insert into useValues (PROJECT, TIMESTAMP, USEVALUENAME,commodityFunctionType,UNITVALUE,UNITPRICE,TURNOVERTIME,commodityOriginType,IMAGENAME) 
+ select PROJECT, TIMESTAMP, USEVALUENAME,commodityFunctionType,UNITVALUE,UNITPRICE,TURNOVERTIME,commodityOriginType,IMAGENAME from CSVREAD('~/Documents/Capsim/data/useValues.csv');
 
  INSERT INTO timestamps (timeStampID, projectFK, PERIOD,superState, COMPARATORTIMESTAMPID, Description) 
  SELECT TIMESTAMPID, PROJECTFK, PERIOD, SUPERSTATE, COMPARATORTIMESTAMPID, DESCRIPTION FROM CSVREAD('~/Documents/Capsim/data/timeStamps.csv');

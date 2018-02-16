@@ -34,7 +34,6 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.apache.commons.math3.util.Precision;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -42,7 +41,6 @@ import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.TabbedTableViewer;
 import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.Stock.ValueExpression;
-import rd.dev.simulation.model.UseValue.USEVALUETYPE;
 import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.MathStuff;
 import rd.dev.simulation.utils.Reporter;
@@ -66,7 +64,7 @@ public class Industry extends Observable implements Serializable {
 	// TODO industries should have a name that is distinct from what they produce
 
 	@EmbeddedId protected IndustryPK pk;
-	@Column(name = "ConstrainedOutput") private double constrainedOutput;
+	@Column(name = "output") private double output;
 	@Column(name = "ProposedOutput") private double proposedOutput;
 	@Column(name = "InitialCapital") private double initialCapital;
 	@Column(name = "Growthrate") private double growthRate;
@@ -83,7 +81,7 @@ public class Industry extends Observable implements Serializable {
 	public enum Selector {
 		// @formatter:off
 		PRODUCTUSEVALUENAME("Producer",null,TabbedTableViewer.HEADER_TOOL_TIPS.INDUSTRY.text()), 
-		CONSTRAINEDOUTPUT("Output","constrained output.png",null), 
+		OUTPUT("Output","constrained output.png",null), 
 		PROPOSEDOUTPUT("Proposed Output","maximum output.png",null), 
 		INITIALCAPITAL("Initial Capital","capital  2.png",null), 
 		CURRENTCAPITAL("Current Capital","capital 1.png",null), 
@@ -142,78 +140,19 @@ public class Industry extends Observable implements Serializable {
 	 * Report this industry's OUTPUTTYPE (production goods or consumer goods)
 	 * NOTE we work this out by looking at the use value.
 	 * A separate field of this entity could result in duplication, unless it is carefully initialised
+	 * @return this industry's Output Type (production or consumer goods)
 	 */
 
 	public OUTPUTTYPE outputType() {
 		UseValue u = getUseValue();
-		switch (u.getUseValueType()) {
-		case PRODUCTIVE:
+		switch (u.getCommodityFunctionType()) {
+		case PRODUCTIVE_INPUT:
 			return OUTPUTTYPE.PRODUCTIONGOODS;
-		case CONSUMPTION:
+		case CONSUMER_GOOD:
 			return OUTPUTTYPE.CONSUMPTIONGOODS;
 		default:
 			return OUTPUTTYPE.ERROR;
 		}
-	}
-
-
-	/**
-	 * tiny little class to encapsulate the components of demand
-	 */
-	public static class DemandComponents {
-		public double costOfReplenishmentTotal;
-		public double costOfExpansionLP;
-		public double costOfExpansionMP;
-
-		DemandComponents() {
-			costOfExpansionLP = 0;
-			costOfExpansionMP = 0;
-			costOfReplenishmentTotal = 0;
-		}
-
-		public double costOfExpansionOutput() {
-			return costOfExpansionLP + costOfExpansionMP;
-		}
-	}
-	
-	/**
-	 * Estimate the replenishment and expansion requirements associated with two possible levels of output,
-	 * of which the first corresponds to replenishment (continuing at the existing level of output) and the
-	 * second to expansion (raising output to a proposed higher level). The replenishment output level is
-	 * simply that which was last used (constrainedOutput) while the second is the parameter expandedOutput.
-	 * 
-	 * The replenishmentDemand of all productive stocks of this industry, including labour power, is set at
-	 * a level which will deliver constrainedOutput.
-	 * 
-	 * The expansionDemand of these stocks records the additional quantity of these stocks required, over and
-	 * above replenishmentDemand, in order to deliver expandedOutput.
-	 * 
-	 * Since the totals of both replenishment and expansion demand can be calculated by summing them, as can
-	 * their costs, there is no return result.
-	 */
-
-	public void computeDemand(double extraOutput) {
-		for (Stock s : productiveStocks()) {
-			s.setReplenishmentDemand(constrainedOutput * s.getProductionCoefficient());
-			s.setExpansionDemand(extraOutput*s.getProductionCoefficient());
-		}
-	}
-
-
-	/**
-	 * calculate the extra cost, and its components, of expandedCosts compared to currentCosts
-	 * 
-	 * @param currentCosts
-	 *            the smaller of the two cost vectors
-	 * @param expandedCosts
-	 *            the larger of the two cost vectors
-	 * @return a cost vector giving the difference between the components, and the total, of the two vectors
-	 */
-	public static DemandComponents extraCosts(DemandComponents currentCosts, DemandComponents expandedCosts) {
-		DemandComponents difference = new DemandComponents();
-		difference.costOfExpansionLP = expandedCosts.costOfExpansionLP - currentCosts.costOfExpansionLP;
-		difference.costOfExpansionMP = expandedCosts.costOfExpansionMP - currentCosts.costOfExpansionMP;
-		return difference;
 	}
 
 	/**
@@ -224,13 +163,125 @@ public class Industry extends Observable implements Serializable {
 	 *            TODO get BeanUtils to do this, or find some other way. There must be a better way but many people complain about it
 	 */
 	public void copyIndustry(Industry industryTemplate) {
-		pk.industryName = industryTemplate.getProductUseValueName();
+		pk.industryName = industryTemplate.getIndustryName();
 		pk.timeStamp = industryTemplate.getTimeStamp();
 		pk.project = industryTemplate.getProject();
-		constrainedOutput = industryTemplate.constrainedOutput;
+		output = industryTemplate.output;
 		proposedOutput = industryTemplate.proposedOutput;
 		growthRate = industryTemplate.growthRate;
 		initialCapital = industryTemplate.initialCapital;
+	}
+
+	/**
+	 * Estimate the replenishment and expansion requirements associated with two possible levels of output,
+	 * of which the first corresponds to replenishment (continuing at the existing level of output) and the
+	 * second to expansion (raising output to a proposed higher level). The replenishment output level is
+	 * simply that which was last used (output) while the second is the parameter expandedOutput.
+	 * 
+	 * The replenishmentDemand of all productive stocks of this industry, including labour power, is set at
+	 * a level which will deliver output.
+	 * 
+	 * The expansionDemand of these stocks records the additional quantity of these stocks required, over and
+	 * above replenishmentDemand, in order to deliver expandedOutput.
+	 * 
+	 * Since the totals of both replenishment and expansion demand can be calculated by summing them, as can
+	 * their costs, there is no return result.
+	 * 
+	 * @param extraOutput the additional output proposed
+	 */
+
+	public void computeDemand(double extraOutput) {
+		for (Stock s : productiveStocks()) {
+			s.setReplenishmentDemand(output * s.getProductionCoefficient());
+			s.setExpansionDemand(extraOutput * s.getProductionCoefficient());
+		}
+	}
+
+	/**
+	 * calculate the cost of replenishing the inputs, from the productive stocks
+	 * 
+	 * @return the cost of replenishing the inputs
+	 */
+	public double replenishmentCosts() {
+		double result = 0;
+		for (Stock s : productiveStocks()) {
+			UseValue u = s.getUseValue();
+			double additionalCost = s.getReplenishmentDemand() * u.getUnitPrice();
+			result += additionalCost;
+		}
+		return result;
+	}
+
+	/**
+	 * calculate the cost of expanding the inputs, from the productive stocks
+	 * 
+	 * @return the cost of replenishing the inputs
+	 */
+	public double expansionCosts() {
+		double result = 0;
+		for (Stock s : productiveStocks()) {
+			UseValue u = s.getUseValue();
+			double additionalCost = s.getExpansionDemand() * u.getUnitPrice();
+			result += additionalCost;
+		}
+		return result;
+	}
+
+	/**
+	 * Increase the output of this industry in proportion to {@code growthRate}
+	 * TODO at present no reality checks or methods of reducing over-ambitious expenditure
+	 * @param growthRate the proportionate increase in the current output
+	 */
+	
+	public void expand(double growthRate) {
+		this.growthRate=growthRate;
+		double extraOutput = output * growthRate;
+		computeDemand(extraOutput);
+		double costOfExpansion = expansionCosts();
+		Reporter.report(logger, 2, "  Industry [%s] expands from %.0f to %.0f costing $%.0f ",
+				pk.industryName, output, output+extraOutput,costOfExpansion);
+
+		// transfer funds from the donor class, and reduce its revenue accordingly
+		// TODO this should be a method of the SocialClass class
+		allocateInvestmentFunds(costOfExpansion);
+		
+		// grant the additional output level. No need to recompute demand as this will be done
+		// by the Demand phase of the next period.
+		setOutput(output + extraOutput);
+		
+		// reduce the available surplus of every stock that this industry consumes
+		for (Stock s:productiveStocks()) {
+			UseValue u=s.getUseValue();
+			u.setSurplusProduct(u.getSurplusProduct()-s.getExpansionDemand());
+		}
+	}
+	
+	/**
+	 * 
+	 * @return the best possible growth rate
+	 */
+	
+	public double computeGrowthRate() {
+		double minimumGrowthRate=Double.MAX_VALUE;
+		for (Stock s:productiveStocks()) {
+			UseValue u=s.getUseValue();
+
+			// Exclude socially-produced commodities
+			if (u.getCommodityOriginType() == UseValue.COMMODITY_ORIGIN_TYPE.SOCIALlY_PRODUCED)
+				continue;
+
+			double replenishmentDemand=s.getProductionCoefficient()*output;
+			double remainingSurplus=u.getSurplusProduct();
+			double possibleGrowthRate=remainingSurplus/replenishmentDemand;
+			if (possibleGrowthRate<minimumGrowthRate)
+				minimumGrowthRate=possibleGrowthRate;
+		}
+		if (minimumGrowthRate==Double.MAX_VALUE) {
+			Dialogues.alert(logger, "Industry {} seems to have no inputs. Please look at your data. If the problem persists, contact the developer",pk.industryName);
+			minimumGrowthRate=0;
+		}
+		growthRate=minimumGrowthRate;
+		return growthRate;
 	}
 
 	/**
@@ -341,8 +392,8 @@ public class Industry extends Observable implements Serializable {
 			return new ReadOnlyStringWrapper(pk.industryName);
 		case INITIALCAPITAL:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, initialCapital));
-		case CONSTRAINEDOUTPUT:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, constrainedOutput));
+		case OUTPUT:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, output));
 		case PROPOSEDOUTPUT:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, proposedOutput));
 		case GROWTHRATE:
@@ -408,8 +459,8 @@ public class Industry extends Observable implements Serializable {
 			return proposedOutput != comparator.proposedOutput;
 		case GROWTHRATE:
 			return growthRate != comparator.growthRate;
-		case CONSTRAINEDOUTPUT:
-			return constrainedOutput != comparator.constrainedOutput;
+		case OUTPUT:
+			return output != comparator.output;
 		case INITIALCAPITAL:
 			return initialCapital != comparator.initialCapital;
 		case PROFITRATE:
@@ -459,8 +510,8 @@ public class Industry extends Observable implements Serializable {
 			return String.format(ViewManager.largeNumbersFormatString, (proposedOutput - comparator.proposedOutput));
 		case GROWTHRATE:
 			return String.format(ViewManager.smallNumbersFormatString, (growthRate - comparator.growthRate));
-		case CONSTRAINEDOUTPUT:
-			return String.format(ViewManager.largeNumbersFormatString, (constrainedOutput - comparator.constrainedOutput));
+		case OUTPUT:
+			return String.format(ViewManager.largeNumbersFormatString, (output - comparator.output));
 		case INITIALCAPITAL:
 			return String.format(ViewManager.largeNumbersFormatString, (initialCapital - comparator.initialCapital));
 		case PROFITRATE:
@@ -482,60 +533,6 @@ public class Industry extends Observable implements Serializable {
 		default:
 			return item;
 		}
-	}
-
-	/**
-	 * calculates the cost of producing at level proposedOutput, given the current level of productive inputs.
-	 * NOTE this cannot be reduced to a simple multiple of existing stocks, because some stocks may already exist. It is thus a non-linear function of Output
-	 * NOTE the 'marginal' nature of this calculation doesn't arise from the non-linearity of the production function (though in future extensions it could).
-	 * It arises because some stocks already exist, so that the cost rises as a step function once the output level exceeds the required stock of each input
-	 * 
-	 * @param anOutput
-	 *            the output level whose cost we wish to establish
-	 * @return the cost of reaching this output level
-	 */
-
-	public DemandComponents computeOutputCosts(double anOutput) {
-		DemandComponents demandComponents = new DemandComponents();
-		demandComponents.costOfExpansionMP = 0.0;
-		demandComponents.costOfExpansionLP = 0.0;
-
-		// ask each productive stock to tell us how much it would cost to increase that stock's size sufficient to produce the required output
-		Reporter.report(logger, 1, " Calculating the cost to industry [%s] of acquiring sufficient stocks to produce an output of %.0f ",
-				pk.industryName, anOutput);
-		for (Stock s : DataManager.stocksProductiveByIndustry(Simulation.timeStampIDCurrent, pk.industryName)) {
-			UseValue u = s.getUseValue();
-			if (u == null) {
-				Dialogues.alert(logger, "The use value [%s] does not exist", s.getUseValueName());
-			} else {
-				double coefficient = s.getProductionCoefficient();
-				double stockNewPrice = 0;
-				double stockLevelRequired = coefficient * u.getTurnoverTime() * anOutput;
-				double stockLevelExisting = s.getQuantity();
-				double stockNewRequired = stockLevelRequired - stockLevelExisting;
-				stockNewPrice = stockNewRequired * u.getUnitPrice();
-				if (s.useValueType() == USEVALUETYPE.LABOURPOWER) {
-					demandComponents.costOfExpansionLP += stockNewPrice;
-				} else {
-					demandComponents.costOfExpansionMP += stockNewPrice;
-				}
-				if (stockNewRequired < 0) {
-					Reporter.report(logger, 2,
-							"  Industry [%s] already has %.0f of productive input [%s] which is sufficient to produce at level %.0f, so incurs no extra cost",
-							pk.industryName, stockLevelExisting, s.getUseValueName(), proposedOutput);
-					stockNewRequired = 0;
-				} else {
-					Reporter.report(logger, 2,
-							"  Industry [%s] has %.0f of productive input [%s] which requires %.0f more, costing $%.0f to produce output of %.0f",
-							pk.industryName, stockLevelExisting, s.getUseValueName(), stockNewRequired, stockNewPrice, anOutput);
-				}
-			}
-		}
-		Reporter.report(logger, 1,
-				" It would cost industry [%s] $%.0f for means of production and $%.0f for labour power (totalling $%.0f), to produce at a level of %.0f ",
-				pk.industryName, demandComponents.costOfExpansionMP, demandComponents.costOfExpansionLP, demandComponents.costOfExpansionOutput(),
-				proposedOutput);
-		return demandComponents;
 	}
 
 	/**
@@ -660,16 +657,16 @@ public class Industry extends Observable implements Serializable {
 		pk.timeStamp = timeStamp;
 	}
 
-	public String getProductUseValueName() {
+	public String getIndustryName() {
 		return pk.industryName;
 	}
 
-	public double getConstrainedOutput() {
-		return constrainedOutput;
+	public double getOutput() {
+		return output;
 	}
 
-	public void setConstrainedOutput(double output) {
-		this.constrainedOutput = output;
+	public void setOutput(double output) {
+		this.output = MathStuff.round(output);
 	}
 
 	public double getProposedOutput() {
@@ -767,7 +764,7 @@ public class Industry extends Observable implements Serializable {
 		contents.add(String.format("%.2f", getSalesQuantity()));
 		contents.add(String.format("%.2f", getSalesPrice()));
 		contents.add(String.format("%.2f", getSalesValue()));
-		contents.add(String.format("%.2f", constrainedOutput));
+		contents.add(String.format("%.2f", output));
 		contents.add(String.format("%.2f", proposedOutput));
 		return contents;
 	}
@@ -801,7 +798,7 @@ public class Industry extends Observable implements Serializable {
 	 * @return the profitRate
 	 */
 	public double profitRate() {
-		if (Precision.round(initialCapital, Simulation.getRoundingPrecision()) == 0) {
+		if (MathStuff.round(initialCapital) == 0) {
 			return Double.NaN;
 		}
 		return profit() / initialCapital;
@@ -838,7 +835,7 @@ public class Industry extends Observable implements Serializable {
 		UseValue u = mP.getUseValue();
 		double price = u.getUnitPrice();
 		double extraStock = extraMeansOfProduction / price;
-		return constrainedOutput + extraStock / mP.getProductionCoefficient();
+		return output + extraStock / mP.getProductionCoefficient();
 	}
 
 	/**
@@ -859,6 +856,20 @@ public class Industry extends Observable implements Serializable {
 		case START:
 			comparator = startComparator;
 		}
+	}
+
+	/**
+	 * Allocate funds for expansion
+	 * 
+	 * @param costOfExpansion how much needs to be allocated
+	 */
+
+	public void allocateInvestmentFunds(double costOfExpansion) {
+		Stock recipientMoneyStock = getMoneyStock();
+		SocialClass donor = DataManager.socialClassByName("Capitalists");
+		Stock donorMoneyStock = donor.getMoneyStock();
+		donorMoneyStock.transferStock(recipientMoneyStock, costOfExpansion);
+		donor.setRevenue(donor.getRevenue() - costOfExpansion);
 	}
 
 	/**

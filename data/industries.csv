@@ -1,4 +1,4 @@
-project,timeStamp,industryName,ProposedOutput,GrowthRate
+project,timeStamp,industryName,output,GrowthRate
 1,1,Means of Production,6000,0
 1,1,Consumption,3000,0
 2,1,Means of Production,6000,0

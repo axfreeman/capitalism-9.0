@@ -19,19 +19,23 @@
 */
 package rd.dev.simulation.utils;
 
+import org.apache.commons.math3.util.Precision;
+
 /**
  * This class handles all operations in which rounding errors can create problems
- * 
- * TODO (30/1/18) make this the general class for dealing with precision,
- * and implement it using the Apache Commons Math library 
- * @author afree
  *
  */
 public class MathStuff {
-	public static double precision=0.0000001;
-	
-	
+	// the precision for decimal calculations with large amounts (that is, anything except coefficients, the melt, rate of profit, etc)
+
+	public static int roundingPrecision = 4;
+	public static double epsilon = 10 ^ (1 / roundingPrecision);
+
 	public static boolean equals(double x, double y) {
-		return (y<x+precision&&y>x-precision);
+		return (y<x+epsilon && y>x-epsilon);
+	}
+	
+	public static double round(double x) {
+		return Precision.round(x, roundingPrecision);
 	}
 }

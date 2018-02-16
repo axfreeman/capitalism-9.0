@@ -20,7 +20,6 @@
 
 package rd.dev.simulation.command;
 
-import org.apache.commons.math3.util.Precision;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,6 +33,7 @@ import rd.dev.simulation.model.Project;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.model.UseValue;
 import rd.dev.simulation.utils.Dialogues;
+import rd.dev.simulation.utils.MathStuff;
 import rd.dev.simulation.utils.Reporter;
 
 public class ImmediateConsequences extends Simulation implements Command {
@@ -62,7 +62,7 @@ public class ImmediateConsequences extends Simulation implements Command {
 		double globalTotalPrice = 0.0;
 		Global global = DataManager.getGlobal();
 		for (UseValue u :  DataManager.useValuesAll()) {
-			Reporter.report(logger, 1, "Commodity [%s] Total value is %.0f, and total price is %.0f", u.getUseValueName(),u.totalValue(), u.totalPrice());
+			Reporter.report(logger, 1, "Commodity [%s] Total value is %.0f, and total price is %.0f", u.commodityName(),u.totalValue(), u.totalPrice());
 			globalTotalValue += u.totalValue();
 			globalTotalPrice += u.totalPrice();
 		}
@@ -71,9 +71,9 @@ public class ImmediateConsequences extends Simulation implements Command {
 		logger.debug("Recorded global total value is {}, and total value calculated from use values is {}", global.totalValue(), globalTotalValue);
 		logger.debug("Recorded global total price is {}, and total price calculated from use values is {}", global.totalPrice(), globalTotalPrice);
 		
-		if (!Precision.equals(globalTotalValue,global.totalValue(),Simulation.roundingPrecision))
+		if (!MathStuff.equals(globalTotalValue,global.totalValue()))
 			Dialogues.alert(logger, "The total value of stocks is out of sync");
-		if (!Precision.equals(globalTotalPrice,global.totalPrice(),Simulation.roundingPrecision))
+		if (!MathStuff.equals(globalTotalPrice,global.totalPrice()))
 			Dialogues.alert(logger, "The total price of stocks is out of sync");
 
 		// ... end of the consistency check
@@ -94,10 +94,10 @@ public class ImmediateConsequences extends Simulation implements Command {
 		// Reset all unit values on the basis of the total value and total quantity of this commodity in existence
 
 		for (UseValue u : DataManager.useValuesAll()) {
-			if (u.getUseValueType() != UseValue.USEVALUETYPE.MONEY) {
+			if (u.getCommodityFunctionType() != UseValue.COMMODITY_FUNCTION_TYPE.MONEY) {
 				double quantity = u.totalQuantity();
-				double newUnitValue = Precision.round(adjustmentFactor * u.totalValue() / quantity, Simulation.roundingPrecision);
-				Reporter.report(logger, 2, "The unit value of commodity [%s] was %.4f, and will be reset to %.4f", u.getUseValueName(),u.getUnitValue(), newUnitValue);
+				double newUnitValue = MathStuff.round(adjustmentFactor * u.totalValue() / quantity);
+				Reporter.report(logger, 2, "The unit value of commodity [%s] was %.4f, and will be reset to %.4f", u.commodityName(),u.getUnitValue(), newUnitValue);
 				u.setUnitValue(newUnitValue);
 			}
 		}
@@ -126,10 +126,10 @@ public class ImmediateConsequences extends Simulation implements Command {
 			// there may be more than one producer of the same commodity.
 			// we can only set the profit rate for the sector as a whole,which means we work from the per-useValue profit rates
 	
-			for (UseValue u:DataManager.useValuesByIndustryType(UseValue.USEVALUEINDUSTRYTYPE.CAPITALIST)) {
-				Reporter.report(logger, 1, " Setting profit-equalizing price for use value [%s]", u.getUseValueName());
-				for (Industry c:DataManager.industriesByProductUseValue(u.getUseValueName())) {
-					Reporter.report(logger, 2, " Note: industry %s produces this use value", c.getProductUseValueName());
+			for (UseValue u:DataManager.useValuesByOriginType(UseValue.COMMODITY_ORIGIN_TYPE.INDUSTRIALLY_PRODUCED)) {
+				Reporter.report(logger, 1, " Setting profit-equalizing price for use value [%s]", u.commodityName());
+				for (Industry c:DataManager.industriesByProductUseValue(u.commodityName())) {
+					Reporter.report(logger, 2, " Note: industry %s produces this use value", c.getIndustryName());
 				}
 				double newUnitPrice=u.initialCapital()*(1+global.profitRate())/u.totalQuantity();
 				Reporter.report(logger, 2, "  Unit price changed from %.4f to %.4f", u.getUnitPrice(),newUnitPrice);

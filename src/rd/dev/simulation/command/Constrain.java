@@ -21,7 +21,6 @@ package rd.dev.simulation.command;
 
 import java.util.List;
 
-import org.apache.commons.math3.util.Precision;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import rd.dev.simulation.Simulation;
@@ -86,7 +85,6 @@ public class Constrain extends Simulation implements Command {
 			UseValue u = s.getUseValue();
 			double allocationShare = u.getAllocationShare();
 			double newQuantityDemanded = s.getReplenishmentDemand() * allocationShare;
-			newQuantityDemanded = Precision.round(newQuantityDemanded, Simulation.getRoundingPrecision());
 			Reporter.report(logger, 2, "  Demand for [%s] in industry [%s] was %.0f and is now %.0f",
 					useValueType, s.getOwner(), s.getReplenishmentDemand(), newQuantityDemanded);
 			s.setReplenishmentDemand(newQuantityDemanded);
@@ -102,21 +100,19 @@ public class Constrain extends Simulation implements Command {
 	 */
 
 	public void constrainOutput() {
-		Reporter.report(logger, 1, " Adjusting the output of each industry");
-
 		List<Industry> industries = DataManager.industriesAll();
 		for (Industry c : industries) {
-			double desiredOutputLevel = c.getProposedOutput();
+			double desiredOutputLevel = c.getOutput();
 			Reporter.report(logger, 1, " Estimating supply-constrained output for industry [%s] with unconstrained output %.0f",
-					c.getProductUseValueName(), desiredOutputLevel);
-			List<Stock> managedStocks = DataManager.stocksProductiveByIndustry(timeStampIDCurrent, c.getProductUseValueName());
+					c.getIndustryName(), desiredOutputLevel);
+			List<Stock> managedStocks = DataManager.stocksProductiveByIndustry(timeStampIDCurrent, c.getIndustryName());
 			for (Stock s : managedStocks) {
 				double existingQuantity = s.getQuantity();
 				double quantityDemanded = s.getReplenishmentDemand();
 				double quantityAvailable = existingQuantity + s.getReplenishmentDemand();
 				double coefficient = s.getProductionCoefficient();
 				if (coefficient > 0) {
-					double possibleOutput = Precision.round(quantityAvailable / coefficient, roundingPrecision);
+					double possibleOutput = quantityAvailable / coefficient;
 					if (possibleOutput < desiredOutputLevel) {
 						Reporter.report(logger, 2, "  Constraining output to %.0f because stock [%s] has a supply of %.0f ",
 								possibleOutput, s.getUseValueName(), quantityDemanded);
@@ -128,8 +124,8 @@ public class Constrain extends Simulation implements Command {
 				}
 			}
 			Reporter.report(logger, 1, " Output of [%s] has been constrained to %.0f; unconstrained output was %.0f",
-					c.getProductUseValueName(), desiredOutputLevel, c.getProposedOutput());
-			c.setConstrainedOutput(desiredOutputLevel);
+					c.getIndustryName(), desiredOutputLevel, c.getProposedOutput());
+			c.setOutput(desiredOutputLevel);
 		}
 	}
 
@@ -144,7 +140,7 @@ public class Constrain extends Simulation implements Command {
 			double totalSupply = u.totalSupply();
 			double allocationShare = totalSupply / totalDemand;
 			allocationShare = (allocationShare > 1 ? 1 : allocationShare);
-			Reporter.report(logger, 2, "  Allocation share for commodity [%s] is %.4f", u.getUseValueName(), allocationShare);
+			Reporter.report(logger, 2, "  Allocation share for commodity [%s] is %.4f", u.commodityName(), allocationShare);
 			u.setAllocationShare(allocationShare);
 		}
 	}

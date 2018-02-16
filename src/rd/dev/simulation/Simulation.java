@@ -36,6 +36,7 @@ import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.model.TimeStamp;
 import rd.dev.simulation.model.UseValue;
 import rd.dev.simulation.utils.Dialogues;
+import rd.dev.simulation.utils.MathStuff;
 import rd.dev.simulation.utils.Reporter;
 import rd.dev.simulation.utils.StringStuff;
 
@@ -59,11 +60,6 @@ public class Simulation {
 	// These cursors are independent of timeStampIDCurrent and operations that involve them do not affect the database, or the simulation.
 	public static int timeStampDisplayCursor; 				// determines which timeStamp is displayed
 	private static int timeStampComparatorCursor; 			// the timeStamp with which the displayed data is to be compared
-
-	// the precision for decimal calculations with large amounts (that is, anything except coefficients, the melt, rate of profit, etc)
-
-	protected static int roundingPrecision = 4;
-	protected static double epsilon = 10 ^ (1 / roundingPrecision);
 
 	// Determines the way that the supply of labour power responds to demand
 	// a primitive response function to be expanded and hopefully user-customized
@@ -178,7 +174,7 @@ public class Simulation {
 			if (listedValue != calculatedValue) {
 				logger.error("Listed price is {} and total price is {}", listedValue, calculatedValue);
 			} else {
-				logger.debug("Listed price of {} matches calculated price at  {}", u.getUseValueName(), calculatedValue);
+				logger.debug("Listed price of {} matches calculated price at  {}", u.commodityName(), calculatedValue);
 			}
 		}
 	}
@@ -206,7 +202,7 @@ public class Simulation {
 		// a little consistency check
 
 		for (Stock s : DataManager.stocksAll()) {
-			if (s.getQuantity() < 0 - epsilon) {
+			if (s.getQuantity() < 0 - MathStuff.epsilon) {
 				if (s.getStockType().equals(Stock.STOCKTYPE.MONEY.text())) {
 					Dialogues.alert(logger, "The owner %s has run out of money. "
 							+ "This may be a data error:try giving it more. "
@@ -275,7 +271,7 @@ public class Simulation {
 		logger.debug(" Persisting a new set of industries with timeStamp ", timeStampIDCurrent + 1);
 		Industry newIndustry;
 		for (Industry c : DataManager.industriesAll()) {
-			logger.debug("  Persisting an industry whose use value is " + c.getProductUseValueName());
+			logger.debug("  Persisting an industry whose use value is " + c.getIndustryName());
 			newIndustry = new Industry();
 			newIndustry.copyIndustry(c);
 			newIndustry.setTimeStamp(timeStampIDCurrent + 1);
@@ -336,7 +332,7 @@ public class Simulation {
 		Global global = DataManager.getGlobal();
 		for (Industry c : DataManager.industriesAll()) {
 			double initialCapital = c.currentCapital();
-			Reporter.report(logger, 2, "  The initial capital of the industry[%s] is now $%.0f (intrinsic %.0f)", c.getProductUseValueName(), initialCapital,
+			Reporter.report(logger, 2, "  The initial capital of the industry[%s] is now $%.0f (intrinsic %.0f)", c.getIndustryName(), initialCapital,
 					initialCapital / global.getMelt());
 			c.setInitialCapital(initialCapital);
 		}
@@ -365,34 +361,7 @@ public class Simulation {
 	}
 
 	/**
-	 * @return the roundingPrecision
-	 */
-	public static int getRoundingPrecision() {
-		return roundingPrecision;
-	}
 
-	/**
-	 * @param roundingPrecision
-	 *            the roundingPrecision to set
-	 */
-	public static void setRoundingPrecision(int roundingPrecision) {
-		Simulation.roundingPrecision = roundingPrecision;
-	}
-
-	/**
-	 * @return the epsilon
-	 */
-	public static double getEpsilon() {
-		return epsilon;
-	}
-
-	/**
-	 * @param epsilon
-	 *            the epsilon to set
-	 */
-	public static void setEpsilon(double epsilon) {
-		Simulation.epsilon = epsilon;
-	}
 
 	/**
 	 * @return the periodCurrent
