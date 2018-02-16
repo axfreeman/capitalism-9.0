@@ -45,8 +45,8 @@ public class ClassesReproduce extends Simulation implements Command {
 		advanceOneStep(ActionStates.C_P_ClassesReproduce.getText(), ActionStates.C_P_Produce.getText());
 
 		for (SocialClass sc : DataManager.socialClassesAll()) {
-			sc.regenerate();
 			sc.consume();
+			sc.regenerate();
 		}
 	}
 }

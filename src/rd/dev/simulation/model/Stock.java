@@ -274,8 +274,8 @@ public class Stock extends Observable implements Serializable {
 		quantity = MathStuff.round(newQuantity);
 		value = MathStuff.round(newValue);
 		price = MathStuff.round(newPrice);
-		Reporter.report(logger, 2,
-				"    Memo: commodity [%s], of type [%s], owned by [%s]: is now %.0f. Its value is now $%.0f (intrinsic %.0f), and its price is %.0f (intrinsic %.0f)",
+		Reporter.report(logger, 3,
+				"Commodity [%s], of type [%s], owned by [%s]: is now %.0f. Its value is now $%.0f (intrinsic %.0f), and its price is %.0f (intrinsic %.0f)",
 				pk.useValue, pk.stockType, pk.owner, quantity, value, value / melt, price, price / melt);
 	}
 
@@ -309,8 +309,8 @@ public class Stock extends Observable implements Serializable {
 			quantity = MathStuff.round(newQuantity);
 			value = MathStuff.round(newValue);
 			price = MathStuff.round(newPrice);
-			Reporter.report(logger, 2,
-					"  Size of commodity [%s], of type [%s], owned by [%s]: is %.0f. Value set to $%.0f (intrinsic %.0f), and price to %.0f (intrinsic %.0f)",
+			Reporter.report(logger, 3,
+					"Size of commodity [%s], of type [%s], owned by [%s]: is %.0f. Value set to $%.0f (intrinsic %.0f), and price to %.0f (intrinsic %.0f)",
 					pk.useValue, pk.stockType, pk.owner, quantity, value, value / melt, price, price / melt);
 		}catch (Exception e) {
 			Dialogues.alert(logger, "Something went wrong pre-processing the stock called %s. Please check your data.",pk.useValue);

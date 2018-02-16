@@ -20,6 +20,12 @@
 
 package rd.dev.simulation.view;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TreeItem;
@@ -29,9 +35,11 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import rd.dev.simulation.utils.Dialogues;
+import rd.dev.simulation.utils.Reporter;
 
 public class LogWindow {
-
+	private static final Logger logger = LogManager.getLogger(Reporter.class);
 	// this scene used for the logger window. Quite primitive
 
 	private static Scene logScene;
@@ -42,6 +50,7 @@ public class LogWindow {
 	private double logWindowHeight = ViewManager.screenBounds.getHeight() * 0.9;
 	private TreeItem<Label> lastLevel1;
 	private TreeItem<Label> lastLevel2;
+	private TreeItem<Label> lastLevel3;
 
 	public LogWindow() {
 		// TODO think about all the sizing issues. Ultimately, the window should be dockable
@@ -49,18 +58,20 @@ public class LogWindow {
 		TreeItem<Label> rootItem = new TreeItem<Label>(new Label("Log"));
 		TreeItem<Label> firstLevel1Item=new TreeItem<Label>(new Label("STARTUP"));
 		TreeItem<Label> secondLevelItem=new TreeItem<Label>(new Label("Log Window Startup"));
+		ZoneId zonedId = ZoneId.systemDefault();
+		ZonedDateTime zdt = ZonedDateTime.now( zonedId );
+		TreeItem<Label> thirdLevelItem=new TreeItem<Label>(new Label(zdt.toString()));
 		rootItem.setExpanded(true);
 
 		treeView = new TreeView<Label>(rootItem);
-		
-		//TODO this code just to catch level errors in the calling methods
-		//TODO error checking - essentially, no higher level item should be added until a 'completion' call has been made at the lower level.
-		//or something like that.
 		
 		rootItem.getChildren().add(firstLevel1Item);
 		lastLevel1=firstLevel1Item;
 		firstLevel1Item.getChildren().add(secondLevelItem);
 		lastLevel2=secondLevelItem;
+		secondLevelItem.getChildren().add(thirdLevelItem);
+		lastLevel3=thirdLevelItem;
+		
 
 		treeView.setPrefHeight(logWindowHeight);
 		treeView.setMaxHeight(Region.USE_PREF_SIZE);
@@ -101,21 +112,34 @@ public class LogWindow {
 			break;
 		case 1:
 			if(lastLevel1==null) {
-				throw new RuntimeException("ERROR:LOG WINDOW CONFIGURATION FUBAR");
+				Dialogues.alert(logger, "Something went wrong with the logging. Please contact the developer");
 			}
 			lastLevel1.getChildren().add(childItem);
+			label.setText(" "+label.getText());
 			label.setTextFill(Color.RED);
 			label.setWrapText(true);
 			lastLevel2=childItem;
 			break;
 		case 2:
 			if(lastLevel2==null) {
-				throw new RuntimeException("ERROR:LOG WINDOW CONFIGURATION FUBAR");
+				Dialogues.alert(logger, "Something went wrong with the logging. Please contact the developer");
 			}
 			lastLevel2.getChildren().add(childItem);
-			label.setWrapText(true);
+			label.setWrapText(false);
+			label.setText("  "+label.getText());
 			label.setTextFill(Color.DARKGREEN);
+			lastLevel3=childItem;
 			break;
+		case 3:
+			if(lastLevel3==null) {
+				Dialogues.alert(logger, "Something went wrong with the logging. Please contact the developer");
+			}
+			lastLevel3.getChildren().add(childItem);
+			label.setText("   "+label.getText());
+			label.setWrapText(false);
+			label.setTextFill(Color.BLACK);
+			break;
+			
 		default:
 			treeView.getRoot().getChildren().add(childItem);
 			lastLevel1=childItem;

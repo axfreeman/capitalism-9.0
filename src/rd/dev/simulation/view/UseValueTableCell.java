@@ -45,6 +45,11 @@ public class UseValueTableCell extends TableCell<UseValue, String> {
 			logger.debug(" Null Use Value");
 			return;
 		}
+		
+		if (item.equals("NaN")) {
+			setText("-");
+			return;
+		}
 		String deltaModifier="";
 		
 		if (useValue.changed(useValueSelector)) {

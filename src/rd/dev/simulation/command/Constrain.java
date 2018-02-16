@@ -29,6 +29,7 @@ import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.Industry;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.model.UseValue;
+import rd.dev.simulation.utils.MathStuff;
 import rd.dev.simulation.utils.Reporter;
 
 public class Constrain extends Simulation implements Command {
@@ -46,7 +47,7 @@ public class Constrain extends Simulation implements Command {
 	 * TODO there may be multiple suppliers of the same good, in which case it's also necessary to decide who gets to supply what.
 	 */
 	public void execute() {
-		Reporter.report(logger, 0, "CONSTRAINING DEMAND ON THE BASIS OF AVAILABLE SUPPLY");
+		Reporter.report(logger, 0, "CONSTRAINTS");
 
 		advanceOneStep(ActionStates.M_C_Constrain.getText(), ActionStates.M_C_PreTrade.getText());
 
@@ -78,14 +79,14 @@ public class Constrain extends Simulation implements Command {
 
 	public void allocateToStocks() {
 		List<Stock> stockList = DataManager.stocksSourcesOfDemand();
-		Reporter.report(logger, 1, " Constraining demand for stocks, on the basis of constraints on output levels");
+		Reporter.report(logger, 1, "Constraining demand for stocks, on the basis of constraints on output levels");
 
 		for (Stock s : stockList) {
 			String useValueType = s.getUseValueName();
 			UseValue u = s.getUseValue();
 			double allocationShare = u.getAllocationShare();
 			double newQuantityDemanded = s.getReplenishmentDemand() * allocationShare;
-			Reporter.report(logger, 2, "  Demand for [%s] in industry [%s] was %.0f and is now %.0f",
+			Reporter.report(logger, 2, "Demand for [%s] in industry [%s] was %.0f and is now %.0f",
 					useValueType, s.getOwner(), s.getReplenishmentDemand(), newQuantityDemanded);
 			s.setReplenishmentDemand(newQuantityDemanded);
 		}
@@ -103,7 +104,7 @@ public class Constrain extends Simulation implements Command {
 		List<Industry> industries = DataManager.industriesAll();
 		for (Industry c : industries) {
 			double desiredOutputLevel = c.getOutput();
-			Reporter.report(logger, 1, " Estimating supply-constrained output for industry [%s] with unconstrained output %.0f",
+			Reporter.report(logger, 1, "Estimating supply-constrained output for industry [%s] with unconstrained output %.0f",
 					c.getIndustryName(), desiredOutputLevel);
 			List<Stock> managedStocks = DataManager.stocksProductiveByIndustry(timeStampIDCurrent, c.getIndustryName());
 			for (Stock s : managedStocks) {
@@ -113,18 +114,18 @@ public class Constrain extends Simulation implements Command {
 				double coefficient = s.getProductionCoefficient();
 				if (coefficient > 0) {
 					double possibleOutput = quantityAvailable / coefficient;
-					if (possibleOutput < desiredOutputLevel) {
-						Reporter.report(logger, 2, "  Constraining output to %.0f because stock [%s] has a supply of %.0f ",
+					if (possibleOutput < desiredOutputLevel-MathStuff.epsilon) {
+						Reporter.report(logger, 2, "Constraining output to %.0f because stock [%s] has a supply of %.0f ",
 								possibleOutput, s.getUseValueName(), quantityDemanded);
 						desiredOutputLevel = possibleOutput;
 					} else {
-						Reporter.report(logger, 2, "  Output was not constrained by the stock of [%s] which can supply %.0f allowing for output of %.0f",
+						Reporter.report(logger, 2, "Output was not constrained by the stock of [%s] which can supply %.0f allowing for output of %.0f",
 								s.getUseValueName(), quantityAvailable, possibleOutput);
 					}
 				}
 			}
-			Reporter.report(logger, 1, " Output of [%s] has been constrained to %.0f; unconstrained output was %.0f",
-					c.getIndustryName(), desiredOutputLevel, c.getProposedOutput());
+			Reporter.report(logger, 2, "Output of [%s] has been set to %.0f; unconstrained output was %.0f",
+					c.getIndustryName(), desiredOutputLevel, c.getOutput());
 			c.setOutput(desiredOutputLevel);
 		}
 	}
@@ -134,13 +135,13 @@ public class Constrain extends Simulation implements Command {
 	 * 
 	 */
 	public void calculateAllocationShare() {
-		Reporter.report(logger, 1, " Computing the proportion of demand that can be satisfied by supply, for each commodity type");
+		Reporter.report(logger, 1, "Computing the proportion of demand that can be satisfied by supply, for each commodity type");
 		for (UseValue u : DataManager.useValuesAll()) {
 			double totalDemand = u.replenishmentDemand();
 			double totalSupply = u.totalSupply();
 			double allocationShare = totalSupply / totalDemand;
 			allocationShare = (allocationShare > 1 ? 1 : allocationShare);
-			Reporter.report(logger, 2, "  Allocation share for commodity [%s] is %.4f", u.commodityName(), allocationShare);
+			Reporter.report(logger, 2, "Allocation share for commodity [%s] is %.4f", u.commodityName(), allocationShare);
 			u.setAllocationShare(allocationShare);
 		}
 	}

@@ -84,7 +84,7 @@ public class Accumulate extends Simulation implements Command {
 	 * 
 	 */
 	private void allocateToProductionIndustries() {
-		Reporter.report(logger, 1, " Allocating investment to the production goods industries");
+		Reporter.report(logger, 1, "Allocating investment to the production goods industries");
 
 		for (UseValue u : DataManager.useValuesByFunction(UseValue.COMMODITY_FUNCTION_TYPE.PRODUCTIVE_INPUT)) {
 
@@ -92,7 +92,7 @@ public class Accumulate extends Simulation implements Command {
 			if (u.getCommodityOriginType() == UseValue.COMMODITY_ORIGIN_TYPE.SOCIALlY_PRODUCED)
 				continue;
 
-			Reporter.report(logger, 1, " Processing use value %s", u.commodityName());
+			Reporter.report(logger, 2, "Processing commodity %s", u.commodityName());
 			for (Industry industry : u.industries()) {
 				// simply grant the industry's proposed growth rate
 				industry.expand(industry.getGrowthRate());
@@ -118,7 +118,7 @@ public class Accumulate extends Simulation implements Command {
 
 	private void allocateToConsumptionIndustries() {
 		double costs = 0;
-		Reporter.report(logger, 1, " Allocating resources to expand the production of industries making consumption goods");
+		Reporter.report(logger, 1, "Allocating investment to the consumption goods industries");
 		
 		for (UseValue u : DataManager.useValuesByFunction(UseValue.COMMODITY_FUNCTION_TYPE.CONSUMER_GOOD)) {
 
@@ -126,14 +126,13 @@ public class Accumulate extends Simulation implements Command {
 			if (u.getCommodityOriginType() == UseValue.COMMODITY_ORIGIN_TYPE.SOCIALlY_PRODUCED)
 				continue;
 			
-			Reporter.report(logger, 1, " Processing use value %s", u.commodityName());
+			Reporter.report(logger, 2, "Processing commodity %s", u.commodityName());
 			for (Industry industry : u.industries()) {
 				industry.expand(industry.computeGrowthRate());
 			}
 		}
 
-		Reporter.report(logger, 1, " $%.0f will be allocated to department I to finance accumulation. $%.0f worth of Means of Production remain ",
+		Reporter.report(logger, 1, "$%.0f will be allocated to finance accumulationin the production goods industries. $%.0f worth of Means of Production remain ",
 				costs, surplusMeansOfProduction);
-
 	}
 }

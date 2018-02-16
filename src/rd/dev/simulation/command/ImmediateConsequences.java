@@ -47,11 +47,12 @@ public class ImmediateConsequences extends Simulation implements Command {
 	 * TODO CHECK INVARIANTS AT THIS POINT?
 	 */
 	public void execute() {
-		currentProject=SelectionsProvider.projectSingle(projectCurrent);		
-		Reporter.report(logger, 0, "Recompute unit values and prices and hence the Monetary Expression of Value");
-		Reporter.report(logger, 0, "Price dynamics are set to %s ", currentProject.getPriceDynamics());
+		currentProject=SelectionsProvider.projectSingle(projectCurrent);
+		Reporter.report(logger, 0, "IMMEDIATE CONSEQUENCES");
+		Reporter.report(logger, 1, "Recompute unit values and prices and hence the Monetary Expression of Value");
+		Reporter.report(logger, 1, "Price dynamics are set to %s ", currentProject.getPriceDynamics());
 		advanceOneStep(ActionStates.C_P_ImmediateConsequences.getText(), ActionStates.C_P_Produce.getText());
-		Reporter.report(logger, 0, "VALIDATE STOCK AND COMMODITY AGGREGATES");
+		Reporter.report(logger, 1, "Recompute unit values and prices if necessary");
 
 		// TODO: the value of money has to be dealt with properly.
 		// for now, deal with by exempting money
@@ -62,7 +63,7 @@ public class ImmediateConsequences extends Simulation implements Command {
 		double globalTotalPrice = 0.0;
 		Global global = DataManager.getGlobal();
 		for (UseValue u :  DataManager.useValuesAll()) {
-			Reporter.report(logger, 1, "Commodity [%s] Total value is %.0f, and total price is %.0f", u.commodityName(),u.totalValue(), u.totalPrice());
+			Reporter.report(logger, 2, "Commodity [%s] Total value is %.0f, and total price is %.0f", u.commodityName(),u.totalValue(), u.totalPrice());
 			globalTotalValue += u.totalValue();
 			globalTotalPrice += u.totalPrice();
 		}
@@ -119,20 +120,20 @@ public class ImmediateConsequences extends Simulation implements Command {
 		case DYNAMIC:
 			Dialogues.alert(logger, "Dynamic price adjustment not available yet, sorry");
 		case EQUALISE:
-			Reporter.report(logger, 0, "Setting prices to equalise profit rates");
+			Reporter.report(logger, 1, "Setting prices to equalise profit rates");
 			Global global =DataManager.getGlobal();
-			Reporter.report(logger, 1, "Average Profit Rate is currently recorded as %.4f", global.profitRate());
+			Reporter.report(logger, 2, "Average Profit Rate is currently recorded as %.4f", global.profitRate());
 
 			// there may be more than one producer of the same commodity.
 			// we can only set the profit rate for the sector as a whole,which means we work from the per-useValue profit rates
 	
 			for (UseValue u:DataManager.useValuesByOriginType(UseValue.COMMODITY_ORIGIN_TYPE.INDUSTRIALLY_PRODUCED)) {
-				Reporter.report(logger, 1, " Setting profit-equalizing price for use value [%s]", u.commodityName());
+				Reporter.report(logger, 2, "Setting profit-equalizing price for use value [%s]", u.commodityName());
 				for (Industry c:DataManager.industriesByProductUseValue(u.commodityName())) {
-					Reporter.report(logger, 2, " Note: industry %s produces this use value", c.getIndustryName());
+					Reporter.report(logger, 3, "Note: industry %s produces this use value", c.getIndustryName());
 				}
 				double newUnitPrice=u.initialCapital()*(1+global.profitRate())/u.totalQuantity();
-				Reporter.report(logger, 2, "  Unit price changed from %.4f to %.4f", u.getUnitPrice(),newUnitPrice);
+				Reporter.report(logger, 2, "Unit price changed from %.4f to %.4f", u.getUnitPrice(),newUnitPrice);
 				u.setUnitPrice(newUnitPrice);
 			}
 		}

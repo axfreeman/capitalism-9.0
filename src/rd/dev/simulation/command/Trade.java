@@ -60,14 +60,14 @@ public class Trade extends Simulation implements Command {
 	 */
 	private void productivePurchasesTrade() {
 		List<Industry> industries = DataManager.industriesAll();
-		Reporter.report(logger, 0, " The %d industries will now try to purchase the stocks they need. ", industries.size());
+		Reporter.report(logger, 1, "The %d industries will now try to purchase the stocks they need. ", industries.size());
 
 		for (Industry buyer : industries) {
 			String buyerName = buyer.getIndustryName();
 			Stock buyerMoneyStock = buyer.getMoneyStock();
 			List<Stock> stocks = buyer.productiveStocks();
 
-			Reporter.report(logger, 1, " Industry [%s] will purchase %d productive stocks to facilitate output of $%.0f ",
+			Reporter.report(logger, 1, "Industry [%s] will purchase %d productive stocks to facilitate output of $%.0f ",
 					buyerName, stocks.size(), buyer.getOutput());
 
 			for (Stock s : stocks) {
@@ -76,7 +76,7 @@ public class Trade extends Simulation implements Command {
 				double quantityTransferred = s.getReplenishmentDemand();
 				double unitPrice = stockUseValue.getUnitPrice();
 				if (quantityTransferred > 0) {
-					Reporter.report(logger, 1, " Industry [%s] is purchasing %.0f units of [%s] for $%.0f", s.getOwner(), quantityTransferred,
+					Reporter.report(logger, 2, "Industry [%s] is purchasing %.0f units of [%s] for $%.0f", s.getOwner(), quantityTransferred,
 							s.getUseValueName(), quantityTransferred * unitPrice);
 					Stock sellerMoneyStock = null;
 					Stock sellerSalesStock = null;
@@ -90,7 +90,7 @@ public class Trade extends Simulation implements Command {
 							if (salesStock != null) {
 								sellerMoneyStock = sc.getMoneyStock();
 								sellerSalesStock = salesStock;
-								Reporter.report(logger, 1, " Social class [%s] is going to sell %.0f units of [%s]", 
+								Reporter.report(logger, 2, "Social class [%s] is going to sell %.0f units of [%s]", 
 										sc.getSocialClassName(), quantityTransferred,s.getUseValueName());
 							}
 						}
@@ -99,7 +99,7 @@ public class Trade extends Simulation implements Command {
 						}
 					} else {
 						Industry seller = DataManager.industryByProductUseValue(useValueName);
-						Reporter.report(logger, 1, " The industry [%s] is selling [%s]", seller.getIndustryName(), s.getUseValueName());
+						Reporter.report(logger, 2, "The industry [%s] is selling [%s]", seller.getIndustryName(), s.getUseValueName());
 						sellerMoneyStock = seller.getMoneyStock();
 						sellerSalesStock = seller.getSalesStock();
 					}
@@ -118,10 +118,9 @@ public class Trade extends Simulation implements Command {
 	 * each social class purchases the consumption goods that it needs
 	 */
 	private void socialClassesTrade() {
-		Reporter.report(logger, 0, " Social Classes will now try to purchase the stocks they need");
+		Reporter.report(logger, 1, "Social Classes will now try to purchase the stocks they need");
 		for (SocialClass buyer : DataManager.socialClassesAll()) {
 			String buyerName = buyer.getSocialClassName();
-			Reporter.report(logger, 1, " Purchasing for the social class [%s]", buyerName);
 			for (UseValue u : DataManager.useValuesByFunction(UseValue.COMMODITY_FUNCTION_TYPE.CONSUMER_GOOD)) {
 				Industry seller = DataManager.industryByProductUseValue(u.commodityName());
 				if (seller == null) {
@@ -157,14 +156,14 @@ public class Trade extends Simulation implements Command {
 				if (maximumQuantityAdded < quantityAdded - MathStuff.epsilon) {
 					logger.debug("Class {} cannot buy {} and instead has to buy {} with money {}",
 							buyer.getSocialClassName(), quantityAdded,maximumQuantityAdded,buyer.getMoneyQuantity());
-					Dialogues.alert(logger, " [%s] do not have enough money. This could be a data error; try giving them more money. If the problem persists, contact the developer", buyer.getSocialClassName());
+					Dialogues.alert(logger, "[%s] do not have enough money. This could be a data error; try giving them more money. If the problem persists, contact the developer", buyer.getSocialClassName());
 					quantityAdded = maximumQuantityAdded;
 					break;
 				}
 
 				// OK, it seems as if we are good to go
 				
-				Reporter.report(logger, 2, "  The social class [%s] is buying %.0f units of [%s] for %.0f",
+				Reporter.report(logger, 2, "The social class [%s] is buying %.0f units of [%s] for %.0f",
 						buyerName, quantityAdded, u.commodityName(), quantityAdded * unitPrice);
 				try {
 					sellerSalesStock.transferStock(consumptionStock, quantityAdded);
@@ -176,7 +175,7 @@ public class Trade extends Simulation implements Command {
 				}
 				double usedUpRevenue = quantityAdded * unitPrice;
 				buyer.setRevenue(buyer.getRevenue() - usedUpRevenue);
-				Reporter.report(logger, 2, "  Disposable revenue reduced by $%.0f", usedUpRevenue);
+				Reporter.report(logger, 2, "Disposable revenue reduced by $%.0f", usedUpRevenue);
 			}
 		}
 	}

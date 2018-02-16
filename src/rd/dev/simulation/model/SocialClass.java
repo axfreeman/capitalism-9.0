@@ -292,7 +292,7 @@ public class SocialClass extends Observable implements Serializable {
 	 */
 
 	public void regenerate() {
-		Reporter.report(logger, 1, " Reproducing the sales stock of the class [%s]", pk.socialClassName);
+		Reporter.report(logger, 1, "Reproducing the sales stock of the class [%s]", pk.socialClassName);
 
 		Stock salesStock = getSalesStock();
 		if (salesStock != null) {
@@ -302,7 +302,7 @@ public class SocialClass extends Observable implements Serializable {
 			double newLabourPower = size * participationRatio / turnoverTime;
 			double extraLabourPower = newLabourPower - existingLabourPower;
 			if (extraLabourPower > 0) {
-				Reporter.report(logger, 2, "  The labour power of the class [%s] was %.0f and is now %.0f", pk.socialClassName, existingLabourPower,
+				Reporter.report(logger, 2, "The sales stock of the class [%s] was %.0f and is now %.0f", pk.socialClassName, existingLabourPower,
 						newLabourPower);
 				salesStock.modifyBy(extraLabourPower);
 			}
@@ -315,11 +315,11 @@ public class SocialClass extends Observable implements Serializable {
 	 */
 
 	public void consume() {
-		Reporter.report(logger, 1, " Replenishing the consumptions stocks of the class [%s]", pk.socialClassName);
+		Reporter.report(logger, 1, "Replenishing the class [%s]", pk.socialClassName);
 		for (Stock s : DataManager.stocksConsumptionByClass(Simulation.timeStampIDCurrent, pk.socialClassName)) {
 			double quantityConsumed = s.getQuantity();
 			s.modifyBy(-quantityConsumed);
-			Reporter.report(logger, 2, "  Consumption stock of class [%s] reduced to zero from %.0f", pk.socialClassName, quantityConsumed);
+			Reporter.report(logger, 2, "Consumption stock of class [%s] reduced to %.0f from %.0f", pk.socialClassName, s.getQuantity(), quantityConsumed);
 		}
 	}
 

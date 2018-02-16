@@ -57,6 +57,7 @@ public class Demand extends Simulation implements Command {
 
 	public void execute() {
 		advanceOneStep(ActionStates.M_C_Demand.getText(), ActionStates.M_C_PreTrade.getText());
+		Reporter.report(logger, 0, "DEMAND");
 		computeProductiveDemand();
 		registerLabourResponse(DataManager.getGlobal().getLabourSupplyResponse());
 		computeSocialClassDemand();
@@ -87,7 +88,7 @@ public class Demand extends Simulation implements Command {
 	 * NOTE that the constrained output is not set at this point; that is done by 'Constrain' (for illustrative purposes - the two could be combined)
 	 */
 	public void computeProductiveDemand() {
-		Reporter.report(logger, 0, "COMPUTE PRODUCTIVE_INPUT DEMAND");
+		Reporter.report(logger, 1, "Compute the demand for productive inputs");
 
 		// First, set demand to zero for all stocks
 
@@ -101,7 +102,7 @@ public class Demand extends Simulation implements Command {
 
 		for (Industry c : DataManager.industriesAll()) {
 			double totalCost = 0;
-			Reporter.report(logger, 1, " Estimating demand from industry %s at output level %.0f", 
+			Reporter.report(logger, 2, "Estimating demand from industry %s at output level %.0f", 
 					c.getIndustryName(),c.getOutput());
 			double moneyAvailable = c.getMoneyQuantity();
 
@@ -116,7 +117,7 @@ public class Demand extends Simulation implements Command {
 			c.computeDemand(0);
 			totalCost=c.replenishmentCosts();
 			
-			Reporter.report(logger, 2, "  Total cost of an output of %.0f is $%.0f and $%.0f is available.",
+			Reporter.report(logger, 3, "Total cost of an output of %.0f is $%.0f and $%.0f is available.",
 					output, totalCost, moneyAvailable);
 			double anticipatedMoneyFromSales=c.getSalesPrice();
 			double resources=moneyAvailable+anticipatedMoneyFromSales;
@@ -124,11 +125,11 @@ public class Demand extends Simulation implements Command {
 			// check for monetary constraints
 
 			if (totalCost < resources + MathStuff.epsilon) {
-				Reporter.report(logger, 2, "  Output is unconstrained by cost");
+				Reporter.report(logger, 3, "Output is unconstrained by cost");
 				c.setOutput(output);
 			} else {
 
-				Reporter.report(logger, 1, " Output is constrained by cost");
+				Reporter.report(logger, 3, "Output is constrained by cost");
 				
 				output = output * resources/ totalCost;
 				c.setOutput(output);
@@ -141,7 +142,7 @@ public class Demand extends Simulation implements Command {
 				if (revisedTotalCost < resources + MathStuff.epsilon) {
 					Dialogues.alert(logger, "Industry %s is unable to finance its expected level of output", c.getIndustryName());
 				}else {
-					Reporter.report(logger, 1, " Output has been reduced to %.0f", output);
+					Reporter.report(logger, 2, "Output has been reduced to %.0f", output);
 				}
 			}
 
@@ -168,28 +169,29 @@ public class Demand extends Simulation implements Command {
 		switch (response) {
 		case FLEXIBLE:
 			if (demandForLabourPower < supplyOfLabourPower) {
-				Reporter.report(logger, 2, "  The demand for labour power is less than its supply. No adjustment has been made");
+				Reporter.report(logger, 2, "The demand for labour power is less than its supply. No adjustment has been made");
 				return;
 			}
 			double proportionateIncrease = demandForLabourPower / supplyOfLabourPower;
-			Reporter.report(logger, 2, "  Labour Power supply is %.0f and demand is %.0f. Supply from all sellers will increase by a factor of %.4f ",
+			Reporter.report(logger, 2, "Labour Power supply is %.0f and demand is %.0f. Supply from all sellers will increase by a factor of %.4f ",
 					supplyOfLabourPower, demandForLabourPower, proportionateIncrease);
 			for (Stock s : DataManager.stocksSalesByUseValue(Simulation.timeStampIDCurrent, "Labour Power")) {
 				s.modifyTo(s.getQuantity() * proportionateIncrease);
 			}
 			break;
 		case FIXED:
-			Reporter.report(logger, 2, "  Labour Power supply is unaffected by demand. ");
+			Reporter.report(logger, 2, "Labour Power supply is unaffected by demand. ");
 			break;
 		default:
 		}
 
+		Reporter.report(logger, 1, "Compute revenues");
 		// Now we know how much labour power is going to be consumed, we can set the revenue of the sellers of labour power
 		for (SocialClass sc : DataManager.socialClassesAll()) {
 			double wageRevenue = sc.getSalesPrice();
 			double existingRevenue = sc.getRevenue();
-			Reporter.report(logger, 2, "  Wage Revenue of [%s] expected to be %.0f. Existing revenue is %.0f so the total is %.0f",
-					sc.getSocialClassName(), wageRevenue, existingRevenue, wageRevenue + existingRevenue);
+			Reporter.report(logger, 2, "The revenue of the social class [%s] from the previous period is $%.0f. Its wages will be $%.0f, giving a total of $%.0f",
+					sc.getSocialClassName(), existingRevenue, wageRevenue, wageRevenue + existingRevenue);
 			sc.setRevenue(wageRevenue + existingRevenue);
 		}
 	}
@@ -216,13 +218,13 @@ public class Demand extends Simulation implements Command {
 	 * 
 	 */
 	public void computeSocialClassDemand() {
-		Reporter.report(logger, 0, "COMPUTE DEMAND FROM CLASSES");
+		Reporter.report(logger, 1, "Compute demand from social classes");
 		for (SocialClass sc:DataManager.socialClassesAll()) {
-			Reporter.report(logger, 1, " Calculating demand of the social Class [%s] whose revenue is %.0f", 
+			Reporter.report(logger, 2, "Calculating demand from the social Class [%s] whose revenue is $%.0f", 
 					sc.getSocialClassName(),sc.getRevenue());
 			for (Stock s:DataManager.stocksConsumptionByClass(Simulation.timeStampIDCurrent, sc.getSocialClassName())) {
 				double demand = sc.getRevenue()*s.getConsumptionCoefficient();
-				Reporter.report(logger, 2, "  The demand for [%s] is %.0f%% of revenue, which is %.0f", 
+				Reporter.report(logger, 3, "This class's demand for the commodity [%s] is %.0f%% of its revenue, which is $%.0f", 
 						s.getUseValueName(), s.getConsumptionCoefficient()*100,demand);
 				s.setReplenishmentDemand(demand);
 			}

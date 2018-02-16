@@ -238,7 +238,7 @@ public class Industry extends Observable implements Serializable {
 		double extraOutput = output * growthRate;
 		computeDemand(extraOutput);
 		double costOfExpansion = expansionCosts();
-		Reporter.report(logger, 2, "  Industry [%s] expands from %.0f to %.0f costing $%.0f ",
+		Reporter.report(logger, 2, "Industry [%s] expands from %.0f to %.0f costing $%.0f ",
 				pk.industryName, output, output+extraOutput,costOfExpansion);
 
 		// transfer funds from the donor class, and reduce its revenue accordingly

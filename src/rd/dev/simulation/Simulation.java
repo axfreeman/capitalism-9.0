@@ -98,7 +98,7 @@ public class Simulation {
 
 		// Initialise all projects at the start
 		for (Project p : SelectionsProvider.projectsAll()) {
-			Reporter.report(logger, 0, " Initialising project %d whose name is %s", p.getProjectID(), p.getDescription());
+			Reporter.report(logger, 1, "Initialising project %d called '%s'", p.getProjectID(), p.getDescription());
 			projectCurrent = p.getProjectID();
 
 			// initialise each project record so that its cursors are 1
@@ -316,7 +316,7 @@ public class Simulation {
 	 * tell every stock to record its value and price, based on the quantity of the stock, its unit value and its price
 	 */
 	public void calculateStockAggregates() {
-		Reporter.report(logger, 1, " Calculating stock values and prices from stock quantities, unit values and unit prices");
+		Reporter.report(logger, 2, "Calculating stock values and prices from stock quantities, unit values and unit prices");
 		List<Stock> allStocks = DataManager.stocksAll();
 		for (Stock s : allStocks) {
 			s.modifyTo(s.getQuantity());
@@ -332,11 +332,11 @@ public class Simulation {
 		Global global = DataManager.getGlobal();
 		for (Industry c : DataManager.industriesAll()) {
 			double initialCapital = c.currentCapital();
-			Reporter.report(logger, 2, "  The initial capital of the industry[%s] is now $%.0f (intrinsic %.0f)", c.getIndustryName(), initialCapital,
+			Reporter.report(logger, 3, "The initial capital of the industry[%s] is now $%.0f (intrinsic %.0f)", c.getIndustryName(), initialCapital,
 					initialCapital / global.getMelt());
 			c.setInitialCapital(initialCapital);
 		}
-		Reporter.report(logger, 2, "  Total initial capital is now $%.0f (intrinsic %.0f)", global.initialCapital(),
+		Reporter.report(logger, 2, "Total initial capital is now $%.0f (intrinsic %.0f)", global.initialCapital(),
 				global.initialCapital() / global.getMelt());
 	}
 
