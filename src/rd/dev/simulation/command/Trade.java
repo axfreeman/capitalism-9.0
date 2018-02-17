@@ -73,11 +73,11 @@ public class Trade extends Simulation implements Command {
 			for (Stock s : stocks) {
 				String useValueName = s.getUseValueName();
 				UseValue stockUseValue = s.getUseValue();
-				double quantityTransferred = s.getReplenishmentDemand();
+				double quantityPurchased = s.getReplenishmentDemand();
 				double unitPrice = stockUseValue.getUnitPrice();
-				if (quantityTransferred > 0) {
-					Reporter.report(logger, 2, "Industry [%s] is purchasing %.0f units of [%s] for $%.0f", s.getOwner(), quantityTransferred,
-							s.getUseValueName(), quantityTransferred * unitPrice);
+				if (quantityPurchased > 0) {
+					Reporter.report(logger, 2, "Industry [%s] is purchasing %.0f units of [%s] for $%.0f", s.getOwner(), quantityPurchased,
+							s.getUseValueName(), quantityPurchased * unitPrice);
 					Stock sellerMoneyStock = null;
 					Stock sellerSalesStock = null;
 					if (s.getUseValue().getCommodityOriginType() == COMMODITY_ORIGIN_TYPE.SOCIALlY_PRODUCED){
@@ -91,23 +91,37 @@ public class Trade extends Simulation implements Command {
 								sellerMoneyStock = sc.getMoneyStock();
 								sellerSalesStock = salesStock;
 								Reporter.report(logger, 2, "Social class [%s] is going to sell %.0f units of [%s]", 
-										sc.getSocialClassName(), quantityTransferred,s.getUseValueName());
+										sc.getSocialClassName(), quantityPurchased,s.getUseValueName());
 							}
 						}
 						if (sellerSalesStock == null) {
 							Dialogues.alert(logger, "Nobody is selling labour Power");
 						}
+						try {
+							//TODO write industry procedure 'sell(quantity,buyer)' or alternatively buy(quantity,seller)?
+							//problem here is duplicating what happens in a social class
+							//we could make both of them implement an interface 'owner', or indeed, extend a class 'owner'
+
+							sellerSalesStock.transferStock(s, quantityPurchased);
+							buyerMoneyStock.transferStock(sellerMoneyStock, quantityPurchased * unitPrice);
+						} catch (RuntimeException r) {
+							Dialogues.alert(logger, "Problems transferring money. This is a programme error, so contact the developer " + r.getMessage());
+						}
 					} else {
-						Industry seller = DataManager.industryByProductUseValue(useValueName);
-						Reporter.report(logger, 2, "The industry [%s] is selling [%s]", seller.getIndustryName(), s.getUseValueName());
-						sellerMoneyStock = seller.getMoneyStock();
-						sellerSalesStock = seller.getSalesStock();
-					}
-					try {
-						sellerSalesStock.transferStock(s, quantityTransferred);
-						buyerMoneyStock.transferStock(sellerMoneyStock, quantityTransferred * unitPrice);
-					} catch (RuntimeException r) {
-						Dialogues.alert(logger, "Problems transferring money. This is a programme error, so contact the developer " + r.getMessage());
+						for (Industry seller:stockUseValue.industries()) {
+							double marketShare=seller.getSalesQuantity()/stockUseValue.totalSupply();
+							double quantitySold=marketShare*quantityPurchased;
+							Reporter.report(logger, 2, "The industry [%s] is selling %.0f units of [%s]", 
+									seller.getIndustryName(), quantitySold, stockUseValue.commodityName());
+							sellerMoneyStock = seller.getMoneyStock();
+							sellerSalesStock = seller.getSalesStock();
+							try {
+								sellerSalesStock.transferStock(s, quantitySold);
+								buyerMoneyStock.transferStock(sellerMoneyStock, quantitySold* unitPrice);
+							} catch (RuntimeException r) {
+								Dialogues.alert(logger, "Problems transferring money. This is a programme error, so contact the developer " + r.getMessage());
+							}
+						}
 					}
 				}
 			}
@@ -122,7 +136,10 @@ public class Trade extends Simulation implements Command {
 		for (SocialClass buyer : DataManager.socialClassesAll()) {
 			String buyerName = buyer.getSocialClassName();
 			for (UseValue u : DataManager.useValuesByFunction(UseValue.COMMODITY_FUNCTION_TYPE.CONSUMER_GOOD)) {
-				Industry seller = DataManager.industryByProductUseValue(u.commodityName());
+				List<Industry> sellers = u.industries();
+
+				Industry seller=sellers.get(0);// TODO very temporary; just get the top one.
+	
 				if (seller == null) {
 					Dialogues.alert(logger, "Nobody seems to be selling the consumption good called [%s]", u.commodityName());
 					break;

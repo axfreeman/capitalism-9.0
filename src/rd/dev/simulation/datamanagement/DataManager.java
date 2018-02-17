@@ -98,6 +98,7 @@ public class DataManager {
 	// Industry queries
 	protected static TypedQuery<Industry> industriesPrimaryQuery;
 	protected static TypedQuery<Industry> industriesAllQuery;
+	protected static TypedQuery<Industry> industriesByCommodityQuery;
 	protected static TypedQuery<Industry> industryInitialCapitalQuery;
 
 	// Social class queries
@@ -159,6 +160,8 @@ public class DataManager {
 		industriesPrimaryQuery = industryEntityManager.createNamedQuery("Primary", Industry.class);
 		industriesAllQuery = industryEntityManager.createNamedQuery("All", Industry.class);
 		industryInitialCapitalQuery = industryEntityManager.createNamedQuery("InitialCapital", Industry.class);
+		industriesByCommodityQuery=industryEntityManager.createNamedQuery("CommodityName", Industry.class);
+
 		// social class queries
 		socialClassByPrimaryKeyQuery = socialClassEntityManager.createNamedQuery("Primary", SocialClass.class);
 		socialClassAllQuery = socialClassEntityManager.createNamedQuery("All", SocialClass.class);
@@ -547,50 +550,22 @@ public class DataManager {
 		return industriesAllQuery.getResultList();
 	}
 
-	/**
-	 * a list of industries, for the current project and the current timeStamp, that produce a given use value
-	 * 
-	 * 
-	 * @param useValueName
-	 *            the name of the use value that these industries produce
-	 * @return a list of industries which produce the given use value at the latest timeStamp that has been persisted.
-	 */
-
-	public static List<Industry> industriesByProductUseValue(String useValueName) {
-		industriesPrimaryQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent)
-				.setParameter("industryName", useValueName);
-		return industriesPrimaryQuery.getResultList();
-	}
 
 	/**
 	 * a list of industries, for the current project and the given timeStamp, that produce a given use value
 	 * 
 	 * 
-	 * @param useValueName
+	 * @param commodityName
 	 *            the name of the use value that these industries produce
 	 * @param timeStamp
 	 *            the given timeStamp
 	 * @return a list of industries which produce the given use value at the given timeStamp.
 	 */
 
-	public static List<Industry> industriesByProductUseValue(int timeStamp, String useValueName) {
-		industriesPrimaryQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp)
-				.setParameter("industryName", useValueName);
-		return industriesPrimaryQuery.getResultList();
-	}
-
-	/**
-	 * retrieve the topmost industry that produces a named use value for the current project and at a given timeStamp.
-	 * TODO Note that in general, we must allow for a named use value to be produced by more than one industry.
-	 * This method should therefore be phased out.
-	 * 
-	 * @param useValueName
-	 *            the produce that is made by the industry
-	 * @return the single industry that produces this product, at the currently-selected timeStamp
-	 */
-	public static Industry industryByProductUseValue(String useValueName) {
-		List<Industry> industries = industriesByProductUseValue(useValueName);
-		return industries.get(0);
+	public static List<Industry> industriesByCommodityName(int timeStamp, String commodityName) {
+		industriesByCommodityQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp)
+				.setParameter("commodityName", commodityName);
+		return industriesByCommodityQuery.getResultList();
 	}
 
 	/**

@@ -265,7 +265,7 @@ public class TabbedTableViewer extends VBox {
 	 */
 	public void makeIndustriesViewTable() {
 		industriesTable.getColumns().clear();
-		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.PRODUCTUSEVALUENAME,true));
+		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.INDUSTRYNAME,true));
 		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.INITIALCAPITAL,false));
 		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.SALESSTOCK,false));
 		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.PRODUCTIVESTOCKS,false));
@@ -281,14 +281,15 @@ public class TabbedTableViewer extends VBox {
 	 */
 	private void makeDynamicIndustriesTable() {
 		dynamicIndustryTable.getColumns().clear();
-		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.PRODUCTUSEVALUENAME,true));
-		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.OUTPUT,false));
-		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.PROPOSEDOUTPUT,false));
-		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.GROWTHRATE,false));
-
+		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.INDUSTRYNAME,true));
 		for (UseValue u : DataManager.useValuesByFunction(UseValue.COMMODITY_FUNCTION_TYPE.PRODUCTIVE_INPUT)) {
 			dynamicIndustryTable.getColumns().add(new IndustryColumn(u.commodityName()));
 		}
+		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.PROFIT,false));
+		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.SALESSTOCK,false));
+		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.OUTPUT,false));
+		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.PROPOSEDOUTPUT,false));
+		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.GROWTHRATE,false));
 	}
 
 	/**

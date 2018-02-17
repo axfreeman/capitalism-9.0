@@ -51,7 +51,8 @@ import rd.dev.simulation.view.ViewManager;
 @NamedQueries({
 		@NamedQuery(name = "All", query = "Select c from Industry c where c.pk.project = :project and c.pk.timeStamp = :timeStamp"),
 		@NamedQuery(name = "Primary", query = "Select c from Industry c where c.pk.project= :project and c.pk.timeStamp = :timeStamp and c.pk.industryName= :industryName"),
-		@NamedQuery(name = "InitialCapital", query = "Select sum(c.initialCapital) from Industry c where c.pk.project=:project and c.pk.timeStamp=:timeStamp")
+		@NamedQuery(name = "InitialCapital", query = "Select sum(c.initialCapital) from Industry c where c.pk.project=:project and c.pk.timeStamp=:timeStamp"),
+		@NamedQuery(name= "CommodityName",query ="Select c from Industry c where c.pk.project=:project and c.pk.timeStamp=:timeStamp and c.commodityName=:commodityName")
 })
 
 @XmlRootElement
@@ -60,10 +61,9 @@ public class Industry extends Observable implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = LogManager.getLogger("Industry"); // TODO change name throughout to 'industry'
 
-	// TODO at present it's not possible to have multiple industries producing the same use value. It should be.
-	// TODO industries should have a name that is distinct from what they produce
 
 	@EmbeddedId protected IndustryPK pk;
+	@Column(name = "commodityName") private String commodityName;
 	@Column(name = "output") private double output;
 	@Column(name = "ProposedOutput") private double proposedOutput;
 	@Column(name = "InitialCapital") private double initialCapital;
@@ -80,7 +80,7 @@ public class Industry extends Observable implements Serializable {
 	 */
 	public enum Selector {
 		// @formatter:off
-		PRODUCTUSEVALUENAME("Producer",null,TabbedTableViewer.HEADER_TOOL_TIPS.INDUSTRY.text()), 
+		INDUSTRYNAME("Producer",null,TabbedTableViewer.HEADER_TOOL_TIPS.INDUSTRY.text()), 
 		OUTPUT("Output","constrained output.png",null), 
 		PROPOSEDOUTPUT("Proposed Output","maximum output.png",null), 
 		INITIALCAPITAL("Initial Capital","capital  2.png",null), 
@@ -140,6 +140,7 @@ public class Industry extends Observable implements Serializable {
 	 * Report this industry's OUTPUTTYPE (production goods or consumer goods)
 	 * NOTE we work this out by looking at the use value.
 	 * A separate field of this entity could result in duplication, unless it is carefully initialised
+	 * 
 	 * @return this industry's Output Type (production or consumer goods)
 	 */
 
@@ -166,6 +167,7 @@ public class Industry extends Observable implements Serializable {
 		pk.industryName = industryTemplate.getIndustryName();
 		pk.timeStamp = industryTemplate.getTimeStamp();
 		pk.project = industryTemplate.getProject();
+		commodityName=industryTemplate.commodityName;
 		output = industryTemplate.output;
 		proposedOutput = industryTemplate.proposedOutput;
 		growthRate = industryTemplate.growthRate;
@@ -187,7 +189,8 @@ public class Industry extends Observable implements Serializable {
 	 * Since the totals of both replenishment and expansion demand can be calculated by summing them, as can
 	 * their costs, there is no return result.
 	 * 
-	 * @param extraOutput the additional output proposed
+	 * @param extraOutput
+	 *            the additional output proposed
 	 */
 
 	public void computeDemand(double extraOutput) {
@@ -230,57 +233,60 @@ public class Industry extends Observable implements Serializable {
 	/**
 	 * Increase the output of this industry in proportion to {@code growthRate}
 	 * TODO at present no reality checks or methods of reducing over-ambitious expenditure
-	 * @param growthRate the proportionate increase in the current output
+	 * 
+	 * @param growthRate
+	 *            the proportionate increase in the current output
 	 */
-	
+
 	public void expand(double growthRate) {
-		this.growthRate=growthRate;
+		this.growthRate = growthRate;
 		double extraOutput = output * growthRate;
 		computeDemand(extraOutput);
 		double costOfExpansion = expansionCosts();
 		Reporter.report(logger, 2, "Industry [%s] expands from %.0f to %.0f costing $%.0f ",
-				pk.industryName, output, output+extraOutput,costOfExpansion);
+				pk.industryName, output, output + extraOutput, costOfExpansion);
 
 		// transfer funds from the donor class, and reduce its revenue accordingly
 		// TODO this should be a method of the SocialClass class
 		allocateInvestmentFunds(costOfExpansion);
-		
+
 		// grant the additional output level. No need to recompute demand as this will be done
 		// by the Demand phase of the next period.
 		setOutput(output + extraOutput);
-		
+
 		// reduce the available surplus of every stock that this industry consumes
-		for (Stock s:productiveStocks()) {
-			UseValue u=s.getUseValue();
-			u.setSurplusProduct(u.getSurplusProduct()-s.getExpansionDemand());
+		for (Stock s : productiveStocks()) {
+			UseValue u = s.getUseValue();
+			u.setSurplusProduct(u.getSurplusProduct() - s.getExpansionDemand());
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @return the best possible growth rate
 	 */
-	
+
 	public double computeGrowthRate() {
-		double minimumGrowthRate=Double.MAX_VALUE;
-		for (Stock s:productiveStocks()) {
-			UseValue u=s.getUseValue();
+		double minimumGrowthRate = Double.MAX_VALUE;
+		for (Stock s : productiveStocks()) {
+			UseValue u = s.getUseValue();
 
 			// Exclude socially-produced commodities
 			if (u.getCommodityOriginType() == UseValue.COMMODITY_ORIGIN_TYPE.SOCIALlY_PRODUCED)
 				continue;
 
-			double replenishmentDemand=s.getProductionCoefficient()*output;
-			double remainingSurplus=u.getSurplusProduct();
-			double possibleGrowthRate=remainingSurplus/replenishmentDemand;
-			if (possibleGrowthRate<minimumGrowthRate)
-				minimumGrowthRate=possibleGrowthRate;
+			double replenishmentDemand = s.getProductionCoefficient() * output;
+			double remainingSurplus = u.getSurplusProduct();
+			double possibleGrowthRate = remainingSurplus / replenishmentDemand;
+			if (possibleGrowthRate < minimumGrowthRate)
+				minimumGrowthRate = possibleGrowthRate;
 		}
-		if (minimumGrowthRate==Double.MAX_VALUE) {
-			Dialogues.alert(logger, "Industry {} seems to have no inputs. Please look at your data. If the problem persists, contact the developer",pk.industryName);
-			minimumGrowthRate=0;
+		if (minimumGrowthRate == Double.MAX_VALUE) {
+			Dialogues.alert(logger, "Industry {} seems to have no inputs. Please look at your data. If the problem persists, contact the developer",
+					pk.industryName);
+			minimumGrowthRate = 0;
 		}
-		growthRate=minimumGrowthRate;
+		growthRate = minimumGrowthRate;
 		return growthRate;
 	}
 
@@ -330,7 +336,7 @@ public class Industry extends Observable implements Serializable {
 	 * @return the UseValue that this industry produces
 	 */
 	public UseValue getUseValue() {
-		return DataManager.useValueByPrimaryKey(pk.project, pk.timeStamp, pk.industryName);
+		return DataManager.useValueByPrimaryKey(pk.project, pk.timeStamp, commodityName);
 	}
 
 	/**
@@ -369,7 +375,7 @@ public class Industry extends Observable implements Serializable {
 	public Stock getSalesStock() {
 		// TODO the product and the industry have the same name, because the industry is selling its own product
 		// but if there are multiple producers of the same thing, the industry should have an independent name of its own
-		return DataManager.stockByPrimaryKey(Simulation.projectCurrent, pk.timeStamp, pk.industryName, pk.industryName,
+		return DataManager.stockByPrimaryKey(Simulation.projectCurrent, pk.timeStamp, pk.industryName, commodityName,
 				Stock.STOCKTYPE.SALES.text());
 	}
 
@@ -388,7 +394,7 @@ public class Industry extends Observable implements Serializable {
 
 	public ReadOnlyStringWrapper wrappedString(Selector selector, Stock.ValueExpression valueExpression) {
 		switch (selector) {
-		case PRODUCTUSEVALUENAME:
+		case INDUSTRYNAME:
 			return new ReadOnlyStringWrapper(pk.industryName);
 		case INITIALCAPITAL:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, initialCapital));
@@ -453,7 +459,7 @@ public class Industry extends Observable implements Serializable {
 	public boolean changed(Selector selector, Stock.ValueExpression valueExpression) {
 		chooseComparison();
 		switch (selector) {
-		case PRODUCTUSEVALUENAME:
+		case INDUSTRYNAME:
 			return false;
 		case PROPOSEDOUTPUT:
 			return proposedOutput != comparator.proposedOutput;
@@ -504,7 +510,7 @@ public class Industry extends Observable implements Serializable {
 		if (!changed(selector, valueExpression))
 			return item;
 		switch (selector) {
-		case PRODUCTUSEVALUENAME:
+		case INDUSTRYNAME:
 			return item;
 		case PROPOSEDOUTPUT:
 			return String.format(ViewManager.largeNumbersFormatString, (proposedOutput - comparator.proposedOutput));
@@ -606,7 +612,7 @@ public class Industry extends Observable implements Serializable {
 		if (s != null) {
 			s.setQuantity(quantity);
 		} else {
-			logger.error("ERROR: Industry {} attempted to set the quantity demanded of its consumption stock, but it does not have one", pk.industryName);
+			logger.error("Industry {} attempted to set the quantity demanded of its consumption stock, but it does not have one", pk.industryName);
 		}
 	}
 
@@ -621,7 +627,7 @@ public class Industry extends Observable implements Serializable {
 		if (s != null) {
 			s.setQuantity(quantity);
 		} else {
-			logger.error("ERROR: Industry {} attempted to set the quantity demanded of its consumption stock, but it does not have one", pk.industryName);
+			logger.error("Industry {} attempted to set the quantity demanded of its consumption stock, but it does not have one", pk.industryName);
 		}
 	}
 
@@ -861,7 +867,8 @@ public class Industry extends Observable implements Serializable {
 	/**
 	 * Allocate funds for expansion
 	 * 
-	 * @param costOfExpansion how much needs to be allocated
+	 * @param costOfExpansion
+	 *            how much needs to be allocated
 	 */
 
 	public void allocateInvestmentFunds(double costOfExpansion) {

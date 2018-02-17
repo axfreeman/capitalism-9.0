@@ -11,8 +11,8 @@
  
  DROP table if exists industries;
  CREATE TABLE industries ( project int default 1 not null, timeStamp VARCHAR (10) DEFAULT '1' not null, industryName Varchar(45)not null, 
- output double DEFAULT NULL, proposedOutput double DEFAULT NULL, costOfMPForExpansion double default 0, costOfLPforExpansion double default 0, 
- GrowthRate double DEFAULT 0, InitialCapital double DEFAULT NULL, primary key (project, timeStamp, industryName) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ commodityName VARCHAR(45) default null,output double DEFAULT NULL, proposedOutput double DEFAULT NULL, GrowthRate double DEFAULT 0, InitialCapital double DEFAULT NULL, 
+ primary key (project, timeStamp, industryName) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
  
  DROP table if exists stocks;
  CREATE TABLE stocks ( project int default 1 not null, timeStamp VARCHAR (10) DEFAULT '1' not null, OWNER varchar(45) not NULL, OWNERTYPE ENUM('CLASS','INDUSTRY') DEFAULT NULL, 
@@ -23,9 +23,12 @@
  DROP table if exists useValues;
  CREATE TABLE useValues ( project int default 1 not null, timeStamp VARCHAR (10) DEFAULT '1' not null, useValueName varchar(45) not NULL,
  commodityOriginType ENUM('SOCIALLY_PRODUCED','INDUSTRIALLY_PRODUCED','MONEY') DEFAULT NULL, unitValue double DEFAULT NULL, unitPrice double DEFAULT NULL, 
- turnoverTime double DEFAULT NULL, surplusProduct double DEFAULT 0, 
- allocationShare double default null, commodityFunctionType ENUM('MONEY','PRODUCTIVE_INPUT','CONSUMER_GOOD') DEFAULT null, stockUsedUp double default 0, 
- stockProduced double default 0, imageName VARCHAR(45) default null, primary key (project, timeStamp, useValueName) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ turnoverTime double DEFAULT NULL, surplusProduct double DEFAULT 0, allocationShare double default null, 
+ commodityFunctionType ENUM('MONEY','PRODUCTIVE_INPUT','CONSUMER_GOOD') DEFAULT null, stockUsedUp double default 0, 
+ stockProduced double default 0, imageName VARCHAR(45) default null, displayOrder INT DEFAULT 0, 
+ primary key (project, timeStamp, useValueName) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ 
+ CREATE INDEX IDX_TO_DISPLAYORDER ON USEVALUES(displayOrder); 
  
  DROP table if exists projects;
  CREATE TABLE projects ( ProjectID INT NOT NULL, Description VARCHAR(45) NULL, priceDynamics ENUM('SIMPLE','EQUALISE','DYNAMIC') DEFAULT 'SIMPLE',
@@ -42,11 +45,11 @@
 
  insert into socialClasses select * from CSVREAD('~/Documents/Capsim/data/socialClasses.csv');	
  
- insert into industries (PROJECT, TIMESTAMP, INDUSTRYNAME, OUTPUT, GROWTHRATE) select PROJECT, TIMESTAMP, 
- INDUSTRYNAME, OUTPUT, GROWTHRATE from CSVREAD('~/Documents/Capsim/data/industries.csv');
+ insert into industries (PROJECT, TIMESTAMP, INDUSTRYNAME, COMMODITYNAME, OUTPUT, GROWTHRATE) select PROJECT, TIMESTAMP, 
+ INDUSTRYNAME, COMMODITYNAME, OUTPUT, GROWTHRATE from CSVREAD('~/Documents/Capsim/data/industries.csv');
  
- insert into useValues (PROJECT, TIMESTAMP, USEVALUENAME,commodityFunctionType,UNITVALUE,UNITPRICE,TURNOVERTIME,commodityOriginType,IMAGENAME) 
- select PROJECT, TIMESTAMP, USEVALUENAME,commodityFunctionType,UNITVALUE,UNITPRICE,TURNOVERTIME,commodityOriginType,IMAGENAME from CSVREAD('~/Documents/Capsim/data/useValues.csv');
+ insert into useValues (PROJECT, TIMESTAMP, USEVALUENAME,commodityFunctionType,UNITVALUE,UNITPRICE,TURNOVERTIME,commodityOriginType,IMAGENAME,DISPLAYORDER) 
+ select PROJECT, TIMESTAMP, USEVALUENAME,commodityFunctionType,UNITVALUE,UNITPRICE,TURNOVERTIME,commodityOriginType,IMAGENAME,DISPLAYORDER from CSVREAD('~/Documents/Capsim/data/useValues.csv');
 
  INSERT INTO timestamps (timeStampID, projectFK, PERIOD,superState, COMPARATORTIMESTAMPID, Description) 
  SELECT TIMESTAMPID, PROJECTFK, PERIOD, SUPERSTATE, COMPARATORTIMESTAMPID, DESCRIPTION FROM CSVREAD('~/Documents/Capsim/data/timeStamps.csv');

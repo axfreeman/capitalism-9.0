@@ -46,7 +46,7 @@ import rd.dev.simulation.view.ViewManager;
 		@NamedQuery(name = "Primary", query = "SELECT u FROM UseValue u where u.pk.project= :project AND u.pk.timeStamp= :timeStamp and u.pk.useValueName=:useValueName"),
 		@NamedQuery(name = "All", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp"),
 		@NamedQuery(name = "CommodityOriginType", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.commodityOriginType=:commodityOriginType"),
-		@NamedQuery(name = "CommodityFunctionType", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.commodityFunctionType=:commodityFunctionType")
+		@NamedQuery(name = "CommodityFunctionType", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.commodityFunctionType=:commodityFunctionType order by u.displayOrder")
 
 //UseValueFunctionType
 })
@@ -68,6 +68,7 @@ public class UseValue extends Observable implements Serializable {
 	@Column(name = "stockUsedUp") private double stockUsedUp; // stock used up in production in the current period
 	@Column(name = "stockProduced") private double stockProduced; // stock produced in the current period
 	@Column(name = "imageName") private String imageName; // a graphical image that can be used in column headers in place of text
+	@Column(name = "displayOrder") private int displayOrder; // used to determine which order to display columns
 
 	@Transient double surplusRemaining;// records, temporarily, what remains of the surplus product after an industry has expanded 
 	
@@ -193,6 +194,7 @@ public class UseValue extends Observable implements Serializable {
 		this.stockUsedUp = useValueTemplate.stockUsedUp;
 		this.stockProduced = useValueTemplate.stockProduced;
 		this.imageName=useValueTemplate.imageName;
+		this.displayOrder=useValueTemplate.displayOrder;
 	}
 	
 	/**
@@ -397,7 +399,7 @@ public class UseValue extends Observable implements Serializable {
 	 * @return a list of industries that produce this useValue
 	 */
 	public List<Industry> industries(){
-		return DataManager.industriesByProductUseValue(pk.useValueName);
+		return DataManager.industriesByCommodityName(pk.timeStamp, pk.useValueName);
 	}
 
 
@@ -572,7 +574,7 @@ public class UseValue extends Observable implements Serializable {
 
 	public double profit() {
 		double profit = 0;
-		for (Industry c : DataManager.industriesByProductUseValue(pk.timeStamp, pk.useValueName)) {
+		for (Industry c : industries()) {
 			profit += c.profit();
 		}
 		return profit;
@@ -590,7 +592,7 @@ public class UseValue extends Observable implements Serializable {
 	 */
 	public double initialCapital() {
 		double capital = 0;
-		for (Industry c : DataManager.industriesByProductUseValue(pk.useValueName)) {
+		for (Industry c : industries()) {
 			capital += c.getInitialCapital();
 		}
 		return capital;

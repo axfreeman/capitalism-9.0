@@ -1,12 +1,14 @@
 # Capitalism 9.0 announcements
 
-## 2/16/2018 3:12:13 PM
+## 2/17/2018 10:14:05 AM 
 
-The user guide is now up to date.
+A tutorial, intended to be the first of several, is under way. To facilitate this, the main tables have been moved around; as a result, some of the illustrations in the user guide itself are mildly out of date.
 
 There are now eight projects. The eighth allows for multiple productive inputs, as a prelude to dealing with profit equalization
 
 The code for accumulation has been substantially upgraded to deal with multiple means of production.
+
+The code now accomodates multiple industries producing the same commodity.
 
 The five benchmark projects are working (see below).
 

@@ -129,7 +129,7 @@ public class ImmediateConsequences extends Simulation implements Command {
 	
 			for (UseValue u:DataManager.useValuesByOriginType(UseValue.COMMODITY_ORIGIN_TYPE.INDUSTRIALLY_PRODUCED)) {
 				Reporter.report(logger, 2, "Setting profit-equalizing price for use value [%s]", u.commodityName());
-				for (Industry c:DataManager.industriesByProductUseValue(u.commodityName())) {
+				for (Industry c:u.industries()) {
 					Reporter.report(logger, 3, "Note: industry %s produces this use value", c.getIndustryName());
 				}
 				double newUnitPrice=u.initialCapital()*(1+global.profitRate())/u.totalQuantity();
