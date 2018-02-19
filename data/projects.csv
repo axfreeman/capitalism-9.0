@@ -1,9 +1,9 @@
 ProjectID,description,PriceDynamics
-7,Three-sector dynamic,DYNAMIC
-6,SR with equalisation,EQUALISE
 1,Simple Reproduction,SIMPLE
-3,SR with halved period,SIMPLE
 2,SR with lower MELT,SIMPLE
-5,Expanded Reproduction,SIMPLE
+3,SR with halved period,SIMPLE
 4,SR with two consumption goods,SIMPLE
+5,Expanded Reproduction,SIMPLE
+6,SR with equalisation,EQUALISE
+7,Three-sector Dynamic (not yet ready),DYNAMIC
 8,SR with two production goods,SIMPLE

@@ -1,20 +1,20 @@
 project,timeStamp,industryName,CommodityName,output,GrowthRate
-7,1,Circulating,Consumption,200,0
+1,1,Department I,Means of Production,6000,0
+1,1,Department II,Consumption,3000,0
 2,1,Consumption,Consumption,3000,0
-7,1,Consumption,Consumption,500,0
-3,1,Consumption,Consumption,1500,0
-8,1,Consumption,Consumption,3000,0
-5,1,Consumption,Consumption,3000,0.1
-6,1,Consumption,Consumption,3000,0
-8,1,Fixed,Fixed,3000,0
-7,1,Fixed,Fixed,500,0
-1,1,I,Means of Production,6000,0
-1,1,II,Consumption,3000,0
-4,1,Luxuries,Luxuries,600,0
-5,1,Means of Production,Means of Production,6000,0.1
-4,1,Means of Production,Means of Production,6000,0
-3,1,Means of Production,Means of Production,3000,0
 2,1,Means of Production,Means of Production,6000,0
+3,1,Consumption,Consumption,1500,0
+3,1,Means of Production,Means of Production,3000,0
+4,1,Department I,Means of Production,6000,0
+4,1,Department IIa,Necessities,2400,0
+4,1,Department IIb,Luxuries,600,0
+5,1,Consumption,Consumption,3000,0.1
+5,1,Means of Production,Means of Production,6000,0.1
 6,1,Means of Production,Means of Production,6000,0
-4,1,Necessities,Necessities,2400,0
-8,1,Raw Materials,Raw Materials,3000,0
+6,1,Consumption,Consumption,3000,0
+7,1,Consumption,Consumption,200,0
+7,1,Circulating,Circulating,500,0
+7,1,Fixed,Fixed,500,0
+8,1,Department Ia,Fixed,3000,0
+8,1,Department II,Consumption,3000,0
+8,1,Department Ib,Raw Materials,3000,0

@@ -35,7 +35,6 @@ public class Distribute extends Simulation implements Command {
 	 * In fact one purpose of the simulation is to track what happens to the value in distribution.
 	 * The current basis is that the capitalists will take what they need for consumption.
 	 * As a result, additional capital will remain in the industries for investment.
-	 * TODO decide how the profits from each industry are allocated - is this decision located in the industries, or the capitalist class(es)?
 	 * Essentially, the various classes place demands on industry profits (tax, rent, interest etc) which are the revenues of the classes
 	 * What is left is invested.
 	 * 

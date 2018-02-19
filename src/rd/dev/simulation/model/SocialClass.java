@@ -114,7 +114,7 @@ public class SocialClass extends Observable implements Serializable {
 	 * make a carbon copy of the socialClassTemplate
 	 * 
 	 * @param socialClassTemplate
-	 *            TODO get BeanUtils to do this, or find some other way. There must be a better way but many people complain about it
+	 *            the socialClass bean to copy - usually from the previous timeStamp
 	 */
 	public void copySocialClass(SocialClass socialClassTemplate) {
 		this.pk.timeStamp = socialClassTemplate.pk.timeStamp;
@@ -140,7 +140,6 @@ public class SocialClass extends Observable implements Serializable {
 	/**
 	 * get the sales stock of this social class. If this stock does not exist (which is an error) return null.
 	 * NOTE:The only commodity classes can sell is Labour power.
-	 * TODO generalise this.
 	 * 
 	 * @return the sales stock that is owned by this social class.
 	 */

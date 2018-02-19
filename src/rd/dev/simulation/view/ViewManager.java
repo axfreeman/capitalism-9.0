@@ -222,7 +222,6 @@ public class ViewManager {
 		initializeTabbedTableViewer();
 
 		// the display is refreshed every time it changes, starting here
-		// TODO use the observables properly so changes are picked up automatically
 		refreshDisplay();
 	}
 
@@ -444,7 +443,7 @@ public class ViewManager {
 	private void dataDump() {
 		File saveDirectory = Dialogues.directoryChooser("Location to save data");
 		Capitalism.dataHandler.saveDataBase(saveDirectory);
-		// TODO what can go wrong?
+		// TODO think systematically about what can go wrong, and trap it
 		// think of all the possible problems and catch them.
 		// a programme error may mean that the location is not a directory
 		// the user may not have permission to write there
@@ -462,7 +461,7 @@ public class ViewManager {
 			// TODO handle this better
 			e.printStackTrace();
 		}
-		// TODO what can go wrong?
+		// TODO think systematically about what can go wrong, and trap it
 		// the files may not be there
 		// the user may not have saved the current state of the directory
 
@@ -475,8 +474,7 @@ public class ViewManager {
 	/**
 	 * set up the globals grid to display Glabels that can be used display text, graphics and the relevant numeric value from the current Globals record
 	 * set the values of the labels within which these numeric values will be displayed. See also ({@link populateGlobalsGrid}
-	 * A bit of a botch; the labels should be bound to the Global entity directly.
-	 * TODO fix this.
+
 	 */
 
 	private void initializeGlobalsGrid() {
@@ -718,10 +716,6 @@ public class ViewManager {
 	/**
 	 * Repopulate each {@code ViewTable} with its observable list. Called when either the underlying data changes because the sm has moved forward, or
 	 * the user selects a new project or timeStamp for study..
-	 * 
-	 * TODO it should not, I think, be necessary to do this each time we advance a step in the simulation. The whole point
-	 * of binding the tables to the entities is to that when the entities change, so do the controls in which they display.
-	 * But initially, the main aim is to get the infernal thing working...
 	 */
 	public void refreshDisplay() {
 		int currentProject = Simulation.projectCurrent;

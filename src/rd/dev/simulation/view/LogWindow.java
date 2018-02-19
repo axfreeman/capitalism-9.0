@@ -53,7 +53,6 @@ public class LogWindow {
 	private TreeItem<Label> lastLevel3;
 
 	public LogWindow() {
-		// TODO think about all the sizing issues. Ultimately, the window should be dockable
 
 		TreeItem<Label> rootItem = new TreeItem<Label>(new Label("Log"));
 		TreeItem<Label> firstLevel1Item=new TreeItem<Label>(new Label("STARTUP"));

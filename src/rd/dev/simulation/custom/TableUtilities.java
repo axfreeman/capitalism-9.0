@@ -27,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ContextMenu;
@@ -48,6 +49,21 @@ import rd.dev.simulation.view.ViewManager;
 public class TableUtilities {
 	static final Logger logger = LogManager.getLogger("TableUtilities");
 
+	// TODO I think there is going to be a memory leak somewhere here but haven't had time to check it out
+	private static ImageView makeLittleMinus(){
+		ImageView littleMinus=new ImageView("littleminusred.png");
+		littleMinus.setFitWidth(10);
+		littleMinus.setFitHeight(10);
+		return littleMinus;
+	}
+	private static ImageView makeLittlePlus() {
+		ImageView littlePlus=new ImageView("littleplus.png");
+		littlePlus= new ImageView("littleplusred.png");
+		littlePlus.setFitWidth(10);
+		littlePlus.setFitHeight(10);
+		return littlePlus;
+	}
+	
 	/**
 	 * Skeleton method to add a context menu to a table: not used at present
 	 * 
@@ -152,12 +168,16 @@ public class TableUtilities {
 	public static void setSuperColumnHandler(TableColumn<?, ?> superColumn, TableColumn<?, ?> showColumn) {
 		EventHandler<MouseEvent> eventHandler = new EventHandler<MouseEvent>() {
 			@Override public void handle(MouseEvent e) {
-				// make sure it was a double-click
+				
+// use this code if we want to insist on a double click				
 				if (e.getButton() != MouseButton.PRIMARY)
 					return;
 				if (e.getClickCount() != 2)
 					return;
+				
 				// toggle display of all or only the minimal subColumns
+				
+				Label columnLabel=(Label)superColumn.getGraphic();
 				switch ((String) superColumn.getUserData()) {
 				case "Maximised":
 					logger.debug("User minimised the column {}", superColumn.getText());
@@ -166,6 +186,7 @@ public class TableUtilities {
 						subColumn.setVisible(false);
 					}
 					showColumn.setVisible(true);
+					columnLabel.setGraphic(makeLittlePlus());
 					break;
 				case "Minimised":
 					logger.debug("User maximised the column {}", superColumn.getText());
@@ -173,6 +194,8 @@ public class TableUtilities {
 						subColumn.setVisible(true);
 					}
 					superColumn.setUserData("Maximised");
+
+					columnLabel.setGraphic(makeLittleMinus());
 					break;
 				default:
 					break;
@@ -181,6 +204,24 @@ public class TableUtilities {
 		};
 		Label label = new Label();
 		label.setText(superColumn.getText());
+		label.setGraphic(makeLittleMinus());
+		label.setMaxWidth(1000);
+		label.setPrefWidth(superColumn.getPrefWidth());
+		label.setPadding(Insets.EMPTY);
+		
+// css style for column headers
+		String headerCSS=".table-view .column-header{\r\n" + 
+				"    -fx-text-fill: -fx-selection-bar-text;\r\n" + 
+				"    -fx-font-size: 10;\r\n" + 
+				"    -fx-size: 11 ;\r\n" + 
+				"    -fx-font-family: \"Arial\";\r\n" + 
+				"    -fx-background-color: silver;\r\n" +
+				"}";
+		superColumn.getStyleClass().add(headerCSS);
+		final String cssNumberLabel= "-fx-background-color: silver;\n"
+				+ "-fx-border-color: silver;\n"
+				+ "-fx-border-width: 0;\n";
+		superColumn.setStyle(cssNumberLabel);
 		superColumn.setGraphic(label);
 		superColumn.setText("");
 		label.addEventHandler(MouseEvent.MOUSE_CLICKED, eventHandler);

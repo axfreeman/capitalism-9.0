@@ -42,8 +42,6 @@ import rd.dev.simulation.utils.Reporter;
  * 
  * All classes try to acquire sufficient necessities to reproduce themselves; demand is thus given by their size multiplied by consumption per person.
  * 
- * TODO Luxuries, which can be consumed by capitalists, are not yet included.
- * 
  * In keeping with industrial production, the class attempts to acquire a stock of necessities which it then consumes at a speed that depends on the 'turnover
  * time' of consumption goods. Note there is a slight ambiguity in that, were consumption goods to figure in production, we implicitly assume that they turnover
  * in production at the same rate as in consumption.

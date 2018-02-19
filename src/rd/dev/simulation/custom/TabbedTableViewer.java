@@ -213,16 +213,24 @@ public class TabbedTableViewer extends VBox {
 		// Create the header columns
 		// Assume Garbage collector will dispose of the detached subColumns
 		useValueValuePriceSuperColumn=new TableColumn<UseValue,String>("Values and Prices");
+		logger.debug("#########SuperColumn prefwidth = {} maxwidth {} minwidth {} resizable {}", 
+				useValueValuePriceSuperColumn.getPrefWidth(),useValueValuePriceSuperColumn.getMaxWidth(),
+				useValueValuePriceSuperColumn.getMinWidth(),useValueValuePriceSuperColumn.isResizable());
+		useValueValuePriceSuperColumn.setResizable(true);
+		
 		useValueDemandSupplySuperColumn=new TableColumn<UseValue,String>("Demand and Supply");
+		useValueDemandSupplySuperColumn.setResizable(true);
+		
 		useValueCapitalProfitSuperColumn=new TableColumn<UseValue,String>("CapitalAndProfit");
+		useValueCapitalProfitSuperColumn.setResizable(true);
+		
 		
 		useValuesTable.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.USEVALUENAME, true));
 		useValuesTable.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.COMMODITY_FUNCTION_TYPE, true));
 		useValuesTable.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.TOTALQUANTITY, false));
-		useValuesTable.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.TURNOVERTIME, false));
 
 		useValuesTable.getColumns().add(useValueValuePriceSuperColumn);
-		useValueValuePriceSuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.UNITVALUE, false));
+		useValueValuePriceSuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.UNITVALUE, false));		
 		useValueValuePriceSuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.UNITPRICE, false));
 		useValueValuePriceSuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.TOTALVALUE, false));
 		useValueTotalPriceColumn = new UseValueColumn(UseValue.USEVALUE_SELECTOR.TOTALPRICE, false);
@@ -241,6 +249,9 @@ public class TabbedTableViewer extends VBox {
 		useValueProfitRateColumn = new UseValueColumn(UseValue.USEVALUE_SELECTOR.PROFITRATE, false);
 		useValueCapitalProfitSuperColumn.getColumns().add(useValueProfitRateColumn);
 		useValueCapitalProfitSuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.SURPLUS, false));
+		
+		useValuesTable.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.TURNOVERTIME, false));
+
 	}
 
 	/**
@@ -251,12 +262,12 @@ public class TabbedTableViewer extends VBox {
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SOCIALCLASSNAME,true));
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SIZE,false));
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SALES,false));
-		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.MONEY,false));
-		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.TOTAL,false));
-		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.REVENUE,false));
 		for (UseValue u : DataManager.useValuesByFunction(UseValue.COMMODITY_FUNCTION_TYPE.CONSUMER_GOOD)) {
 			socialClassesTable.getColumns().add(new SocialClassColumn(u.commodityName()));
 		}
+		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.MONEY,false));
+		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.REVENUE,false));
+		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.TOTAL,false));
 	}
 
 	/**
@@ -282,6 +293,7 @@ public class TabbedTableViewer extends VBox {
 	private void makeDynamicIndustriesTable() {
 		dynamicIndustryTable.getColumns().clear();
 		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.INDUSTRYNAME,true));
+		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.COMMODITYNAME,true));
 		for (UseValue u : DataManager.useValuesByFunction(UseValue.COMMODITY_FUNCTION_TYPE.PRODUCTIVE_INPUT)) {
 			dynamicIndustryTable.getColumns().add(new IndustryColumn(u.commodityName()));
 		}

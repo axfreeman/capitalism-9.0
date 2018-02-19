@@ -30,11 +30,11 @@ import rd.dev.simulation.view.CircuitTableCell;
 import rd.dev.simulation.view.CircuitTableStockCell;
 
 /**
- * A CircuitGraphicsColumn contains the additional information needed to display a switchable graphic and to select the data item for display
+ * An IndustryColumn contains the additional information needed to display a switchable graphic and to select the data item for display
  *
  * The data items delivered to the parent TableView for display in its cells are always strings;
  * the type conversion is handled by the Industry class.
- * TODO parameterise Industry so we can re-use for other data models
+
  */
 public class IndustryColumn extends TableColumn<Industry, String> {
 

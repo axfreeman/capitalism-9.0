@@ -67,8 +67,6 @@ public class SwitchableGraphicsGrid extends AnchorPane {
 
 	/**
 	 * fill out the values in the grid from the supplied Global
-	 * TODO obtain the global from DataManager
-	 * TODO bind the global to the persistent JPA Global record so this happens automatically
 	 * 
 	 * @param floatFormatString
 	 *            a format string that determines how the global is displayed

@@ -31,7 +31,7 @@ import rd.dev.simulation.view.StockTableCell;
 *
 * The data items delivered to the parent TableView for display in its cells are always strings;
 * the type conversion is handled by the Industry class.
-* TODO parameterise SocialClass so we can re-use for other data models (eg Circuits, for which the code is almost identical
+
 */
 public class StockColumn extends TableColumn<Stock,String>{
 	/**

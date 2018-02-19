@@ -48,7 +48,7 @@ import rd.dev.simulation.view.ViewManager;
 		@NamedQuery(name = "CommodityOriginType", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.commodityOriginType=:commodityOriginType"),
 		@NamedQuery(name = "CommodityFunctionType", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.commodityFunctionType=:commodityFunctionType order by u.displayOrder")
 
-//UseValueFunctionType
+		// UseValueFunctionType
 })
 @Embeddable
 public class UseValue extends Observable implements Serializable {
@@ -70,18 +70,17 @@ public class UseValue extends Observable implements Serializable {
 	@Column(name = "imageName") private String imageName; // a graphical image that can be used in column headers in place of text
 	@Column(name = "displayOrder") private int displayOrder; // used to determine which order to display columns
 
-	@Transient double surplusRemaining;// records, temporarily, what remains of the surplus product after an industry has expanded 
-	
+	@Transient double surplusRemaining;// records, temporarily, what remains of the surplus product after an industry has expanded
+
 	@Transient private UseValue comparator;
 	@Transient private UseValue previousComparator;
 	@Transient private UseValue startComparator;
 	@Transient private UseValue customComparator;
 	@Transient private UseValue endComparator;
 
-
 	/**
 	 * Basic classification of commodity types: how are they used?
-
+	 * 
 	 */
 	public enum COMMODITY_FUNCTION_TYPE {
 		MONEY("Money"), PRODUCTIVE_INPUT("Productive Inputs"), CONSUMER_GOOD("Consumer Goods");
@@ -147,21 +146,25 @@ public class UseValue extends Observable implements Serializable {
 		String text;
 		String imageName;
 		String toolTip;
-		USEVALUE_SELECTOR(String text, String imageName, String toolTip){
-			this.text=text;
-			this.imageName=imageName;
-			this.toolTip=toolTip;
+
+		USEVALUE_SELECTOR(String text, String imageName, String toolTip) {
+			this.text = text;
+			this.imageName = imageName;
+			this.toolTip = toolTip;
 		}
+
 		public String text() {
 			return text;
 		}
+
 		public String imageName() {
 			return imageName;
 		}
+
 		public String tooltip() {
 			return toolTip;
 		}
-}
+	}
 
 	/**
 	 * Constructor for a UseValue entity.
@@ -177,7 +180,7 @@ public class UseValue extends Observable implements Serializable {
 	 * make a carbon copy of the useValueTemplate
 	 * 
 	 * @param useValueTemplate
-	 *            TODO get BeanUtils to do this, or find some other way. There must be a better way but many people complain about it
+	 *            the useValue bean to copy - usually the one from the previous timeStamp
 	 */
 
 	public void copyUseValue(UseValue useValueTemplate) {
@@ -193,10 +196,10 @@ public class UseValue extends Observable implements Serializable {
 		this.commodityFunctionType = useValueTemplate.commodityFunctionType;
 		this.stockUsedUp = useValueTemplate.stockUsedUp;
 		this.stockProduced = useValueTemplate.stockProduced;
-		this.imageName=useValueTemplate.imageName;
-		this.displayOrder=useValueTemplate.displayOrder;
+		this.imageName = useValueTemplate.imageName;
+		this.displayOrder = useValueTemplate.displayOrder;
 	}
-	
+
 	/**
 	 * Calculate the total quantity, value and price of this useValue, from the stocks of this useValue
 	 * Validate against existing total if requested
@@ -222,7 +225,6 @@ public class UseValue extends Observable implements Serializable {
 		Reporter.report(logger, 2, "  Total quantity of the commodity [%s] is %.2f (value %.2f, price %.2f). ",
 				pk.useValueName, totalQuantity, totalPrice, totalValue);
 	}
-
 
 	/**
 	 * provides a wrapped version of the selected member which the display will recognise, as a ReadOnlyStringWrapper.
@@ -257,7 +259,7 @@ public class UseValue extends Observable implements Serializable {
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, replenishmentDemand()));
 		case EXPANSION_DEMAND:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, expansionDemand()));
-				case SURPLUS:
+		case SURPLUS:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, surplusProduct));
 		case TURNOVERTIME:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, turnoverTime));
@@ -275,6 +277,7 @@ public class UseValue extends Observable implements Serializable {
 			return null;
 		}
 	}
+
 	/**
 	 * informs the display whether the selected member of this entity has changed, compared with the 'comparator' UseValue which normally
 	 * comes from a different timeStamp.
@@ -319,12 +322,11 @@ public class UseValue extends Observable implements Serializable {
 		case PROFIT:
 			return profit() != comparator.profit();
 		case PROFITRATE:
-			return profitRate()!=comparator.profitRate();
+			return profitRate() != comparator.profitRate();
 		default:
 			return false;
 		}
 	}
-
 
 	/**
 	 * If the selected field has changed, return the difference between the current value and the former value
@@ -374,34 +376,33 @@ public class UseValue extends Observable implements Serializable {
 			return item;
 		}
 	}
-	
+
 	/**
 	 * chooses the comparator depending on the state set in the {@code ViewManager.comparatorToggle} radio buttons
 	 */
-	
-	private void chooseComparison(){
-		switch(ViewManager.getComparatorState()) {
+
+	private void chooseComparison() {
+		switch (ViewManager.getComparatorState()) {
 		case CUSTOM:
-			comparator=customComparator;
+			comparator = customComparator;
 			break;
 		case END:
-			comparator=endComparator;
+			comparator = endComparator;
 			break;
 		case PREVIOUS:
-			comparator=previousComparator;
+			comparator = previousComparator;
 			break;
 		case START:
-			comparator=startComparator;
+			comparator = startComparator;
 		}
 	}
-	
+
 	/**
 	 * @return a list of industries that produce this useValue
 	 */
-	public List<Industry> industries(){
+	public List<Industry> industries() {
 		return DataManager.industriesByCommodityName(pk.timeStamp, pk.useValueName);
 	}
-
 
 	/**
 	 * 
@@ -440,35 +441,37 @@ public class UseValue extends Observable implements Serializable {
 	}
 
 	public double totalSupply() {
-		double supply =0.0;
-		for (Stock s:DataManager.stocksSalesByUseValue(pk.timeStamp, pk.useValueName)) {
-			supply+=s.getQuantity();
+		double supply = 0.0;
+		for (Stock s : DataManager.stocksSalesByUseValue(pk.timeStamp, pk.useValueName)) {
+			supply += s.getQuantity();
 		}
 		return supply;
 	}
 
 	/**
 	 * The total replenishment demand from all stocks of this useValue
+	 * 
 	 * @return replenishment demand from all stocks of this useValue
 	 */
-	
+
 	public double replenishmentDemand() {
-		double demand =0.0;
-		for (Stock s:DataManager.stocksByUseValue(pk.timeStamp, pk.useValueName)) {
-			demand+=s.getReplenishmentDemand();
+		double demand = 0.0;
+		for (Stock s : DataManager.stocksByUseValue(pk.timeStamp, pk.useValueName)) {
+			demand += s.getReplenishmentDemand();
 		}
 		return demand;
 	}
 
 	/**
 	 * The total expansion demand from all stocks of this useValue
+	 * 
 	 * @return expansion demand from all stocks of this useValue
 	 */
-	
+
 	public double expansionDemand() {
-		double demand =0.0;
-		for (Stock s:DataManager.stocksByUseValue(pk.timeStamp, pk.useValueName)) {
-			demand+=s.getExpansionDemand();
+		double demand = 0.0;
+		for (Stock s : DataManager.stocksByUseValue(pk.timeStamp, pk.useValueName)) {
+			demand += s.getExpansionDemand();
 		}
 		return demand;
 	}
@@ -535,35 +538,35 @@ public class UseValue extends Observable implements Serializable {
 	/**
 	 * @return the total value of this use value in the economy at this time
 	 */
-	
+
 	public double totalValue() {
-		double totalValue=0;
-		for (Stock s:DataManager.stocksByUseValue( pk.timeStamp,pk.useValueName)) {
-			totalValue+=s.getValue();
+		double totalValue = 0;
+		for (Stock s : DataManager.stocksByUseValue(pk.timeStamp, pk.useValueName)) {
+			totalValue += s.getValue();
 		}
 		return totalValue;
 	}
-	
+
 	/**
 	 * @return the total price of this use value in the economy at this time
 	 */
-	
+
 	public double totalPrice() {
-		double totalPrice=0;
-		for (Stock s:DataManager.stocksByUseValue( pk.timeStamp,pk.useValueName)) {
-			totalPrice+=s.getPrice();
+		double totalPrice = 0;
+		for (Stock s : DataManager.stocksByUseValue(pk.timeStamp, pk.useValueName)) {
+			totalPrice += s.getPrice();
 		}
 		return totalPrice;
 	}
-	
+
 	/**
 	 * @return the total quantity of this use value in the economy at this time
 	 */
-	
+
 	public double totalQuantity() {
-		double totalQuantity=0;
-		for (Stock s:DataManager.stocksByUseValue( pk.timeStamp,pk.useValueName)) {
-			totalQuantity+=s.getQuantity();
+		double totalQuantity = 0;
+		for (Stock s : DataManager.stocksByUseValue(pk.timeStamp, pk.useValueName)) {
+			totalQuantity += s.getQuantity();
 		}
 		return totalQuantity;
 	}
@@ -579,12 +582,12 @@ public class UseValue extends Observable implements Serializable {
 		}
 		return profit;
 	}
-	 
+
 	/**
 	 * @return the profit rate so far in the industries that produce this use value
 	 */
 	public double profitRate() {
-		return profit()/initialCapital();
+		return profit() / initialCapital();
 	}
 
 	/**
@@ -643,7 +646,8 @@ public class UseValue extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param previousComparator the previousComparator to set
+	 * @param previousComparator
+	 *            the previousComparator to set
 	 */
 	public void setPreviousComparator(UseValue previousComparator) {
 		this.previousComparator = previousComparator;
@@ -657,7 +661,8 @@ public class UseValue extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param startComparator the startComparator to set
+	 * @param startComparator
+	 *            the startComparator to set
 	 */
 	public void setStartComparator(UseValue startComparator) {
 		this.startComparator = startComparator;
@@ -671,7 +676,8 @@ public class UseValue extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param customComparator the customComparator to set
+	 * @param customComparator
+	 *            the customComparator to set
 	 */
 	public void setCustomComparator(UseValue customComparator) {
 		this.customComparator = customComparator;
@@ -685,7 +691,8 @@ public class UseValue extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param endComparator the endComparator to set
+	 * @param endComparator
+	 *            the endComparator to set
 	 */
 	public void setEndComparator(UseValue endComparator) {
 		this.endComparator = endComparator;

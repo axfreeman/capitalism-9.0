@@ -31,7 +31,6 @@ import rd.dev.simulation.view.UseValueTableCell;
  *
  * The data items delivered to the parent TableView for display in its cells are always strings;
  * the type conversion is handled by the Industry class.
- * TODO parameterise SocialClass so we can re-use for other data models (eg Circuits, for which the code is almost identical
  */
 public class UseValueColumn extends TableColumn<UseValue, String> {
 	/**
@@ -55,8 +54,6 @@ public class UseValueColumn extends TableColumn<UseValue, String> {
 		setCellValueFactory(cellData -> cellData.getValue().wrappedString(selector));
 
 		// tailor the visual appearance of the column header
-
-		setPrefWidth(75.0);
 		if (!alignedLeft)
 			getStyleClass().add("table-column-right");
 		TableUtilities.addGraphicToColummnHeader(this, selector.imageName(), selector.tooltip());

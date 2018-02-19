@@ -23,7 +23,7 @@
 									<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
 								</columnResizePolicy>
 							</TableView>
-							<TableView fx:id="socialClassesTable" prefHeight="150.0" prefWidth="542.0">
+							<TableView fx:id="socialClassesTable" prefHeight="150.0" prefWidth="700.0">
 								<columnResizePolicy>
 									<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
 								</columnResizePolicy>

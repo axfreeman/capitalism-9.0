@@ -1,4 +1,9 @@
-# Capitalism 9.0 announcements
+# Capitalism 9.0 announcements 2/19/2018 9:43:17 AM 
+
+## 2/19/2018 9:43:17 AM 
+This is a watershed version to go with the tutorial (in the 'docs' folder), which is progressing though incomplete. 
+There has been a general tidy-up which makes clear what needs to be fixed as we progress.
+Minor improvements to functionality
 
 ## 2/17/2018 10:14:05 AM 
 

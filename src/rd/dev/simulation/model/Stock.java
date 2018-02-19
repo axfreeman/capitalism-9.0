@@ -262,7 +262,6 @@ public class Stock extends Observable implements Serializable {
 	 */
 	public void modifyBy(double extraQuantity) {
 		double melt = DataManager.getGlobal().getMelt();
-		// TODO check that if both quantities are rounded properly, this test will work
 
 		double unitValue = unitValue();
 		double unitPrice = unitPrice();

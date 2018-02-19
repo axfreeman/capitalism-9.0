@@ -71,7 +71,6 @@ public class Trade extends Simulation implements Command {
 					buyerName, stocks.size(), buyer.getOutput());
 
 			for (Stock s : stocks) {
-				String useValueName = s.getUseValueName();
 				UseValue stockUseValue = s.getUseValue();
 				double quantityPurchased = s.getReplenishmentDemand();
 				double unitPrice = stockUseValue.getUnitPrice();

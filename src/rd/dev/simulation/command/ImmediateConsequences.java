@@ -44,7 +44,6 @@ public class ImmediateConsequences extends Simulation implements Command {
 	 * Calculate the unit value and price of each use value.
 	 * Recalculate the MELT.
 	 * Tell the stocks to adjust the total values and prices
-	 * TODO CHECK INVARIANTS AT THIS POINT?
 	 */
 	public void execute() {
 		currentProject=SelectionsProvider.projectSingle(projectCurrent);

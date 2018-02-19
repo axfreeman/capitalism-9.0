@@ -157,11 +157,9 @@ public class Simulation {
 	/**
 	 * Test the invariants of motion. Calculates, for each usevalue, the total price and total value based on what this usevalue knows. Compares it with the
 	 * recorded totalprice and total value. Logs an error if they are not the same.
-	 * <p>
+
 	 * TODO incorporate further checks, as follows:
-	 * <p>
 	 * (1) no new value is created except in production
-	 * <p>
 	 * (2) total new value created in production is equal to total labour power used up
 	 */
 
@@ -183,8 +181,6 @@ public class Simulation {
 	 * Move the timeStampIDCurrent record to contain a new timestamp with the current project.
 	 * Then create a new record for every entity in the simulation, with this timestamp and the current projectCurrent.
 	 * In case of misuse, it flags an exception if there is a duplicate key error rather than allowing a fail.
-	 * 
-	 * TODO make this a bit more failsafe and foolproof
 	 * 
 	 * @param superState
 	 *            if this operation is a component (child) of a 'superState', as for example 'Supply' is a

@@ -59,7 +59,7 @@ import rd.dev.simulation.view.ViewManager;
 public class Industry extends Observable implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	private static final Logger logger = LogManager.getLogger("Industry"); // TODO change name throughout to 'industry'
+	private static final Logger logger = LogManager.getLogger("Industry");
 
 
 	@EmbeddedId protected IndustryPK pk;
@@ -80,7 +80,8 @@ public class Industry extends Observable implements Serializable {
 	 */
 	public enum Selector {
 		// @formatter:off
-		INDUSTRYNAME("Producer",null,TabbedTableViewer.HEADER_TOOL_TIPS.INDUSTRY.text()), 
+		INDUSTRYNAME("Industry",null,TabbedTableViewer.HEADER_TOOL_TIPS.INDUSTRY.text()), 
+		COMMODITYNAME("Product",null,null),
 		OUTPUT("Output","constrained output.png",null), 
 		PROPOSEDOUTPUT("Proposed Output","maximum output.png",null), 
 		INITIALCAPITAL("Initial Capital","capital  2.png",null), 
@@ -161,7 +162,6 @@ public class Industry extends Observable implements Serializable {
 	 * 
 	 * @param industryTemplate
 	 *            the industry to be copied into this one.
-	 *            TODO get BeanUtils to do this, or find some other way. There must be a better way but many people complain about it
 	 */
 	public void copyIndustry(Industry industryTemplate) {
 		pk.industryName = industryTemplate.getIndustryName();
@@ -331,7 +331,6 @@ public class Industry extends Observable implements Serializable {
 
 	/**
 	 * Retrieve the UseValue entity that this industry produces
-	 * TODO separate this from the industry name
 	 * 
 	 * @return the UseValue that this industry produces
 	 */
@@ -373,8 +372,7 @@ public class Industry extends Observable implements Serializable {
 	 * @return the sales stock owned by this industry
 	 */
 	public Stock getSalesStock() {
-		// TODO the product and the industry have the same name, because the industry is selling its own product
-		// but if there are multiple producers of the same thing, the industry should have an independent name of its own
+
 		return DataManager.stockByPrimaryKey(Simulation.projectCurrent, pk.timeStamp, pk.industryName, commodityName,
 				Stock.STOCKTYPE.SALES.text());
 	}
@@ -396,6 +394,8 @@ public class Industry extends Observable implements Serializable {
 		switch (selector) {
 		case INDUSTRYNAME:
 			return new ReadOnlyStringWrapper(pk.industryName);
+		case COMMODITYNAME:
+			return new ReadOnlyStringWrapper(commodityName);
 		case INITIALCAPITAL:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, initialCapital));
 		case OUTPUT:
@@ -699,14 +699,6 @@ public class Industry extends Observable implements Serializable {
 			return false;
 		}
 		return true;
-	}
-
-	/**
-	 * @return String representation of the industry and its stocks
-	 *         TODO decide how this should be formatted
-	 */
-	@Override public String toString() {
-		return "Industry called" + pk.industryName;
 	}
 
 	/**

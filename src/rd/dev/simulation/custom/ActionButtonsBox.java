@@ -76,7 +76,6 @@ public class ActionButtonsBox extends VBox {
 
 	/**
 	 * the ActionButtonsBox constructor.
-	 * TODO replace with a purely programmatic creation. OR create a control that can be accessed from SceneBuilder.
 	 */
 	public ActionButtonsBox() {
 		FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("actionButtonsBox.fxml"));

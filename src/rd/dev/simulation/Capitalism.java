@@ -115,7 +115,6 @@ public class Capitalism extends Application {
 		// this is needed because the information in the user-supplied data files is incomplete - it provides only the bare minimum
 		// this is done for all projects, so we can subsequently switch from one to the other.
 		// TODO if there are many projects, we may want to do this lazily
-		// TODO this is where the validation should take place
 
 		simulation.startup();
 

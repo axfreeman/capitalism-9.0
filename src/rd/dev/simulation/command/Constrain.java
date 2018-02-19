@@ -43,8 +43,7 @@ public class Constrain extends Simulation implements Command {
 	 * what they can get their hands on. It is not possible to acquire goods that do not exist.Also, industries cannot increase output above what they initially
 	 * ask for, even if it is available. This is an investment function, and is to be dealt with under the distribution of the surplus.
 	 * At present, just a simple share; there is space here for user-supplied algorithms corresponding to various models.
-	 * 
-	 * TODO there may be multiple suppliers of the same good, in which case it's also necessary to decide who gets to supply what.
+
 	 */
 	public void execute() {
 		Reporter.report(logger, 0, "CONSTRAINTS");
