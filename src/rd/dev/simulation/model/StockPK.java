@@ -34,7 +34,7 @@ public class StockPK implements Serializable {
 	@Column(name = "project") protected int project;
 	@Column(name = "timeStamp") protected int timeStamp;
 	@Column(name = "owner") protected String owner;
-	@Column(name = "usevalue") protected String useValue;
+	@Column(name = "commodity") protected String commodity;
 	@Column(name = "stockType") protected String stockType;
 
 	public StockPK() {
@@ -53,7 +53,7 @@ public class StockPK implements Serializable {
 		}
 		StockPK castOther = (StockPK) other;
 		return (this.project == castOther.project) && (this.timeStamp == castOther.timeStamp) && this.owner.equals(castOther.owner)
-				&& this.useValue.equals(castOther.useValue);
+				&& this.commodity.equals(castOther.commodity);
 	}
 
 	public int hashCode() {
@@ -62,7 +62,7 @@ public class StockPK implements Serializable {
 		hash = hash * prime + this.project;
 		hash = hash * prime + this.timeStamp;
 		hash = hash * prime + this.owner.hashCode();
-		hash = hash * prime + this.useValue.hashCode();
+		hash = hash * prime + this.commodity.hashCode();
 
 		return hash;
 	}

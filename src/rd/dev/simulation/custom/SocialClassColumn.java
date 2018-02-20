@@ -69,11 +69,12 @@ public class SocialClassColumn extends TableColumn<SocialClass, String> {
 	 * in a {@code Industry} bean. The magnitude is selected by the {@code name} of the Stock.
 	 * Use Stock itself to set the header text and graphic, and prepare the column header so its graphic is switchable.
 	 * 
-	 * @param consumptionStockName
-	 *            an enum specifying which productive Stock to display
+	 * @param u
+	 *            an enum specifying which commodity's stock to display
 	 */
 
-	SocialClassColumn(String consumptionStockName) {
+	SocialClassColumn(Commodity u) {
+		String consumptionStockName=u.commodityName();
 		setCellFactory(new Callback<TableColumn<SocialClass, String>, TableCell<SocialClass, String>>() {
 			@Override public TableCell<SocialClass, String> call(TableColumn<SocialClass, String> col) {
 				return new SocialClassTableStockCell(consumptionStockName);
@@ -86,7 +87,7 @@ public class SocialClassColumn extends TableColumn<SocialClass, String> {
 		setText(consumptionStockName);
 		setPrefWidth(75.0);
 		getStyleClass().add("table-column-right");
-		Commodity stockUseValue = Commodity.commodityByPrimaryKey(Simulation.timeStampIDCurrent, consumptionStockName);
-		TableUtilities.addGraphicToColummnHeader(this, stockUseValue.getImageName(), "More information soon");
+		Commodity stockCommodity = Commodity.commodityByPrimaryKey(Simulation.timeStampIDCurrent, consumptionStockName);
+		TableUtilities.addGraphicToColummnHeader(this, stockCommodity.getImageName(), u.getToolTip());
 	}
 }

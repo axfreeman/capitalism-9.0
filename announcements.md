@@ -1,31 +1,14 @@
 # Capitalism 9.0 announcements 2/19/2018 9:43:17 AM 
 
-## 2/20/2018 3:36:07 AM 
+## consolidated 2/20/2018 2:07:43 PM 
 
-Code tidy. No new executable
-
-## 2/19/2018 9:05:37 PM 
-
-Data management overhauled. No changed in functionality except slightly faster.
-Less thoroughly tested so could throw up unexpected bugs. In this case, please go back to the previous commit.
-New executable.
-
-## 2/19/2018 9:43:17 AM 
-This is a watershed version to go with the tutorial (in the 'docs' folder), which is progressing though incomplete. 
-There has been a general tidy-up which makes clear what needs to be fixed as we progress.
-Minor improvements to functionality
-
-## 2/17/2018 10:14:05 AM 
+Code tidy. Comprehensive tooltips.
 
 A tutorial, intended to be the first of several, is under way. To facilitate this, the main tables have been moved around; as a result, some of the illustrations in the user guide itself are mildly out of date.
 
 There are now eight projects. The eighth allows for multiple productive inputs, as a prelude to dealing with profit equalization
 
-The code for accumulation has been substantially upgraded to deal with multiple means of production.
-
-The code now accomodates multiple industries producing the same commodity.
-
-The five benchmark projects are working (see below).
+The five benchmark projects are working (see below), also Simple Reproduction with two production goods.
 
 New executable ('capitalism.exe')
 

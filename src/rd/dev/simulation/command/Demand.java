@@ -223,7 +223,7 @@ public class Demand extends Simulation implements Command {
 			for (Stock s:Stock.stocksConsumptionByClass(Simulation.timeStampIDCurrent, sc.getSocialClassName())) {
 				double demand = sc.getRevenue()*s.getConsumptionCoefficient();
 				Reporter.report(logger, 3, "This class's demand for the commodity [%s] is %.0f%% of its revenue, which is $%.0f", 
-						s.getUseValueName(), s.getConsumptionCoefficient()*100,demand);
+						s.getCommodityName(), s.getConsumptionCoefficient()*100,demand);
 				s.setReplenishmentDemand(demand);
 			}
 		}

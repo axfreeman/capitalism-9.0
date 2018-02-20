@@ -92,7 +92,7 @@ public class ImmediateConsequences extends Simulation implements Command {
 		// Reset all unit values on the basis of the total value and total quantity of this commodity in existence
 
 		for (Commodity u : Commodity.commoditiesAll()) {
-			if (u.getCommodityFunctionType() != Commodity.FUNCTION_TYPE.MONEY) {
+			if (u.getFunctionType() != Commodity.FUNCTION_TYPE.MONEY) {
 				double quantity = u.totalQuantity();
 				double newUnitValue = MathStuff.round(adjustmentFactor * u.totalValue() / quantity);
 				Reporter.report(logger, 2, "The unit value of commodity [%s] was %.4f, and will be reset to %.4f", u.commodityName(),u.getUnitValue(), newUnitValue);
@@ -122,7 +122,7 @@ public class ImmediateConsequences extends Simulation implements Command {
 			Reporter.report(logger, 2, "Average Profit Rate is currently recorded as %.4f", global.profitRate());
 
 			// there may be more than one producer of the same commodity.
-			// we can only set the profit rate for the sector as a whole,which means we work from the per-useValue profit rates
+			// we can only set the profit rate for the sector as a whole,which means we work from the per-commodity profit rates
 	
 			for (Commodity u:Commodity.commoditiesByOriginType(Commodity.ORIGIN_TYPE.INDUSTRIALLY_PRODUCED)) {
 				Reporter.report(logger, 2, "Setting profit-equalizing price for use value [%s]", u.commodityName());

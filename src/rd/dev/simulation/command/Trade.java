@@ -70,15 +70,15 @@ public class Trade extends Simulation implements Command {
 					buyerName, stocks.size(), buyer.getOutput());
 
 			for (Stock s : stocks) {
-				Commodity stockUseValue = s.getUseValue();
+				Commodity stockCommodity = s.getCommodity();
 				double quantityPurchased = s.getReplenishmentDemand();
-				double unitPrice = stockUseValue.getUnitPrice();
+				double unitPrice = stockCommodity.getUnitPrice();
 				if (quantityPurchased > 0) {
 					Reporter.report(logger, 2, "Industry [%s] is purchasing %.0f units of [%s] for $%.0f", s.getOwner(), quantityPurchased,
-							s.getUseValueName(), quantityPurchased * unitPrice);
+							s.getCommodityName(), quantityPurchased * unitPrice);
 					Stock sellerMoneyStock = null;
 					Stock sellerSalesStock = null;
-					if (s.getUseValue().getCommodityOriginType() == ORIGIN_TYPE.SOCIALlY_PRODUCED){
+					if (s.getCommodity().getCommodityOriginType() == ORIGIN_TYPE.SOCIALlY_PRODUCED){
 						// ask each class if it has some labour power to sell
 						// TODO at this point we only accept the first offer
 						// eventually we need to allow multiple sellers of Labour Power
@@ -89,7 +89,7 @@ public class Trade extends Simulation implements Command {
 								sellerMoneyStock = sc.getMoneyStock();
 								sellerSalesStock = salesStock;
 								Reporter.report(logger, 2, "Social class [%s] is going to sell %.0f units of [%s]", 
-										sc.getSocialClassName(), quantityPurchased,s.getUseValueName());
+										sc.getSocialClassName(), quantityPurchased,s.getCommodityName());
 							}
 						}
 						if (sellerSalesStock == null) {
@@ -106,11 +106,11 @@ public class Trade extends Simulation implements Command {
 							Dialogues.alert(logger, "Problems transferring money. This is a programme error, so contact the developer " + r.getMessage());
 						}
 					} else {
-						for (Industry seller:stockUseValue.industries()) {
-							double marketShare=seller.getSalesQuantity()/stockUseValue.totalSupply();
+						for (Industry seller:stockCommodity.industries()) {
+							double marketShare=seller.getSalesQuantity()/stockCommodity.totalSupply();
 							double quantitySold=marketShare*quantityPurchased;
 							Reporter.report(logger, 2, "The industry [%s] is selling %.0f units of [%s]", 
-									seller.getIndustryName(), quantitySold, stockUseValue.commodityName());
+									seller.getIndustryName(), quantitySold, stockCommodity.commodityName());
 							sellerMoneyStock = seller.getMoneyStock();
 							sellerSalesStock = seller.getSalesStock();
 							try {

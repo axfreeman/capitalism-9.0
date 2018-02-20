@@ -41,7 +41,7 @@ public class IndustriesProduce extends Simulation implements Command {
 	 * For each social class decrease the stock of consumption goods and decide, on Malthusian principles, what happens to the classes
 	 * (user algorithms could play a big role here). Recalculate the value produced (=C*MELT +L)
 	 * 
-	 * TODO should usevalues re-calculate the unit value when all producers are done?
+	 * TODO should commodities re-calculate the unit value when all producers are done?
 	 */
 	public void execute() {
 		Reporter.report(logger, 0, "INDUSTRY PRODUCTION");
@@ -49,7 +49,7 @@ public class IndustriesProduce extends Simulation implements Command {
 		Global global = Global.getGlobal();
 		double melt = global.getMelt();
 
-		// initialise the accounting for how much of this useValue is used up and how much is created in production in the current period
+		// initialise the accounting for how much of this commodity is used up and how much is created in production in the current period
 		// so we can calculate how much surplus of it resulted from production in this period.
 
 		for (Commodity u : Commodity.commoditiesByOriginType(ORIGIN_TYPE.INDUSTRIALLY_PRODUCED)) {
@@ -63,37 +63,37 @@ public class IndustriesProduce extends Simulation implements Command {
 		// (TODO incorporate labour complexity)
 		
 		for (Industry c : Industry.industriesAll()) {
-			String useValueType = c.getIndustryName();
+			String commodityType = c.getIndustryName();
 			Stock salesStock = c.getSalesStock();
-			Commodity commodity = c.getUseValue();
+			Commodity commodity = c.getCommodity();
 			double output = c.getOutput();
 			double valueAdded = 0;
-			Reporter.report(logger, 1, " Industry [%s] is producing %.0f. units of its output; the melt is %.4f", useValueType, output, melt);
+			Reporter.report(logger, 1, " Industry [%s] is producing %.0f. units of its output; the melt is %.4f", commodityType, output, melt);
 
-			for (Stock s : Stock.stocksProductiveByIndustry(timeStampIDCurrent, useValueType)) {
+			for (Stock s : Stock.stocksProductiveByIndustry(timeStampIDCurrent, commodityType)) {
 
 				// a little consistency check ...
 				if (!s.getStockType().equals("Productive")) {
 					Dialogues.alert(logger,
-							String.format("Non-productive stock of type [%s] called [%s] included as input ", s.getStockType(), s.getUseValueName()));
+							String.format("Non-productive stock of type [%s] called [%s] included as input ", s.getStockType(), s.getCommodityName()));
 				}
 				// .. end of little consistency check
 
 				double coefficient = s.getProductionCoefficient();
 				double stockUsedUp = output * coefficient;
 				stockUsedUp = MathStuff.round(stockUsedUp);
-				if (s.getUseValue().getCommodityOriginType() == ORIGIN_TYPE.SOCIALlY_PRODUCED) {
+				if (s.getCommodity().getCommodityOriginType() == ORIGIN_TYPE.SOCIALlY_PRODUCED) {
 					valueAdded += stockUsedUp * melt;
 					Reporter.report(logger, 2, "  Labour Power has added value amounting to %.0f (intrinsic %.0f) to commodity [%s]", valueAdded, stockUsedUp,c.getIndustryName());
 				} else {
 					double valueOfStockUsedUp = stockUsedUp * commodity.getUnitValue();
 					Reporter.report(logger, 2, "  Stock [%s] has transferred value $%.0f (intrinsic %.0f) to commodity [%s] ",
-							s.getUseValueName(), valueOfStockUsedUp, valueOfStockUsedUp / melt, c.getIndustryName());
+							s.getCommodityName(), valueOfStockUsedUp, valueOfStockUsedUp / melt, c.getIndustryName());
 					valueAdded += valueOfStockUsedUp;
 				}
 
 				// the stock is reduced by what was used up, and account of this is registered with its use value
-				Commodity u = s.getUseValue();
+				Commodity u = s.getCommodity();
 				if (stockUsedUp>0) {
 				Reporter.report(logger, 2, "  %.0f units of [%s] were used up in producing the output [%s]", stockUsedUp, u.commodityName(),
 						c.getIndustryName());
@@ -108,7 +108,7 @@ public class IndustriesProduce extends Simulation implements Command {
 			double extraSalesQuantity = output;
 			extraSalesQuantity = MathStuff.round(extraSalesQuantity);
 			salesStock.modifyBy(extraSalesQuantity, valueAdded);
-			c.getUseValue().setStockProduced(c.getUseValue().getStockProduced() + extraSalesQuantity);
+			c.getCommodity().setStockProduced(c.getCommodity().getStockProduced() + extraSalesQuantity);
 			Reporter.report(logger, 2,
 					"  The sales stock of [%s] has grown to %.0f, its value to $%.0f (intrinsic value %.0f) and its price to $%.0f (intrinsic value %.0f)",
 					c.getIndustryName(), salesStock.getQuantity(), salesStock.getValue(), salesStock.getValue() / melt, salesStock.getPrice(),

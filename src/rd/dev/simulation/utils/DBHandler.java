@@ -105,8 +105,8 @@ public class DBHandler {
 	 * copy a file from the .jar file into the user file system. The base directory for these files in the user system is {@code Utilities.userBasePath} and is
 	 * set there statically
 	 * 
-	 * for example {@code copyDataFilesToUserDirectory("/data","useValues.csv")} copies the file called {@code useValues.csv} to the location
-	 * {@code Documents/Capsim/data/useValues.csv}, because the user base is initialised in {@code Utilities} to be {@code Documents/Capsim}
+	 * for example {@code copyDataFilesToUserDirectory("/data","commodities.csv")} copies the file called {@code usecommodities.csv} to the location
+	 * {@code Documents/Capsim/data/commodities.csv}, because the user base is initialised in {@code Utilities} to be {@code Documents/Capsim}
 	 * 
 	 * @param subDirectory
 	 *            the sub-directory of our standard location into which the file should be copied
@@ -158,7 +158,7 @@ public class DBHandler {
 	 *            the directory in which to save the files
 	 */
 	public void saveDataBase(File saveDirectory) {
-		String[] standardFiles = { "timeStamps", "projects", "globals", "useValues", "stocks", "socialClasses", "industries" };
+		String[] standardFiles = { "timeStamps", "projects", "globals", "commodities", "stocks", "socialClasses", "industries" };
 
 		String baseDirectoryURL;
 		try {

@@ -98,18 +98,17 @@ public class Industry implements Serializable {
 	public enum Selector {
 		// @formatter:off
 		INDUSTRYNAME("Industry",null,TabbedTableViewer.HEADER_TOOL_TIPS.INDUSTRY.text()), 
-		COMMODITYNAME("Product",null,null),
-		OUTPUT("Output","constrained output.png",null), 
+		COMMODITYNAME("Product",null,TabbedTableViewer.HEADER_TOOL_TIPS.COMMODITY.text()),
+		OUTPUT("Output","constrained output.png",TabbedTableViewer.HEADER_TOOL_TIPS.OUTPUT.text()), 
 		PROPOSEDOUTPUT("Proposed Output","maximum output.png",null), 
-		INITIALCAPITAL("Initial Capital","capital  2.png",null), 
-		CURRENTCAPITAL("Current Capital","capital 1.png",null), 
-		PROFIT("Profit","profit.png",null), 
-		PROFITRATE("Profit Rate","profitRate.png",null), 
-		PRODUCTIVESTOCKS("Inputs","inputs.png",null), 
-		MONEYSTOCK("Money","money.png",null), 
-		SALESSTOCK("Sales","inventory.png",null), 
-		TOTAL("Capital","TotalCapital.png",null), 
-		GROWTHRATE("Growth Rate","growthrate.png",null);
+		INITIALCAPITAL("Initial Capital","capital  2.png",TabbedTableViewer.HEADER_TOOL_TIPS.INITIALCAPITAL.text()), 
+		CURRENTCAPITAL("Current Capital","capital 1.png",TabbedTableViewer.HEADER_TOOL_TIPS.CAPITAL.text()), 
+		PROFIT("Profit","profit.png",TabbedTableViewer.HEADER_TOOL_TIPS.PROFIT.text()), 
+		PROFITRATE("Profit Rate","profitRate.png",TabbedTableViewer.HEADER_TOOL_TIPS.PROFITRATE.text()), 
+		PRODUCTIVESTOCKS("Inputs","inputs.png","The value or price of all stocks, including labour power, that are used in production and owned by this industry"), 
+		MONEYSTOCK("Money","money.png","The stock of money owned by this industry"), 
+		SALESSTOCK("Sales","inventory.png","The sales stock owned by this industry"), 
+		GROWTHRATE("Growth Rate","growthrate.png","The rate of growth that this industry claims it can achieve, given the resources");
 		// @formatter:on
 
 		String text;
@@ -140,7 +139,7 @@ public class Industry implements Serializable {
 	 * NOTE we work this out by looking at the use value.
 	 * A separate field of this entity could result in duplication, unless it is carefully initialised.
 	 * The value 'ERROR' is a precaution - there should be no situation in which this would be returned,
-	 * that is to say, the useValue should always be either productive or consumption
+	 * that is to say, the commodity should always be either productive or consumption
 	 */
 	public enum OUTPUTTYPE {
 		PRODUCTIONGOODS, CONSUMPTIONGOODS, ERROR
@@ -157,8 +156,8 @@ public class Industry implements Serializable {
 	 */
 
 	public OUTPUTTYPE outputType() {
-		Commodity u = getUseValue();
-		switch (u.getCommodityFunctionType()) {
+		Commodity u = getCommodity();
+		switch (u.getFunctionType()) {
 		case PRODUCTIVE_INPUT:
 			return OUTPUTTYPE.PRODUCTIONGOODS;
 		case CONSUMER_GOOD:
@@ -213,7 +212,7 @@ public class Industry implements Serializable {
 	 * provides a wrapped version of the selected member which the display will recognise, as a ReadOnlyStringWrapper.
 	 * 
 	 * We don't mind the hardwiring because we don't really intend this code to be re-usable, it's not hard to modify, and it results in compact
-	 * and readable usage code (see (@link TabbedTableViewer#populateUseValuesViewTable})
+	 * and readable usage code (see (@link {@link TabbedTableViewer#makeIndustriesViewTable()})
 	 * 
 	 * @param selector
 	 *            chooses which member to evaluate
@@ -246,8 +245,6 @@ public class Industry implements Serializable {
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, profit()));
 		case PROFITRATE:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, profitRate()));
-		case TOTAL:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalAttribute(valueExpression)));
 		case CURRENTCAPITAL:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, currentCapital()));
 		default:
@@ -260,7 +257,7 @@ public class Industry implements Serializable {
 	 * comes from a different timeStamp.
 	 * 
 	 * We don't mind the hardwiring because we don't really intend this code to be re-usable, it's not hard to modify, and it results in compact
-	 * and readable usage code (see (@link TabbedTableViewer#populateUseValuesViewTable})
+	 * and readable usage code (see (@link {@link TabbedTableViewer#makeIndustriesViewTable()})
 	 * 
 	 * @param selector
 	 *            chooses which member to evaluate
@@ -294,8 +291,6 @@ public class Industry implements Serializable {
 			double p1 = productiveStocksAttribute(valueExpression);
 			double p2 = comparator.productiveStocksAttribute(valueExpression);
 			return !MathStuff.equals(p1, p2);
-		case TOTAL:
-			return totalAttribute(valueExpression) != comparator.totalAttribute(valueExpression);
 		case CURRENTCAPITAL:
 			return currentCapital() != comparator.currentCapital();
 		default:
@@ -345,8 +340,6 @@ public class Industry implements Serializable {
 			double p1 = productiveStocksAttribute(valueExpression);
 			double p2 = comparator.productiveStocksAttribute(valueExpression);
 			return String.format(ViewManager.largeNumbersFormatString, (p1 - p2));
-		case TOTAL:
-			return String.format(ViewManager.largeNumbersFormatString, (totalAttribute(valueExpression) - comparator.totalAttribute(valueExpression)));
 		case CURRENTCAPITAL:
 			return String.format(ViewManager.largeNumbersFormatString, (currentCapital() - comparator.currentCapital()));
 		default:
@@ -358,7 +351,7 @@ public class Industry implements Serializable {
 	 * The value-expression of the magnitude of a named productive Stock managed by this industry
 	 * 
 	 * @param productiveStockName
-	 *            the useValue of the productive Stock
+	 *            the commodity of the productive Stock
 	 * 
 	 * @return the magnitude of the named Stock, expressed as defined by {@code displayAttribute}, null if this does not exist
 	 */
@@ -407,7 +400,7 @@ public class Industry implements Serializable {
 	public double replenishmentCosts() {
 		double result = 0;
 		for (Stock s : productiveStocks()) {
-			Commodity u = s.getUseValue();
+			Commodity u = s.getCommodity();
 			double additionalCost = s.getReplenishmentDemand() * u.getUnitPrice();
 			result += additionalCost;
 		}
@@ -422,7 +415,7 @@ public class Industry implements Serializable {
 	public double expansionCosts() {
 		double result = 0;
 		for (Stock s : productiveStocks()) {
-			Commodity u = s.getUseValue();
+			Commodity u = s.getCommodity();
 			double additionalCost = s.getExpansionDemand() * u.getUnitPrice();
 			result += additionalCost;
 		}
@@ -455,7 +448,7 @@ public class Industry implements Serializable {
 
 		// reduce the available surplus of every stock that this industry consumes
 		for (Stock s : productiveStocks()) {
-			Commodity u = s.getUseValue();
+			Commodity u = s.getCommodity();
 			u.setSurplusProduct(u.getSurplusProduct() - s.getExpansionDemand());
 		}
 	}
@@ -468,7 +461,7 @@ public class Industry implements Serializable {
 	public double computeGrowthRate() {
 		double minimumGrowthRate = Double.MAX_VALUE;
 		for (Stock s : productiveStocks()) {
-			Commodity u = s.getUseValue();
+			Commodity u = s.getCommodity();
 
 			// Exclude socially-produced commodities
 			if (u.getCommodityOriginType() == Commodity.ORIGIN_TYPE.SOCIALlY_PRODUCED)
@@ -511,21 +504,6 @@ public class Industry implements Serializable {
 		return getMoneyStock().get(a);
 	}
 
-	/**
-	 * Calculate an aggregate, which may be price or value, of the stocks owned by this industry excluding money
-	 * NOTE it is the responsibility of the caller to commit any changes to persistent memory
-	 * 
-	 * @param a
-	 *            an attribute from the enum class Stock.ValueExpression: selects one of QUANTITY, VALUE or PRICE. If QUANTITY, NaN is returned
-	 * @return the total of the selected attribute owned by this industry excluding money
-	 */
-	public double totalAttribute(Stock.ValueExpression a) {
-		if (a == Stock.ValueExpression.QUANTITY) {
-			return Double.NaN;
-		}
-		return salesAttribute(a) + productiveStocksAttribute(a);
-	}
-
 	// METHODS THAT REPORT THINGS WE NEED TO KNOW ABOUT THIS INDUSTRY BY INTERROGATING ITS STOCKS
 
 	/**
@@ -533,7 +511,7 @@ public class Industry implements Serializable {
 	 * 
 	 * @return the Commodity that this industry produces
 	 */
-	public Commodity getUseValue() {
+	public Commodity getCommodity() {
 		return Commodity.commodityByPrimaryKey(pk.project, pk.timeStamp, commodityName);
 	}
 
@@ -577,7 +555,7 @@ public class Industry implements Serializable {
 	}
 
 	/**
-	 * the industry that produces a given usevalue, for the current project and a given timeStamp. This is also the primary key of the Industry entity
+	 * the industry that produces a given commodity, for the current project and a given timeStamp. This is also the primary key of the Industry entity
 	 * 
 	 * @param project
 	 *            the project
@@ -966,7 +944,7 @@ public class Industry implements Serializable {
 	 */
 	public double computePossibleOutput(double extraMeansOfProduction) {
 		Stock mP = productiveStock("Means of Production");
-		Commodity u = mP.getUseValue();
+		Commodity u = mP.getCommodity();
 		double price = u.getUnitPrice();
 		double extraStock = extraMeansOfProduction / price;
 		return output + extraStock / mP.getProductionCoefficient();

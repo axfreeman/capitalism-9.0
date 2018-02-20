@@ -155,7 +155,7 @@ public class Simulation {
 	}
 
 	/**
-	 * Test the invariants of motion. Calculates, for each usevalue, the total price and total value based on what this usevalue knows. Compares it with the
+	 * Test the invariants of motion. Calculates, for each commodity, the total price and total value based on what this commodity knows. Compares it with the
 	 * recorded totalprice and total value. Logs an error if they are not the same.
 
 	 * TODO incorporate further checks, as follows:

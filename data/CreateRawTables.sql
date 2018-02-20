@@ -7,7 +7,7 @@
  
  DROP table if exists socialClasses;
  CREATE TABLE socialclasses ( project INT DEFAULT 1 NOT NULL, timeStamp VARCHAR (10) DEFAULT '1' NOT NULL, SocialClassName VARCHAR(45) DEFAULT NULL, 
- Size DOUBLE DEFAULT NULL, consumptionPerPerson double DEFAULT 0, participationRatio double DEFAULT 1, revenue double DEFAULT 0, primary key (project, timeStamp, SocialClassName)) ENGINE=INNODB DEFAULT CHARSET=UTF8;
+ Size DOUBLE DEFAULT NULL, participationRatio double DEFAULT 1, revenue double DEFAULT 0, primary key (project, timeStamp, SocialClassName)) ENGINE=INNODB DEFAULT CHARSET=UTF8;
  
  DROP table if exists industries;
  CREATE TABLE industries ( project int default 1 not null, timeStamp VARCHAR (10) DEFAULT '1' not null, industryName Varchar(45)not null, 
@@ -16,16 +16,16 @@
  
  DROP table if exists stocks;
  CREATE TABLE stocks ( project int default 1 not null, timeStamp VARCHAR (10) DEFAULT '1' not null, OWNER varchar(45) not NULL, OWNERTYPE ENUM('CLASS','INDUSTRY') DEFAULT NULL, 
- usevalue varchar(45) not NULL, stockType varchar(45) DEFAULT NULL, quantity double DEFAULT 0, value double DEFAULT 0, PRICE double DEFAULT 0, 
+ commodity varchar(45) not NULL, stockType varchar(45) DEFAULT NULL, quantity double DEFAULT 0, value double DEFAULT 0, PRICE double DEFAULT 0, 
  productionCoefficient double DEFAULT 0, consumptionCoefficient double DEFAULT 0, 
- replenishmentDemand double DEFAULT 0, expansionDemand double DEFAULT 0, primary key (project, timeStamp, owner, usevalue, stocktype) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ replenishmentDemand double DEFAULT 0, expansionDemand double DEFAULT 0, primary key (project, timeStamp, owner, commodity, stocktype) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
  
  DROP table if exists commodities;
  CREATE TABLE commodities ( project int default 1 not null, timeStamp VARCHAR (10) DEFAULT '1' not null, name varchar(45) not NULL,
  originType ENUM('SOCIALLY_PRODUCED','INDUSTRIALLY_PRODUCED','MONEY') DEFAULT NULL, unitValue double DEFAULT NULL, unitPrice double DEFAULT NULL, 
  turnoverTime double DEFAULT NULL, surplusProduct double DEFAULT 0, allocationShare double default null, 
  functionType ENUM('MONEY','PRODUCTIVE_INPUT','CONSUMER_GOOD') DEFAULT null, stockUsedUp double default 0, 
- stockProduced double default 0, imageName VARCHAR(45) default null, displayOrder INT DEFAULT 0, 
+ stockProduced double default 0, imageName VARCHAR(45) default null, toolTip VARCHAR (255) default null, displayOrder INT DEFAULT 0, 
  primary key (project, timeStamp, name) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
  
  CREATE INDEX IDX_TO_DISPLAYORDER ON COMMODITIES(displayOrder); 
@@ -48,8 +48,8 @@
  insert into industries (PROJECT, TIMESTAMP, INDUSTRYNAME, COMMODITYNAME, OUTPUT, GROWTHRATE) select PROJECT, TIMESTAMP, 
  INDUSTRYNAME, COMMODITYNAME, OUTPUT, GROWTHRATE from CSVREAD('~/Documents/Capsim/data/industries.csv');
  
- insert into commodities (PROJECT, TIMESTAMP, NAME,functionType,UNITVALUE,UNITPRICE,TURNOVERTIME,originType,IMAGENAME,DISPLAYORDER) 
- select PROJECT, TIMESTAMP, NAME,functionType,UNITVALUE,UNITPRICE,TURNOVERTIME,originType,IMAGENAME,DISPLAYORDER from CSVREAD('~/Documents/Capsim/data/commodities.csv');
+ insert into commodities (PROJECT, TIMESTAMP, NAME,functionType,UNITVALUE,UNITPRICE,TURNOVERTIME,originType,IMAGENAME,DISPLAYORDER,TOOLTIP) 
+ select PROJECT, TIMESTAMP, NAME,functionType,UNITVALUE,UNITPRICE,TURNOVERTIME,originType,IMAGENAME,DISPLAYORDER, TOOLTIP from CSVREAD('~/Documents/Capsim/data/commodities.csv');
 
  INSERT INTO timestamps (timeStampID, projectFK, PERIOD,superState, COMPARATORTIMESTAMPID, Description) 
  SELECT TIMESTAMPID, PROJECTFK, PERIOD, SUPERSTATE, COMPARATORTIMESTAMPID, DESCRIPTION FROM CSVREAD('~/Documents/Capsim/data/timeStamps.csv');
@@ -65,6 +65,6 @@
  -- and because it greatly simplifies the code.
  -- possibly, in a future version, separate tables could be introduced for each type of stock, with proper functional abstraction to deal with the variety among them.
  
- insert into stocks (PROJECT, TIMESTAMP, OWNER, OWNERTYPE, USEVALUE, STOCKTYPE, QUANTITY, PRODUCTIONCOEFFICIENT, CONSUMPTIONCOEFFICIENT) 
- select PROJECT, TIMESTAMP, OWNER, OWNERTYPE, USEVALUE, STOCKTYPE, QUANTITY, PRODUCTIONCOEFFICIENT,CONSUMPTIONCOEFFICIENT from CSVREAD('~/Documents/Capsim/data/stocks.csv');
+ insert into stocks (PROJECT, TIMESTAMP, OWNER, OWNERTYPE, COMMODITY, STOCKTYPE, QUANTITY, PRODUCTIONCOEFFICIENT, CONSUMPTIONCOEFFICIENT) 
+ select PROJECT, TIMESTAMP, OWNER, OWNERTYPE, COMMODITY, STOCKTYPE, QUANTITY, PRODUCTIONCOEFFICIENT,CONSUMPTIONCOEFFICIENT from CSVREAD('~/Documents/Capsim/data/stocks.csv');
  

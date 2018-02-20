@@ -4,7 +4,7 @@ import java.io.Serializable;
 import javax.persistence.*;
 
 /**
- * The primary key class for the usevalues database table.
+ * The primary key class for the commodities database table.
  * 
  */
 @Embeddable

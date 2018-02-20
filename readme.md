@@ -88,23 +88,25 @@ When it starts up, you see a screen with a number of tables in it, and various o
 
 The tables represent the following objects:
 
-1. *use-values*, which are produced and consumed. Each use-value has a unit value  and a unit price. The simulation also calculates, at various times, the total supply and demand for each type of use value along  with the total quantity (which can be bigger than the supply, since it includes stocks that aren't available for sale, such as money, and the total value and total price of this total quantity.
+1. *commodities*, which are produced and consumed. Each use-value has a unit value  and a unit price. The simulation also calculates, at various times, the total supply and demand for each type of use value along  with the total quantity (which can be bigger than the supply, since it includes stocks that aren't available for sale, such as money, and the total value and total price of this total quantity.
 
-2. *circuits* which are of two types, productive (capitalist) and social. A capital circuit is a producer, who consumes use-values including *labour-power* and produces other use-values. A social circuit is a class of people defined by what they own and what it entitles them to. Workers own labour-power and are paid wages, capitalists own productive circuits and are paid profits. Bankers own money, which is not to say nobody else does; what is special about bankers is that they are paid interest. This is just a general guideline; simulations are perfectly possible in which workers receive interest, or run businesses on the side. They only real restriction is that labour-power is only supplied by workers.
+2. *industries* which are producers who consume commodities including *labour-power* and produce other commodities. 
 
-3. *stocks* which are quantities of use-values. Each circuit has a stock of use-values for sale, which make up the supply of that use-value. Each circuit also has 'productive' stocks - supplies of the use-values it needs in order to produce. Both capitalists and workers have stocks of consumption goods. 
+3. *social classes* which are classes of people defined by what they own and what it entitles them to. Workers own labour-power and are paid wages, capitalists own productive circuits and are paid profits. Bankers own money, which is not to say nobody else does; what is special about bankers is that they are paid interest. This is just a general guideline; simulations are perfectly possible in which workers receive interest, or run businesses on the side. They only real restriction is that labour-power is only supplied by workers.
+
+4. *stocks* which are quantities of commodities. Each industry has a stock of use-values for sale, which make up the supply of that use-value. Each industry also has 'productive' stocks - supplies of the commodities it needs in order to produce. Both capitalists and workers have stocks of consumption goods. Some social classes - such as those selling labour power - also have commodities to sell.
 
 As the simulation progresses, three processes take place
 
-1. the capitalist circuits produce, adding to their sales stock and using  up their productive stocks
-2. the social circuits reproduce, using up their consumption goods and keeping their class alive
+1. the industries produce, adding to their sales stock and using  up their productive stocks
+2. the social classes reproduce, using up their consumption goods and keeping their class alive
 3. the various suppliers sell what they make and buy what they need
 
 The simulation keeps track of:
-1.  the quantities of use value that are produced, consumed, and traded
-2.  the *values* of these use values which are calculated as the sum of the value consumed and the labour time used to create them (Marx's 'Constant capital' and living labour)
-3.  the *prices* of these use values, which are calculated by the rules of the simulation. These rules, in the intended final version, can be supplied by the user. In the original version, they were simply calculated as being higher or lower depending on the disparity between supply and demand.
-4.  the money used to buy and sell the use-values
+1.  the quantities of commodities that are produced, consumed, and traded
+2.  the *values* of these commodities, calculated as the sum of the value consumed and the labour time used to create them (Marx's 'Constant capital' and living labour)
+3.  the *prices* of these commodities, which are calculated by the rules of the simulation. These rules, in the intended final version, can be supplied by the user. In the original version, they were simply calculated as being higher or lower depending on the disparity between supply and demand.
+4.  the money used to buy and sell the commodities
 
 The total price and the total value are related by a magnitude called the MELT (Monetary Equivalent of Labour Time) which at any given time is the same throughout the economy. That's why, when the capitalists buy stocks with which to produce, we can calculate their value in terms of labour time, even though money is used to buy them.
 
@@ -149,7 +151,7 @@ Don't read any further unless you are comfortable with steps 3 and 4 above.Most 
 
 ## How does it work?
 
-The circuits, stocks and usevalues are all in databases. I use a database called H2 which is 'embedded' in the application, that is it requires no attention from the user. At present the database is re-initialised every time the application is run, but eventually, the idea is that it will be preserved from one use to the next, so that you can start where you left off. I also envisage that users can create 'branches' called project versions, and switch between them at any time. Finally, if the application becomes web-based, users will be able to share simulations with each other.
+The industries, stocks, commodities and social classes are all in databases. I use a database called H2 which is 'embedded' in the application, that is it requires no attention from the user. At present the database is re-initialised every time the application is run, but eventually, the idea is that it will be preserved from one use to the next, so that you can start where you left off. I also envisage that users can create 'branches' called project versions, and switch between them at any time. Finally, if the application becomes web-based, users will be able to share simulations with each other.
 
 Every table has a special column called 'timeStamp'. Every time the simulation does something, a new timestamp gets created describing what was done, the data is modified, and a new copy of every item in the simulation is written back to the database, with the timeStamp moved on by one step. A description of what was done is written to the 'TimeStamp' table. For example 'register supply' changes the column 'total supply' associated with each use value, by totting up what is available for sale from everyone who makes that use value. So we register a new record for each of these use values. But we also register a new record for everything in the system - every stock, every circuit. Thus, with each action that is undertaken, the entire state of the system is recorded with a new timeStamp. 
 

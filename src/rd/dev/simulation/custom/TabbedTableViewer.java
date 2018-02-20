@@ -77,13 +77,32 @@ public class TabbedTableViewer extends VBox {
 
 	private static ArrayList<TableView<?>> tabbedTables = new ArrayList<TableView<?>>();
 
+	/**
+	 * This enum contains most of the tooltips applied to table columns displayed in the viewer.
+	 * It is a convenience rather than a hard and fast rule; its main purpose is to ensure that
+	 * if two fields appear in different entity classes that describe the same thing, we can
+	 * provide for them to get the same tooltip.
+	 */
+	
 	public static enum HEADER_TOOL_TIPS {
 		// @formatter:off
-		USEVALUE("A commodity is anything that that society makes use of, and has established a quantitative measure for"), 
-		INDUSTRY("A producer is a business, or group of businesses, who make one commodity with similar technologies. \n" +
+		COMMODITY("A commodity is anything that that society makes use of, and has established a quantitative measure for\n. "
+				+ "In general it is anything produced to be sold. Some tradeable goods such as paper money are included\n "
+				+ "in this list even though they are not produced."), 
+		INDUSTRY("An industry is a business, or group of businesses, who make one commodity with similar technologies. \n" +
 				 "Two producers can make the same commodity, but would normally be distinguished apart because their technology differs.\n" +
 				 "This can help study the effect of technological change"), 
-		SOCIALCLASS("A social class is a group of people with the same source of revenue, defined by the type of property that they specialise in");
+		SOCIALCLASS("A social class is a group of people with the same source of revenue, defined by the type of property that they specialise in"),
+		OUTPUT("The current output of an industry is the quantity of its normal product \n"
+				+ "that it produced in the last period. Its output in this period may be less \n"
+				+ "if there are money or supply constraints, or more if there is fresh investment\n "
+				+ "in the relevant industries"),
+		INITIALCAPITAL("The initial capital, in money price terms, of a commodity or of the industries producing \n"
+				+ "this commodity, at the start of the period"),
+		CAPITAL("Capital is defined as productive stocks plus sales stocks, plus money stocks"),
+		PROFIT("Profit is the difference, in money price terms, between the current capital\n"
+				+ " and the initial capital of all the industries producing this commodity"),
+		PROFITRATE("The profit rate is the Profit divided by the initial capital");
 		// @formatter:on
 
 		String text;
@@ -152,7 +171,7 @@ public class TabbedTableViewer extends VBox {
 	public void makeProductiveStocksViewTable() {
 		productiveStockHeaderColumn.getColumns().clear();
 		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.OWNER,true));
-		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.USEVALUE,true));
+		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.COMMODITY,true));
 		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.QUANTITY,false));
 		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.VALUE,false));
 		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.PRICE,false));
@@ -180,7 +199,7 @@ public class TabbedTableViewer extends VBox {
 		salesStockHeaderColumn.getColumns().clear();
 		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.OWNERTYPE,true));
 		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.OWNER,true));
-		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.USEVALUE,false));
+		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.COMMODITY,false));
 		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.QUANTITY,false));
 		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.VALUE,false));
 		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.PRICE,false));
@@ -192,7 +211,7 @@ public class TabbedTableViewer extends VBox {
 	public void makeConsumptionStocksViewTable() {
 		consumptionStockHeaderColumn.getColumns().clear();
 		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.OWNER,true));
-		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.USEVALUE,true));
+		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.COMMODITY,true));
 		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.QUANTITY,false));
 		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.VALUE,false));
 		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.PRICE,false));
@@ -222,32 +241,32 @@ public class TabbedTableViewer extends VBox {
 		commodityCapitalProfitSuperColumn.setResizable(true);
 		
 		
-		commoditiesTable.getColumns().add(new UseValueColumn(Commodity.SELECTOR.NAME, true));
-		commoditiesTable.getColumns().add(new UseValueColumn(Commodity.SELECTOR.COMMODITY_FUNCTION_TYPE, true));
-		commoditiesTable.getColumns().add(new UseValueColumn(Commodity.SELECTOR.TOTALQUANTITY, false));
+		commoditiesTable.getColumns().add(new CommodityColumn(Commodity.SELECTOR.NAME, true));
+		commoditiesTable.getColumns().add(new CommodityColumn(Commodity.SELECTOR.FUNCTION_TYPE, true));
+		commoditiesTable.getColumns().add(new CommodityColumn(Commodity.SELECTOR.TOTALQUANTITY, false));
 
 		commoditiesTable.getColumns().add(commodityValuePriceSuperColumn);
-		commodityValuePriceSuperColumn.getColumns().add(new UseValueColumn(Commodity.SELECTOR.UNITVALUE, false));		
-		commodityValuePriceSuperColumn.getColumns().add(new UseValueColumn(Commodity.SELECTOR.UNITPRICE, false));
-		commodityValuePriceSuperColumn.getColumns().add(new UseValueColumn(Commodity.SELECTOR.TOTALVALUE, false));
-		commodityTotalPriceColumn = new UseValueColumn(Commodity.SELECTOR.TOTALPRICE, false);
+		commodityValuePriceSuperColumn.getColumns().add(new CommodityColumn(Commodity.SELECTOR.UNITVALUE, false));		
+		commodityValuePriceSuperColumn.getColumns().add(new CommodityColumn(Commodity.SELECTOR.UNITPRICE, false));
+		commodityValuePriceSuperColumn.getColumns().add(new CommodityColumn(Commodity.SELECTOR.TOTALVALUE, false));
+		commodityTotalPriceColumn = new CommodityColumn(Commodity.SELECTOR.TOTALPRICE, false);
 		commodityValuePriceSuperColumn.getColumns().add(commodityTotalPriceColumn);
 
 		commoditiesTable.getColumns().add(commodityDemandSupplySuperColumn);
-		commodityDemandSupplySuperColumn.getColumns().add(new UseValueColumn(Commodity.SELECTOR.TOTALSUPPLY, false));
-		commodityDemandSupplySuperColumn.getColumns().add(new UseValueColumn(Commodity.SELECTOR.REPLENISHMENT_DEMAND, false));
-		commodityDemandSupplySuperColumn.getColumns().add(new UseValueColumn(Commodity.SELECTOR.EXPANSION_DEMAND, false));
-		commodityAllocationShareColumn = new UseValueColumn(Commodity.SELECTOR.ALLOCATIONSHARE, false);
+		commodityDemandSupplySuperColumn.getColumns().add(new CommodityColumn(Commodity.SELECTOR.TOTALSUPPLY, false));
+		commodityDemandSupplySuperColumn.getColumns().add(new CommodityColumn(Commodity.SELECTOR.REPLENISHMENT_DEMAND, false));
+		commodityDemandSupplySuperColumn.getColumns().add(new CommodityColumn(Commodity.SELECTOR.EXPANSION_DEMAND, false));
+		commodityAllocationShareColumn = new CommodityColumn(Commodity.SELECTOR.ALLOCATIONSHARE, false);
 		commodityDemandSupplySuperColumn.getColumns().add(commodityAllocationShareColumn);
 
 		commoditiesTable.getColumns().add(commodityCapitalProfitSuperColumn);
-		commodityCapitalProfitSuperColumn.getColumns().add(new UseValueColumn(Commodity.SELECTOR.INITIALCAPITAL, false));
-		commodityCapitalProfitSuperColumn.getColumns().add(new UseValueColumn(Commodity.SELECTOR.PROFIT, false));
-		commodityProfitRateColumn = new UseValueColumn(Commodity.SELECTOR.PROFITRATE, false);
+		commodityCapitalProfitSuperColumn.getColumns().add(new CommodityColumn(Commodity.SELECTOR.INITIALCAPITAL, false));
+		commodityCapitalProfitSuperColumn.getColumns().add(new CommodityColumn(Commodity.SELECTOR.PROFIT, false));
+		commodityProfitRateColumn = new CommodityColumn(Commodity.SELECTOR.PROFITRATE, false);
 		commodityCapitalProfitSuperColumn.getColumns().add(commodityProfitRateColumn);
-		commodityCapitalProfitSuperColumn.getColumns().add(new UseValueColumn(Commodity.SELECTOR.SURPLUS, false));
+		commodityCapitalProfitSuperColumn.getColumns().add(new CommodityColumn(Commodity.SELECTOR.SURPLUS, false));
 		
-		commoditiesTable.getColumns().add(new UseValueColumn(Commodity.SELECTOR.TURNOVERTIME, false));
+		commoditiesTable.getColumns().add(new CommodityColumn(Commodity.SELECTOR.TURNOVERTIME, false));
 
 	}
 
@@ -260,7 +279,7 @@ public class TabbedTableViewer extends VBox {
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SIZE,false));
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SALES,false));
 		for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION_TYPE.CONSUMER_GOOD)) {
-			socialClassesTable.getColumns().add(new SocialClassColumn(u.commodityName()));
+			socialClassesTable.getColumns().add(new SocialClassColumn(u));
 		}
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.MONEY,false));
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.REVENUE,false));
@@ -292,7 +311,7 @@ public class TabbedTableViewer extends VBox {
 		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.INDUSTRYNAME,true));
 		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.COMMODITYNAME,true));
 		for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION_TYPE.PRODUCTIVE_INPUT)) {
-			dynamicIndustryTable.getColumns().add(new IndustryColumn(u.commodityName()));
+			dynamicIndustryTable.getColumns().add(new IndustryColumn(u));
 		}
 		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.PROFIT,false));
 		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.SALESSTOCK,false));

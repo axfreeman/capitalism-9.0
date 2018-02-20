@@ -26,12 +26,12 @@ import javafx.scene.control.TableCell;
 import javafx.scene.paint.Color;
 import rd.dev.simulation.model.Commodity;
 
-public class UseValueTableCell extends TableCell<Commodity, String> {
-	static final Logger logger = LogManager.getLogger("UseValueTableCell");
+public class CommodityTableCell extends TableCell<Commodity, String> {
+	static final Logger logger = LogManager.getLogger("CommodityTableCell");
 
 	Commodity.SELECTOR useValueSelector;
 
-	public UseValueTableCell(Commodity.SELECTOR useValueSelector) {
+	public CommodityTableCell(Commodity.SELECTOR useValueSelector) {
 		this.useValueSelector = useValueSelector;
 	}
 

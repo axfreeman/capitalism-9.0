@@ -68,12 +68,13 @@ public class IndustryColumn extends TableColumn<Industry, String> {
 	 * in a {@code Industry} bean. The magnitude is selected by the {@code  name} of the Stock.
 	 * Use Stock itself to set the header text and graphic, and prepare the column header so its graphic is switchable.
 	 * 
-	 * @param productiveStockName
+	 * @param commodity
 	 *            an enum specifying which productive Stock to display
 	 * 
 	 */
 
-	IndustryColumn(String productiveStockName) {
+	IndustryColumn(Commodity commodity) {
+		String productiveStockName=commodity.commodityName();
 		setCellFactory(new Callback<TableColumn<Industry, String>, TableCell<Industry, String>>() {
 			@Override public TableCell<Industry, String> call(TableColumn<Industry, String> col) {
 				return new CircuitTableStockCell(productiveStockName);
@@ -86,7 +87,7 @@ public class IndustryColumn extends TableColumn<Industry, String> {
 
 		setPrefWidth(75.0);
 		getStyleClass().add("table-column-right");
-		Commodity stockUseValue = Commodity.commodityByPrimaryKey(Simulation.timeStampIDCurrent, productiveStockName);
-		TableUtilities.addGraphicToColummnHeader(this, stockUseValue.getImageName(), "More information coming soon");
+		Commodity stockCommodity = Commodity.commodityByPrimaryKey(Simulation.timeStampIDCurrent, productiveStockName);
+		TableUtilities.addGraphicToColummnHeader(this, stockCommodity.getImageName(), commodity.getToolTip());
 	}
 }

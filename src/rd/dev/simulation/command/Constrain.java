@@ -80,12 +80,12 @@ public class Constrain extends Simulation implements Command {
 		Reporter.report(logger, 1, "Constraining demand for stocks, on the basis of constraints on output levels");
 
 		for (Stock s : stockList) {
-			String useValueType = s.getUseValueName();
-			Commodity u = s.getUseValue();
+			String commodityType = s.getCommodityName();
+			Commodity u = s.getCommodity();
 			double allocationShare = u.getAllocationShare();
 			double newQuantityDemanded = s.getReplenishmentDemand() * allocationShare;
 			Reporter.report(logger, 2, "Demand for [%s] in industry [%s] was %.0f and is now %.0f",
-					useValueType, s.getOwner(), s.getReplenishmentDemand(), newQuantityDemanded);
+					commodityType, s.getOwner(), s.getReplenishmentDemand(), newQuantityDemanded);
 			s.setReplenishmentDemand(newQuantityDemanded);
 		}
 	}
@@ -114,11 +114,11 @@ public class Constrain extends Simulation implements Command {
 					double possibleOutput = quantityAvailable / coefficient;
 					if (possibleOutput < desiredOutputLevel-MathStuff.epsilon) {
 						Reporter.report(logger, 2, "Constraining output to %.0f because stock [%s] has a supply of %.0f ",
-								possibleOutput, s.getUseValueName(), quantityDemanded);
+								possibleOutput, s.getCommodityName(), quantityDemanded);
 						desiredOutputLevel = possibleOutput;
 					} else {
 						Reporter.report(logger, 2, "Output was not constrained by the stock of [%s] which can supply %.0f allowing for output of %.0f",
-								s.getUseValueName(), quantityAvailable, possibleOutput);
+								s.getCommodityName(), quantityAvailable, possibleOutput);
 					}
 				}
 			}

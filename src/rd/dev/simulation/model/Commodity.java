@@ -31,6 +31,7 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import rd.dev.simulation.Simulation;
+import rd.dev.simulation.custom.TabbedTableViewer;
 import rd.dev.simulation.utils.MathStuff;
 import rd.dev.simulation.utils.Reporter;
 import rd.dev.simulation.view.ViewManager;
@@ -45,7 +46,7 @@ import rd.dev.simulation.view.ViewManager;
 		@NamedQuery(name = "Primary", query = "SELECT u FROM Commodity u where u.pk.project= :project AND u.pk.timeStamp= :timeStamp and u.pk.name=:name"),
 		@NamedQuery(name = "All", query = "SELECT u FROM Commodity u where u.pk.project= :project and u.pk.timeStamp = :timeStamp"),
 		@NamedQuery(name = "CommodityOriginType", query = "SELECT u FROM Commodity u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.commodityOriginType=:commodityOriginType"),
-		@NamedQuery(name = "CommodityFunctionType", query = "SELECT u FROM Commodity u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.commodityFunctionType=:commodityFunctionType order by u.displayOrder")
+		@NamedQuery(name = "FunctionType", query = "SELECT u FROM Commodity u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.functionType=:functionType order by u.displayOrder")
 })
 @Embeddable
 public class Commodity implements Serializable {
@@ -56,7 +57,7 @@ public class Commodity implements Serializable {
 	@EmbeddedId protected CommodityPK pk;
 
 	@Column(name = "originType") private ORIGIN_TYPE commodityOriginType; // whether this is produced by an enterprise or a class
-	@Column(name = "functionType") private FUNCTION_TYPE commodityFunctionType;// see enum FUNCTION_TYPE for list of possible types
+	@Column(name = "functionType") private FUNCTION_TYPE functionType;// see enum FUNCTION_TYPE for list of possible types
 	@Column(name = "turnoverTime") private double turnoverTime;
 	@Column(name = "unitValue") private double unitValue;
 	@Column(name = "unitPrice") private double unitPrice;
@@ -65,6 +66,7 @@ public class Commodity implements Serializable {
 	@Column(name = "stockUsedUp") private double stockUsedUp; // stock used up in production in the current period
 	@Column(name = "stockProduced") private double stockProduced; // stock produced in the current period
 	@Column(name = "imageName") private String imageName; // a graphical image that can be used in column headers in place of text
+	@Column(name = "tooltip") private String toolTip;// an optional user-supplied description of the commodity
 	@Column(name = "displayOrder") private int displayOrder; // used to determine which order to display columns
 
 	// Comparators
@@ -87,7 +89,7 @@ public class Commodity implements Serializable {
 		commodityByPrimaryKeyQuery = entityManager.createNamedQuery("Primary", Commodity.class);
 		commoditiesAllQuery = entityManager.createNamedQuery("All", Commodity.class);
 		commoditiesByOriginTypeQuery = entityManager.createNamedQuery("CommodityOriginType", Commodity.class);
-		commoditiesByFunctionQuery = entityManager.createNamedQuery("CommodityFunctionType", Commodity.class);
+		commoditiesByFunctionQuery = entityManager.createNamedQuery("FunctionType", Commodity.class);
 	}
 	
 	//Enums
@@ -98,15 +100,9 @@ public class Commodity implements Serializable {
 	public enum FUNCTION_TYPE {
 		MONEY("Money"), PRODUCTIVE_INPUT("Productive Inputs"), CONSUMER_GOOD("Consumer Goods");
 		String text;
-
 		FUNCTION_TYPE(String text) {
 			this.text = text;
 		}
-
-		/**
-		 * @return the text associated with this type - normally, so it can be displayed for the user
-		 */
-
 		public String getText() {
 			return text;
 		}
@@ -132,23 +128,23 @@ public class Commodity implements Serializable {
 	 */
 	public enum SELECTOR {
 		// @formatter:off
-		NAME("Commodity",null,null), 
-		OWNERTYPE("Owner Type",null,null), 
-		TURNOVERTIME("Turnover Time","Turnover.png",null), 
-		UNITVALUE("Unit Value","unitValueTransparent.png",null), 
-		UNITPRICE("Unit Price","unitPrice.png",null), 
-		TOTALSUPPLY("Supply","supply.png",null), 
-		TOTALQUANTITY("Quantity","Quantity.png",null), 
-		REPLENISHMENT_DEMAND("Replenishment","demand.png",null), 
-		EXPANSION_DEMAND("Expansion","expansiondemand.png",null), 
-		SURPLUS("Surplus","surplus.png",null), 
-		TOTALVALUE("Total Value","Value.png",null), 
-		TOTALPRICE("Total Price","price.png",null), 
-		ALLOCATIONSHARE("Share","Allocation.png",null), 
-		COMMODITY_FUNCTION_TYPE("Commodity Type",null,null), 
-		INITIALCAPITAL("Initial Capital","capital  2.png",null), 
-		PROFIT("Profit","profit.png",null), 
-		PROFITRATE("Profit Rate","profitRate.png" ,null);
+		NAME("Commodity",null,TabbedTableViewer.HEADER_TOOL_TIPS.COMMODITY.text()), 
+		PRODUCERTYPE("Producer Type",null,"Whether this commodity was produced by an industry or by a social classes. "), 
+		TURNOVERTIME("Turnover Time","Turnover.png","The turnover time is the number of periods over which the commodity is used up"), 
+		UNITVALUE("Unit Value","unitValueTransparent.png","The value per unit of this commodity"), 
+		UNITPRICE("Unit Price","unitPrice.png","The price per unit of this commodity"), 
+		TOTALSUPPLY("Supply","supply.png","The total supply of this commodity that is availlable for sale"), 
+		TOTALQUANTITY("Quantity","Quantity.png","The total quantity of this commodity that is available for sale"), 
+		REPLENISHMENT_DEMAND("Replenishment","demand.png","The quantity, value or price of this commodity required for all industries that use it to continue functioning at their current level"), 
+		EXPANSION_DEMAND("Expansion","expansiondemand.png","The quantity, value or price of this commodity that the industries which use it were given funds to purchase by the end of the last period"), 
+		SURPLUS("Surplus","surplus.png","The quantity of this commodity that was produced in excess of what was consumed"), 
+		TOTALVALUE("Total Value","Value.png","The total value of this commodity in existence. Should be equal to quantity X unit value"), 
+		TOTALPRICE("Total Price","price.png","The total price of this commodity in existence. Should be equal to quantity X unit price"), 
+		ALLOCATIONSHARE("Share","Allocation.png","The proportion of replenishment demand that can be satisfied from existing supply"), 
+		FUNCTION_TYPE("Commodity Type",null,"Whether this is a productive input,a consumption good, or money"), 
+		INITIALCAPITAL("Initial Capital","capital  2.png",TabbedTableViewer.HEADER_TOOL_TIPS.INITIALCAPITAL.text()), 
+		PROFIT("Profit","profit.png",TabbedTableViewer.HEADER_TOOL_TIPS.PROFIT.text()), 
+		PROFITRATE("Profit Rate","profitRate.png" ,TabbedTableViewer.HEADER_TOOL_TIPS.PROFITRATE.text());
 		// @formatter:on
 		String text;
 		String imageName;
@@ -191,7 +187,7 @@ public class Commodity implements Serializable {
 		this.unitPrice = template.unitPrice;
 		this.surplusProduct = template.surplusProduct;
 		this.allocationShare = template.allocationShare;
-		this.commodityFunctionType = template.commodityFunctionType;
+		this.functionType = template.functionType;
 		this.stockUsedUp = template.stockUsedUp;
 		this.stockProduced = template.stockProduced;
 		this.imageName = template.imageName;
@@ -202,7 +198,7 @@ public class Commodity implements Serializable {
 	 * an observable list of type Commodity for display by ViewManager, at the current project and timeStampDisplayCursor. timeStampDisplayCursor, which
 	 * may diverge from timeStamp, identifies the row that the user last clicked on.
 	 * 
-	 * @return a list of Observable UseValues for the current project and timeStamp
+	 * @return a list of Observable Commodities for the current project and timeStamp
 	 */
 
 	public static ObservableList<Commodity> commoditiesObservable() {
@@ -230,7 +226,7 @@ public class Commodity implements Serializable {
 		switch (SELECTOR) {
 		case NAME:
 			return new ReadOnlyStringWrapper(pk.name);
-		case OWNERTYPE:
+		case PRODUCERTYPE:
 			return new ReadOnlyStringWrapper(commodityOriginType.text());
 		case UNITPRICE:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, unitPrice));
@@ -254,8 +250,8 @@ public class Commodity implements Serializable {
 			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, turnoverTime));
 		case ALLOCATIONSHARE:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, allocationShare));
-		case COMMODITY_FUNCTION_TYPE:
-			return new ReadOnlyStringWrapper(commodityFunctionType.text);
+		case FUNCTION_TYPE:
+			return new ReadOnlyStringWrapper(functionType.text);
 		case INITIALCAPITAL:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, initialCapital()));
 		case PROFIT:
@@ -284,7 +280,7 @@ public class Commodity implements Serializable {
 		switch (sELECTOR) {
 		case NAME:
 			return false;
-		case OWNERTYPE:
+		case PRODUCERTYPE:
 			return false;
 		case UNITPRICE:
 			return unitPrice != comparator.getUnitPrice();
@@ -335,7 +331,7 @@ public class Commodity implements Serializable {
 			return item;
 		switch (selector) {
 		case NAME:
-		case OWNERTYPE:
+		case PRODUCERTYPE:
 			return item;
 		case UNITPRICE:
 			return String.format(ViewManager.smallNumbersFormatString, (unitPrice - comparator.unitPrice));
@@ -437,8 +433,8 @@ public class Commodity implements Serializable {
 	 * @return the function of this commodity, as given by the {@code FUNCTION_TYPE} enum
 	 */
 
-	public FUNCTION_TYPE getCommodityFunctionType() {
-		return commodityFunctionType;
+	public FUNCTION_TYPE getFunctionType() {
+		return functionType;
 	}
 
 	public String commodityName() {
@@ -563,15 +559,15 @@ public class Commodity implements Serializable {
 	}
 
 	/**
-	 * a list of all use values of the given commodityFunctionType at the current timeStamp and project
+	 * a list of all use values of the given functionType at the current timeStamp and project
 	 * 
 	 * @param functionType
 	 *            the function type of the use value (PRODUCTIVE INPUT, CONSUMER GOOD, MONEY)
-	 * @return a list all use values of the given commodityFunctionType at the current timeStamp and project
+	 * @return a list all use values of the given functionType at the current timeStamp and project
 	 */
 	public static List<Commodity> commoditiesByFunction(Commodity.FUNCTION_TYPE functionType) {
 		commoditiesByFunctionQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent).setParameter("project", Simulation.projectCurrent);
-		commoditiesByFunctionQuery.setParameter("commodityFunctionType", functionType);
+		commoditiesByFunctionQuery.setParameter("functionType", functionType);
 		return commoditiesByFunctionQuery.getResultList();
 	}
 
@@ -834,4 +830,20 @@ public class Commodity implements Serializable {
 	public void setEndComparator(Commodity endComparator) {
 		this.endComparator = endComparator;
 	}
+
+	/**
+	 * @return the toolTip
+	 */
+	public String getToolTip() {
+		return toolTip;
+	}
+
+	/**
+	 * @param toolTip the toolTip to set
+	 */
+	public void setToolTip(String toolTip) {
+		this.toolTip = toolTip;
+	}
+	
+	
 }

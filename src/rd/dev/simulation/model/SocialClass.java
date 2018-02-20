@@ -52,12 +52,14 @@ public class SocialClass implements Serializable {
 
 	@EmbeddedId protected SocialClassPK pk;
 	@Column(name = "Size") protected double size;
-	@Column(name = "ConsumptionPerPerson") protected double consumptionStocksRequiredPerPerson;
 
 	// The proportion of the population of this class that supplies labour power
 	// Not yet used, but intended for 'mixed' classes (eg small producers, pension-holders)
+	
 	@Column(name = "ParticipationRatio") protected double participationRatio;
-	@Column(name = "Revenue") protected double revenue; // the money that this class will spend in the current period
+	
+	// the money that this class will spend in the current period
+	@Column(name = "Revenue") protected double revenue;
 
 	// Comparators
 	@Transient private SocialClass comparator;
@@ -81,15 +83,14 @@ public class SocialClass implements Serializable {
 	public enum Selector {
 		// @formatter:off
 		SOCIALCLASSNAME("Social Class",null,TabbedTableViewer.HEADER_TOOL_TIPS.SOCIALCLASS.text()), 
-		SIZE("Population","population.png",null), 
-		CONSUMPTIONPERPERSON("Consumption per person","",null), 
-		MONEY("Money","money.png",null), 
-		SALES("Labour Power","labourPower.png",null), 
-		CONSUMPTIONSTOCKS("Consumer Goods","necessities.png",null), 
-		QUANTITYDEMANDED("Demand","demand.png",null), 
-		PARTICIPATIONRATIO("Participation Ratio",null,null), 
-		REVENUE("Revenue","glass-and-bottle-of-wine.png",null), 
-		TOTAL("Assets","TotalCapital.png",null);
+		SIZE("Population","population.png","The number of people in this social class"), 
+		MONEY("Money","money.png","The stock of money owned by this class"), 
+		SALES("Labour Power","labourPower.png","The amount of time that has been contracted to industries for waged work"), 
+		CONSUMPTIONSTOCKS("Consumer Goods","necessities.png","Necessities: consumer goods normally consumed by society in order to reproduce its members"), 
+		QUANTITYDEMANDED("Demand","demand.png","The demand for necessities: being phased out in favour of a more sophisticated treatment"), 
+		PARTICIPATIONRATIO("Participation Ratio",null,"The proportion of this class which provides waged labour"), 
+		REVENUE("Revenue","glass-and-bottle-of-wine.png","The money this class has at its disposal after receiving the income due to it"), 
+		TOTAL("Assets","TotalCapital.png","The total assets of this social class");
 		// @formatter:on
 
 		String text;
@@ -134,7 +135,6 @@ public class SocialClass implements Serializable {
 		this.pk.project = template.pk.project;
 		this.pk.socialClassName = template.pk.socialClassName;
 		this.size = template.size;
-		this.consumptionStocksRequiredPerPerson = template.consumptionStocksRequiredPerPerson;
 		this.participationRatio = template.participationRatio;
 		this.revenue = template.revenue;
 	}
@@ -168,8 +168,6 @@ public class SocialClass implements Serializable {
 		switch (selector) {
 		case SOCIALCLASSNAME:
 			return new ReadOnlyStringWrapper(pk.socialClassName);
-		case CONSUMPTIONPERPERSON:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, consumptionStocksRequiredPerPerson));
 		case SIZE:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, size));
 		case CONSUMPTIONSTOCKS:
@@ -207,8 +205,6 @@ public class SocialClass implements Serializable {
 			return false;
 		case SIZE:
 			return size != comparator.size;
-		case CONSUMPTIONPERPERSON:
-			return consumptionStocksRequiredPerPerson != comparator.consumptionStocksRequiredPerPerson;
 		case CONSUMPTIONSTOCKS:
 			return consumptionAttribute(valueExpression) != comparator.consumptionAttribute(valueExpression);
 		case MONEY:
@@ -247,8 +243,6 @@ public class SocialClass implements Serializable {
 			return item;
 		case SIZE:
 			return String.format(ViewManager.largeNumbersFormatString, size - comparator.size);
-		case CONSUMPTIONPERPERSON:
-			return String.format(ViewManager.largeNumbersFormatString, consumptionStocksRequiredPerPerson - comparator.consumptionStocksRequiredPerPerson);
 		case CONSUMPTIONSTOCKS:
 			return String.format(ViewManager.largeNumbersFormatString,
 					consumptionAttribute(displayAttribute) - comparator.consumptionAttribute(displayAttribute));
@@ -291,14 +285,14 @@ public class SocialClass implements Serializable {
 	 * The value-expression of the magnitude of a named consumption Stock owned by this class
 	 * 
 	 * @param consumptionStockName
-	 *            the useValue of the consumption Stock
+	 *            the commodity of the consumption Stock
 	 * 
 	 * @return the magnitude of the named Stock, expressed as defined by {@code displayAttribute}, null if this does not exist
 	 */
 
 	public ReadOnlyStringWrapper wrappedString(String consumptionStockName) {
 		try {
-			Stock namedStock = Stock.stockConsumptionByUseValueAndClassSingle(pk.timeStamp, pk.socialClassName, consumptionStockName);
+			Stock namedStock = Stock.stockConsumptionByCommodityAndClassSingle(pk.timeStamp, pk.socialClassName, consumptionStockName);
 			String result = String.format(ViewManager.largeNumbersFormatString, namedStock.get(TabbedTableViewer.displayAttribute));
 			return new ReadOnlyStringWrapper(result);
 		} catch (Exception e) {
@@ -322,7 +316,7 @@ public class SocialClass implements Serializable {
 		Stock salesStock = getSalesStock();
 		if (salesStock != null) {
 			double existingLabourPower = salesStock.getQuantity();
-			Commodity commodity = Commodity.commodityByPrimaryKey(pk.timeStamp, salesStock.getUseValueName());
+			Commodity commodity = Commodity.commodityByPrimaryKey(pk.timeStamp, salesStock.getCommodityName());
 			double turnoverTime = commodity.getTurnoverTime();
 			double newLabourPower = size * participationRatio / turnoverTime;
 			double extraLabourPower = newLabourPower - existingLabourPower;
@@ -379,24 +373,24 @@ public class SocialClass implements Serializable {
 
 	public Stock getConsumptionStock() {
 		for (Stock s : Stock.stocksConsumptionByClass(Simulation.timeStampIDCurrent, pk.socialClassName)) {
-			if (s.getUseValueName().equals("Consumption"))
+			if (s.getCommodityName().equals("Consumption"))
 				return s;
-			if (s.getUseValueName().equals("Necessities"))
+			if (s.getCommodityName().equals("Necessities"))
 				return s;
 		}
 		return null;
 	}
 
 	/**
-	 * Get the consumption stock of the named useValue that is owned by this class
+	 * Get the consumption stock of the named commodity that is owned by this class
 	 * 
 	 * @param commodityName
 	 *            the name of the prescribed consumer good
-	 * @return the Stock of the consumer good named useValue that this class owns
+	 * @return the Stock of the consumer good named commodity that this class owns
 	 */
 
 	public Stock getConsumptionStock(String commodityName) {
-		return Stock.stockConsumptionByUseValueAndClassSingle(pk.timeStamp, pk.socialClassName, commodityName);
+		return Stock.stockConsumptionByCommodityAndClassSingle(pk.timeStamp, pk.socialClassName, commodityName);
 	}
 
 	// METHODS THAT RETRIEVE ATTRIBUTES OF STOCKS
@@ -577,20 +571,6 @@ public class SocialClass implements Serializable {
 		pk.timeStamp = timeStamp;
 	}
 
-	/**
-	 * @return the consumptionStocksRequiredPerPerson
-	 */
-	public double getConsumptionStocksRequiredPerPerson() {
-		return consumptionStocksRequiredPerPerson;
-	}
-
-	/**
-	 * @param consumptionStocksRequiredPerPerson
-	 *            the consumptionStocksRequiredPerPerson to set
-	 */
-	public void setConsumptionStocksRequiredPerPerson(double consumptionStocksRequiredPerPerson) {
-		this.consumptionStocksRequiredPerPerson = consumptionStocksRequiredPerPerson;
-	}
 
 	public String getSocialClassName() {
 		return pk.socialClassName;

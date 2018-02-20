@@ -105,7 +105,7 @@ public class Capitalism extends Application {
 
 		initializeActionStates();
 		
-		// initialise the values and prices of the stocks and the usevalues, and the global totals.
+		// initialise the values and prices of the stocks and the commodities, and the global totals.
 		// this is needed because the information in the user-supplied data files is incomplete - it provides only the bare minimum
 		// this is done for all projects, so we can subsequently switch from one to the other.
 		// TODO if there are many projects, we may want to do this lazily
