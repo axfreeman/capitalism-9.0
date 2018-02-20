@@ -30,18 +30,14 @@ import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
-import rd.dev.simulation.Capitalism;
-import rd.dev.simulation.datamanagement.DataManager;
-import rd.dev.simulation.datamanagement.ObservableListProvider;
 import rd.dev.simulation.model.Industry;
 import rd.dev.simulation.model.SocialClass;
 import rd.dev.simulation.model.Stock;
-import rd.dev.simulation.model.UseValue;
+import rd.dev.simulation.model.Commodity;
 import rd.dev.simulation.view.ViewManager;
 
 public class TabbedTableViewer extends VBox {
 	static final Logger logger = LogManager.getLogger("TableViewer");
-	private ObservableListProvider olProvider = Capitalism.olProvider;
 
 	// selects whether to display quantities, values or prices, where appropriate
 
@@ -58,16 +54,16 @@ public class TabbedTableViewer extends VBox {
 	@FXML private TableView<Stock> consumptionStockTable;
 	@FXML private TableColumn<Stock, String> consumptionStockHeaderColumn;
 
-	// The UseValues table and its header columns
+	// The Commodities table and its header columns
 
-	@FXML protected TableView<UseValue> useValuesTable;
-	private TableColumn<UseValue, String> useValueDemandSupplySuperColumn;
-	private TableColumn<UseValue, String> useValueCapitalProfitSuperColumn;
-	private TableColumn<UseValue, String> useValueValuePriceSuperColumn;
+	@FXML protected TableView<Commodity> commoditiesTable;
+	private TableColumn<Commodity, String> commodityDemandSupplySuperColumn;
+	private TableColumn<Commodity, String> commodityCapitalProfitSuperColumn;
+	private TableColumn<Commodity, String> commodityValuePriceSuperColumn;
 
-	private TableColumn<UseValue, String> useValueTotalPriceColumn;
-	private TableColumn<UseValue, String> useValueAllocationShareColumn;
-	private TableColumn<UseValue, String> useValueProfitRateColumn;
+	private TableColumn<Commodity, String> commodityTotalPriceColumn;
+	private TableColumn<Commodity, String> commodityAllocationShareColumn;
+	private TableColumn<Commodity, String> commodityProfitRateColumn;
 
 	// Industry Tables and their header columns
 
@@ -129,7 +125,7 @@ public class TabbedTableViewer extends VBox {
 		makeMoneyStocksViewTable();
 		makeSalesStocksViewTable();
 		makeConsumptionStocksViewTable();
-		makeUseValuesViewTable();
+		makeCommoditiesViewTable();
 		makeIndustriesViewTable();
 		makeDynamicIndustriesTable();
 		makeSocialClassesViewTable();
@@ -140,14 +136,14 @@ public class TabbedTableViewer extends VBox {
 		tabbedTables.add(salesStockTable);
 		tabbedTables.add(salesStockTable);
 		tabbedTables.add(consumptionStockTable);
-		tabbedTables.add(useValuesTable);
+		tabbedTables.add(commoditiesTable);
 		tabbedTables.add(industriesTable);
 		tabbedTables.add(socialClassesTable);
 		tabbedTables.add(dynamicIndustryTable);
 
-		TableUtilities.setSuperColumnHandler(useValueValuePriceSuperColumn, useValueTotalPriceColumn);
-		TableUtilities.setSuperColumnHandler(useValueDemandSupplySuperColumn, useValueAllocationShareColumn);
-		TableUtilities.setSuperColumnHandler(useValueCapitalProfitSuperColumn, useValueProfitRateColumn);
+		TableUtilities.setSuperColumnHandler(commodityValuePriceSuperColumn, commodityTotalPriceColumn);
+		TableUtilities.setSuperColumnHandler(commodityDemandSupplySuperColumn, commodityAllocationShareColumn);
+		TableUtilities.setSuperColumnHandler(commodityCapitalProfitSuperColumn, commodityProfitRateColumn);
 	}
 
 	/**
@@ -205,52 +201,53 @@ public class TabbedTableViewer extends VBox {
 	}
 
 	/**
-	 * Initialize the UseValues tableView and cellFactories
+	 * Initialize the Commodities tableView and cellFactories
 	 */
-	public void makeUseValuesViewTable() {
-		useValuesTable.getColumns().clear();
+	public void makeCommoditiesViewTable() {
+		commoditiesTable.getColumns().clear();
 
 		// Create the header columns
 		// Assume Garbage collector will dispose of the detached subColumns
-		useValueValuePriceSuperColumn=new TableColumn<UseValue,String>("Values and Prices");
+		commodityValuePriceSuperColumn=new TableColumn<Commodity,String>("Values and Prices");
+		// trying to detect why nested columns don't resize properly
 		logger.debug("#########SuperColumn prefwidth = {} maxwidth {} minwidth {} resizable {}", 
-				useValueValuePriceSuperColumn.getPrefWidth(),useValueValuePriceSuperColumn.getMaxWidth(),
-				useValueValuePriceSuperColumn.getMinWidth(),useValueValuePriceSuperColumn.isResizable());
-		useValueValuePriceSuperColumn.setResizable(true);
+				commodityValuePriceSuperColumn.getPrefWidth(),commodityValuePriceSuperColumn.getMaxWidth(),
+				commodityValuePriceSuperColumn.getMinWidth(),commodityValuePriceSuperColumn.isResizable());
+		commodityValuePriceSuperColumn.setResizable(true);
 		
-		useValueDemandSupplySuperColumn=new TableColumn<UseValue,String>("Demand and Supply");
-		useValueDemandSupplySuperColumn.setResizable(true);
+		commodityDemandSupplySuperColumn=new TableColumn<Commodity,String>("Demand and Supply");
+		commodityDemandSupplySuperColumn.setResizable(true);
 		
-		useValueCapitalProfitSuperColumn=new TableColumn<UseValue,String>("CapitalAndProfit");
-		useValueCapitalProfitSuperColumn.setResizable(true);
+		commodityCapitalProfitSuperColumn=new TableColumn<Commodity,String>("CapitalAndProfit");
+		commodityCapitalProfitSuperColumn.setResizable(true);
 		
 		
-		useValuesTable.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.USEVALUENAME, true));
-		useValuesTable.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.COMMODITY_FUNCTION_TYPE, true));
-		useValuesTable.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.TOTALQUANTITY, false));
+		commoditiesTable.getColumns().add(new UseValueColumn(Commodity.SELECTOR.NAME, true));
+		commoditiesTable.getColumns().add(new UseValueColumn(Commodity.SELECTOR.COMMODITY_FUNCTION_TYPE, true));
+		commoditiesTable.getColumns().add(new UseValueColumn(Commodity.SELECTOR.TOTALQUANTITY, false));
 
-		useValuesTable.getColumns().add(useValueValuePriceSuperColumn);
-		useValueValuePriceSuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.UNITVALUE, false));		
-		useValueValuePriceSuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.UNITPRICE, false));
-		useValueValuePriceSuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.TOTALVALUE, false));
-		useValueTotalPriceColumn = new UseValueColumn(UseValue.USEVALUE_SELECTOR.TOTALPRICE, false);
-		useValueValuePriceSuperColumn.getColumns().add(useValueTotalPriceColumn);
+		commoditiesTable.getColumns().add(commodityValuePriceSuperColumn);
+		commodityValuePriceSuperColumn.getColumns().add(new UseValueColumn(Commodity.SELECTOR.UNITVALUE, false));		
+		commodityValuePriceSuperColumn.getColumns().add(new UseValueColumn(Commodity.SELECTOR.UNITPRICE, false));
+		commodityValuePriceSuperColumn.getColumns().add(new UseValueColumn(Commodity.SELECTOR.TOTALVALUE, false));
+		commodityTotalPriceColumn = new UseValueColumn(Commodity.SELECTOR.TOTALPRICE, false);
+		commodityValuePriceSuperColumn.getColumns().add(commodityTotalPriceColumn);
 
-		useValuesTable.getColumns().add(useValueDemandSupplySuperColumn);
-		useValueDemandSupplySuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.TOTALSUPPLY, false));
-		useValueDemandSupplySuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.REPLENISHMENT_DEMAND, false));
-		useValueDemandSupplySuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.EXPANSION_DEMAND, false));
-		useValueAllocationShareColumn = new UseValueColumn(UseValue.USEVALUE_SELECTOR.ALLOCATIONSHARE, false);
-		useValueDemandSupplySuperColumn.getColumns().add(useValueAllocationShareColumn);
+		commoditiesTable.getColumns().add(commodityDemandSupplySuperColumn);
+		commodityDemandSupplySuperColumn.getColumns().add(new UseValueColumn(Commodity.SELECTOR.TOTALSUPPLY, false));
+		commodityDemandSupplySuperColumn.getColumns().add(new UseValueColumn(Commodity.SELECTOR.REPLENISHMENT_DEMAND, false));
+		commodityDemandSupplySuperColumn.getColumns().add(new UseValueColumn(Commodity.SELECTOR.EXPANSION_DEMAND, false));
+		commodityAllocationShareColumn = new UseValueColumn(Commodity.SELECTOR.ALLOCATIONSHARE, false);
+		commodityDemandSupplySuperColumn.getColumns().add(commodityAllocationShareColumn);
 
-		useValuesTable.getColumns().add(useValueCapitalProfitSuperColumn);
-		useValueCapitalProfitSuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.INITIALCAPITAL, false));
-		useValueCapitalProfitSuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.PROFIT, false));
-		useValueProfitRateColumn = new UseValueColumn(UseValue.USEVALUE_SELECTOR.PROFITRATE, false);
-		useValueCapitalProfitSuperColumn.getColumns().add(useValueProfitRateColumn);
-		useValueCapitalProfitSuperColumn.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.SURPLUS, false));
+		commoditiesTable.getColumns().add(commodityCapitalProfitSuperColumn);
+		commodityCapitalProfitSuperColumn.getColumns().add(new UseValueColumn(Commodity.SELECTOR.INITIALCAPITAL, false));
+		commodityCapitalProfitSuperColumn.getColumns().add(new UseValueColumn(Commodity.SELECTOR.PROFIT, false));
+		commodityProfitRateColumn = new UseValueColumn(Commodity.SELECTOR.PROFITRATE, false);
+		commodityCapitalProfitSuperColumn.getColumns().add(commodityProfitRateColumn);
+		commodityCapitalProfitSuperColumn.getColumns().add(new UseValueColumn(Commodity.SELECTOR.SURPLUS, false));
 		
-		useValuesTable.getColumns().add(new UseValueColumn(UseValue.USEVALUE_SELECTOR.TURNOVERTIME, false));
+		commoditiesTable.getColumns().add(new UseValueColumn(Commodity.SELECTOR.TURNOVERTIME, false));
 
 	}
 
@@ -262,7 +259,7 @@ public class TabbedTableViewer extends VBox {
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SOCIALCLASSNAME,true));
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SIZE,false));
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SALES,false));
-		for (UseValue u : DataManager.useValuesByFunction(UseValue.COMMODITY_FUNCTION_TYPE.CONSUMER_GOOD)) {
+		for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION_TYPE.CONSUMER_GOOD)) {
 			socialClassesTable.getColumns().add(new SocialClassColumn(u.commodityName()));
 		}
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.MONEY,false));
@@ -294,7 +291,7 @@ public class TabbedTableViewer extends VBox {
 		dynamicIndustryTable.getColumns().clear();
 		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.INDUSTRYNAME,true));
 		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.COMMODITYNAME,true));
-		for (UseValue u : DataManager.useValuesByFunction(UseValue.COMMODITY_FUNCTION_TYPE.PRODUCTIVE_INPUT)) {
+		for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION_TYPE.PRODUCTIVE_INPUT)) {
 			dynamicIndustryTable.getColumns().add(new IndustryColumn(u.commodityName()));
 		}
 		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.PROFIT,false));
@@ -309,14 +306,14 @@ public class TabbedTableViewer extends VBox {
 	 * 
 	 */
 	public void repopulateTabbedTables() {
-		productiveStockTable.setItems(olProvider.stocksByStockTypeObservable("Productive"));
-		moneyStockTable.setItems(olProvider.stocksByStockTypeObservable("Money"));
-		salesStockTable.setItems(olProvider.stocksByStockTypeObservable("Sales"));
-		consumptionStockTable.setItems(olProvider.stocksByStockTypeObservable("Consumption"));
-		useValuesTable.setItems(olProvider.useValuesObservable());
-		industriesTable.setItems(olProvider.industriesObservable());
-		socialClassesTable.setItems(olProvider.socialClassesObservable());
-		dynamicIndustryTable.setItems(olProvider.industriesObservable());
+		productiveStockTable.setItems(Stock.stocksByStockTypeObservable("Productive"));
+		moneyStockTable.setItems(Stock.stocksByStockTypeObservable("Money"));
+		salesStockTable.setItems(Stock.stocksByStockTypeObservable("Sales"));
+		consumptionStockTable.setItems(Stock.stocksByStockTypeObservable("Consumption"));
+		commoditiesTable.setItems(Commodity.commoditiesObservable());
+		industriesTable.setItems(Industry.industriesObservable());
+		socialClassesTable.setItems(SocialClass.socialClassesObservable());
+		dynamicIndustryTable.setItems(Industry.industriesObservable());
 	}
 
 	/**

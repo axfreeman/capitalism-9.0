@@ -21,8 +21,12 @@
 package rd.dev.simulation.model;
 
 import java.io.Serializable;
+import java.util.List;
+
 import javax.persistence.*;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import rd.dev.simulation.custom.ActionStates;
 
 /**
@@ -47,14 +51,19 @@ public class Project implements Serializable {
 	@Column(name = "currentTimeStampCursor") private int timeStampDisplayCursor;
 	@Column(name = "currentTimeStampComparatorCursor") private int timeStampComparatorCursor;
 	@Column(name = "period") private int period;
-	/**
-	 * @return the priceDynamics
-	 */
-	public PRICEDYNAMICS getPriceDynamics() {
-		return priceDynamics;
+	@Column(name = "buttonState") private String buttonState;
+	
+	private static EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DB_PROJECT");
+	public static EntityManager entityManager;
+	protected static TypedQuery<Project> projectByPrimaryKeyQuery;
+	public static TypedQuery<Project> projectAllQuery;
+
+	static {
+		entityManager = entityManagerFactory.createEntityManager();
+		projectAllQuery = entityManager.createNamedQuery("Project.findAll", Project.class);
+		projectByPrimaryKeyQuery = entityManager.createNamedQuery("Project.findOne", Project.class);
 	}
 
-	@Column(name = "buttonState") private String buttonState;
 
 	public Project() {
 	}
@@ -73,6 +82,15 @@ public class Project implements Serializable {
 	}
 
 	/**
+	 * @return the priceDynamics
+	 */
+	public PRICEDYNAMICS getPriceDynamics() {
+		return priceDynamics;
+	}
+
+
+	
+	/**
 	 * To be used in startup: set button state to the end of the non-existent last state of the previous period
 	 * Added because of a completely mysterious fault on 28 January when suddenly, the default project constructor
 	 * would not work because 'ActionStates' had not been initialised. Until then, it always worked.
@@ -84,14 +102,79 @@ public class Project implements Serializable {
 		this.buttonState = distributeText;
 
 	}
+	
+	/**
+	 * Get a single project identified by the primary key {@code projectID},
+	 * 
+	 * @param projectID
+	 *            the projectID of a single project
+	 * @return the project record containing this project
+	 */
+	public static Project projectSingle(int projectID) {
+		projectByPrimaryKeyQuery.setParameter("project", projectID);
+		return projectByPrimaryKeyQuery.getSingleResult();
+	}
 
-	// public Project(int projectID, String description) {
-	// // set button state to the end of the non-existent last state of the previous period
-	// this.buttonState=ActionStates.C_M_Distribute.getText();
-	// this.projectID = projectID;
-	// this.description = description;
-	// }
+	/**
+	 * a list of all projects
+	 * 
+	 * @return a list of all projects
+	 */
+	public static List<Project> projectsAll() {
+		return projectAllQuery.getResultList();
+	}
 
+
+	public static EntityManager getEntityManager() {
+		return entityManager;
+	}
+
+	/**
+	 * get the timeStamp of a given project.
+	 * 
+	 * @param projectID
+	 *            the projectID of a single project
+	 * @return the timeStamp last created by this project, null if the project does not exist
+	 */
+	public static int timeStampOfProject(int projectID) {
+		Project project = projectSingle(projectID);
+		if (project == null) {
+			return 0;
+		} else {
+			return project.getTimeStamp();
+		}
+	}
+
+	/**
+	 * Get the timeStampDisplayCursor of a given project.
+	 * 
+	 * @param projectID
+	 *            the projectID of a single project
+	 * @return the timeStamp last created by this project, null if the project does not exist
+	 */
+	public static int timeStampCursorOfProject(int projectID) {
+		Project project = projectSingle(projectID);
+		if (project == null) {
+			return 0;
+		} else {
+			return project.getTimeStampDisplayCursor();
+		}
+	}
+
+	/**
+	 * an observable list of all projects
+	 * 
+	 * @return a list of all projects, in an observable wrapper
+	 */
+	public static ObservableList<Project> observableProjects() {
+		ObservableList<Project> output = FXCollections.observableArrayList();
+		List<Project> projects = Project.projectAllQuery.getResultList();
+		for (Project g : projects) {
+			output.add(g);
+		}
+		return output;
+	}
+	
 	public int getProjectID() {
 		return this.projectID;
 	}

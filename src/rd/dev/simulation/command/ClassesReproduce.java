@@ -25,7 +25,6 @@ import org.apache.logging.log4j.Logger;
 
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.ActionStates;
-import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.SocialClass;
 import rd.dev.simulation.utils.Reporter;
 
@@ -44,7 +43,7 @@ public class ClassesReproduce extends Simulation implements Command {
 		Reporter.report(logger, 0, "REPRODUCE CLASSES");
 		advanceOneStep(ActionStates.C_P_ClassesReproduce.getText(), ActionStates.C_P_Produce.getText());
 
-		for (SocialClass sc : DataManager.socialClassesAll()) {
+		for (SocialClass sc : SocialClass.socialClassesAll()) {
 			sc.consume();
 			sc.regenerate();
 		}

@@ -24,7 +24,6 @@ import org.apache.logging.log4j.Logger;
 import javafx.scene.control.TableCell;
 import javafx.scene.paint.Color;
 import rd.dev.simulation.Simulation;
-import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.Industry;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.custom.TabbedTableViewer;
@@ -47,7 +46,7 @@ public class CircuitTableStockCell extends TableCell<Industry, String> {
 			logger.debug(" Null Industry");
 			return;
 		}
-		Stock theStock = DataManager.stockProductiveByNameSingle(Simulation.timeStampDisplayCursor, industry.getIndustryName(), stockValueUseName);
+		Stock theStock = Stock.stockProductiveByNameSingle(Simulation.timeStampDisplayCursor, industry.getIndustryName(), stockValueUseName);
 		
 		String deltaModifier="";
 		

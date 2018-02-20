@@ -23,7 +23,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.ActionStates;
-import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.Industry;
 import rd.dev.simulation.model.SocialClass;
 import rd.dev.simulation.model.Stock;
@@ -54,10 +53,10 @@ public class Revenue extends Simulation implements Command {
 	}
 
 	private void allocateProfits() {
-		SocialClass capitalists = DataManager.socialClassByName("Capitalists");
+		SocialClass capitalists = SocialClass.socialClassByName("Capitalists");
 		double capitalistRevenue=0.0;
 		Stock recipient = capitalists.getMoneyStock();
-		for (Industry c : DataManager.industriesAll()) {
+		for (Industry c : Industry.industriesAll()) {
 			double profit = c.profit();
 
 			// transfer all profits to the capitalist class. In the Accumulate phase, part of this revenue

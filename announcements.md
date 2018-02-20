@@ -1,5 +1,11 @@
 # Capitalism 9.0 announcements 2/19/2018 9:43:17 AM 
 
+## 2/19/2018 9:05:37 PM 
+
+Data management overhauled. No changed in functionality except slightly faster.
+Less thoroughly tested so could throw up unexpected bugs. In this case, please go back to the previous commit.
+New executable.
+
 ## 2/19/2018 9:43:17 AM 
 This is a watershed version to go with the tutorial (in the 'docs' folder), which is progressing though incomplete. 
 There has been a general tidy-up which makes clear what needs to be fixed as we progress.

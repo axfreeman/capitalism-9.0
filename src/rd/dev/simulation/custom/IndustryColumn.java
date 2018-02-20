@@ -23,9 +23,8 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.util.Callback;
 import rd.dev.simulation.Simulation;
-import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.Industry;
-import rd.dev.simulation.model.UseValue;
+import rd.dev.simulation.model.Commodity;
 import rd.dev.simulation.view.CircuitTableCell;
 import rd.dev.simulation.view.CircuitTableStockCell;
 
@@ -66,7 +65,7 @@ public class IndustryColumn extends TableColumn<Industry, String> {
 
 	/**
 	 * Produces a column to be displayed in a Industry table({@code TableView<Industry,String>}), whose value is a {@code Stock} field referenced by a foreign key
-	 * in a {@code Industry} bean. The magnitude is selected by the {@code  useValueName} of the Stock.
+	 * in a {@code Industry} bean. The magnitude is selected by the {@code  name} of the Stock.
 	 * Use Stock itself to set the header text and graphic, and prepare the column header so its graphic is switchable.
 	 * 
 	 * @param productiveStockName
@@ -87,7 +86,7 @@ public class IndustryColumn extends TableColumn<Industry, String> {
 
 		setPrefWidth(75.0);
 		getStyleClass().add("table-column-right");
-		UseValue stockUseValue = DataManager.useValueByName(Simulation.timeStampIDCurrent, productiveStockName);
+		Commodity stockUseValue = Commodity.commodityByPrimaryKey(Simulation.timeStampIDCurrent, productiveStockName);
 		TableUtilities.addGraphicToColummnHeader(this, stockUseValue.getImageName(), "More information coming soon");
 	}
 }

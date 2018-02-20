@@ -29,37 +29,35 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javafx.beans.property.ReadOnlyStringWrapper;
-import rd.dev.simulation.datamanagement.DataManager;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import rd.dev.simulation.Simulation;
 import rd.dev.simulation.utils.MathStuff;
 import rd.dev.simulation.utils.Reporter;
 import rd.dev.simulation.view.ViewManager;
 
 /**
- * UseValue is the persistent class for the usevalues database table.
- * <p>
- * the embedded primary key is the associated class UseValuePK. All members of the primary key can be accessed via getters and setters in this, the main
- * UseValue class
+ * Commodity is the persistent class for the commodities database table. The embedded primary key is the associated class CommodityPK. 
+ * All members of the primary key can be accessed via getters and setters in this, the main Commodity class
  */
 @Entity
-@Table(name = "usevalues")
+@Table(name = "commodities")
 @NamedQueries({
-		@NamedQuery(name = "Primary", query = "SELECT u FROM UseValue u where u.pk.project= :project AND u.pk.timeStamp= :timeStamp and u.pk.useValueName=:useValueName"),
-		@NamedQuery(name = "All", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp"),
-		@NamedQuery(name = "CommodityOriginType", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.commodityOriginType=:commodityOriginType"),
-		@NamedQuery(name = "CommodityFunctionType", query = "SELECT u FROM UseValue u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.commodityFunctionType=:commodityFunctionType order by u.displayOrder")
-
-		// UseValueFunctionType
+		@NamedQuery(name = "Primary", query = "SELECT u FROM Commodity u where u.pk.project= :project AND u.pk.timeStamp= :timeStamp and u.pk.name=:name"),
+		@NamedQuery(name = "All", query = "SELECT u FROM Commodity u where u.pk.project= :project and u.pk.timeStamp = :timeStamp"),
+		@NamedQuery(name = "CommodityOriginType", query = "SELECT u FROM Commodity u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.commodityOriginType=:commodityOriginType"),
+		@NamedQuery(name = "CommodityFunctionType", query = "SELECT u FROM Commodity u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.commodityFunctionType=:commodityFunctionType order by u.displayOrder")
 })
 @Embeddable
-public class UseValue extends Observable implements Serializable {
+public class Commodity extends Observable implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = LogManager.getLogger("Commodity");
 
 	// The primary key (composite key containing project, timeStamp and industryName)
-	@EmbeddedId protected UseValuePK pk;
+	@EmbeddedId protected CommodityPK pk;
 
-	@Column(name = "commodityOriginType") private COMMODITY_ORIGIN_TYPE commodityOriginType; // whether this is produced by an enterprise or a class
-	@Column(name = "commodityFunctionType") private COMMODITY_FUNCTION_TYPE commodityFunctionType;// see enum COMMODITY_FUNCTION_TYPE for list of possible types
+	@Column(name = "originType") private ORIGIN_TYPE commodityOriginType; // whether this is produced by an enterprise or a class
+	@Column(name = "functionType") private FUNCTION_TYPE commodityFunctionType;// see enum FUNCTION_TYPE for list of possible types
 	@Column(name = "turnoverTime") private double turnoverTime;
 	@Column(name = "unitValue") private double unitValue;
 	@Column(name = "unitPrice") private double unitPrice;
@@ -72,21 +70,57 @@ public class UseValue extends Observable implements Serializable {
 
 	@Transient double surplusRemaining;// records, temporarily, what remains of the surplus product after an industry has expanded
 
-	@Transient private UseValue comparator;
-	@Transient private UseValue previousComparator;
-	@Transient private UseValue startComparator;
-	@Transient private UseValue customComparator;
-	@Transient private UseValue endComparator;
+	@Transient private Commodity comparator;
+	@Transient private Commodity previousComparator;
+	@Transient private Commodity startComparator;
+	@Transient private Commodity customComparator;
+	@Transient private Commodity endComparator;
+	
+	public static EntityManagerFactory commodityEntityManagerFactory = Persistence.createEntityManagerFactory("DB_COMMODITIES");
+	public static EntityManager commodityEntityManager;
+	
+	public static TypedQuery<Commodity> commodityByPrimaryKeyQuery;
+	public static TypedQuery<Commodity> commoditiesAllQuery;
+	public static TypedQuery<Commodity> commoditiesProductiveQuery;
+	public static TypedQuery<Commodity> commoditiesByOriginTypeQuery;
+	public static TypedQuery<Commodity> commoditiesByFunctionQuery;
 
+	static {
+		commodityEntityManager = commodityEntityManagerFactory.createEntityManager();
+		commodityByPrimaryKeyQuery = commodityEntityManager.createNamedQuery("Primary", Commodity.class);
+		commoditiesAllQuery = commodityEntityManager.createNamedQuery("All", Commodity.class);
+		commoditiesByOriginTypeQuery = commodityEntityManager.createNamedQuery("CommodityOriginType", Commodity.class);
+		commoditiesByFunctionQuery = commodityEntityManager.createNamedQuery("CommodityFunctionType", Commodity.class);
+	}
+
+
+
+	/**
+	 * an observable list of type Commodity for display by ViewManager, at the current project and timeStampDisplayCursor. timeStampDisplayCursor, which
+	 * may diverge from timeStamp, identifies the row that the user last clicked on.
+	 * 
+	 * @return a list of Observable UseValues for the current project and timeStamp
+	 */
+
+	public static ObservableList<Commodity> commoditiesObservable() {
+		Commodity.commoditiesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp",
+				Simulation.timeStampDisplayCursor);
+		ObservableList<Commodity> result = FXCollections.observableArrayList();
+		for (Commodity u : Commodity.commoditiesAllQuery.getResultList()) {
+			result.add(u);
+		}
+		return result;
+	}
+	
 	/**
 	 * Basic classification of commodity types: how are they used?
 	 * 
 	 */
-	public enum COMMODITY_FUNCTION_TYPE {
+	public enum FUNCTION_TYPE {
 		MONEY("Money"), PRODUCTIVE_INPUT("Productive Inputs"), CONSUMER_GOOD("Consumer Goods");
 		String text;
 
-		COMMODITY_FUNCTION_TYPE(String text) {
+		FUNCTION_TYPE(String text) {
 			this.text = text;
 		}
 
@@ -100,14 +134,14 @@ public class UseValue extends Observable implements Serializable {
 	};
 
 	/**
-	 * Second Basic classification of commodity types (overlaps COMMODITY_FUNCTION_TYPE): how do they come into being?
+	 * Second Basic classification of commodity types (overlaps FUNCTION_TYPE): how do they come into being?
 	 *
 	 */
-	public enum COMMODITY_ORIGIN_TYPE {
+	public enum ORIGIN_TYPE {
 		SOCIALlY_PRODUCED("Social"), INDUSTRIALLY_PRODUCED("Capitalist"), MONEY("Money");
 		String text;
 
-		COMMODITY_ORIGIN_TYPE(String text) {
+		ORIGIN_TYPE(String text) {
 			this.text = text;
 		}
 
@@ -123,10 +157,10 @@ public class UseValue extends Observable implements Serializable {
 	/**
 	 * Readable constants to refer to the methods which provide information about the persistent members of the class
 	 */
-	public enum USEVALUE_SELECTOR {
+	public enum SELECTOR {
 		// @formatter:off
-		USEVALUENAME("Commodity",null,null), 
-		USEVALUEOWNERTYPE("Owner Type",null,null), 
+		NAME("Commodity",null,null), 
+		OWNERTYPE("Owner Type",null,null), 
 		TURNOVERTIME("Turnover Time","Turnover.png",null), 
 		UNITVALUE("Unit Value","unitValueTransparent.png",null), 
 		UNITPRICE("Unit Price","unitPrice.png",null), 
@@ -147,7 +181,7 @@ public class UseValue extends Observable implements Serializable {
 		String imageName;
 		String toolTip;
 
-		USEVALUE_SELECTOR(String text, String imageName, String toolTip) {
+		SELECTOR(String text, String imageName, String toolTip) {
 			this.text = text;
 			this.imageName = imageName;
 			this.toolTip = toolTip;
@@ -167,81 +201,55 @@ public class UseValue extends Observable implements Serializable {
 	}
 
 	/**
-	 * Constructor for a UseValue entity.
-	 * Returns a 'hollow' UseValue with a hollow primary key; it has not been persisted and can therefore contain an inconsistent primary key,
+	 * Constructor for a Commodity entity.
+	 * Returns a 'hollow' Commodity with a hollow primary key; it has not been persisted and can therefore contain an inconsistent primary key,
 	 * which must be properly set before the entity is committed to the database
 	 */
 
-	public UseValue() {
-		this.pk = new UseValuePK();
+	public Commodity() {
+		this.pk = new CommodityPK();
 	}
 
 	/**
-	 * make a carbon copy of the useValueTemplate
+	 * make a carbon copy of the commodity in the template entity
 	 * 
-	 * @param useValueTemplate
-	 *            the useValue bean to copy - usually the one from the previous timeStamp
+	 * @param template
+	 *            the commodity to copy - usually the one from the previous timeStamp
 	 */
 
-	public void copyUseValue(UseValue useValueTemplate) {
-		this.pk.timeStamp = useValueTemplate.pk.timeStamp;
-		this.pk.useValueName = useValueTemplate.pk.useValueName;
-		this.pk.project = useValueTemplate.pk.project;
-		this.commodityOriginType = useValueTemplate.commodityOriginType;
-		this.turnoverTime = useValueTemplate.turnoverTime;
-		this.unitValue = useValueTemplate.unitValue;
-		this.unitPrice = useValueTemplate.unitPrice;
-		this.surplusProduct = useValueTemplate.surplusProduct;
-		this.allocationShare = useValueTemplate.allocationShare;
-		this.commodityFunctionType = useValueTemplate.commodityFunctionType;
-		this.stockUsedUp = useValueTemplate.stockUsedUp;
-		this.stockProduced = useValueTemplate.stockProduced;
-		this.imageName = useValueTemplate.imageName;
-		this.displayOrder = useValueTemplate.displayOrder;
-	}
-
-	/**
-	 * Calculate the total quantity, value and price of this useValue, from the stocks of this useValue
-	 * Validate against existing total if requested
-	 * 
-	 * @param validate
-	 *            report if the result differs from what is already there.
-	 */
-
-	public void calculateAggregates(boolean validate) {
-		double totalQuantity = 0;
-		double totalValue = 0;
-		double totalPrice = 0;
-		for (Stock s : DataManager.stocksByUseValue(this.pk.timeStamp, pk.useValueName)) {
-			totalQuantity += s.getQuantity();
-			totalValue += s.getValue();
-			totalPrice += s.getPrice();
-			logger.debug(String.format("  Stock of type [%s] with name [%s] has added quantity %.2f; value %.2f, and price %.2f. ",
-					s.getStockType(), s.getOwner(), s.getQuantity(), s.getPrice(), s.getValue()));
-		}
-		totalQuantity = MathStuff.round(totalQuantity);
-		totalValue = MathStuff.round(totalValue);
-		totalPrice = MathStuff.round(totalPrice);
-		Reporter.report(logger, 2, "  Total quantity of the commodity [%s] is %.2f (value %.2f, price %.2f). ",
-				pk.useValueName, totalQuantity, totalPrice, totalValue);
+	public void copy(Commodity template) {
+		this.pk.timeStamp = template.pk.timeStamp;
+		this.pk.name = template.pk.name;
+		this.pk.project = template.pk.project;
+		this.commodityOriginType = template.commodityOriginType;
+		this.turnoverTime = template.turnoverTime;
+		this.unitValue = template.unitValue;
+		this.unitPrice = template.unitPrice;
+		this.surplusProduct = template.surplusProduct;
+		this.allocationShare = template.allocationShare;
+		this.commodityFunctionType = template.commodityFunctionType;
+		this.stockUsedUp = template.stockUsedUp;
+		this.stockProduced = template.stockProduced;
+		this.imageName = template.imageName;
+		this.displayOrder = template.displayOrder;
 	}
 
 	/**
 	 * provides a wrapped version of the selected member which the display will recognise, as a ReadOnlyStringWrapper.
 	 * 
 	 * We don't mind the hardwiring because we don't really intend this code to be re-usable, it's not hard to modify, and it results in compact
-	 * and readable usage code (see (@link TabbedTableViewer#populateUseValuesViewTable})
+	 * and readable usage code (see (@link TabbedTableViewer#populateCommoditiesViewTable})
 	 * 
-	 * @param USEVALUE_SELECTOR
+	 * @param SELECTOR
 	 *            chooses which member to evaluate
 	 * @return a String representation of the members, formatted according to the relevant format string
 	 */
 
-	public ReadOnlyStringWrapper wrappedString(USEVALUE_SELECTOR USEVALUE_SELECTOR) {
-		switch (USEVALUE_SELECTOR) {
-		case USEVALUENAME:
-			return new ReadOnlyStringWrapper(pk.useValueName);
-		case USEVALUEOWNERTYPE:
+	public ReadOnlyStringWrapper wrappedString(SELECTOR SELECTOR) {
+		switch (SELECTOR) {
+		case NAME:
+			return new ReadOnlyStringWrapper(pk.name);
+		case OWNERTYPE:
 			return new ReadOnlyStringWrapper(commodityOriginType.getText());
 		case UNITPRICE:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, unitPrice));
@@ -279,23 +287,23 @@ public class UseValue extends Observable implements Serializable {
 	}
 
 	/**
-	 * informs the display whether the selected member of this entity has changed, compared with the 'comparator' UseValue which normally
+	 * informs the display whether the selected member of this entity has changed, compared with the 'comparator' Commodity which normally
 	 * comes from a different timeStamp.
 	 * 
 	 * We don't mind the hardwiring because we don't really intend this code to be re-usable, it's not hard to modify, and it results in compact
-	 * and readable usage code (see (@link TabbedTableViewer#populateUseValuesViewTable})
+	 * and readable usage code (see (@link TabbedTableViewer#populateCommoditiesViewTable})
 	 * 
-	 * @param uSEVALUE_SELECTOR
+	 * @param sELECTOR
 	 *            chooses which member to evaluate
 	 * @return whether this member has changed or not. False if selector is unavailable here
 	 */
 
-	public boolean changed(USEVALUE_SELECTOR uSEVALUE_SELECTOR) {
+	public boolean changed(SELECTOR sELECTOR) {
 		chooseComparison();
-		switch (uSEVALUE_SELECTOR) {
-		case USEVALUENAME:
+		switch (sELECTOR) {
+		case NAME:
 			return false;
-		case USEVALUEOWNERTYPE:
+		case OWNERTYPE:
 			return false;
 		case UNITPRICE:
 			return unitPrice != comparator.getUnitPrice();
@@ -331,7 +339,7 @@ public class UseValue extends Observable implements Serializable {
 	/**
 	 * If the selected field has changed, return the difference between the current value and the former value
 	 * 
-	 * @param useValueSelector
+	 * @param selector
 	 *            chooses which field to evaluate
 	 * 
 	 * @param item
@@ -340,13 +348,13 @@ public class UseValue extends Observable implements Serializable {
 	 * @return the original item if nothing has changed, otherwise the change, as an appropriately formatted string
 	 */
 
-	public String showDelta(String item, USEVALUE_SELECTOR useValueSelector) {
+	public String showDelta(String item, SELECTOR selector) {
 		chooseComparison();
-		if (!changed(useValueSelector))
+		if (!changed(selector))
 			return item;
-		switch (useValueSelector) {
-		case USEVALUENAME:
-		case USEVALUEOWNERTYPE:
+		switch (selector) {
+		case NAME:
+		case OWNERTYPE:
 			return item;
 		case UNITPRICE:
 			return String.format(ViewManager.smallNumbersFormatString, (unitPrice - comparator.unitPrice));
@@ -396,12 +404,38 @@ public class UseValue extends Observable implements Serializable {
 			comparator = startComparator;
 		}
 	}
+	
+	/**
+	 * Calculate the total quantity, value and price of this commodity, from the stocks of it
+	 * Validate against existing total if requested
+	 * 
+	 * @param validate
+	 *            report if the result differs from what is already there.
+	 */
+
+	public void calculateAggregates(boolean validate) {
+		double totalQuantity = 0;
+		double totalValue = 0;
+		double totalPrice = 0;
+		for (Stock s : Stock.stocksByCommodity(this.pk.timeStamp, pk.name)) {
+			totalQuantity += s.getQuantity();
+			totalValue += s.getValue();
+			totalPrice += s.getPrice();
+			logger.debug(String.format("  Stock of type [%s] with name [%s] has added quantity %.2f; value %.2f, and price %.2f. ",
+					s.getStockType(), s.getOwner(), s.getQuantity(), s.getPrice(), s.getValue()));
+		}
+		totalQuantity = MathStuff.round(totalQuantity);
+		totalValue = MathStuff.round(totalValue);
+		totalPrice = MathStuff.round(totalPrice);
+		Reporter.report(logger, 2, "  Total quantity of the commodity [%s] is %.2f (value %.2f, price %.2f). ",
+				pk.name, totalQuantity, totalPrice, totalValue);
+	}
 
 	/**
-	 * @return a list of industries that produce this useValue
+	 * @return a list of industries that produce this commodity
 	 */
 	public List<Industry> industries() {
-		return DataManager.industriesByCommodityName(pk.timeStamp, pk.useValueName);
+		return Industry.industriesByCommodityName(pk.timeStamp, pk.name);
 	}
 
 	/**
@@ -413,23 +447,21 @@ public class UseValue extends Observable implements Serializable {
 	 * 
 	 *            the comparator use value Bean
 	 */
-	public void setComparator(UseValue comparator) {
+	public void setComparator(Commodity comparator) {
 		this.comparator = comparator;
 	}
 
 	/**
 	 * 
-	 * @return the function of this useValue, as given by the {@code COMMODITY_FUNCTION_TYPE} enum
+	 * @return the function of this commodity, as given by the {@code FUNCTION_TYPE} enum
 	 */
 
-	public COMMODITY_FUNCTION_TYPE getCommodityFunctionType() {
+	public FUNCTION_TYPE getCommodityFunctionType() {
 		return commodityFunctionType;
 	}
 
-	// GETTERS AND SETTERS FOR THE PERSISTENT MEMBERS
-
 	public String commodityName() {
-		return pk.useValueName;
+		return pk.name;
 	}
 
 	public int getTimeStamp() {
@@ -440,42 +472,166 @@ public class UseValue extends Observable implements Serializable {
 		return pk.project;
 	}
 
+	/**
+	 * The total supply of this commodity from all sales stocks of it
+	 * @return the total supply of this commmodity
+	 */
 	public double totalSupply() {
 		double supply = 0.0;
-		for (Stock s : DataManager.stocksSalesByUseValue(pk.timeStamp, pk.useValueName)) {
+		for (Stock s : Stock.stocksSalesByCommodity(pk.timeStamp, pk.name)) {
 			supply += s.getQuantity();
 		}
 		return supply;
 	}
 
 	/**
-	 * The total replenishment demand from all stocks of this useValue
+	 * The total replenishment demand from all stocks of this commodity
 	 * 
-	 * @return replenishment demand from all stocks of this useValue
+	 * @return replenishment demand from all stocks of this commodity
 	 */
 
 	public double replenishmentDemand() {
 		double demand = 0.0;
-		for (Stock s : DataManager.stocksByUseValue(pk.timeStamp, pk.useValueName)) {
+		for (Stock s : Stock.stocksByCommodity(pk.timeStamp, pk.name)) {
 			demand += s.getReplenishmentDemand();
 		}
 		return demand;
 	}
 
 	/**
-	 * The total expansion demand from all stocks of this useValue
+	 * The total expansion demand from all stocks of this commodity
 	 * 
-	 * @return expansion demand from all stocks of this useValue
+	 * @return expansion demand from all stocks of this commodity
 	 */
 
 	public double expansionDemand() {
 		double demand = 0.0;
-		for (Stock s : DataManager.stocksByUseValue(pk.timeStamp, pk.useValueName)) {
+		for (Stock s : Stock.stocksByCommodity(pk.timeStamp, pk.name)) {
 			demand += s.getExpansionDemand();
 		}
 		return demand;
 	}
+	
+	
+	//QUERIES
 
+	/**
+	 * get the single commodity with the primary key given by all the parameters, including the timeStamp
+	 * 
+	 * @param project
+	 *            the given project
+	 * @param timeStamp
+	 *            the timeStamp to report on
+	 * @param name
+	 *            the given commodity name
+	 * @return the singlecommodity given by this primary key, null if it does not exist
+	 */
+	public static Commodity commodityByPrimaryKey(int project, int timeStamp, String name) {
+		commodityByPrimaryKeyQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("name", name);
+		try {
+			return commodityByPrimaryKeyQuery.getSingleResult();
+		} catch (NoResultException r) {
+			return null;
+		}
+	}
+
+	/**
+	 * retrieve a Commodity by its name for the current project and a given timestamp
+	 * 
+	 * @param timeStamp
+	 *            the given timeStamp
+	 * 
+	 * @param name
+	 *            the name of the commodity
+	 * @return the commodity called name, unless it doesn't exist, in which case null
+	 */
+	public static Commodity commodityByPrimaryKey(int timeStamp, String name) {
+		commodityByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp).setParameter("name",
+				name);
+		try {
+			return commodityByPrimaryKeyQuery.getSingleResult();
+		} catch (NoResultException r) {
+			return null;
+		}
+	}
+
+	/**
+	 * a list of all commodities at the current project and timeStamp
+	 * 
+	 * 
+	 * @return a list of all commodities at the current timeStamp and the current project
+	 */
+	public static List<Commodity> commoditiesAll() {
+		commoditiesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
+		return commoditiesAllQuery.getResultList();
+	}
+
+	/**
+	 * a list of all commodities of the given Origintype at the current timeStamp and project
+	 * 
+	 * @param originType
+	 *            the origin type of the Commodity (SOCIALLY_PRODUCED, INDUSTRIALLY_PRODUCED)
+	 * @return a list of industries of the specified origin type, at the latest timeStamp that has been persisted.
+	 * 
+	 */
+	public static List<Commodity> commoditiesByOriginType(Commodity.ORIGIN_TYPE originType) {
+		commoditiesByOriginTypeQuery.setParameter("project", Simulation.projectCurrent);
+		commoditiesByOriginTypeQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent);
+		commoditiesByOriginTypeQuery.setParameter("commodityOriginType", originType);
+		return commoditiesByOriginTypeQuery.getResultList();
+	}
+
+	/**
+	 * a list of all use values of the given commodityFunctionType at the current timeStamp and project
+	 * 
+	 * @param functionType
+	 *            the function type of the use value (PRODUCTIVE INPUT, CONSUMER GOOD, MONEY)
+	 * @return a list all use values of the given commodityFunctionType at the current timeStamp and project
+	 */
+	public static List<Commodity> commoditiesByFunction(Commodity.FUNCTION_TYPE functionType) {
+		commoditiesByFunctionQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent).setParameter("project", Simulation.projectCurrent);
+		commoditiesByFunctionQuery.setParameter("commodityFunctionType", functionType);
+		return commoditiesByFunctionQuery.getResultList();
+	}
+
+	/**
+	 * return a single commodity of origin type SOCIALLY_PRODUCED, which will be labour power
+	 * TODO but not immediately; there could conceivably be more than one such
+	 * @return the single use value of origin type SOCIALLY_PRODUCED, which will be labour poweer
+	 */
+	public static Commodity labourPower() {
+		commoditiesByOriginTypeQuery.setParameter("project", Simulation.projectCurrent);
+		commoditiesByOriginTypeQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent);
+		commoditiesByOriginTypeQuery.setParameter("commodityOriginType", Commodity.ORIGIN_TYPE.SOCIALlY_PRODUCED);
+		try {
+			return commoditiesByOriginTypeQuery.getSingleResult();
+		} catch (NoResultException r) {
+			return null;
+		}
+	}
+	
+	/**
+	 * Set the comparators for the current commodities at the given timeStamp and for the current project
+	 * @param timeStampID the timeStamp of the commodities 
+	 */
+	public static void setComparators(int timeStampID) {
+		commoditiesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStampID);
+		for (Commodity u : Commodity.commoditiesAllQuery.getResultList()) {
+			u.setPreviousComparator(commodityByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), u.commodityName()));
+			u.setStartComparator(commodityByPrimaryKey(Simulation.projectCurrent, 1, u.commodityName()));
+			u.setEndComparator(commodityByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, u.commodityName()));
+			u.setCustomComparator(commodityByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, u.commodityName()));
+		}
+	}
+	
+
+	/**
+	 * @return the commodityEntityManager
+	 */
+	public static EntityManager getEntityManager() {
+		return Commodity.commodityEntityManager;
+	}
+	
 	public double getTurnoverTime() {
 		return this.turnoverTime;
 	}
@@ -500,12 +656,12 @@ public class UseValue extends Observable implements Serializable {
 		this.unitValue = unitValue;
 	}
 
-	public COMMODITY_ORIGIN_TYPE getCommodityOriginType() {
+	public ORIGIN_TYPE getCommodityOriginType() {
 		return this.commodityOriginType;
 	}
 
-	public void setCommodityOriginType(COMMODITY_ORIGIN_TYPE useValueIndustryType) {
-		this.commodityOriginType = useValueIndustryType;
+	public void setCommodityOriginType(ORIGIN_TYPE originType) {
+		this.commodityOriginType = originType;
 	}
 
 	public double getAllocationShare() {
@@ -541,7 +697,7 @@ public class UseValue extends Observable implements Serializable {
 
 	public double totalValue() {
 		double totalValue = 0;
-		for (Stock s : DataManager.stocksByUseValue(pk.timeStamp, pk.useValueName)) {
+		for (Stock s : Stock.stocksByCommodity(pk.timeStamp, pk.name)) {
 			totalValue += s.getValue();
 		}
 		return totalValue;
@@ -553,7 +709,7 @@ public class UseValue extends Observable implements Serializable {
 
 	public double totalPrice() {
 		double totalPrice = 0;
-		for (Stock s : DataManager.stocksByUseValue(pk.timeStamp, pk.useValueName)) {
+		for (Stock s : Stock.stocksByCommodity(pk.timeStamp, pk.name)) {
 			totalPrice += s.getPrice();
 		}
 		return totalPrice;
@@ -565,7 +721,7 @@ public class UseValue extends Observable implements Serializable {
 
 	public double totalQuantity() {
 		double totalQuantity = 0;
-		for (Stock s : DataManager.stocksByUseValue(pk.timeStamp, pk.useValueName)) {
+		for (Stock s : Stock.stocksByCommodity(pk.timeStamp, pk.name)) {
 			totalQuantity += s.getQuantity();
 		}
 		return totalQuantity;
@@ -641,7 +797,7 @@ public class UseValue extends Observable implements Serializable {
 	/**
 	 * @return the previousComparator
 	 */
-	public UseValue getPreviousComparator() {
+	public Commodity getPreviousComparator() {
 		return previousComparator;
 	}
 
@@ -649,14 +805,14 @@ public class UseValue extends Observable implements Serializable {
 	 * @param previousComparator
 	 *            the previousComparator to set
 	 */
-	public void setPreviousComparator(UseValue previousComparator) {
+	public void setPreviousComparator(Commodity previousComparator) {
 		this.previousComparator = previousComparator;
 	}
 
 	/**
 	 * @return the startComparator
 	 */
-	public UseValue getStartComparator() {
+	public Commodity getStartComparator() {
 		return startComparator;
 	}
 
@@ -664,14 +820,14 @@ public class UseValue extends Observable implements Serializable {
 	 * @param startComparator
 	 *            the startComparator to set
 	 */
-	public void setStartComparator(UseValue startComparator) {
+	public void setStartComparator(Commodity startComparator) {
 		this.startComparator = startComparator;
 	}
 
 	/**
 	 * @return the customComparator
 	 */
-	public UseValue getCustomComparator() {
+	public Commodity getCustomComparator() {
 		return customComparator;
 	}
 
@@ -679,14 +835,14 @@ public class UseValue extends Observable implements Serializable {
 	 * @param customComparator
 	 *            the customComparator to set
 	 */
-	public void setCustomComparator(UseValue customComparator) {
+	public void setCustomComparator(Commodity customComparator) {
 		this.customComparator = customComparator;
 	}
 
 	/**
 	 * @return the endComparator
 	 */
-	public UseValue getEndComparator() {
+	public Commodity getEndComparator() {
 		return endComparator;
 	}
 
@@ -694,7 +850,7 @@ public class UseValue extends Observable implements Serializable {
 	 * @param endComparator
 	 *            the endComparator to set
 	 */
-	public void setEndComparator(UseValue endComparator) {
+	public void setEndComparator(Commodity endComparator) {
 		this.endComparator = endComparator;
 	}
 }

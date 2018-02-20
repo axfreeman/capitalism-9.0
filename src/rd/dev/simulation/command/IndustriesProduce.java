@@ -24,12 +24,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.ActionStates;
-import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.Industry;
 import rd.dev.simulation.model.Global;
 import rd.dev.simulation.model.Stock;
-import rd.dev.simulation.model.UseValue;
-import rd.dev.simulation.model.UseValue.COMMODITY_ORIGIN_TYPE;
+import rd.dev.simulation.model.Commodity;
+import rd.dev.simulation.model.Commodity.ORIGIN_TYPE;
 import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.MathStuff;
 import rd.dev.simulation.utils.Reporter;
@@ -47,13 +46,13 @@ public class IndustriesProduce extends Simulation implements Command {
 	public void execute() {
 		Reporter.report(logger, 0, "INDUSTRY PRODUCTION");
 		advanceOneStep(ActionStates.C_P_IndustriesProduce.getText(), ActionStates.C_P_Produce.getText());
-		Global global = DataManager.getGlobal();
+		Global global = Global.getGlobal();
 		double melt = global.getMelt();
 
 		// initialise the accounting for how much of this useValue is used up and how much is created in production in the current period
 		// so we can calculate how much surplus of it resulted from production in this period.
 
-		for (UseValue u : DataManager.useValuesByOriginType(COMMODITY_ORIGIN_TYPE.INDUSTRIALLY_PRODUCED)) {
+		for (Commodity u : Commodity.commoditiesByOriginType(ORIGIN_TYPE.INDUSTRIALLY_PRODUCED)) {
 			u.setStockUsedUp(0);
 			u.setStockProduced(0);
 		}
@@ -63,15 +62,15 @@ public class IndustriesProduce extends Simulation implements Command {
 		// equal to their price at this time except stocks of type labour power, which contribute their magnitude, multiplied by their complexity, divided by the MELT
 		// (TODO incorporate labour complexity)
 		
-		for (Industry c : DataManager.industriesAll()) {
+		for (Industry c : Industry.industriesAll()) {
 			String useValueType = c.getIndustryName();
 			Stock salesStock = c.getSalesStock();
-			UseValue useValue = c.getUseValue();
+			Commodity commodity = c.getUseValue();
 			double output = c.getOutput();
 			double valueAdded = 0;
 			Reporter.report(logger, 1, " Industry [%s] is producing %.0f. units of its output; the melt is %.4f", useValueType, output, melt);
 
-			for (Stock s : DataManager.stocksProductiveByIndustry(timeStampIDCurrent, useValueType)) {
+			for (Stock s : Stock.stocksProductiveByIndustry(timeStampIDCurrent, useValueType)) {
 
 				// a little consistency check ...
 				if (!s.getStockType().equals("Productive")) {
@@ -83,18 +82,18 @@ public class IndustriesProduce extends Simulation implements Command {
 				double coefficient = s.getProductionCoefficient();
 				double stockUsedUp = output * coefficient;
 				stockUsedUp = MathStuff.round(stockUsedUp);
-				if (s.getUseValue().getCommodityOriginType() == COMMODITY_ORIGIN_TYPE.SOCIALlY_PRODUCED) {
+				if (s.getUseValue().getCommodityOriginType() == ORIGIN_TYPE.SOCIALlY_PRODUCED) {
 					valueAdded += stockUsedUp * melt;
 					Reporter.report(logger, 2, "  Labour Power has added value amounting to %.0f (intrinsic %.0f) to commodity [%s]", valueAdded, stockUsedUp,c.getIndustryName());
 				} else {
-					double valueOfStockUsedUp = stockUsedUp * useValue.getUnitValue();
+					double valueOfStockUsedUp = stockUsedUp * commodity.getUnitValue();
 					Reporter.report(logger, 2, "  Stock [%s] has transferred value $%.0f (intrinsic %.0f) to commodity [%s] ",
 							s.getUseValueName(), valueOfStockUsedUp, valueOfStockUsedUp / melt, c.getIndustryName());
 					valueAdded += valueOfStockUsedUp;
 				}
 
 				// the stock is reduced by what was used up, and account of this is registered with its use value
-				UseValue u = s.getUseValue();
+				Commodity u = s.getUseValue();
 				if (stockUsedUp>0) {
 				Reporter.report(logger, 2, "  %.0f units of [%s] were used up in producing the output [%s]", stockUsedUp, u.commodityName(),
 						c.getIndustryName());
@@ -118,7 +117,7 @@ public class IndustriesProduce extends Simulation implements Command {
 
 		// now (and only now) we can calculate the surplus (if any) of each of the use values
 
-		for (UseValue u : DataManager.useValuesByOriginType(COMMODITY_ORIGIN_TYPE.INDUSTRIALLY_PRODUCED)) {
+		for (Commodity u : Commodity.commoditiesByOriginType(ORIGIN_TYPE.INDUSTRIALLY_PRODUCED)) {
 			u.setSurplusProduct(u.getStockProduced() - u.getStockUsedUp());
 		}
 	}

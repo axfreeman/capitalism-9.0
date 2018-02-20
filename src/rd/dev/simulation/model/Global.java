@@ -30,15 +30,17 @@ import java.util.Observable;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.Persistence;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.TypedQuery;
 import javax.xml.bind.annotation.XmlRootElement;
 import rd.dev.simulation.Simulation;
-import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.view.ViewManager;
-import rd.dev.simulation.datamanagement.SelectionsProvider;
 import rd.dev.simulation.utils.MathStuff;
 
 /**
@@ -67,6 +69,16 @@ public class Global extends Observable implements Serializable {
 
 	@Transient private double surplusMeansOfProduction = 0; // how much (in $) is available for investment
 
+	private static EntityManagerFactory globalsEntityManagerFactory = Persistence.createEntityManagerFactory("DB_GLOBALS");
+	protected static EntityManager globalEntityManager;
+	protected static TypedQuery<Global> globalQuery;
+
+
+	static {
+		globalEntityManager = globalsEntityManagerFactory.createEntityManager();
+		globalQuery = globalEntityManager.createNamedQuery("globals.project.timeStamp", Global.class);
+	}
+	
 	public static enum GLOBAL_SELECTOR {
 		INITIALCAPITAL("Initial Capital"), CURRENTCAPITAL("Current Capital"), PROFIT("Profit"), PROFITRATE("Profit Rate"), TOTALVALUE(
 				"Total Value"), TOTALPRICE("Total Price"), MELT("MELT"), POPULATION_GROWTH_RATE(
@@ -105,7 +117,7 @@ public class Global extends Observable implements Serializable {
 	}
 
 	public String value(GLOBAL_SELECTOR selector) {
-		Project currentProject = SelectionsProvider.projectSingle(Simulation.projectCurrent);
+		Project currentProject = Project.projectSingle(Simulation.projectCurrent);
 
 		switch (selector) {
 		case CURRENTCAPITAL:
@@ -206,6 +218,64 @@ public class Global extends Observable implements Serializable {
 		}
 	}
 	
+	public static void setComparators(int timeStampID) {
+		globalQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStampID);
+		Global currentGlobal = globalQuery.getSingleResult();
+		currentGlobal.setPreviousComparator(getGlobal(Simulation.getTimeStampComparatorCursor()));
+		currentGlobal.setStartComparator(getGlobal(1));
+		currentGlobal.setPreviousComparator(getGlobal(Simulation.timeStampIDCurrent));
+		currentGlobal.setCustomComparator(getGlobal(Simulation.timeStampIDCurrent));
+	}
+	
+	
+	/**
+	 * retrieve the global record for the specified timeStamp and project
+	 * 
+	 * @param project
+	 *            the specified project
+	 * @param timeStamp
+	 *            the specified timeStamp
+	 * @return the global record for the specified timeStamp and project
+	 */
+	public static Global getGlobal(int project, int timeStamp) {
+		globalQuery.setParameter("project", project).setParameter("timeStamp", timeStamp);
+		try {
+			return globalQuery.getSingleResult();
+		} catch (javax.persistence.NoResultException e) {
+			return null;// because this query throws a fit if it doesn't find anything
+		}
+	}
+
+	/**
+	 * retrieve the global record for the specified timeStamp and the current Project
+	 * 
+	 * @param timeStamp
+	 *            the specified timeStamp
+	 * @return the global record for the current project and the current timeStamp, null if it does not exist (which is an error)
+	 */
+	public static Global getGlobal(int timeStamp) {
+		globalQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
+		try {
+			return globalQuery.getSingleResult();
+		} catch (javax.persistence.NoResultException e) {
+			return null;// because this query throws a fit if it doesn't find anything
+		}
+	}
+
+	/**
+	 * retrieve the global record at the current timeStamp and project
+	 * 
+	 * @return the global record for the current project and the current timeStamp, null if it does not exist (which is an error)
+	 */
+	public static Global getGlobal() {
+		globalQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
+		try {
+			return globalQuery.getSingleResult();
+		} catch (javax.persistence.NoResultException e) {
+			return null;// because this query throws a fit if it doesn't find anything
+		}
+	}
+
 	public double getRateOfExploitation() {
 		return rateOfExploitation;
 	}
@@ -236,7 +306,7 @@ public class Global extends Observable implements Serializable {
 	public double totalValue() {
 		// TODO replace by a sum query
 		double totalValue = 0;
-		for (Stock s : DataManager.stocksAll(pk.timeStamp)) {
+		for (Stock s : Stock.stocksAll(pk.timeStamp)) {
 			totalValue += s.getValue();
 		}
 		return totalValue;
@@ -248,7 +318,7 @@ public class Global extends Observable implements Serializable {
 	public double totalPrice() {
 		// TODO replace by a sum query
 		double totalPrice = 0;
-		for (Stock s : DataManager.stocksAll(pk.timeStamp)) {
+		for (Stock s : Stock.stocksAll(pk.timeStamp)) {
 			totalPrice += s.getPrice();
 		}
 		return totalPrice;
@@ -260,7 +330,7 @@ public class Global extends Observable implements Serializable {
 	 */
 	public double initialCapital() {
 		double initialCapital = 0;
-		for (Industry c : DataManager.industriesAll(pk.timeStamp)) {
+		for (Industry c : Industry.industriesAll(pk.timeStamp)) {
 			initialCapital += c.getInitialCapital();
 		}
 // TODO get this aggregate query working		
@@ -275,7 +345,7 @@ public class Global extends Observable implements Serializable {
 
 	public double currentCapital() {
 		double currentCapital = 0;
-		for (Industry c : DataManager.industriesAll(pk.timeStamp)) {
+		for (Industry c : Industry.industriesAll(pk.timeStamp)) {
 			currentCapital += c.currentCapital();
 		}
 		return currentCapital;
@@ -353,6 +423,16 @@ public class Global extends Observable implements Serializable {
 			comparator=startComparator;
 		}
 	}
+	
+
+	/**
+	 * @return the globalEntityManager
+	 */
+	public static EntityManager getGlobalEntityManager() {
+		return globalEntityManager;
+	}
+
+	
 
 	@Override public String toString() {
 		return "demo.Globals[ persistent globalsPK=" + pk + " ]";

@@ -26,15 +26,15 @@ import javax.persistence.PersistenceException;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import rd.dev.simulation.datamanagement.DataManager;
-import rd.dev.simulation.datamanagement.SelectionsProvider;
+
+import rd.dev.simulation.custom.ActionButtonsBox;
 import rd.dev.simulation.model.Industry;
 import rd.dev.simulation.model.Global;
 import rd.dev.simulation.model.Project;
 import rd.dev.simulation.model.SocialClass;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.model.TimeStamp;
-import rd.dev.simulation.model.UseValue;
+import rd.dev.simulation.model.Commodity;
 import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.MathStuff;
 import rd.dev.simulation.utils.Reporter;
@@ -97,32 +97,32 @@ public class Simulation {
 		periodCurrent = 1;
 
 		// Initialise all projects at the start
-		for (Project p : SelectionsProvider.projectsAll()) {
+		for (Project p : Project.projectsAll()) {
 			Reporter.report(logger, 1, "Initialising project %d called '%s'", p.getProjectID(), p.getDescription());
 			projectCurrent = p.getProjectID();
 
 			// initialise each project record so that its cursors are 1
 
-			DataManager.getProjectEntityManager().getTransaction().begin();
+			Project.getEntityManager().getTransaction().begin();
 			p.setTimeStamp(1);
 			p.setTimeStampDisplayCursor(1);
 			p.setTimeStampComparatorCursor(timeStampComparatorCursor);
 
 			// set all project buttonState initially to the end of the non-existent previous period
 			p.setButtonState("Accumulate");
-			DataManager.getProjectEntityManager().getTransaction().commit();
+			Project.getEntityManager().getTransaction().commit();
 
 			// fetch this project's current timeStamp record (which must exist in the database or we flag an error but try to correct it)
 
-			timeStampCurrentRecord = SelectionsProvider.timeStampSingle(timeStampIDCurrent);
+			timeStampCurrentRecord = TimeStamp.timeStampSingle(timeStampIDCurrent);
 			if (timeStampCurrentRecord == null) {
 				Reporter.report(logger, 1, " There is no initial timeStamp record for project %d, will create a record and carry on from there",
 						p.getDescription());
 				try {
-					DataManager.getTimeStampEntityManager().getTransaction().begin();
+					TimeStamp.getEntityManager().getTransaction().begin();
 					TimeStamp newStamp = new TimeStamp(1, p.getProjectID(), 1, "", 1, "Start");
-					DataManager.getTimeStampEntityManager().persist(newStamp);
-					DataManager.getTimeStampEntityManager().getTransaction().commit();
+					TimeStamp.getEntityManager().persist(newStamp);
+					TimeStamp.getEntityManager().getTransaction().commit();
 				} catch (PersistenceException e) {
 					Dialogues.alert(logger, String.format("Could not create the initial timeStamp record for project %d", p.getDescription()));
 				}
@@ -139,11 +139,11 @@ public class Simulation {
 
 			// Set the initial comparators for every project, industry, class, use value and stock .
 			// Since the comparator cursor and the cursor are already 1, this amounts to setting it to 1
-			DataManager.setComparators(1);
+			setComparators(1);
 
 			// little tweak to handle currency symbols encoded in UTF8
 
-			Global global = DataManager.getGlobal(p.getProjectID(), 1);
+			Global global = Global.getGlobal(p.getProjectID(), 1);
 			logger.debug("Character Symbol for Project {} is {}", global.getCurrencySymbol());
 			String utfjava = StringStuff.convertFromUTF8(global.getCurrencySymbol());
 			logger.debug("Character symbol after conversion is {}", utfjava);
@@ -164,7 +164,7 @@ public class Simulation {
 	 */
 
 	public void checkInvariants() {
-		for (UseValue u : DataManager.useValuesAll()) {
+		for (Commodity u : Commodity.commoditiesAll()) {
 			double listedQuantity = u.totalQuantity();
 			double unitValue = u.getUnitValue();
 			double listedValue = u.totalValue();
@@ -197,7 +197,7 @@ public class Simulation {
 
 		// a little consistency check
 
-		for (Stock s : DataManager.stocksAll()) {
+		for (Stock s : Stock.stocksAll()) {
 			if (s.getQuantity() < 0 - MathStuff.epsilon) {
 				if (s.getStockType().equals(Stock.STOCKTYPE.MONEY.text())) {
 					Dialogues.alert(logger, "The owner %s has run out of money. "
@@ -214,9 +214,9 @@ public class Simulation {
 		TimeStamp newTimeStamp = new TimeStamp(timeStampIDCurrent + 1, projectCurrent, periodCurrent, superState, timeStampIDCurrent, description);
 
 		try {
-			DataManager.getTimeStampEntityManager().getTransaction().begin();
-			DataManager.getTimeStampEntityManager().persist(newTimeStamp);
-			DataManager.getTimeStampEntityManager().getTransaction().commit();
+			TimeStamp.getEntityManager().getTransaction().begin();
+			TimeStamp.getEntityManager().persist(newTimeStamp);
+			TimeStamp.getEntityManager().getTransaction().commit();
 		} catch (PersistenceException p) {
 			logger.error("Could not advance to timeStampIDCurrent " + timeStampIDCurrent + " because of " + p.getMessage());
 			logger.error("Probably, this time stamp already exists. Try re-initialising the database");
@@ -226,82 +226,82 @@ public class Simulation {
 		// record the present timeStamp and cursor in the current project persistent record
 		// do not create a new project record - modify the existing one.
 
-		DataManager.getProjectEntityManager().getTransaction().begin();
-		SelectionsProvider.setTimeStampOfProject(projectCurrent, timeStampIDCurrent + 1);
-		SelectionsProvider.setTimeStampCursorOfProject(projectCurrent, timeStampDisplayCursor);
-		DataManager.getProjectEntityManager().getTransaction().commit();
+		Project.getEntityManager().getTransaction().begin();
+		TimeStamp.setTimeStampOfProject(projectCurrent, timeStampIDCurrent + 1);
+		TimeStamp.setTimeStampCursorOfProject(projectCurrent, timeStampDisplayCursor);
+		Project.getEntityManager().getTransaction().commit();
 
 		// persist a new version of all simulation entities, with the same project, and the new timeStamp...
 
-		DataManager.getUseValueEntityManager().getTransaction().begin();
-		DataManager.getStocksEntityManager().getTransaction().begin();
-		DataManager.getIndustryEntityManager().getTransaction().begin();
-		DataManager.getSocialClassEntityManager().getTransaction().begin();
-		DataManager.getGlobalEntityManager().getTransaction().begin();
+		Commodity.getEntityManager().getTransaction().begin();
+		Stock.getEntityManager().getTransaction().begin();
+		Industry.getEntityManager().getTransaction().begin();
+		SocialClass.getEntityManager().getTransaction().begin();
+		Global.getGlobalEntityManager().getTransaction().begin();
 
 		// Use values
 
 		logger.debug(" Persisting a new set of use values with timeStamp {}", timeStampIDCurrent + 1);
-		UseValue newUseValue;
-		for (UseValue u : DataManager.useValuesAll()) {
-			newUseValue = new UseValue();
-			newUseValue.copyUseValue(u);
+		Commodity newUseValue;
+		for (Commodity u : Commodity.commoditiesAll()) {
+			newUseValue = new Commodity();
+			newUseValue.copy(u);
 			newUseValue.setTimeStamp(timeStampIDCurrent + 1);
-			DataManager.getUseValueEntityManager().persist(newUseValue);
+			Commodity.getEntityManager().persist(newUseValue);
 		}
 
 		// Stocks
 
 		logger.debug(" Persisting a new set of stocks with timeStamp {} ", timeStampIDCurrent + 1);
 		Stock newStock;
-		for (Stock s : DataManager.stocksAll()) {
+		for (Stock s : Stock.stocksAll()) {
 			logger.log(Level.ALL, "   Persisting " + s.primaryKeyAsString());
 			newStock = new Stock();
 			newStock.copyStock(s);
 			newStock.setTimeStamp(timeStampIDCurrent + 1);
-			DataManager.getStocksEntityManager().persist(newStock);
+			Stock.getEntityManager().persist(newStock);
 		}
 
 		// industries
 
 		logger.debug(" Persisting a new set of industries with timeStamp ", timeStampIDCurrent + 1);
 		Industry newIndustry;
-		for (Industry c : DataManager.industriesAll()) {
+		for (Industry c : Industry.industriesAll()) {
 			logger.debug("  Persisting an industry whose use value is " + c.getIndustryName());
 			newIndustry = new Industry();
 			newIndustry.copyIndustry(c);
 			newIndustry.setTimeStamp(timeStampIDCurrent + 1);
-			DataManager.getIndustryEntityManager().persist(newIndustry);
+			Industry.getEntityManager().persist(newIndustry);
 		}
 
 		// Social Classes
 
 		logger.debug(" Persisting a new set of social classes with timeStamp {}", timeStampIDCurrent + 1);
 		SocialClass newSocialClass;
-		for (SocialClass sc : DataManager.socialClassesAll()) {
+		for (SocialClass sc : SocialClass.socialClassesAll()) {
 			logger.debug("  Persisting a social class whose name is " + sc.getSocialClassName());
 			newSocialClass = new SocialClass();
 			newSocialClass.copySocialClass(sc);
 			newSocialClass.setTimeStamp(timeStampIDCurrent + 1);
-			DataManager.getSocialClassEntityManager().persist(newSocialClass);
+			SocialClass.getEntityManager().persist(newSocialClass);
 		}
 
 		// Globals
 
 		logger.debug(" Persisting a new globals record with timeStamp {} ", timeStampIDCurrent + 1);
-		Global g = DataManager.getGlobal();
+		Global g = Global.getGlobal();
 		Global newGlobal = new Global();
 		newGlobal.copyGlobal(g);
 		newGlobal.setTimeStamp(timeStampIDCurrent + 1);
-		DataManager.getGlobalEntityManager().persist(newGlobal);
+		Global.getGlobalEntityManager().persist(newGlobal);
 
-		DataManager.setComparators(timeStampIDCurrent + 1);
+		setComparators(timeStampIDCurrent + 1);
 
-		DataManager.getSocialClassEntityManager().getTransaction().commit();
-		DataManager.getIndustryEntityManager().getTransaction().commit();
-		DataManager.getStocksEntityManager().getTransaction().commit();
-		DataManager.getUseValueEntityManager().getTransaction().commit();
-		DataManager.getGlobalEntityManager().getTransaction().commit();
+		SocialClass.getEntityManager().getTransaction().commit();
+		Industry.getEntityManager().getTransaction().commit();
+		Stock.getEntityManager().getTransaction().commit();
+		Commodity.getEntityManager().getTransaction().commit();
+		Global.getGlobalEntityManager().getTransaction().commit();
 
 		timeStampIDCurrent++;
 
@@ -313,7 +313,7 @@ public class Simulation {
 	 */
 	public void calculateStockAggregates() {
 		Reporter.report(logger, 2, "Calculating stock values and prices from stock quantities, unit values and unit prices");
-		List<Stock> allStocks = DataManager.stocksAll();
+		List<Stock> allStocks = Stock.stocksAll();
 		for (Stock s : allStocks) {
 			s.modifyTo(s.getQuantity());
 		}
@@ -325,8 +325,8 @@ public class Simulation {
 	 * Called at startup and thereafter afterAccumulate (i.e. at the very end of the whole industry and start of the next)
 	 */
 	protected void setCapitals() {
-		Global global = DataManager.getGlobal();
-		for (Industry c : DataManager.industriesAll()) {
+		Global global = Global.getGlobal();
+		for (Industry c : Industry.industriesAll()) {
 			double initialCapital = c.currentCapital();
 			Reporter.report(logger, 3, "The initial capital of the industry[%s] is now $%.0f (intrinsic %.0f)", c.getIndustryName(), initialCapital,
 					initialCapital / global.getMelt());
@@ -341,6 +341,85 @@ public class Simulation {
 		Reporter.report(logger, 0, "ADVANCING ONE PERIOD TO %d", periodCurrent);
 	}
 
+	/**
+	 * Switch from one project to another.
+	 * <p>
+	 * (1)copy the current timeStamp and timeStampDisplayCursor into the current Project record
+	 * <p>
+	 * (2)retrieve the timeStamp and timeStampDisplayCursor from the new Project
+	 * <p>
+	 * (4)save the current Project record to the database
+	 * <p>
+	 * (3)set 'currentProject' to be the new project
+	 * <p>
+	 * (4)the calling method must refresh the display
+	 * 
+	 * @param newProjectID
+	 *            the ID of the project to switch to
+	 * @param actionButtonsBox
+	 *            the actionButtonsBox which has invoked the switch (and which knows the buttonState of the current project)
+	 */
+	
+
+	public static void switchProjects(int newProjectID, ActionButtonsBox actionButtonsBox) {
+		if (newProjectID == Simulation.projectCurrent) {
+			logger.debug("The user switched to project {} which  is already current. No action was taken", newProjectID);
+			return;
+		}
+		Project newProject = Project.projectSingle(newProjectID);
+		if ((newProject.getPriceDynamics() == Project.PRICEDYNAMICS.DYNAMIC) || (newProject.getPriceDynamics() == Project.PRICEDYNAMICS.EQUALISE)) {
+			Dialogues.alert(logger, "Sorry, the Dynamic and Equalise options for price dynamics are not ready yet");
+			return;
+		}
+
+		// record the current timeStamp, timeStampDisplayCursor and buttonState in the current project record, and persist it to the database
+
+		Project thisProject = Project.projectSingle(Simulation.projectCurrent);
+
+		Project.entityManager.getTransaction().begin();
+
+		thisProject.setTimeStamp(Simulation.timeStampIDCurrent);
+		thisProject.setTimeStampDisplayCursor(Simulation.timeStampDisplayCursor);
+		thisProject.setTimeStampComparatorCursor(Simulation.getTimeStampComparatorCursor());
+		thisProject.setButtonState(actionButtonsBox.getLastAction().getText());
+		thisProject.setPeriod(Simulation.getPeriodCurrent());
+
+		Project.entityManager.getTransaction().commit();
+
+		// retrieve the selected project record, and copy its various cursors and into the simulation cursors
+
+		Simulation.timeStampIDCurrent = newProject.getTimeStamp();
+		Simulation.timeStampDisplayCursor = newProject.getTimeStampDisplayCursor();
+		Simulation.setTimeStampComparatorCursor(newProject.getTimeStampComparatorCursor());
+		Simulation.setPeriodCurrent(newProject.getPeriod());
+		actionButtonsBox.setActionStateFromLabel(newProject.getButtonState());
+		Simulation.projectCurrent = newProjectID;
+		Reporter.report(logger, 0, "SWITCHED TO PROJECT %s (%s)", newProjectID, newProject.getDescription());
+		// ViewManager.getTabbedTableViewer().buildTables();
+	}
+
+	
+	/**
+	 * for all persistent entities at the given timeStamp, set comparators that refer to the timeStampComparatorCursor
+	 * TODO previousComparator not yet properly implemented.
+	 * 
+	 * @param timeStampID
+	 *            all persistent records at this timeStampID will be given comparators equal to the timeStampComparatorCursor
+	 */
+
+	public static void setComparators(int timeStampID) {
+		try {
+			Stock.setComparators(timeStampID);
+			Commodity.setComparators(timeStampID);
+			Industry.setComparators(timeStampID);
+			SocialClass.setComparators(timeStampID);
+			Global.setComparators(timeStampID);
+
+		} catch (Exception e) {
+			Dialogues.alert(logger, "Database fubar. Sorry, please contact developer");
+		}
+	}
+	
 	/**
 	 * @return the timeStampComparatorCursor
 	 */

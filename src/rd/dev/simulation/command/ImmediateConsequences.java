@@ -25,13 +25,11 @@ import org.apache.logging.log4j.Logger;
 
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.ActionStates;
-import rd.dev.simulation.datamanagement.DataManager;
-import rd.dev.simulation.datamanagement.SelectionsProvider;
 import rd.dev.simulation.model.Industry;
 import rd.dev.simulation.model.Global;
 import rd.dev.simulation.model.Project;
 import rd.dev.simulation.model.Stock;
-import rd.dev.simulation.model.UseValue;
+import rd.dev.simulation.model.Commodity;
 import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.MathStuff;
 import rd.dev.simulation.utils.Reporter;
@@ -46,7 +44,7 @@ public class ImmediateConsequences extends Simulation implements Command {
 	 * Tell the stocks to adjust the total values and prices
 	 */
 	public void execute() {
-		currentProject=SelectionsProvider.projectSingle(projectCurrent);
+		currentProject=Project.projectSingle(projectCurrent);
 		Reporter.report(logger, 0, "IMMEDIATE CONSEQUENCES");
 		Reporter.report(logger, 1, "Recompute unit values and prices and hence the Monetary Expression of Value");
 		Reporter.report(logger, 1, "Price dynamics are set to %s ", currentProject.getPriceDynamics());
@@ -60,8 +58,8 @@ public class ImmediateConsequences extends Simulation implements Command {
 
 		double globalTotalValue = 0.0;
 		double globalTotalPrice = 0.0;
-		Global global = DataManager.getGlobal();
-		for (UseValue u :  DataManager.useValuesAll()) {
+		Global global = Global.getGlobal();
+		for (Commodity u :  Commodity.commoditiesAll()) {
 			Reporter.report(logger, 2, "Commodity [%s] Total value is %.0f, and total price is %.0f", u.commodityName(),u.totalValue(), u.totalPrice());
 			globalTotalValue += u.totalValue();
 			globalTotalPrice += u.totalPrice();
@@ -93,8 +91,8 @@ public class ImmediateConsequences extends Simulation implements Command {
 
 		// Reset all unit values on the basis of the total value and total quantity of this commodity in existence
 
-		for (UseValue u : DataManager.useValuesAll()) {
-			if (u.getCommodityFunctionType() != UseValue.COMMODITY_FUNCTION_TYPE.MONEY) {
+		for (Commodity u : Commodity.commoditiesAll()) {
+			if (u.getCommodityFunctionType() != Commodity.FUNCTION_TYPE.MONEY) {
 				double quantity = u.totalQuantity();
 				double newUnitValue = MathStuff.round(adjustmentFactor * u.totalValue() / quantity);
 				Reporter.report(logger, 2, "The unit value of commodity [%s] was %.4f, and will be reset to %.4f", u.commodityName(),u.getUnitValue(), newUnitValue);
@@ -120,13 +118,13 @@ public class ImmediateConsequences extends Simulation implements Command {
 			Dialogues.alert(logger, "Dynamic price adjustment not available yet, sorry");
 		case EQUALISE:
 			Reporter.report(logger, 1, "Setting prices to equalise profit rates");
-			Global global =DataManager.getGlobal();
+			Global global =Global.getGlobal();
 			Reporter.report(logger, 2, "Average Profit Rate is currently recorded as %.4f", global.profitRate());
 
 			// there may be more than one producer of the same commodity.
 			// we can only set the profit rate for the sector as a whole,which means we work from the per-useValue profit rates
 	
-			for (UseValue u:DataManager.useValuesByOriginType(UseValue.COMMODITY_ORIGIN_TYPE.INDUSTRIALLY_PRODUCED)) {
+			for (Commodity u:Commodity.commoditiesByOriginType(Commodity.ORIGIN_TYPE.INDUSTRIALLY_PRODUCED)) {
 				Reporter.report(logger, 2, "Setting profit-equalizing price for use value [%s]", u.commodityName());
 				for (Industry c:u.industries()) {
 					Reporter.report(logger, 3, "Note: industry %s produces this use value", c.getIndustryName());
@@ -142,7 +140,7 @@ public class ImmediateConsequences extends Simulation implements Command {
 	 * when unit values and prices change, the stocks have to be told to recalculate their total price and total value
 	 */
 	private void stockValuesRecalculate() {
-		for (Stock s : DataManager.stocksAll(timeStampIDCurrent)) {
+		for (Stock s : Stock.stocksAll(timeStampIDCurrent)) {
 			s.reCalculateStockTotalValuesAndPrices();
 		}
 	}

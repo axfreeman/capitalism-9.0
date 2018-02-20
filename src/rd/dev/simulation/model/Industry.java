@@ -28,18 +28,23 @@ import java.util.Observable;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.Persistence;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.TypedQuery;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.TabbedTableViewer;
-import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.Stock.ValueExpression;
 import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.MathStuff;
@@ -74,6 +79,41 @@ public class Industry extends Observable implements Serializable {
 	@Transient private Industry startComparator;
 	@Transient private Industry customComparator;
 	@Transient private Industry endComparator;
+
+	public static EntityManagerFactory industriesEntityManagerFactory = Persistence.createEntityManagerFactory("DB_INDUSTRIES");
+	public static EntityManager industryEntityManager;
+	protected static TypedQuery<Industry> industriesPrimaryQuery;
+	public static TypedQuery<Industry> industriesAllQuery;
+	protected static TypedQuery<Industry> industriesByCommodityQuery;
+	protected static TypedQuery<Industry> industryInitialCapitalQuery;
+
+
+	static {
+		industryEntityManager = industriesEntityManagerFactory.createEntityManager();
+		industriesPrimaryQuery = industryEntityManager.createNamedQuery("Primary", Industry.class);
+		industriesAllQuery = industryEntityManager.createNamedQuery("All", Industry.class);
+		industryInitialCapitalQuery = industryEntityManager.createNamedQuery("InitialCapital", Industry.class);
+		industriesByCommodityQuery=industryEntityManager.createNamedQuery("CommodityName", Industry.class);
+	}
+
+
+
+	/**
+	 * an observable list of type Industry for display by ViewManager, at the current project and timeStampDisplayCursor. timeStampDisplayCursor, which
+	 * may diverge from timeStamp, identifies the row that the user last clicked on.
+	 * 
+	 * @return an ObservableList of industries
+	 */
+	public static ObservableList<Industry> industriesObservable() {
+		Industry.industriesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampDisplayCursor);
+		ObservableList<Industry> result = FXCollections.observableArrayList();
+		for (Industry c : Industry.industriesAllQuery.getResultList()) {
+			result.add(c);
+		}
+		return result;
+	}
+
+
 
 	/**
 	 * Readable constants to refer to the methods which provide information about the persistent members of the class
@@ -146,7 +186,7 @@ public class Industry extends Observable implements Serializable {
 	 */
 
 	public OUTPUTTYPE outputType() {
-		UseValue u = getUseValue();
+		Commodity u = getUseValue();
 		switch (u.getCommodityFunctionType()) {
 		case PRODUCTIVE_INPUT:
 			return OUTPUTTYPE.PRODUCTIONGOODS;
@@ -208,7 +248,7 @@ public class Industry extends Observable implements Serializable {
 	public double replenishmentCosts() {
 		double result = 0;
 		for (Stock s : productiveStocks()) {
-			UseValue u = s.getUseValue();
+			Commodity u = s.getUseValue();
 			double additionalCost = s.getReplenishmentDemand() * u.getUnitPrice();
 			result += additionalCost;
 		}
@@ -223,7 +263,7 @@ public class Industry extends Observable implements Serializable {
 	public double expansionCosts() {
 		double result = 0;
 		for (Stock s : productiveStocks()) {
-			UseValue u = s.getUseValue();
+			Commodity u = s.getUseValue();
 			double additionalCost = s.getExpansionDemand() * u.getUnitPrice();
 			result += additionalCost;
 		}
@@ -256,7 +296,7 @@ public class Industry extends Observable implements Serializable {
 
 		// reduce the available surplus of every stock that this industry consumes
 		for (Stock s : productiveStocks()) {
-			UseValue u = s.getUseValue();
+			Commodity u = s.getUseValue();
 			u.setSurplusProduct(u.getSurplusProduct() - s.getExpansionDemand());
 		}
 	}
@@ -269,10 +309,10 @@ public class Industry extends Observable implements Serializable {
 	public double computeGrowthRate() {
 		double minimumGrowthRate = Double.MAX_VALUE;
 		for (Stock s : productiveStocks()) {
-			UseValue u = s.getUseValue();
+			Commodity u = s.getUseValue();
 
 			// Exclude socially-produced commodities
-			if (u.getCommodityOriginType() == UseValue.COMMODITY_ORIGIN_TYPE.SOCIALlY_PRODUCED)
+			if (u.getCommodityOriginType() == Commodity.ORIGIN_TYPE.SOCIALlY_PRODUCED)
 				continue;
 
 			double replenishmentDemand = s.getProductionCoefficient() * output;
@@ -330,12 +370,12 @@ public class Industry extends Observable implements Serializable {
 	// METHODS THAT REPORT THINGS WE NEED TO KNOW ABOUT THIS INDUSTRY BY INTERROGATING ITS STOCKS
 
 	/**
-	 * Retrieve the UseValue entity that this industry produces
+	 * Retrieve the Commodity entity that this industry produces
 	 * 
-	 * @return the UseValue that this industry produces
+	 * @return the Commodity that this industry produces
 	 */
-	public UseValue getUseValue() {
-		return DataManager.useValueByPrimaryKey(pk.project, pk.timeStamp, commodityName);
+	public Commodity getUseValue() {
+		return Commodity.commodityByPrimaryKey(pk.project, pk.timeStamp, commodityName);
 	}
 
 	/**
@@ -351,7 +391,7 @@ public class Industry extends Observable implements Serializable {
 			return Double.NaN;
 		}
 		double total = 0;
-		for (Stock s : DataManager.stocksProductiveByIndustry(pk.timeStamp, pk.industryName)) {
+		for (Stock s : Stock.stocksProductiveByIndustry(pk.timeStamp, pk.industryName)) {
 			total += s.get(a);
 		}
 		return total;
@@ -363,7 +403,7 @@ public class Industry extends Observable implements Serializable {
 	 * @return the money stock that is owned by this social class.
 	 */
 	public Stock getMoneyStock() {
-		return DataManager.stockMoneyByIndustrySingle(pk.timeStamp, pk.industryName);
+		return Stock.stockMoneyByIndustrySingle(pk.timeStamp, pk.industryName);
 	}
 
 	/**
@@ -373,7 +413,7 @@ public class Industry extends Observable implements Serializable {
 	 */
 	public Stock getSalesStock() {
 
-		return DataManager.stockByPrimaryKey(Simulation.projectCurrent, pk.timeStamp, pk.industryName, commodityName,
+		return Stock.stockByPrimaryKey(Simulation.projectCurrent, pk.timeStamp, pk.industryName, commodityName,
 				Stock.STOCKTYPE.SALES.text());
 	}
 
@@ -434,7 +474,7 @@ public class Industry extends Observable implements Serializable {
 
 	public ReadOnlyStringWrapper wrappedString(String productiveStockName) {
 		try {
-			Stock namedStock = DataManager.stockProductiveByNameSingle(pk.timeStamp, pk.industryName, productiveStockName);
+			Stock namedStock = Stock.stockProductiveByNameSingle(pk.timeStamp, pk.industryName, productiveStockName);
 			String result = String.format(ViewManager.largeNumbersFormatString, namedStock.get(TabbedTableViewer.displayAttribute));
 			return new ReadOnlyStringWrapper(result);
 		} catch (Exception e) {
@@ -443,7 +483,7 @@ public class Industry extends Observable implements Serializable {
 	}
 
 	/**
-	 * informs the display whether the selected member of this entity has changed, compared with the 'comparator' UseValue which normally
+	 * informs the display whether the selected member of this entity has changed, compared with the 'comparator' Commodity which normally
 	 * comes from a different timeStamp.
 	 * 
 	 * We don't mind the hardwiring because we don't really intend this code to be re-usable, it's not hard to modify, and it results in compact
@@ -538,6 +578,100 @@ public class Industry extends Observable implements Serializable {
 			return String.format(ViewManager.largeNumbersFormatString, (currentCapital() - comparator.currentCapital()));
 		default:
 			return item;
+		}
+	}
+
+
+	/**
+	 * the industry that produces a given usevalue, for the current project and a given timeStamp. This is also the primary key of the Industry entity
+	 * 
+	 * @param project
+	 *            the project
+	 * @param timeStamp
+	 *            the timeStamp
+	 * @param commodityName
+	 *            the name of the commodity that is produced by this industry
+	 * @return the industrythat produces {@code name}, or null if this does not exist
+	 */
+	public static Industry industryByPrimaryKey(int project, int timeStamp, String commodityName) {
+		industriesPrimaryQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("industryName", commodityName);
+		try {
+			return industriesPrimaryQuery.getSingleResult();
+		} catch (javax.persistence.NoResultException n) {
+			return null;// getSingleResult does not return null if it fails; instead, it throws a fit
+		}
+	}
+
+	/**
+	 * a list of industries, for the current project and timeStamp
+	 * 
+	 * @return a list of industriesfor the current project at the latest timeStamp that has been persisted.
+	 */
+	public static List<Industry> industriesAll() {
+		industriesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
+		return industriesAllQuery.getResultList();
+	}
+
+	/**
+	 * a list of industries, for the current project and the given timeStamp
+	 * 
+	 * @param timeStamp
+	 *            the given timeStamp
+	 *            *
+	 * @return a list of industries for the current project at the specified timeStamp (which should, in general, be different from the currentTimeStamp)
+	 */
+
+	public static List<Industry> industriesAll(int timeStamp) {
+		industriesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
+		return industriesAllQuery.getResultList();
+	}
+
+
+	/**
+	 * a list of industries, for the current project and the given timeStamp, that produce a given use value
+	 * 
+	 * 
+	 * @param commodityName
+	 *            the name of the use value that these industries produce
+	 * @param timeStamp
+	 *            the given timeStamp
+	 * @return a list of industries which produce the given use value at the given timeStamp.
+	 */
+
+	public static List<Industry> industriesByCommodityName(int timeStamp, String commodityName) {
+		industriesByCommodityQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp)
+				.setParameter("commodityName", commodityName);
+		return industriesByCommodityQuery.getResultList();
+	}
+
+	/**
+	 * TODO get this working
+	 * 
+	 * @param timeStamp
+	 *            the timeStamp
+	 * 
+	 * @return the sum of the initial capital in all industries
+	 */
+
+	public static double industriesInitialCapital(int timeStamp) {
+		industryInitialCapitalQuery.setParameter("timeStamp", timeStamp).setParameter("project", Simulation.projectCurrent);
+		Object o = industryInitialCapitalQuery.getSingleResult();
+		double result = (double) o;
+		return result;
+	}
+
+	/**
+	 * set the comparators for the industries records in the current project for the named timeStampID
+	 * 
+	 * @param timeStampID the timeStampID of the industries whose comparators are to be reset
+	 */
+	
+	public static void setComparators(int timeStampID) {
+		for (Industry c : industriesAll(timeStampID)) {
+			c.setPreviousComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), c.getIndustryName()));
+			c.setStartComparator(industryByPrimaryKey(Simulation.projectCurrent, 1, c.getIndustryName()));
+			c.setEndComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, c.getIndustryName()));
+			c.setCustomComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, c.getIndustryName()));
 		}
 	}
 
@@ -637,7 +771,7 @@ public class Industry extends Observable implements Serializable {
 	 * @return a list of the productive stocks owned (managed) by this industry
 	 */
 	public List<Stock> productiveStocks() {
-		return DataManager.stocksProductiveByIndustry(pk.timeStamp, pk.industryName);
+		return Stock.stocksProductiveByIndustry(pk.timeStamp, pk.industryName);
 	}
 
 	/**
@@ -648,8 +782,16 @@ public class Industry extends Observable implements Serializable {
 	 *            the name of the stock
 	 */
 	public Stock productiveStock(String name) {
-		return DataManager.stockProductiveByNameSingle(pk.timeStamp, pk.industryName, name);
+		return Stock.stockProductiveByNameSingle(pk.timeStamp, pk.industryName, name);
 	}
+
+	/**
+	 * @return the industryEntityManager
+	 */
+	public static EntityManager getEntityManager() {
+		return industryEntityManager;
+	}
+
 
 	public Integer getProject() {
 		return pk.project;
@@ -830,7 +972,7 @@ public class Industry extends Observable implements Serializable {
 	 */
 	public double computePossibleOutput(double extraMeansOfProduction) {
 		Stock mP = productiveStock("Means of Production");
-		UseValue u = mP.getUseValue();
+		Commodity u = mP.getUseValue();
 		double price = u.getUnitPrice();
 		double extraStock = extraMeansOfProduction / price;
 		return output + extraStock / mP.getProductionCoefficient();
@@ -865,7 +1007,7 @@ public class Industry extends Observable implements Serializable {
 
 	public void allocateInvestmentFunds(double costOfExpansion) {
 		Stock recipientMoneyStock = getMoneyStock();
-		SocialClass donor = DataManager.socialClassByName("Capitalists");
+		SocialClass donor = SocialClass.socialClassByName("Capitalists");
 		Stock donorMoneyStock = donor.getMoneyStock();
 		donorMoneyStock.transferStock(recipientMoneyStock, costOfExpansion);
 		donor.setRevenue(donor.getRevenue() - costOfExpansion);

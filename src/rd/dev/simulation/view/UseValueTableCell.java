@@ -24,14 +24,14 @@ import org.apache.logging.log4j.Logger;
 
 import javafx.scene.control.TableCell;
 import javafx.scene.paint.Color;
-import rd.dev.simulation.model.UseValue;
+import rd.dev.simulation.model.Commodity;
 
-public class UseValueTableCell extends TableCell<UseValue, String> {
+public class UseValueTableCell extends TableCell<Commodity, String> {
 	static final Logger logger = LogManager.getLogger("UseValueTableCell");
 
-	UseValue.USEVALUE_SELECTOR useValueSelector;
+	Commodity.SELECTOR useValueSelector;
 
-	public UseValueTableCell(UseValue.USEVALUE_SELECTOR useValueSelector) {
+	public UseValueTableCell(Commodity.SELECTOR useValueSelector) {
 		this.useValueSelector = useValueSelector;
 	}
 
@@ -40,8 +40,8 @@ public class UseValueTableCell extends TableCell<UseValue, String> {
 		if (item == null) {// this happens,it seems, when the tableRow is used for the column header-or perhaps when cell is empty?
 			return;
 		}
-		UseValue useValue = getTableView().getItems().get(getIndex());
-		if (useValue == null) {
+		Commodity commodity = getTableView().getItems().get(getIndex());
+		if (commodity == null) {
 			logger.debug(" Null Use Value");
 			return;
 		}
@@ -52,7 +52,7 @@ public class UseValueTableCell extends TableCell<UseValue, String> {
 		}
 		String deltaModifier="";
 		
-		if (useValue.changed(useValueSelector)) {
+		if (commodity.changed(useValueSelector)) {
 			setTextFill(Color.RED);
 			deltaModifier=(ViewManager.displayDeltas?ViewManager.deltaSymbol:"");
 		}
@@ -61,7 +61,7 @@ public class UseValueTableCell extends TableCell<UseValue, String> {
 		String priceModifier= deltaModifier+ViewManager.pricesExpressionSymbol;
 
 		if(ViewManager.displayDeltas) {
-			item=useValue.showDelta(item, useValueSelector);
+			item=commodity.showDelta(item, useValueSelector);
 		}
 		switch (useValueSelector) {
 		case ALLOCATIONSHARE:

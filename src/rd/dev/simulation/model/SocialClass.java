@@ -20,14 +20,16 @@
 package rd.dev.simulation.model;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Observable;
 import javax.persistence.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.TabbedTableViewer;
-import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.Stock.ValueExpression;
 import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.Reporter;
@@ -64,6 +66,32 @@ public class SocialClass extends Observable implements Serializable {
 	@Transient private SocialClass startComparator;
 	@Transient private SocialClass customComparator;
 	@Transient private SocialClass endComparator;
+
+	private static EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DB_SOCIALCLASSES");
+	protected static EntityManager entityManager;
+	protected static TypedQuery<SocialClass> socialClassByPrimaryKeyQuery;
+	public static TypedQuery<SocialClass> socialClassAllQuery;
+
+	static {
+		entityManager = entityManagerFactory.createEntityManager();
+		socialClassByPrimaryKeyQuery = entityManager.createNamedQuery("Primary", SocialClass.class);
+		socialClassAllQuery = entityManager.createNamedQuery("All", SocialClass.class);
+	}
+	
+	/**
+	 * an observable list of type SocialClass for display by ViewManager, at the current project and timeStampDisplayCursor. timeStampDisplayCursor, which
+	 * may diverge from timeStamp, identifies the row that the user last clicked on.
+	 * 
+	 * @return an ObservableList of SocialClasses
+	 */
+	public static ObservableList<SocialClass> socialClassesObservable() {
+		SocialClass.socialClassAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampDisplayCursor);
+		ObservableList<SocialClass> result = FXCollections.observableArrayList();
+		for (SocialClass s : SocialClass.socialClassAllQuery.getResultList()) {
+			result.add(s);
+		}
+		return result;
+	}
 
 	public enum Selector {
 		// @formatter:off
@@ -134,7 +162,7 @@ public class SocialClass extends Observable implements Serializable {
 	 * @return the money stock that is owned by this social class.
 	 */
 	public Stock getMoneyStock() {
-		return DataManager.stockMoneyByIndustrySingle(pk.timeStamp, pk.socialClassName);
+		return Stock.stockMoneyByIndustrySingle(pk.timeStamp, pk.socialClassName);
 	}
 
 	/**
@@ -146,7 +174,7 @@ public class SocialClass extends Observable implements Serializable {
 	public Stock getSalesStock() {
 		// TODO we can't assume there is only one type of labour power
 		// also we should allow for theories in which social classes sell other things
-		return DataManager.stockByPrimaryKey(Simulation.projectCurrent, pk.timeStamp, pk.socialClassName, "Labour Power", Stock.STOCKTYPE.SALES.text());
+		return Stock.stockByPrimaryKey(Simulation.projectCurrent, pk.timeStamp, pk.socialClassName, "Labour Power", Stock.STOCKTYPE.SALES.text());
 	}
 
 	/**
@@ -195,7 +223,7 @@ public class SocialClass extends Observable implements Serializable {
 
 	public ReadOnlyStringWrapper wrappedString(String consumptionStockName) {
 		try {
-			Stock namedStock = DataManager.stockConsumptionByUseValueAndClassSingle(pk.timeStamp, pk.socialClassName, consumptionStockName);
+			Stock namedStock = Stock.stockConsumptionByUseValueAndClassSingle(pk.timeStamp, pk.socialClassName, consumptionStockName);
 			String result = String.format(ViewManager.largeNumbersFormatString, namedStock.get(TabbedTableViewer.displayAttribute));
 			return new ReadOnlyStringWrapper(result);
 		} catch (Exception e) {
@@ -204,7 +232,7 @@ public class SocialClass extends Observable implements Serializable {
 	}
 
 	/**
-	 * informs the display whether the selected member of this entity has changed, compared with the 'comparator' UseValue which normally
+	 * informs the display whether the selected member of this entity has changed, compared with the 'comparator' Commodity which normally
 	 * comes from a different timeStamp.
 	 * 
 	 * @param selector
@@ -296,8 +324,8 @@ public class SocialClass extends Observable implements Serializable {
 		Stock salesStock = getSalesStock();
 		if (salesStock != null) {
 			double existingLabourPower = salesStock.getQuantity();
-			UseValue useValue = DataManager.useValueByName(pk.timeStamp, salesStock.getUseValueName());
-			double turnoverTime = useValue.getTurnoverTime();
+			Commodity commodity = Commodity.commodityByPrimaryKey(pk.timeStamp, salesStock.getUseValueName());
+			double turnoverTime = commodity.getTurnoverTime();
 			double newLabourPower = size * participationRatio / turnoverTime;
 			double extraLabourPower = newLabourPower - existingLabourPower;
 			if (extraLabourPower > 0) {
@@ -315,7 +343,7 @@ public class SocialClass extends Observable implements Serializable {
 
 	public void consume() {
 		Reporter.report(logger, 1, "Replenishing the class [%s]", pk.socialClassName);
-		for (Stock s : DataManager.stocksConsumptionByClass(Simulation.timeStampIDCurrent, pk.socialClassName)) {
+		for (Stock s : Stock.stocksConsumptionByClass(Simulation.timeStampIDCurrent, pk.socialClassName)) {
 			double quantityConsumed = s.getQuantity();
 			s.modifyBy(-quantityConsumed);
 			Reporter.report(logger, 2, "Consumption stock of class [%s] reduced to %.0f from %.0f", pk.socialClassName, s.getQuantity(), quantityConsumed);
@@ -330,7 +358,7 @@ public class SocialClass extends Observable implements Serializable {
 	 */
 
 	public Stock getConsumptionStock() {
-		for (Stock s : DataManager.stocksConsumptionByClass(Simulation.timeStampIDCurrent, pk.socialClassName)) {
+		for (Stock s : Stock.stocksConsumptionByClass(Simulation.timeStampIDCurrent, pk.socialClassName)) {
 			if (s.getUseValueName().equals("Consumption"))
 				return s;
 			if (s.getUseValueName().equals("Necessities"))
@@ -342,13 +370,13 @@ public class SocialClass extends Observable implements Serializable {
 	/**
 	 * Get the consumption stock of the named useValue that is owned by this class
 	 * 
-	 * @param useValueName
+	 * @param commodityName
 	 *            the name of the prescribed consumer good
 	 * @return the Stock of the consumer good named useValue that this class owns
 	 */
 
-	public Stock getConsumptionStock(String useValueName) {
-		return DataManager.stockConsumptionByUseValueAndClassSingle(pk.timeStamp, pk.socialClassName, useValueName);
+	public Stock getConsumptionStock(String commodityName) {
+		return Stock.stockConsumptionByUseValueAndClassSingle(pk.timeStamp, pk.socialClassName, commodityName);
 	}
 
 	// METHODS THAT RETRIEVE ATTRIBUTES OF STOCKS
@@ -460,6 +488,81 @@ public class SocialClass extends Observable implements Serializable {
 			logger.error("ERROR: Social class {} attempted to set the quantity demanded of its consumption stock, but it does not have one",
 					pk.socialClassName);
 		}
+	}
+
+	/**
+	 * set the comparators for the socialClass entity at the current project and the given timeStamp
+	 * 
+	 * @param timeStampID
+	 *            the timeStamp which selects the entity
+	 */
+
+	public static void setComparators(int timeStampID) {
+		socialClassAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStampID);
+		for (SocialClass sc : socialClassAllQuery.getResultList()) {
+			sc.setPreviousComparator(
+					socialClassByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), sc.getSocialClassName()));
+			sc.setStartComparator(socialClassByPrimaryKey(Simulation.projectCurrent, 1, sc.getSocialClassName()));
+			sc.setEndComparator(socialClassByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, sc.getSocialClassName()));
+			sc.setCustomComparator(socialClassByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, sc.getSocialClassName()));
+		}
+	}
+
+	/**
+	 * Get a single social class defined by its primary key, including a timeStamp that may differ from the current timeStamp
+	 * 
+	 * @param socialClassName
+	 *            the name of the social Class in the primary key
+	 * @param project
+	 *            the project in the primary key
+	 * @param timeStamp
+	 *            the timeStamp in the primary key
+	 * @return the single social class with the name socialClassName, for the given project and timeStamp
+	 */
+
+	public static SocialClass socialClassByPrimaryKey(int project, int timeStamp, String socialClassName) {
+		socialClassByPrimaryKeyQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("socialClassName", socialClassName);
+		try {
+			return socialClassByPrimaryKeyQuery.getSingleResult();
+		} catch (javax.persistence.NoResultException e) {
+			return null;// because this query throws a fit if it doesn't find anything
+		}
+	}
+
+	/**
+	 * a list of social classes, for the current project and timeStamp
+	 * 
+	 * @return a list of all social classes for the current project and timeStamp
+	 */
+
+	public static List<SocialClass> socialClassesAll() {
+		socialClassAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
+		return socialClassAllQuery.getResultList();
+	}
+
+	/**
+	 * a named social class for the current project and a given timeStamp.
+	 * 
+	 * @param socialClassName
+	 *            the name of the social Class
+	 * @return the single social class with the name socialClassName, for the given project and timeStamp
+	 */
+
+	public static SocialClass socialClassByName(String socialClassName) {
+		socialClassByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent)
+				.setParameter("socialClassName", socialClassName);
+		try {
+			return socialClassByPrimaryKeyQuery.getSingleResult();
+		} catch (NoResultException r) {
+			return null;
+		}
+	}
+
+	/**
+	 * @return the entityManager
+	 */
+	public static EntityManager getEntityManager() {
+		return entityManager;
 	}
 
 	public Integer getProject() {

@@ -25,7 +25,6 @@ import org.apache.logging.log4j.Logger;
 import javafx.scene.control.TableCell;
 import javafx.scene.paint.Color;
 import rd.dev.simulation.Simulation;
-import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.custom.TabbedTableViewer;
 import rd.dev.simulation.model.SocialClass;
@@ -48,7 +47,7 @@ public class SocialClassTableStockCell extends TableCell<SocialClass, String> {
 			logger.debug(" Null Industry");
 			return;
 		}
-		Stock theStock = DataManager.stockConsumptionByUseValueAndClassSingle(Simulation.timeStampDisplayCursor, socialClass.getSocialClassName(), stockValueUseName);
+		Stock theStock = Stock.stockConsumptionByUseValueAndClassSingle(Simulation.timeStampDisplayCursor, socialClass.getSocialClassName(), stockValueUseName);
 		
 		String deltaModifier="";
 		

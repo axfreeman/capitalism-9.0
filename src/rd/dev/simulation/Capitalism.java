@@ -34,9 +34,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import rd.dev.simulation.command.PreTrade;
 import rd.dev.simulation.custom.ActionStates;
-import rd.dev.simulation.datamanagement.DataManager;
-import rd.dev.simulation.datamanagement.ObservableListProvider;
-import rd.dev.simulation.datamanagement.SelectionsProvider;
 import rd.dev.simulation.utils.DBHandler;
 import rd.dev.simulation.utils.Reporter;
 import rd.dev.simulation.view.ViewManager;
@@ -46,10 +43,8 @@ public class Capitalism extends Application {
 
 	private static final Logger logger = LogManager.getLogger(Capitalism.class);
 	public static DBHandler dataHandler = new DBHandler();			// handles the initial database transactions such as creation and initialisation
-	public static DataManager dataManager = new DataManager();		// handles most persistent entities
-	public static ObservableListProvider olProvider = new ObservableListProvider();// interface between persistent entities and the display
+
 	public static Simulation simulation = new Simulation();			// controls the action
-	public static SelectionsProvider selectionsProvider = null;
 	public static ViewManager viewManager = null; 					// controls the display
 	/**
 	 * the base for all files that are created in, or copied into, the user's file system
@@ -107,8 +102,7 @@ public class Capitalism extends Application {
 		// initiaise all the persistent entities
 
 		dataHandler.initialiseDataBaseAndStart();
-		dataManager.startup();
-		selectionsProvider = new SelectionsProvider();
+
 		initializeActionStates();
 		
 		// initialise the values and prices of the stocks and the usevalues, and the global totals.
@@ -225,14 +219,6 @@ public class Capitalism extends Application {
 
 	public Simulation getSimulation() {
 		return simulation;
-	}
-
-	public DataManager getDataManager() {
-		return dataManager;
-	}
-
-	public ObservableListProvider olFactory() {
-		return olProvider;
 	}
 
 	public DBHandler getDBHandler() {

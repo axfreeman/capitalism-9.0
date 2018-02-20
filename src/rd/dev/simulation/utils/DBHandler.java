@@ -142,7 +142,7 @@ public class DBHandler {
 		copyDataFilesToUserDirectory(Capitalism.userBasePath, "data/", "projects.csv");
 		copyDataFilesToUserDirectory(Capitalism.userBasePath, "data/", "stocks.csv");
 		copyDataFilesToUserDirectory(Capitalism.userBasePath, "data/", "timeStamps.csv");
-		copyDataFilesToUserDirectory(Capitalism.userBasePath, "data/", "useValues.csv");
+		copyDataFilesToUserDirectory(Capitalism.userBasePath, "data/", "commodities.csv");
 		copyDataFilesToUserDirectory(Capitalism.userBasePath, "data/", "CreateRawTables.sql");
 	}
 

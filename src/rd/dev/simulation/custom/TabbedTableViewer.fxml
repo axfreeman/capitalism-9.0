@@ -28,7 +28,7 @@
 									<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
 								</columnResizePolicy>
 							</TableView>
-							<TableView fx:id="useValuesTable" prefHeight="195.0" prefWidth="700.0">
+							<TableView fx:id="commoditiesTable" prefHeight="195.0" prefWidth="700.0">
 								<columnResizePolicy>
 									<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
 								</columnResizePolicy>

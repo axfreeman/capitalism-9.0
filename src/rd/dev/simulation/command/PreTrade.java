@@ -21,7 +21,6 @@ package rd.dev.simulation.command;
 
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.ActionStates;
-import rd.dev.simulation.datamanagement.DataManager;
 
 public class PreTrade extends Simulation implements Command {
 
@@ -39,6 +38,6 @@ public class PreTrade extends Simulation implements Command {
 		ActionStates.M_C_Trade.getCommand().execute();
 		// since this is a super-action, the comparison should be with the state at the beginning of the whole set of actions
 		Simulation.setTimeStampComparatorCursor(startTimeStamp);
-		DataManager.setComparators(Simulation.timeStampIDCurrent);	
+		setComparators(Simulation.timeStampIDCurrent);	
 	}
 }

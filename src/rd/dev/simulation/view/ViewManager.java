@@ -52,9 +52,6 @@ import rd.dev.simulation.custom.SwitchableGraphicsGrid;
 import rd.dev.simulation.custom.TabbedTableViewer;
 import rd.dev.simulation.custom.TimeStampView;
 import rd.dev.simulation.custom.TimeStampViewItem;
-import rd.dev.simulation.datamanagement.DataManager;
-import rd.dev.simulation.datamanagement.ObservableListProvider;
-import rd.dev.simulation.datamanagement.SelectionsProvider;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.model.Global;
 import rd.dev.simulation.model.Project;
@@ -68,7 +65,7 @@ public class ViewManager {
 	// Shorthand for the two most-used managers used for data services
 
 	private Simulation sm;
-	private ObservableListProvider ol;
+
 
 	// general display parameters
 
@@ -204,7 +201,6 @@ public class ViewManager {
 	public void setUp(Capitalism capitalism) {
 		logger.debug("Entered setMainApp");
 		sm = capitalism.getSimulation();
-		ol = Capitalism.olProvider;
 		initializeButtonBar();
 		initializeRadioButtons();
 		setTooltips();
@@ -430,8 +426,8 @@ public class ViewManager {
 	 * Note that this method must therefore be called explicitly when the project is switched.
 	 */
 	private void initializeProjectCombo() {
-		ObservableList<Project> projects = ol.observableProjects();
-		Project currentProject = SelectionsProvider.projectSingle(Simulation.projectCurrent);
+		ObservableList<Project> projects = Project.observableProjects();
+		Project currentProject = Project.projectSingle(Simulation.projectCurrent);
 		String currentProjectDescription = currentProject.getDescription();
 		projectCombo = new ProjectCombo(projects, currentProjectDescription);
 		displayControlsBox.getChildren().add(0, projectCombo);
@@ -487,7 +483,7 @@ public class ViewManager {
 	 * See also {@link initializeGlobalsGrid}
 	 */
 	private void populateGlobalsGrid() {
-		Global global = DataManager.getGlobal();
+		Global global = Global.getGlobal();
 		switchableGrid.populate(smallNumbersFormatString, global);
 	}
 
@@ -524,7 +520,7 @@ public class ViewManager {
 	 * But if a simulation involves a currency reform, it could be in the right place after all.
 	 */
 	public void setExpressionSymbols() {
-		Global global = DataManager.getGlobal();
+		Global global = Global.getGlobal();
 		moneyExpressionSymbol = global.getCurrencySymbol();
 		quantityExpressionSymbol = global.getQuantitySymbol();
 
@@ -584,7 +580,7 @@ public class ViewManager {
 		if (valuesExpressionDisplay == DISPLAY_AS_EXPRESSION.MONEY) {
 			return intrinsicValueExpression;
 		} else {
-			Global global = DataManager.getGlobal();
+			Global global = Global.getGlobal();
 			double melt = global.getMelt();
 			return intrinsicValueExpression / melt;
 		}
@@ -619,7 +615,7 @@ public class ViewManager {
 		logger.debug("entered switchProject");
 		if (newValue.getProjectID() != Simulation.projectCurrent) {
 			logger.debug("Requested switch to project with ID {} and description {} ", newValue.getProjectID(), newValue.getDescription());
-			DataManager.switchProjects(newValue.getProjectID(), actionButtonsBox);
+			Simulation.switchProjects(newValue.getProjectID(), actionButtonsBox);
 			
 			// user has the option to choose the monetary unit and its visual expression
 			setExpressionSymbols();
@@ -688,7 +684,7 @@ public class ViewManager {
 					// these are taken from the timeStamp table, not the actionState table. Thus, we only add the states that have been reached in the
 					// simulation
 
-					for (TimeStamp childStamp : SelectionsProvider.timeStampsBySuperState(thisPeriod, a.text)) {
+					for (TimeStamp childStamp : TimeStamp.timeStampsBySuperState(thisPeriod, a.text)) {
 						logger.debug("Processing the timestamp called {}", childStamp.getDescription());
 						TimeStampViewItem childState = new TimeStampViewItem(childStamp);
 
@@ -706,7 +702,7 @@ public class ViewManager {
 
 	public static int getLastPeriod(int project) {
 		int p = 0;
-		for (TimeStamp t : SelectionsProvider.timeStampsAll()) {
+		for (TimeStamp t : TimeStamp.timeStampsAll()) {
 			if (t.getPeriod() > p)
 				p = t.getPeriod();
 		}

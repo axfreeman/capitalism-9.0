@@ -27,13 +27,12 @@ import org.apache.logging.log4j.Logger;
 
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.ActionStates;
-import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.Industry;
 import rd.dev.simulation.model.SocialClass;
 import rd.dev.simulation.utils.MathStuff;
 import rd.dev.simulation.model.Stock;
-import rd.dev.simulation.model.UseValue;
-import rd.dev.simulation.model.UseValue.COMMODITY_ORIGIN_TYPE;
+import rd.dev.simulation.model.Commodity;
+import rd.dev.simulation.model.Commodity.ORIGIN_TYPE;
 import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.Reporter;
 
@@ -59,7 +58,7 @@ public class Trade extends Simulation implements Command {
 	 * each productive industry purchases the stocks that it needs
 	 */
 	private void productivePurchasesTrade() {
-		List<Industry> industries = DataManager.industriesAll();
+		List<Industry> industries = Industry.industriesAll();
 		Reporter.report(logger, 1, "The %d industries will now try to purchase the stocks they need. ", industries.size());
 
 		for (Industry buyer : industries) {
@@ -71,7 +70,7 @@ public class Trade extends Simulation implements Command {
 					buyerName, stocks.size(), buyer.getOutput());
 
 			for (Stock s : stocks) {
-				UseValue stockUseValue = s.getUseValue();
+				Commodity stockUseValue = s.getUseValue();
 				double quantityPurchased = s.getReplenishmentDemand();
 				double unitPrice = stockUseValue.getUnitPrice();
 				if (quantityPurchased > 0) {
@@ -79,12 +78,12 @@ public class Trade extends Simulation implements Command {
 							s.getUseValueName(), quantityPurchased * unitPrice);
 					Stock sellerMoneyStock = null;
 					Stock sellerSalesStock = null;
-					if (s.getUseValue().getCommodityOriginType() == COMMODITY_ORIGIN_TYPE.SOCIALlY_PRODUCED){
+					if (s.getUseValue().getCommodityOriginType() == ORIGIN_TYPE.SOCIALlY_PRODUCED){
 						// ask each class if it has some labour power to sell
 						// TODO at this point we only accept the first offer
 						// eventually we need to allow multiple sellers of Labour Power
 						// but this should be part of a general reform to allow multiple sellers of every commodity
-						for (SocialClass sc : DataManager.socialClassesAll()) {
+						for (SocialClass sc : SocialClass.socialClassesAll()) {
 							Stock salesStock = sc.getSalesStock();
 							if (salesStock != null) {
 								sellerMoneyStock = sc.getMoneyStock();
@@ -132,9 +131,9 @@ public class Trade extends Simulation implements Command {
 	 */
 	private void socialClassesTrade() {
 		Reporter.report(logger, 1, "Social Classes will now try to purchase the stocks they need");
-		for (SocialClass buyer : DataManager.socialClassesAll()) {
+		for (SocialClass buyer : SocialClass.socialClassesAll()) {
 			String buyerName = buyer.getSocialClassName();
-			for (UseValue u : DataManager.useValuesByFunction(UseValue.COMMODITY_FUNCTION_TYPE.CONSUMER_GOOD)) {
+			for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION_TYPE.CONSUMER_GOOD)) {
 				List<Industry> sellers = u.industries();
 
 				Industry seller=sellers.get(0);// TODO very temporary; just get the top one.

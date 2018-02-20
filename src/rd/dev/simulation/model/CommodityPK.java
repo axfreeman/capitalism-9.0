@@ -8,26 +8,26 @@ import javax.persistence.*;
  * 
  */
 @Embeddable
-public class UseValuePK implements Serializable {
+public class CommodityPK implements Serializable {
 	// default serial project id, required for serializable classes.
 	private static final long serialVersionUID = 1L;
 
 	@Column (name="project") protected int project;
 	@Column (name="timeStamp") protected int timeStamp;
-	@Column (name="UseValueName") protected String useValueName;
+	@Column (name="Name") protected String name;
 
-	protected UseValuePK() {
+	protected CommodityPK() {
 	}
 
 	public boolean equals(Object other) {
 		if (this == other) {
 			return true;
 		}
-		if (!(other instanceof UseValuePK)) {
+		if (!(other instanceof CommodityPK)) {
 			return false;
 		}
-		UseValuePK castOther = (UseValuePK) other;
-		return (this.project == castOther.project) && (this.timeStamp == castOther.timeStamp) && this.useValueName.equals(castOther.useValueName);
+		CommodityPK castOther = (CommodityPK) other;
+		return (this.project == castOther.project) && (this.timeStamp == castOther.timeStamp) && this.name.equals(castOther.name);
 	}
 
 	public int hashCode() {
@@ -35,7 +35,7 @@ public class UseValuePK implements Serializable {
 		int hash = 17;
 		hash = hash * prime + this.project;
 		hash = hash * prime + this.timeStamp;
-		hash = hash * prime + this.useValueName.hashCode();
+		hash = hash * prime + this.name.hashCode();
 
 		return hash;
 	}

@@ -51,10 +51,10 @@
 		</properties>
 	</persistence-unit>
 
-	<persistence-unit name="DB_USEVALUES"
+	<persistence-unit name="DB_COMMODITIES"
 		transaction-type="RESOURCE_LOCAL">
 
-		<class>rd.dev.simulation.model.UseValue</class>
+		<class>rd.dev.simulation.model.Commodity</class>
 
 		<properties>
 			<property name="javax.persistence.jdbc.url"

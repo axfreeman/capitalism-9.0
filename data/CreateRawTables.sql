@@ -20,15 +20,15 @@
  productionCoefficient double DEFAULT 0, consumptionCoefficient double DEFAULT 0, 
  replenishmentDemand double DEFAULT 0, expansionDemand double DEFAULT 0, primary key (project, timeStamp, owner, usevalue, stocktype) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
  
- DROP table if exists useValues;
- CREATE TABLE useValues ( project int default 1 not null, timeStamp VARCHAR (10) DEFAULT '1' not null, useValueName varchar(45) not NULL,
- commodityOriginType ENUM('SOCIALLY_PRODUCED','INDUSTRIALLY_PRODUCED','MONEY') DEFAULT NULL, unitValue double DEFAULT NULL, unitPrice double DEFAULT NULL, 
+ DROP table if exists commodities;
+ CREATE TABLE commodities ( project int default 1 not null, timeStamp VARCHAR (10) DEFAULT '1' not null, name varchar(45) not NULL,
+ originType ENUM('SOCIALLY_PRODUCED','INDUSTRIALLY_PRODUCED','MONEY') DEFAULT NULL, unitValue double DEFAULT NULL, unitPrice double DEFAULT NULL, 
  turnoverTime double DEFAULT NULL, surplusProduct double DEFAULT 0, allocationShare double default null, 
- commodityFunctionType ENUM('MONEY','PRODUCTIVE_INPUT','CONSUMER_GOOD') DEFAULT null, stockUsedUp double default 0, 
+ functionType ENUM('MONEY','PRODUCTIVE_INPUT','CONSUMER_GOOD') DEFAULT null, stockUsedUp double default 0, 
  stockProduced double default 0, imageName VARCHAR(45) default null, displayOrder INT DEFAULT 0, 
- primary key (project, timeStamp, useValueName) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ primary key (project, timeStamp, name) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
  
- CREATE INDEX IDX_TO_DISPLAYORDER ON USEVALUES(displayOrder); 
+ CREATE INDEX IDX_TO_DISPLAYORDER ON COMMODITIES(displayOrder); 
  
  DROP table if exists projects;
  CREATE TABLE projects ( ProjectID INT NOT NULL, Description VARCHAR(45) NULL, priceDynamics ENUM('SIMPLE','EQUALISE','DYNAMIC') DEFAULT 'SIMPLE',
@@ -48,8 +48,8 @@
  insert into industries (PROJECT, TIMESTAMP, INDUSTRYNAME, COMMODITYNAME, OUTPUT, GROWTHRATE) select PROJECT, TIMESTAMP, 
  INDUSTRYNAME, COMMODITYNAME, OUTPUT, GROWTHRATE from CSVREAD('~/Documents/Capsim/data/industries.csv');
  
- insert into useValues (PROJECT, TIMESTAMP, USEVALUENAME,commodityFunctionType,UNITVALUE,UNITPRICE,TURNOVERTIME,commodityOriginType,IMAGENAME,DISPLAYORDER) 
- select PROJECT, TIMESTAMP, USEVALUENAME,commodityFunctionType,UNITVALUE,UNITPRICE,TURNOVERTIME,commodityOriginType,IMAGENAME,DISPLAYORDER from CSVREAD('~/Documents/Capsim/data/useValues.csv');
+ insert into commodities (PROJECT, TIMESTAMP, NAME,functionType,UNITVALUE,UNITPRICE,TURNOVERTIME,originType,IMAGENAME,DISPLAYORDER) 
+ select PROJECT, TIMESTAMP, NAME,functionType,UNITVALUE,UNITPRICE,TURNOVERTIME,originType,IMAGENAME,DISPLAYORDER from CSVREAD('~/Documents/Capsim/data/commodities.csv');
 
  INSERT INTO timestamps (timeStampID, projectFK, PERIOD,superState, COMPARATORTIMESTAMPID, Description) 
  SELECT TIMESTAMPID, PROJECTFK, PERIOD, SUPERSTATE, COMPARATORTIMESTAMPID, DESCRIPTION FROM CSVREAD('~/Documents/Capsim/data/timeStamps.csv');

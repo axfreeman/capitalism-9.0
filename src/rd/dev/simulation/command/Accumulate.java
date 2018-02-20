@@ -25,9 +25,8 @@ import org.apache.logging.log4j.Logger;
 import rd.dev.simulation.Capitalism;
 import rd.dev.simulation.Simulation;
 import rd.dev.simulation.custom.ActionStates;
-import rd.dev.simulation.datamanagement.DataManager;
 import rd.dev.simulation.model.Industry;
-import rd.dev.simulation.model.UseValue;
+import rd.dev.simulation.model.Commodity;
 import rd.dev.simulation.utils.Reporter;
 
 public class Accumulate extends Simulation implements Command {
@@ -86,10 +85,10 @@ public class Accumulate extends Simulation implements Command {
 	private void allocateToProductionIndustries() {
 		Reporter.report(logger, 1, "Allocating investment to the production goods industries");
 
-		for (UseValue u : DataManager.useValuesByFunction(UseValue.COMMODITY_FUNCTION_TYPE.PRODUCTIVE_INPUT)) {
+		for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION_TYPE.PRODUCTIVE_INPUT)) {
 
 			// Exclude socially-produced commodities
-			if (u.getCommodityOriginType() == UseValue.COMMODITY_ORIGIN_TYPE.SOCIALlY_PRODUCED)
+			if (u.getCommodityOriginType() == Commodity.ORIGIN_TYPE.SOCIALlY_PRODUCED)
 				continue;
 
 			Reporter.report(logger, 2, "Processing commodity %s", u.commodityName());
@@ -120,10 +119,10 @@ public class Accumulate extends Simulation implements Command {
 		double costs = 0;
 		Reporter.report(logger, 1, "Allocating investment to the consumption goods industries");
 		
-		for (UseValue u : DataManager.useValuesByFunction(UseValue.COMMODITY_FUNCTION_TYPE.CONSUMER_GOOD)) {
+		for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION_TYPE.CONSUMER_GOOD)) {
 
 			// Exclude socially-produced commodities
-			if (u.getCommodityOriginType() == UseValue.COMMODITY_ORIGIN_TYPE.SOCIALlY_PRODUCED)
+			if (u.getCommodityOriginType() == Commodity.ORIGIN_TYPE.SOCIALlY_PRODUCED)
 				continue;
 			
 			Reporter.report(logger, 2, "Processing commodity %s", u.commodityName());
