@@ -23,9 +23,8 @@ package rd.dev.simulation.model;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
-
 import javax.persistence.Column;
+import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
@@ -36,8 +35,6 @@ import javax.persistence.Persistence;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.TypedQuery;
-import javax.xml.bind.annotation.XmlRootElement;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -60,12 +57,10 @@ import rd.dev.simulation.view.ViewManager;
 		@NamedQuery(name= "CommodityName",query ="Select c from Industry c where c.pk.project=:project and c.pk.timeStamp=:timeStamp and c.commodityName=:commodityName")
 })
 
-@XmlRootElement
-public class Industry extends Observable implements Serializable {
-
+@Embeddable
+public class Industry implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = LogManager.getLogger("Industry");
-
 
 	@EmbeddedId protected IndustryPK pk;
 	@Column(name = "commodityName") private String commodityName;
@@ -74,46 +69,28 @@ public class Industry extends Observable implements Serializable {
 	@Column(name = "InitialCapital") private double initialCapital;
 	@Column(name = "Growthrate") private double growthRate;
 
+	// Comparators
 	@Transient private Industry comparator;
 	@Transient private Industry previousComparator;
 	@Transient private Industry startComparator;
 	@Transient private Industry customComparator;
 	@Transient private Industry endComparator;
 
-	public static EntityManagerFactory industriesEntityManagerFactory = Persistence.createEntityManagerFactory("DB_INDUSTRIES");
-	public static EntityManager industryEntityManager;
-	protected static TypedQuery<Industry> industriesPrimaryQuery;
-	public static TypedQuery<Industry> industriesAllQuery;
-	protected static TypedQuery<Industry> industriesByCommodityQuery;
-	protected static TypedQuery<Industry> industryInitialCapitalQuery;
-
+	// Data Management
+	private static EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DB_INDUSTRIES");
+	private static EntityManager entityManager;
+	private static TypedQuery<Industry> industriesPrimaryQuery;
+	private static TypedQuery<Industry> industriesAllQuery;
+	private static TypedQuery<Industry> industriesByCommodityQuery;
+	private static TypedQuery<Industry> industryInitialCapitalQuery;
 
 	static {
-		industryEntityManager = industriesEntityManagerFactory.createEntityManager();
-		industriesPrimaryQuery = industryEntityManager.createNamedQuery("Primary", Industry.class);
-		industriesAllQuery = industryEntityManager.createNamedQuery("All", Industry.class);
-		industryInitialCapitalQuery = industryEntityManager.createNamedQuery("InitialCapital", Industry.class);
-		industriesByCommodityQuery=industryEntityManager.createNamedQuery("CommodityName", Industry.class);
+		entityManager = entityManagerFactory.createEntityManager();
+		industriesPrimaryQuery = entityManager.createNamedQuery("Primary", Industry.class);
+		industriesAllQuery = entityManager.createNamedQuery("All", Industry.class);
+		industryInitialCapitalQuery = entityManager.createNamedQuery("InitialCapital", Industry.class);
+		industriesByCommodityQuery=entityManager.createNamedQuery("CommodityName", Industry.class);
 	}
-
-
-
-	/**
-	 * an observable list of type Industry for display by ViewManager, at the current project and timeStampDisplayCursor. timeStampDisplayCursor, which
-	 * may diverge from timeStamp, identifies the row that the user last clicked on.
-	 * 
-	 * @return an ObservableList of industries
-	 */
-	public static ObservableList<Industry> industriesObservable() {
-		Industry.industriesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampDisplayCursor);
-		ObservableList<Industry> result = FXCollections.observableArrayList();
-		for (Industry c : Industry.industriesAllQuery.getResultList()) {
-			result.add(c);
-		}
-		return result;
-	}
-
-
 
 	/**
 	 * Readable constants to refer to the methods which provide information about the persistent members of the class
@@ -169,13 +146,7 @@ public class Industry extends Observable implements Serializable {
 		PRODUCTIONGOODS, CONSUMPTIONGOODS, ERROR
 	}
 
-	/**
-	 * A 'bare constructor' is required by JPA and this is it. However, when the new socialClass is constructed, the constructor does not automatically create a
-	 * new PK entity. So we create a 'hollow' primary key which must then be populated by the caller before persisting the entity
-	 */
-	public Industry() {
-		this.pk = new IndustryPK();
-	}
+	
 
 	/**
 	 * Report this industry's OUTPUTTYPE (production goods or consumer goods)
@@ -196,22 +167,210 @@ public class Industry extends Observable implements Serializable {
 			return OUTPUTTYPE.ERROR;
 		}
 	}
+	
+	/**
+	 * A 'bare constructor' is required by JPA and this is it. However, when the new socialClass is constructed, the constructor does not automatically create a
+	 * new PK entity. So we create a 'hollow' primary key which must then be populated by the caller before persisting the entity
+	 */
+	public Industry() {
+		this.pk = new IndustryPK();
+	}
 
 	/**
 	 * make a carbon copy of an industry template
 	 * 
-	 * @param industryTemplate
+	 * @param template
 	 *            the industry to be copied into this one.
 	 */
-	public void copyIndustry(Industry industryTemplate) {
-		pk.industryName = industryTemplate.getIndustryName();
-		pk.timeStamp = industryTemplate.getTimeStamp();
-		pk.project = industryTemplate.getProject();
-		commodityName=industryTemplate.commodityName;
-		output = industryTemplate.output;
-		proposedOutput = industryTemplate.proposedOutput;
-		growthRate = industryTemplate.growthRate;
-		initialCapital = industryTemplate.initialCapital;
+	public Industry(Industry template) {
+		this.pk=new IndustryPK();
+		pk.industryName = template.getIndustryName();
+		pk.timeStamp = template.getTimeStamp();
+		pk.project = template.getProject();
+		commodityName=template.commodityName;
+		output = template.output;
+		proposedOutput = template.proposedOutput;
+		growthRate = template.growthRate;
+		initialCapital = template.initialCapital;
+	}
+	
+	/**
+	 * an observable list of type Industry for display by ViewManager, at the current project and timeStampDisplayCursor. timeStampDisplayCursor, which
+	 * may diverge from timeStamp, identifies the row that the user last clicked on.
+	 * 
+	 * @return an ObservableList of industries
+	 */
+	public static ObservableList<Industry> industriesObservable() {
+		Industry.industriesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampDisplayCursor);
+		ObservableList<Industry> result = FXCollections.observableArrayList();
+		for (Industry c : Industry.industriesAllQuery.getResultList()) {
+			result.add(c);
+		}
+		return result;
+	}
+
+	/**
+	 * provides a wrapped version of the selected member which the display will recognise, as a ReadOnlyStringWrapper.
+	 * 
+	 * We don't mind the hardwiring because we don't really intend this code to be re-usable, it's not hard to modify, and it results in compact
+	 * and readable usage code (see (@link TabbedTableViewer#populateUseValuesViewTable})
+	 * 
+	 * @param selector
+	 *            chooses which member to evaluate
+	 * @param valueExpression
+	 *            selects the value DisplayAsExpression where relevant (QUANTITY, VALUE, PRICE)
+	 * @return a String representation of the members, formatted according to the relevant format string
+	 */
+
+	public ReadOnlyStringWrapper wrappedString(Selector selector, Stock.ValueExpression valueExpression) {
+		switch (selector) {
+		case INDUSTRYNAME:
+			return new ReadOnlyStringWrapper(pk.industryName);
+		case COMMODITYNAME:
+			return new ReadOnlyStringWrapper(commodityName);
+		case INITIALCAPITAL:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, initialCapital));
+		case OUTPUT:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, output));
+		case PROPOSEDOUTPUT:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, proposedOutput));
+		case GROWTHRATE:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, growthRate));
+		case MONEYSTOCK:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, moneyAttribute(valueExpression)));
+		case SALESSTOCK:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, salesAttribute(valueExpression)));
+		case PRODUCTIVESTOCKS:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, productiveStocksAttribute(valueExpression)));
+		case PROFIT:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, profit()));
+		case PROFITRATE:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, profitRate()));
+		case TOTAL:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalAttribute(valueExpression)));
+		case CURRENTCAPITAL:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, currentCapital()));
+		default:
+			return null;
+		}
+	}
+
+	/**
+	 * informs the display whether the selected member of this entity has changed, compared with the 'comparator' Commodity which normally
+	 * comes from a different timeStamp.
+	 * 
+	 * We don't mind the hardwiring because we don't really intend this code to be re-usable, it's not hard to modify, and it results in compact
+	 * and readable usage code (see (@link TabbedTableViewer#populateUseValuesViewTable})
+	 * 
+	 * @param selector
+	 *            chooses which member to evaluate
+	 * @param valueExpression
+	 *            selects the display attribute where relevant (QUANTITY, VALUE, PRICE)
+	 * @return whether this member has changed or not. False if selector is unavailable here
+	 */
+
+	public boolean changed(Selector selector, Stock.ValueExpression valueExpression) {
+		chooseComparison();
+		switch (selector) {
+		case INDUSTRYNAME:
+			return false;
+		case PROPOSEDOUTPUT:
+			return proposedOutput != comparator.proposedOutput;
+		case GROWTHRATE:
+			return growthRate != comparator.growthRate;
+		case OUTPUT:
+			return output != comparator.output;
+		case INITIALCAPITAL:
+			return initialCapital != comparator.initialCapital;
+		case PROFITRATE:
+			return profitRate() != comparator.profitRate();
+		case PROFIT:
+			return profit() != comparator.profit();
+		case MONEYSTOCK:
+			return moneyAttribute(valueExpression) != comparator.moneyAttribute(valueExpression);
+		case SALESSTOCK:
+			return salesAttribute(valueExpression) != comparator.salesAttribute(valueExpression);
+		case PRODUCTIVESTOCKS:
+			double p1 = productiveStocksAttribute(valueExpression);
+			double p2 = comparator.productiveStocksAttribute(valueExpression);
+			return !MathStuff.equals(p1, p2);
+		case TOTAL:
+			return totalAttribute(valueExpression) != comparator.totalAttribute(valueExpression);
+		case CURRENTCAPITAL:
+			return currentCapital() != comparator.currentCapital();
+		default:
+			return false;
+		}
+	}
+
+	/**
+	 * If the selected field has changed, return the difference between the current value and the former value
+	 * 
+	 * @param selector
+	 *            chooses which field to evaluate
+	 * 
+	 * @param item
+	 *            the original item - returned as the result if there is no change
+	 * 
+	 * @param valueExpression
+	 *            selects the display attribute where relevant (QUANTITY, VALUE, PRICE)
+	 * 
+	 * @return the original item if nothing has changed, otherwise the change, as an appropriately formatted string
+	 */
+
+	public String showDelta(String item, Selector selector, Stock.ValueExpression valueExpression) {
+		chooseComparison();
+		if (!changed(selector, valueExpression))
+			return item;
+		switch (selector) {
+		case INDUSTRYNAME:
+			return item;
+		case PROPOSEDOUTPUT:
+			return String.format(ViewManager.largeNumbersFormatString, (proposedOutput - comparator.proposedOutput));
+		case GROWTHRATE:
+			return String.format(ViewManager.smallNumbersFormatString, (growthRate - comparator.growthRate));
+		case OUTPUT:
+			return String.format(ViewManager.largeNumbersFormatString, (output - comparator.output));
+		case INITIALCAPITAL:
+			return String.format(ViewManager.largeNumbersFormatString, (initialCapital - comparator.initialCapital));
+		case PROFITRATE:
+			return String.format(ViewManager.smallNumbersFormatString, (profitRate() - comparator.profitRate()));
+		case PROFIT:
+			return String.format(ViewManager.largeNumbersFormatString, (profit() - comparator.profit()));
+		case MONEYSTOCK:
+			return String.format(ViewManager.largeNumbersFormatString, (moneyAttribute(valueExpression) - comparator.moneyAttribute(valueExpression)));
+		case SALESSTOCK:
+			return String.format(ViewManager.largeNumbersFormatString, (salesAttribute(valueExpression) - comparator.salesAttribute(valueExpression)));
+		case PRODUCTIVESTOCKS:
+			double p1 = productiveStocksAttribute(valueExpression);
+			double p2 = comparator.productiveStocksAttribute(valueExpression);
+			return String.format(ViewManager.largeNumbersFormatString, (p1 - p2));
+		case TOTAL:
+			return String.format(ViewManager.largeNumbersFormatString, (totalAttribute(valueExpression) - comparator.totalAttribute(valueExpression)));
+		case CURRENTCAPITAL:
+			return String.format(ViewManager.largeNumbersFormatString, (currentCapital() - comparator.currentCapital()));
+		default:
+			return item;
+		}
+	}
+
+	/**
+	 * The value-expression of the magnitude of a named productive Stock managed by this industry
+	 * 
+	 * @param productiveStockName
+	 *            the useValue of the productive Stock
+	 * 
+	 * @return the magnitude of the named Stock, expressed as defined by {@code displayAttribute}, null if this does not exist
+	 */
+
+	public ReadOnlyStringWrapper wrappedString(String productiveStockName) {
+		try {
+			Stock namedStock = Stock.stockProductiveByNameSingle(pk.timeStamp, pk.industryName, productiveStockName);
+			String result = String.format(ViewManager.largeNumbersFormatString, namedStock.get(TabbedTableViewer.displayAttribute));
+			return new ReadOnlyStringWrapper(result);
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	/**
@@ -418,171 +577,6 @@ public class Industry extends Observable implements Serializable {
 	}
 
 	/**
-	 * provides a wrapped version of the selected member which the display will recognise, as a ReadOnlyStringWrapper.
-	 * 
-	 * We don't mind the hardwiring because we don't really intend this code to be re-usable, it's not hard to modify, and it results in compact
-	 * and readable usage code (see (@link TabbedTableViewer#populateUseValuesViewTable})
-	 * 
-	 * @param selector
-	 *            chooses which member to evaluate
-	 * @param valueExpression
-	 *            selects the value DisplayAsExpression where relevant (QUANTITY, VALUE, PRICE)
-	 * @return a String representation of the members, formatted according to the relevant format string
-	 */
-
-	public ReadOnlyStringWrapper wrappedString(Selector selector, Stock.ValueExpression valueExpression) {
-		switch (selector) {
-		case INDUSTRYNAME:
-			return new ReadOnlyStringWrapper(pk.industryName);
-		case COMMODITYNAME:
-			return new ReadOnlyStringWrapper(commodityName);
-		case INITIALCAPITAL:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, initialCapital));
-		case OUTPUT:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, output));
-		case PROPOSEDOUTPUT:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, proposedOutput));
-		case GROWTHRATE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, growthRate));
-		case MONEYSTOCK:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, moneyAttribute(valueExpression)));
-		case SALESSTOCK:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, salesAttribute(valueExpression)));
-		case PRODUCTIVESTOCKS:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, productiveStocksAttribute(valueExpression)));
-		case PROFIT:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, profit()));
-		case PROFITRATE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, profitRate()));
-		case TOTAL:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalAttribute(valueExpression)));
-		case CURRENTCAPITAL:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, currentCapital()));
-		default:
-			return null;
-		}
-	}
-
-	/**
-	 * The value-expression of the magnitude of a named productive Stock managed by this industry
-	 * 
-	 * @param productiveStockName
-	 *            the useValue of the productive Stock
-	 * 
-	 * @return the magnitude of the named Stock, expressed as defined by {@code displayAttribute}, null if this does not exist
-	 */
-
-	public ReadOnlyStringWrapper wrappedString(String productiveStockName) {
-		try {
-			Stock namedStock = Stock.stockProductiveByNameSingle(pk.timeStamp, pk.industryName, productiveStockName);
-			String result = String.format(ViewManager.largeNumbersFormatString, namedStock.get(TabbedTableViewer.displayAttribute));
-			return new ReadOnlyStringWrapper(result);
-		} catch (Exception e) {
-			return null;
-		}
-	}
-
-	/**
-	 * informs the display whether the selected member of this entity has changed, compared with the 'comparator' Commodity which normally
-	 * comes from a different timeStamp.
-	 * 
-	 * We don't mind the hardwiring because we don't really intend this code to be re-usable, it's not hard to modify, and it results in compact
-	 * and readable usage code (see (@link TabbedTableViewer#populateUseValuesViewTable})
-	 * 
-	 * @param selector
-	 *            chooses which member to evaluate
-	 * @param valueExpression
-	 *            selects the display attribute where relevant (QUANTITY, VALUE, PRICE)
-	 * @return whether this member has changed or not. False if selector is unavailable here
-	 */
-
-	public boolean changed(Selector selector, Stock.ValueExpression valueExpression) {
-		chooseComparison();
-		switch (selector) {
-		case INDUSTRYNAME:
-			return false;
-		case PROPOSEDOUTPUT:
-			return proposedOutput != comparator.proposedOutput;
-		case GROWTHRATE:
-			return growthRate != comparator.growthRate;
-		case OUTPUT:
-			return output != comparator.output;
-		case INITIALCAPITAL:
-			return initialCapital != comparator.initialCapital;
-		case PROFITRATE:
-			return profitRate() != comparator.profitRate();
-		case PROFIT:
-			return profit() != comparator.profit();
-		case MONEYSTOCK:
-			return moneyAttribute(valueExpression) != comparator.moneyAttribute(valueExpression);
-		case SALESSTOCK:
-			return salesAttribute(valueExpression) != comparator.salesAttribute(valueExpression);
-		case PRODUCTIVESTOCKS:
-			double p1 = productiveStocksAttribute(valueExpression);
-			double p2 = comparator.productiveStocksAttribute(valueExpression);
-			return !MathStuff.equals(p1, p2);
-		case TOTAL:
-			return totalAttribute(valueExpression) != comparator.totalAttribute(valueExpression);
-		case CURRENTCAPITAL:
-			return currentCapital() != comparator.currentCapital();
-		default:
-			return false;
-		}
-	}
-
-	/**
-	 * If the selected field has changed, return the difference between the current value and the former value
-	 * 
-	 * @param selector
-	 *            chooses which field to evaluate
-	 * 
-	 * @param item
-	 *            the original item - returned as the result if there is no change
-	 * 
-	 * @param valueExpression
-	 *            selects the display attribute where relevant (QUANTITY, VALUE, PRICE)
-	 * 
-	 * @return the original item if nothing has changed, otherwise the change, as an appropriately formatted string
-	 */
-
-	public String showDelta(String item, Selector selector, Stock.ValueExpression valueExpression) {
-		chooseComparison();
-		if (!changed(selector, valueExpression))
-			return item;
-		switch (selector) {
-		case INDUSTRYNAME:
-			return item;
-		case PROPOSEDOUTPUT:
-			return String.format(ViewManager.largeNumbersFormatString, (proposedOutput - comparator.proposedOutput));
-		case GROWTHRATE:
-			return String.format(ViewManager.smallNumbersFormatString, (growthRate - comparator.growthRate));
-		case OUTPUT:
-			return String.format(ViewManager.largeNumbersFormatString, (output - comparator.output));
-		case INITIALCAPITAL:
-			return String.format(ViewManager.largeNumbersFormatString, (initialCapital - comparator.initialCapital));
-		case PROFITRATE:
-			return String.format(ViewManager.smallNumbersFormatString, (profitRate() - comparator.profitRate()));
-		case PROFIT:
-			return String.format(ViewManager.largeNumbersFormatString, (profit() - comparator.profit()));
-		case MONEYSTOCK:
-			return String.format(ViewManager.largeNumbersFormatString, (moneyAttribute(valueExpression) - comparator.moneyAttribute(valueExpression)));
-		case SALESSTOCK:
-			return String.format(ViewManager.largeNumbersFormatString, (salesAttribute(valueExpression) - comparator.salesAttribute(valueExpression)));
-		case PRODUCTIVESTOCKS:
-			double p1 = productiveStocksAttribute(valueExpression);
-			double p2 = comparator.productiveStocksAttribute(valueExpression);
-			return String.format(ViewManager.largeNumbersFormatString, (p1 - p2));
-		case TOTAL:
-			return String.format(ViewManager.largeNumbersFormatString, (totalAttribute(valueExpression) - comparator.totalAttribute(valueExpression)));
-		case CURRENTCAPITAL:
-			return String.format(ViewManager.largeNumbersFormatString, (currentCapital() - comparator.currentCapital()));
-		default:
-			return item;
-		}
-	}
-
-
-	/**
 	 * the industry that produces a given usevalue, for the current project and a given timeStamp. This is also the primary key of the Industry entity
 	 * 
 	 * @param project
@@ -786,10 +780,10 @@ public class Industry extends Observable implements Serializable {
 	}
 
 	/**
-	 * @return the industryEntityManager
+	 * @return the entityManager
 	 */
 	public static EntityManager getEntityManager() {
-		return industryEntityManager;
+		return entityManager;
 	}
 
 

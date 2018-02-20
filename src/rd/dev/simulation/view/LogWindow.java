@@ -40,7 +40,7 @@ import rd.dev.simulation.utils.Reporter;
 
 public class LogWindow {
 	private static final Logger logger = LogManager.getLogger(Reporter.class);
-	// this scene used for the logger window. Quite primitive
+	// this scene used for the logger window.
 
 	private static Scene logScene;
 	private Stage loggingStage = new Stage();

@@ -62,7 +62,7 @@ public class Reporter {
 		if (level==0) {
 			logger.log(Level.INFO, "");
 		}
-		logger.log(Level.INFO, message);
+		logger.log(Level.INFO, String.format("%d %s",level,message));
 		logWindow.addItem(message,level);
 	}
 	

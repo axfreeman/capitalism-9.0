@@ -54,9 +54,9 @@ public class Project implements Serializable {
 	@Column(name = "buttonState") private String buttonState;
 	
 	private static EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DB_PROJECT");
-	public static EntityManager entityManager;
-	protected static TypedQuery<Project> projectByPrimaryKeyQuery;
-	public static TypedQuery<Project> projectAllQuery;
+	private static EntityManager entityManager;
+	private static TypedQuery<Project> projectByPrimaryKeyQuery;
+	private static TypedQuery<Project> projectAllQuery;
 
 	static {
 		entityManager = entityManagerFactory.createEntityManager();

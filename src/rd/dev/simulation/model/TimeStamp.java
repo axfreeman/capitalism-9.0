@@ -37,12 +37,11 @@ public class TimeStamp implements Serializable {
 	@Column(name = "COMPARATORTIMESTAMPID") protected int comparatorTimeStampID;
 	
 	private static EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DB_TIMESTAMP");
-	protected static EntityManager entityManager;
-	protected static TypedQuery<TimeStamp> timeStampsAllByProjectQuery;
-	protected static TypedQuery<TimeStamp> timeStampStatesQuery;
-	protected static TypedQuery<TimeStamp> timeStampByPrimarykeyQuery;
-	protected static TypedQuery<TimeStamp> timeStampSuperStatesQuery;
-	protected static TypedQuery<TimeStamp> timeStampsAllQuery;
+	private static EntityManager entityManager;
+	private static TypedQuery<TimeStamp> timeStampsAllByProjectQuery;
+	private static TypedQuery<TimeStamp> timeStampByPrimarykeyQuery;
+	private static TypedQuery<TimeStamp> timeStampSuperStatesQuery;
+	private static TypedQuery<TimeStamp> timeStampsAllQuery;
 
 	static {
 		entityManager = entityManagerFactory.createEntityManager();

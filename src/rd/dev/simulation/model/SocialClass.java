@@ -21,7 +21,6 @@ package rd.dev.simulation.model;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Observable;
 import javax.persistence.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -47,9 +46,8 @@ import rd.dev.simulation.view.ViewManager;
 })
 
 @Embeddable
-public class SocialClass extends Observable implements Serializable {
+public class SocialClass implements Serializable {
 	private static final long serialVersionUID = 1L;
-
 	private static final Logger logger = LogManager.getLogger(SocialClass.class);
 
 	@EmbeddedId protected SocialClassPK pk;
@@ -61,16 +59,18 @@ public class SocialClass extends Observable implements Serializable {
 	@Column(name = "ParticipationRatio") protected double participationRatio;
 	@Column(name = "Revenue") protected double revenue; // the money that this class will spend in the current period
 
+	// Comparators
 	@Transient private SocialClass comparator;
 	@Transient private SocialClass previousComparator;
 	@Transient private SocialClass startComparator;
 	@Transient private SocialClass customComparator;
 	@Transient private SocialClass endComparator;
 
+	// Data Management
 	private static EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DB_SOCIALCLASSES");
-	protected static EntityManager entityManager;
-	protected static TypedQuery<SocialClass> socialClassByPrimaryKeyQuery;
-	public static TypedQuery<SocialClass> socialClassAllQuery;
+	private static EntityManager entityManager;
+	private static TypedQuery<SocialClass> socialClassByPrimaryKeyQuery;
+	private static TypedQuery<SocialClass> socialClassAllQuery;
 
 	static {
 		entityManager = entityManagerFactory.createEntityManager();
@@ -78,21 +78,6 @@ public class SocialClass extends Observable implements Serializable {
 		socialClassAllQuery = entityManager.createNamedQuery("All", SocialClass.class);
 	}
 	
-	/**
-	 * an observable list of type SocialClass for display by ViewManager, at the current project and timeStampDisplayCursor. timeStampDisplayCursor, which
-	 * may diverge from timeStamp, identifies the row that the user last clicked on.
-	 * 
-	 * @return an ObservableList of SocialClasses
-	 */
-	public static ObservableList<SocialClass> socialClassesObservable() {
-		SocialClass.socialClassAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampDisplayCursor);
-		ObservableList<SocialClass> result = FXCollections.observableArrayList();
-		for (SocialClass s : SocialClass.socialClassAllQuery.getResultList()) {
-			result.add(s);
-		}
-		return result;
-	}
-
 	public enum Selector {
 		// @formatter:off
 		SOCIALCLASSNAME("Social Class",null,TabbedTableViewer.HEADER_TOOL_TIPS.SOCIALCLASS.text()), 
@@ -141,40 +126,32 @@ public class SocialClass extends Observable implements Serializable {
 	/**
 	 * make a carbon copy of the socialClassTemplate
 	 * 
-	 * @param socialClassTemplate
+	 * @param template
 	 *            the socialClass bean to copy - usually from the previous timeStamp
 	 */
-	public void copySocialClass(SocialClass socialClassTemplate) {
-		this.pk.timeStamp = socialClassTemplate.pk.timeStamp;
-		this.pk.project = socialClassTemplate.pk.project;
-		this.pk.socialClassName = socialClassTemplate.pk.socialClassName;
-		this.size = socialClassTemplate.size;
-		this.consumptionStocksRequiredPerPerson = socialClassTemplate.consumptionStocksRequiredPerPerson;
-		this.participationRatio = socialClassTemplate.participationRatio;
-		this.revenue = socialClassTemplate.revenue;
+	public void copy(SocialClass template) {
+		this.pk.timeStamp = template.pk.timeStamp;
+		this.pk.project = template.pk.project;
+		this.pk.socialClassName = template.pk.socialClassName;
+		this.size = template.size;
+		this.consumptionStocksRequiredPerPerson = template.consumptionStocksRequiredPerPerson;
+		this.participationRatio = template.participationRatio;
+		this.revenue = template.revenue;
 	}
-
-	// METHODS THAT RETRIEVE STOCKS
-
+	
 	/**
-	 * get the Stock of money owned by this class. If this stock does not exist (which is an error) return null.
+	 * an observable list of type SocialClass for display by ViewManager, at the current project and timeStampDisplayCursor. timeStampDisplayCursor, which
+	 * may diverge from timeStamp, identifies the row that the user last clicked on.
 	 * 
-	 * @return the money stock that is owned by this social class.
+	 * @return an ObservableList of SocialClasses
 	 */
-	public Stock getMoneyStock() {
-		return Stock.stockMoneyByIndustrySingle(pk.timeStamp, pk.socialClassName);
-	}
-
-	/**
-	 * get the sales stock of this social class. If this stock does not exist (which is an error) return null.
-	 * NOTE:The only commodity classes can sell is Labour power.
-	 * 
-	 * @return the sales stock that is owned by this social class.
-	 */
-	public Stock getSalesStock() {
-		// TODO we can't assume there is only one type of labour power
-		// also we should allow for theories in which social classes sell other things
-		return Stock.stockByPrimaryKey(Simulation.projectCurrent, pk.timeStamp, pk.socialClassName, "Labour Power", Stock.STOCKTYPE.SALES.text());
+	public static ObservableList<SocialClass> socialClassesObservable() {
+		SocialClass.socialClassAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampDisplayCursor);
+		ObservableList<SocialClass> result = FXCollections.observableArrayList();
+		for (SocialClass s : SocialClass.socialClassAllQuery.getResultList()) {
+			result.add(s);
+		}
+		return result;
 	}
 
 	/**
@@ -208,25 +185,6 @@ public class SocialClass extends Observable implements Serializable {
 		case TOTAL:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalAttribute(valueExpression)));
 		default:
-			return null;
-		}
-	}
-
-	/**
-	 * The value-expression of the magnitude of a named consumption Stock owned by this class
-	 * 
-	 * @param consumptionStockName
-	 *            the useValue of the consumption Stock
-	 * 
-	 * @return the magnitude of the named Stock, expressed as defined by {@code displayAttribute}, null if this does not exist
-	 */
-
-	public ReadOnlyStringWrapper wrappedString(String consumptionStockName) {
-		try {
-			Stock namedStock = Stock.stockConsumptionByUseValueAndClassSingle(pk.timeStamp, pk.socialClassName, consumptionStockName);
-			String result = String.format(ViewManager.largeNumbersFormatString, namedStock.get(TabbedTableViewer.displayAttribute));
-			return new ReadOnlyStringWrapper(result);
-		} catch (Exception e) {
 			return null;
 		}
 	}
@@ -308,6 +266,46 @@ public class SocialClass extends Observable implements Serializable {
 			return item;
 		}
 	}
+	
+	/**
+	 * chooses the comparator depending on the state set in the {@code ViewManager.comparatorToggle} radio buttons
+	 */
+
+	private void chooseComparison() {
+		switch (ViewManager.getComparatorState()) {
+		case CUSTOM:
+			comparator = customComparator;
+			break;
+		case END:
+			comparator = endComparator;
+			break;
+		case PREVIOUS:
+			comparator = previousComparator;
+			break;
+		case START:
+			comparator = startComparator;
+		}
+	}
+
+	/**
+	 * The value-expression of the magnitude of a named consumption Stock owned by this class
+	 * 
+	 * @param consumptionStockName
+	 *            the useValue of the consumption Stock
+	 * 
+	 * @return the magnitude of the named Stock, expressed as defined by {@code displayAttribute}, null if this does not exist
+	 */
+
+	public ReadOnlyStringWrapper wrappedString(String consumptionStockName) {
+		try {
+			Stock namedStock = Stock.stockConsumptionByUseValueAndClassSingle(pk.timeStamp, pk.socialClassName, consumptionStockName);
+			String result = String.format(ViewManager.largeNumbersFormatString, namedStock.get(TabbedTableViewer.displayAttribute));
+			return new ReadOnlyStringWrapper(result);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
 
 	/**
 	 * regenerate the labour power of this class
@@ -349,6 +347,28 @@ public class SocialClass extends Observable implements Serializable {
 			Reporter.report(logger, 2, "Consumption stock of class [%s] reduced to %.0f from %.0f", pk.socialClassName, s.getQuantity(), quantityConsumed);
 		}
 	}
+	
+	/**
+	 * get the Stock of money owned by this class. If this stock does not exist (which is an error) return null.
+	 * 
+	 * @return the money stock that is owned by this social class.
+	 */
+	public Stock getMoneyStock() {
+		return Stock.stockMoneyByIndustrySingle(pk.timeStamp, pk.socialClassName);
+	}
+
+	/**
+	 * get the sales stock of this social class. If this stock does not exist (which is an error) return null.
+	 * NOTE:The only commodity classes can sell is Labour power.
+	 * 
+	 * @return the sales stock that is owned by this social class.
+	 */
+	public Stock getSalesStock() {
+		// TODO we can't assume there is only one type of labour power
+		// also we should allow for theories in which social classes sell other things
+		return Stock.stockByPrimaryKey(Simulation.projectCurrent, pk.timeStamp, pk.socialClassName, "Labour Power", Stock.STOCKTYPE.SALES.text());
+	}
+
 
 	/**
 	 * temporary fix to yield the stock of necessities, while we convert to multiple consumption goods
@@ -451,26 +471,6 @@ public class SocialClass extends Observable implements Serializable {
 
 		Stock s = getConsumptionStock();
 		return s == null ? Float.NaN : s.getReplenishmentDemand();
-	}
-
-	/**
-	 * chooses the comparator depending on the state set in the {@code ViewManager.comparatorToggle} radio buttons
-	 */
-
-	private void chooseComparison() {
-		switch (ViewManager.getComparatorState()) {
-		case CUSTOM:
-			comparator = customComparator;
-			break;
-		case END:
-			comparator = endComparator;
-			break;
-		case PREVIOUS:
-			comparator = previousComparator;
-			break;
-		case START:
-			comparator = startComparator;
-		}
 	}
 
 	/**

@@ -22,7 +22,6 @@ package rd.dev.simulation.model;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Observable;
 import javax.persistence.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -68,7 +67,7 @@ import rd.dev.simulation.view.ViewManager;
 				+ "and (s.pk.stockType = :stockType1 or s.pk.stockType=:stockType2)")
 })
 
-public class Stock extends Observable implements Serializable {
+public class Stock implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = LogManager.getLogger(Stock.class);
 
@@ -90,22 +89,22 @@ public class Stock extends Observable implements Serializable {
 
 	@Column(name = "consumptionCoefficient") private double consumptionCoefficient;
 
-	// Thes transient variables are used to compare stock magnitudes from different time periods
-	// It is the basic mechanism whereby changes and differences are displayed in the main and stock tables
+	// Comparators
 	@Transient private Stock comparator;
 	@Transient private Stock previousComparator;
 	@Transient private Stock startComparator;
 	@Transient private Stock customComparator;
 	@Transient private Stock endComparator;
 
+	// Data Management
 	private static EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DB_STOCKS");
-	protected static EntityManager entityManager;
-	protected static TypedQuery<Stock> stockByPrimaryKeyQuery;
-	protected static TypedQuery<Stock> stocksAllQuery;
-	protected static TypedQuery<Stock> stocksByUseValueQuery;
-	protected static TypedQuery<Stock> stocksByUseValueAndTypeQuery;
-	protected static TypedQuery<Stock> stocksByOwnerAndTypeQuery;
-	protected static TypedQuery<Stock> stocksByOneOfTwoStockTypesQuery;
+	private static EntityManager entityManager;
+	private static TypedQuery<Stock> stockByPrimaryKeyQuery;
+	private static TypedQuery<Stock> stocksAllQuery;
+	private static TypedQuery<Stock> stocksByUseValueQuery;
+	private static TypedQuery<Stock> stocksByUseValueAndTypeQuery;
+	private static TypedQuery<Stock> stocksByOwnerAndTypeQuery;
+	private static TypedQuery<Stock> stocksByOneOfTwoStockTypesQuery;
 	public static TypedQuery<Stock> stocksByStockTypeQuery;
 
 	static {
@@ -117,27 +116,6 @@ public class Stock extends Observable implements Serializable {
 		stocksByUseValueQuery = entityManager.createNamedQuery("Commodity", Stock.class);
 		stocksByUseValueAndTypeQuery = entityManager.createNamedQuery("Commodity.StockType", Stock.class);
 		stocksByOneOfTwoStockTypesQuery = entityManager.createNamedQuery("Demand", Stock.class);
-
-	}
-
-	/**
-	 * an observable list of stocks of a particular stock type, for display by ViewManager, at the current project and timeStampDisplayCursor.
-	 * timeStampDisplayCursor, which
-	 * may diverge from timeStamp, identifies the row that the user last clicked on.
-	 * 
-	 * @param stockType
-	 *            the stockType (Productive, Sales, Consumption, Money) of this stock
-	 * 
-	 * @return an observableList of stocks
-	 */
-	public static ObservableList<Stock> stocksByStockTypeObservable(String stockType) {
-		Stock.stocksByStockTypeQuery.setParameter("project", Simulation.projectCurrent).setParameter("stockType", stockType).setParameter("timeStamp",
-				Simulation.timeStampDisplayCursor);
-		ObservableList<Stock> result = FXCollections.observableArrayList();
-		for (Stock s : Stock.stocksByStockTypeQuery.getResultList()) {
-			result.add(s);
-		}
-		return result;
 	}
 
 	/**
@@ -274,95 +252,24 @@ public class Stock extends Observable implements Serializable {
 	 * At present, this is used to construct a comparator stock, so that changes can be highlighted ('differencing') in the display tables.
 	 * It may have other uses, but I am not aware of them.
 	 * 
-	 * @param stockTemplate
+	 * @param template
 	 *            the stock from which to copy
 	 */
-	public void copyStock(Stock stockTemplate) {
-		pk.timeStamp = stockTemplate.pk.timeStamp;
-		pk.project = stockTemplate.pk.project;
-		pk.owner = stockTemplate.pk.owner;
-		pk.useValue = stockTemplate.pk.useValue;
-		pk.stockType = stockTemplate.pk.stockType;
-		price = stockTemplate.price;
-		value = stockTemplate.value;
-		ownerType = stockTemplate.ownerType;
-		productionCoefficient = stockTemplate.productionCoefficient;
-		consumptionCoefficient = stockTemplate.consumptionCoefficient;
-		quantity = stockTemplate.quantity;
-		replenishmentDemand = stockTemplate.replenishmentDemand;
-		expansionDemand = stockTemplate.expansionDemand;
-	}
-
-	/**
-	 * When the unit price or the unit value of a commodity changes, the price and value of each stock changes accordingly
-	 * This method enacts the change.
-	 */
-
-	public void reCalculateStockTotalValuesAndPrices() {
-		price = quantity * unitPrice();
-		value = quantity * unitValue();
-	}
-
-	/**
-	 * Change the size of the stock by quantity and adjust the value and price accordingly. Throw runtime error if the result would be less than zero
-	 * 
-	 * @param extraQuantity
-	 *            the quantity to be added to the size of the stock (negative if subtracted)
-	 */
-	public void modifyBy(double extraQuantity) {
-		double melt = Global.getGlobal().getMelt();
-
-		double unitValue = unitValue();
-		double unitPrice = unitPrice();
-		double extraValue = extraQuantity * unitValue;
-		double extraPrice = extraQuantity * unitPrice;
-		double newValue = value + extraValue;
-		double newPrice = price + extraPrice;
-		double newQuantity = quantity + extraQuantity;
-		quantity = MathStuff.round(newQuantity);
-		value = MathStuff.round(newValue);
-		price = MathStuff.round(newPrice);
-		Reporter.report(logger, 3,
-				"Commodity [%s], of type [%s], owned by [%s]: is now %.0f. Its value is now $%.0f (intrinsic %.0f), and its price is %.0f (intrinsic %.0f)",
-				pk.useValue, pk.stockType, pk.owner, quantity, value, value / melt, price, price / melt);
-	}
-
-	/**
-	 * overloaded version of changeBy which sets the value separately
-	 * 
-	 * @param quantity
-	 *            the increase in size
-	 * @param valueAdded
-	 *            the increase in value
-	 */
-	public void modifyBy(double quantity, double valueAdded) {
-		double oldValue = value;
-		modifyBy(quantity);
-		setValue(oldValue + valueAdded); // overwrite what was done by the simple call to changeBy
-	}
-
-	/**
-	 * Set the size of the stock to the Quantity and adjust the value and price accordingly. Throw runtime error if the result would be less than zero
-	 * 
-	 * @param newQuantity
-	 *            the quantity to be added to the size of the stock (negative if subtracted)
-	 */
-	public void modifyTo(double newQuantity) {
-		double melt = Global.getGlobal().getMelt();
-		try {
-			double unitValue = unitValue();
-			double unitPrice = unitPrice();
-			double newValue = newQuantity * unitValue;
-			double newPrice = newQuantity * unitPrice;
-			quantity = MathStuff.round(newQuantity);
-			value = MathStuff.round(newValue);
-			price = MathStuff.round(newPrice);
-			Reporter.report(logger, 3,
-					"Size of commodity [%s], of type [%s], owned by [%s]: is %.0f. Value set to $%.0f (intrinsic %.0f), and price to %.0f (intrinsic %.0f)",
-					pk.useValue, pk.stockType, pk.owner, quantity, value, value / melt, price, price / melt);
-		} catch (Exception e) {
-			Dialogues.alert(logger, "Something went wrong pre-processing the stock called %s. Please check your data.", pk.useValue);
-		}
+	public Stock(Stock template) {
+		this.pk=new StockPK();
+		pk.timeStamp = template.pk.timeStamp;
+		pk.project = template.pk.project;
+		pk.owner = template.pk.owner;
+		pk.useValue = template.pk.useValue;
+		pk.stockType = template.pk.stockType;
+		price = template.price;
+		value = template.value;
+		ownerType = template.ownerType;
+		productionCoefficient = template.productionCoefficient;
+		consumptionCoefficient = template.consumptionCoefficient;
+		quantity = template.quantity;
+		replenishmentDemand = template.replenishmentDemand;
+		expansionDemand = template.expansionDemand;
 	}
 
 	/**
@@ -529,6 +436,101 @@ public class Stock extends Observable implements Serializable {
 			comparator = startComparator;
 		}
 	}
+	
+	/**
+	 * an observable list of stocks of a particular stock type, for display by ViewManager, at the current project and timeStampDisplayCursor.
+	 * timeStampDisplayCursor, which
+	 * may diverge from timeStamp, identifies the row that the user last clicked on.
+	 * 
+	 * @param stockType
+	 *            the stockType (Productive, Sales, Consumption, Money) of this stock
+	 * 
+	 * @return an observableList of stocks
+	 */
+	public static ObservableList<Stock> stocksByStockTypeObservable(String stockType) {
+		Stock.stocksByStockTypeQuery.setParameter("project", Simulation.projectCurrent).setParameter("stockType", stockType).setParameter("timeStamp",
+				Simulation.timeStampDisplayCursor);
+		ObservableList<Stock> result = FXCollections.observableArrayList();
+		for (Stock s : Stock.stocksByStockTypeQuery.getResultList()) {
+			result.add(s);
+		}
+		return result;
+	}
+
+
+	/**
+	 * When the unit price or the unit value of a commodity changes, the price and value of each stock changes accordingly
+	 * This method enacts the change.
+	 */
+
+	public void reCalculateStockTotalValuesAndPrices() {
+		price = quantity * unitPrice();
+		value = quantity * unitValue();
+	}
+
+	/**
+	 * Change the size of the stock by quantity and adjust the value and price accordingly. Throw runtime error if the result would be less than zero
+	 * 
+	 * @param extraQuantity
+	 *            the quantity to be added to the size of the stock (negative if subtracted)
+	 */
+	public void modifyBy(double extraQuantity) {
+		double melt = Global.getGlobal().getMelt();
+
+		double unitValue = unitValue();
+		double unitPrice = unitPrice();
+		double extraValue = extraQuantity * unitValue;
+		double extraPrice = extraQuantity * unitPrice;
+		double newValue = value + extraValue;
+		double newPrice = price + extraPrice;
+		double newQuantity = quantity + extraQuantity;
+		quantity = MathStuff.round(newQuantity);
+		value = MathStuff.round(newValue);
+		price = MathStuff.round(newPrice);
+		Reporter.report(logger, 3,
+				"Commodity [%s], of type [%s], owned by [%s]: is now %.0f. Its value is now $%.0f (intrinsic %.0f), and its price is %.0f (intrinsic %.0f)",
+				pk.useValue, pk.stockType, pk.owner, quantity, value, value / melt, price, price / melt);
+	}
+
+	/**
+	 * overloaded version of changeBy which sets the value separately
+	 * 
+	 * @param quantity
+	 *            the increase in size
+	 * @param valueAdded
+	 *            the increase in value
+	 */
+	public void modifyBy(double quantity, double valueAdded) {
+		double oldValue = value;
+		modifyBy(quantity);
+		setValue(oldValue + valueAdded); // overwrite what was done by the simple call to changeBy
+	}
+
+	/**
+	 * Set the size of the stock to the Quantity and adjust the value and price accordingly. Throw runtime error if the result would be less than zero
+	 * 
+	 * @param newQuantity
+	 *            the quantity to be added to the size of the stock (negative if subtracted)
+	 */
+	public void modifyTo(double newQuantity) {
+		double melt = Global.getGlobal().getMelt();
+		try {
+			double unitValue = unitValue();
+			double unitPrice = unitPrice();
+			double newValue = newQuantity * unitValue;
+			double newPrice = newQuantity * unitPrice;
+			quantity = MathStuff.round(newQuantity);
+			value = MathStuff.round(newValue);
+			price = MathStuff.round(newPrice);
+			Reporter.report(logger, 3,
+					"Size of commodity [%s], of type [%s], owned by [%s]: is %.0f. Value set to $%.0f (intrinsic %.0f), and price to %.0f (intrinsic %.0f)",
+					pk.useValue, pk.stockType, pk.owner, quantity, value, value / melt, price, price / melt);
+		} catch (Exception e) {
+			Dialogues.alert(logger, "Something went wrong pre-processing the stock called %s. Please check your data.", pk.useValue);
+		}
+	}
+
+
 
 	/**
 	 * Helper function transfers quantityTransferred from this Stock to toStock. Also transfers the value of the stock and the price. Carries out checks and

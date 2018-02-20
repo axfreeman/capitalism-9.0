@@ -25,8 +25,6 @@ package rd.dev.simulation.model;
  * and open the template in the editor.
  */
 import java.io.Serializable;
-import java.util.Observable;
-
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
@@ -55,7 +53,7 @@ import rd.dev.simulation.utils.MathStuff;
 		@NamedQuery(query = "SELECT c FROM Global c where c.pk.project = :project and c.pk.timeStamp = :timeStamp", name = "globals.project.timeStamp")
 })
 @XmlRootElement
-public class Global extends Observable implements Serializable {
+public class Global implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	@EmbeddedId protected GlobalPK pk;
@@ -67,18 +65,21 @@ public class Global extends Observable implements Serializable {
 	@Column(name = "CurrencySymbol") private String currencySymbol;
 	@Column(name = "QuantitySymbol") private String quantitySymbol;
 
-	@Transient private double surplusMeansOfProduction = 0; // how much (in $) is available for investment
+	@Transient private Global comparator = null;
+	@Transient private Global previousComparator;
+	@Transient private Global startComparator;
+	@Transient private Global customComparator;
+	@Transient private Global endComparator;
 
-	private static EntityManagerFactory globalsEntityManagerFactory = Persistence.createEntityManagerFactory("DB_GLOBALS");
-	protected static EntityManager globalEntityManager;
-	protected static TypedQuery<Global> globalQuery;
-
+	private static EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DB_GLOBALS");
+	private static EntityManager entityManager;
+	private static TypedQuery<Global> globalQuery;
 
 	static {
-		globalEntityManager = globalsEntityManagerFactory.createEntityManager();
-		globalQuery = globalEntityManager.createNamedQuery("globals.project.timeStamp", Global.class);
+		entityManager = entityManagerFactory.createEntityManager();
+		globalQuery = entityManager.createNamedQuery("globals.project.timeStamp", Global.class);
 	}
-	
+
 	public static enum GLOBAL_SELECTOR {
 		INITIALCAPITAL("Initial Capital"), CURRENTCAPITAL("Current Capital"), PROFIT("Profit"), PROFITRATE("Profit Rate"), TOTALVALUE(
 				"Total Value"), TOTALPRICE("Total Price"), MELT("MELT"), POPULATION_GROWTH_RATE(
@@ -94,26 +95,21 @@ public class Global extends Observable implements Serializable {
 		}
 	}
 
-	@Transient private Global comparator = null;
-	@Transient private Global previousComparator;
-	@Transient private Global startComparator;
-	@Transient private Global  customComparator;
-	@Transient private Global  endComparator;
-
 	public Global() {
 		pk = new GlobalPK();
 	}
 
-	public void copyGlobal(Global globalTemplate) {
-		pk.timeStamp = globalTemplate.pk.timeStamp;
-		pk.project = globalTemplate.pk.project;
-		rateOfExploitation = globalTemplate.getRateOfExploitation();
-		melt = globalTemplate.getMelt();
-		populationGrowthRate = globalTemplate.getPopulationGrowthRate();
-		investmentRatio = globalTemplate.investmentRatio;
-		labourSupplyResponse = globalTemplate.labourSupplyResponse;
-		currencySymbol = globalTemplate.currencySymbol;
-		quantitySymbol = globalTemplate.quantitySymbol;
+	public Global(Global template) {
+		pk=new GlobalPK();
+		pk.timeStamp = template.pk.timeStamp;
+		pk.project = template.pk.project;
+		rateOfExploitation = template.getRateOfExploitation();
+		melt = template.getMelt();
+		populationGrowthRate = template.getPopulationGrowthRate();
+		investmentRatio = template.investmentRatio;
+		labourSupplyResponse = template.labourSupplyResponse;
+		currencySymbol = template.currencySymbol;
+		quantitySymbol = template.quantitySymbol;
 	}
 
 	public String value(GLOBAL_SELECTOR selector) {
@@ -161,19 +157,19 @@ public class Global extends Observable implements Serializable {
 		chooseComparison();
 		switch (selector) {
 		case CURRENTCAPITAL:
-			return String.format(ViewManager.largeNumbersFormatString,  currentCapital() - comparator.currentCapital());
+			return String.format(ViewManager.largeNumbersFormatString, currentCapital() - comparator.currentCapital());
 		case INITIALCAPITAL:
-			return String.format(ViewManager.largeNumbersFormatString,  initialCapital() - comparator.initialCapital());
+			return String.format(ViewManager.largeNumbersFormatString, initialCapital() - comparator.initialCapital());
 		case MELT:
-			return String.format(ViewManager.smallNumbersFormatString,  melt - comparator.melt);
+			return String.format(ViewManager.smallNumbersFormatString, melt - comparator.melt);
 		case PROFIT:
-			return String.format(ViewManager.largeNumbersFormatString,  profit() - comparator.profit());
+			return String.format(ViewManager.largeNumbersFormatString, profit() - comparator.profit());
 		case PROFITRATE:
-			return String.format(ViewManager.smallNumbersFormatString,  profitRate() - comparator.profitRate());
+			return String.format(ViewManager.smallNumbersFormatString, profitRate() - comparator.profitRate());
 		case TOTALPRICE:
-			return String.format(ViewManager.largeNumbersFormatString,  totalPrice() - comparator.totalPrice());
+			return String.format(ViewManager.largeNumbersFormatString, totalPrice() - comparator.totalPrice());
 		case TOTALVALUE:
-			return String.format(ViewManager.largeNumbersFormatString,  totalValue() - comparator.totalValue());
+			return String.format(ViewManager.largeNumbersFormatString, totalValue() - comparator.totalValue());
 		case LABOUR_SUPPLY_RESPONSE:
 		case POPULATION_GROWTH_RATE:
 		case PRICE_DYNAMICS:
@@ -217,7 +213,7 @@ public class Global extends Observable implements Serializable {
 			return false;
 		}
 	}
-	
+
 	public static void setComparators(int timeStampID) {
 		globalQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStampID);
 		Global currentGlobal = globalQuery.getSingleResult();
@@ -226,8 +222,7 @@ public class Global extends Observable implements Serializable {
 		currentGlobal.setPreviousComparator(getGlobal(Simulation.timeStampIDCurrent));
 		currentGlobal.setCustomComparator(getGlobal(Simulation.timeStampIDCurrent));
 	}
-	
-	
+
 	/**
 	 * retrieve the global record for the specified timeStamp and project
 	 * 
@@ -333,9 +328,9 @@ public class Global extends Observable implements Serializable {
 		for (Industry c : Industry.industriesAll(pk.timeStamp)) {
 			initialCapital += c.getInitialCapital();
 		}
-// TODO get this aggregate query working		
-//		double checkInitialCapital;
-//		checkInitialCapital=DataManager.industriesInitialCapital(pk.timeStamp);
+		// TODO get this aggregate query working
+		// double checkInitialCapital;
+		// checkInitialCapital=DataManager.industriesInitialCapital(pk.timeStamp);
 		return initialCapital;
 	}
 
@@ -403,36 +398,32 @@ public class Global extends Observable implements Serializable {
 		return true;
 	}
 
-	
 	/**
 	 * chooses the comparator depending on the state set in the {@code ViewManager.comparatorToggle} radio buttons
 	 */
-	
-	private void chooseComparison(){
-		switch(ViewManager.getComparatorState()) {
+
+	private void chooseComparison() {
+		switch (ViewManager.getComparatorState()) {
 		case CUSTOM:
-			comparator=customComparator;
+			comparator = customComparator;
 			break;
 		case END:
-			comparator=endComparator;
+			comparator = endComparator;
 			break;
 		case PREVIOUS:
-			comparator=previousComparator;
+			comparator = previousComparator;
 			break;
 		case START:
-			comparator=startComparator;
+			comparator = startComparator;
 		}
 	}
-	
 
 	/**
-	 * @return the globalEntityManager
+	 * @return the entityManager
 	 */
-	public static EntityManager getGlobalEntityManager() {
-		return globalEntityManager;
+	public static EntityManager getEntityManager() {
+		return entityManager;
 	}
-
-	
 
 	@Override public String toString() {
 		return "demo.Globals[ persistent globalsPK=" + pk + " ]";
@@ -466,21 +457,6 @@ public class Global extends Observable implements Serializable {
 	 */
 	public void setLabourSupplyResponse(Simulation.LABOUR_SUPPLY_RESPONSE labourSupplyResponse) {
 		this.labourSupplyResponse = labourSupplyResponse;
-	}
-
-	/**
-	 * @return the surplusMeansOfProduction
-	 */
-	public double getSurplusMeansOfProduction() {
-		return surplusMeansOfProduction;
-	}
-
-	/**
-	 * @param totalSurplusOfMeansOfProduction
-	 *            the totalSurplusOfMeansOfProduction to set
-	 */
-	public void setSurplusMeansOfProduction(double totalSurplusOfMeansOfProduction) {
-		this.surplusMeansOfProduction = totalSurplusOfMeansOfProduction;
 	}
 
 	/**
@@ -521,7 +497,8 @@ public class Global extends Observable implements Serializable {
 	}
 
 	/**
-	 * @param comparator the comparator to set
+	 * @param comparator
+	 *            the comparator to set
 	 */
 	public void setComparator(Global comparator) {
 		this.comparator = comparator;
@@ -530,12 +507,13 @@ public class Global extends Observable implements Serializable {
 	/**
 	 * @return the previousComparator
 	 */
-	public Global  getPreviousComparator() {
+	public Global getPreviousComparator() {
 		return previousComparator;
 	}
 
 	/**
-	 * @param previousComparator the previousComparator to set
+	 * @param previousComparator
+	 *            the previousComparator to set
 	 */
 	public void setPreviousComparator(Global previousComparator) {
 		this.previousComparator = previousComparator;
@@ -544,12 +522,13 @@ public class Global extends Observable implements Serializable {
 	/**
 	 * @return the startComparator
 	 */
-	public Global  getStartComparator() {
+	public Global getStartComparator() {
 		return startComparator;
 	}
 
 	/**
-	 * @param startComparator the startComparator to set
+	 * @param startComparator
+	 *            the startComparator to set
 	 */
 	public void setStartComparator(Global startComparator) {
 		this.startComparator = startComparator;
@@ -558,12 +537,13 @@ public class Global extends Observable implements Serializable {
 	/**
 	 * @return the customComparator
 	 */
-	public Global  getCustomComparator() {
+	public Global getCustomComparator() {
 		return customComparator;
 	}
 
 	/**
-	 * @param customComparator the customComparator to set
+	 * @param customComparator
+	 *            the customComparator to set
 	 */
 	public void setCustomComparator(Global customComparator) {
 		this.customComparator = customComparator;
@@ -572,17 +552,16 @@ public class Global extends Observable implements Serializable {
 	/**
 	 * @return the endComparator
 	 */
-	public Global  getEndComparator() {
+	public Global getEndComparator() {
 		return endComparator;
 	}
 
 	/**
-	 * @param endComparator the endComparator to set
+	 * @param endComparator
+	 *            the endComparator to set
 	 */
-	public void setEndComparator(Global  endComparator) {
+	public void setEndComparator(Global endComparator) {
 		this.endComparator = endComparator;
 	}
 
-	
-	
 }

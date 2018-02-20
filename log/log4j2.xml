@@ -11,13 +11,13 @@
 			<PatternLayout pattern="[%-20c{1}] %msg%n" />
 			</File>
 		<File name="Userview" fileName="${UserDataDir}\\logfiles\\userview.log">
-			<PatternLayout pattern="[%-20c{1}] %msg%n" />
+			<PatternLayout pattern="[%-20c{1}](%r) %msg%n" />
 		</File>
 	</Appenders>
 	<Loggers>
 		<Root level="trace">
-			<AppenderRef ref="Console" level ="DEBUG"/>
-			<AppenderRef ref="Debug" level = "DEBUG"/>
+			<AppenderRef ref="Console" level ="OFF"/>
+			<AppenderRef ref="Debug" level = "OFF"/>
 			<AppenderRef ref="Userview" level="INFO"/>
 		</Root>
 	</Loggers>

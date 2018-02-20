@@ -22,7 +22,6 @@ package rd.dev.simulation.model;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Observable;
 import javax.persistence.*;
 
 import org.apache.logging.log4j.LogManager;
@@ -49,7 +48,7 @@ import rd.dev.simulation.view.ViewManager;
 		@NamedQuery(name = "CommodityFunctionType", query = "SELECT u FROM Commodity u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.commodityFunctionType=:commodityFunctionType order by u.displayOrder")
 })
 @Embeddable
-public class Commodity extends Observable implements Serializable {
+public class Commodity implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = LogManager.getLogger("Commodity");
 
@@ -68,50 +67,30 @@ public class Commodity extends Observable implements Serializable {
 	@Column(name = "imageName") private String imageName; // a graphical image that can be used in column headers in place of text
 	@Column(name = "displayOrder") private int displayOrder; // used to determine which order to display columns
 
-	@Transient double surplusRemaining;// records, temporarily, what remains of the surplus product after an industry has expanded
-
+	// Comparators
 	@Transient private Commodity comparator;
 	@Transient private Commodity previousComparator;
 	@Transient private Commodity startComparator;
 	@Transient private Commodity customComparator;
 	@Transient private Commodity endComparator;
-	
-	public static EntityManagerFactory commodityEntityManagerFactory = Persistence.createEntityManagerFactory("DB_COMMODITIES");
-	public static EntityManager commodityEntityManager;
-	
-	public static TypedQuery<Commodity> commodityByPrimaryKeyQuery;
-	public static TypedQuery<Commodity> commoditiesAllQuery;
-	public static TypedQuery<Commodity> commoditiesProductiveQuery;
-	public static TypedQuery<Commodity> commoditiesByOriginTypeQuery;
-	public static TypedQuery<Commodity> commoditiesByFunctionQuery;
+
+	// Data Management fields
+	private static EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DB_COMMODITIES");
+	private static EntityManager entityManager;
+	private static TypedQuery<Commodity> commodityByPrimaryKeyQuery;
+	private static TypedQuery<Commodity> commoditiesAllQuery;
+	private static TypedQuery<Commodity> commoditiesByOriginTypeQuery;
+	private static TypedQuery<Commodity> commoditiesByFunctionQuery;
 
 	static {
-		commodityEntityManager = commodityEntityManagerFactory.createEntityManager();
-		commodityByPrimaryKeyQuery = commodityEntityManager.createNamedQuery("Primary", Commodity.class);
-		commoditiesAllQuery = commodityEntityManager.createNamedQuery("All", Commodity.class);
-		commoditiesByOriginTypeQuery = commodityEntityManager.createNamedQuery("CommodityOriginType", Commodity.class);
-		commoditiesByFunctionQuery = commodityEntityManager.createNamedQuery("CommodityFunctionType", Commodity.class);
-	}
-
-
-
-	/**
-	 * an observable list of type Commodity for display by ViewManager, at the current project and timeStampDisplayCursor. timeStampDisplayCursor, which
-	 * may diverge from timeStamp, identifies the row that the user last clicked on.
-	 * 
-	 * @return a list of Observable UseValues for the current project and timeStamp
-	 */
-
-	public static ObservableList<Commodity> commoditiesObservable() {
-		Commodity.commoditiesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp",
-				Simulation.timeStampDisplayCursor);
-		ObservableList<Commodity> result = FXCollections.observableArrayList();
-		for (Commodity u : Commodity.commoditiesAllQuery.getResultList()) {
-			result.add(u);
-		}
-		return result;
+		entityManager = entityManagerFactory.createEntityManager();
+		commodityByPrimaryKeyQuery = entityManager.createNamedQuery("Primary", Commodity.class);
+		commoditiesAllQuery = entityManager.createNamedQuery("All", Commodity.class);
+		commoditiesByOriginTypeQuery = entityManager.createNamedQuery("CommodityOriginType", Commodity.class);
+		commoditiesByFunctionQuery = entityManager.createNamedQuery("CommodityFunctionType", Commodity.class);
 	}
 	
+	//Enums
 	/**
 	 * Basic classification of commodity types: how are they used?
 	 * 
@@ -140,16 +119,10 @@ public class Commodity extends Observable implements Serializable {
 	public enum ORIGIN_TYPE {
 		SOCIALlY_PRODUCED("Social"), INDUSTRIALLY_PRODUCED("Capitalist"), MONEY("Money");
 		String text;
-
 		ORIGIN_TYPE(String text) {
 			this.text = text;
 		}
-
-		/**
-		 * @return the text associated with this type - normally, so it can be displayed for the user
-		 */
-
-		public String getText() {
+		public String text() {
 			return text;
 		}
 	}
@@ -186,38 +159,29 @@ public class Commodity extends Observable implements Serializable {
 			this.imageName = imageName;
 			this.toolTip = toolTip;
 		}
-
 		public String text() {
 			return text;
 		}
-
 		public String imageName() {
 			return imageName;
 		}
-
 		public String tooltip() {
 			return toolTip;
 		}
 	}
-
-	/**
-	 * Constructor for a Commodity entity.
-	 * Returns a 'hollow' Commodity with a hollow primary key; it has not been persisted and can therefore contain an inconsistent primary key,
-	 * which must be properly set before the entity is committed to the database
-	 */
-
+	
 	public Commodity() {
-		this.pk = new CommodityPK();
+		this.pk=new CommodityPK();
 	}
 
 	/**
-	 * make a carbon copy of the commodity in the template entity
+	 * make a carbon copy of the commodity in the template entity with a new primary key record
 	 * 
 	 * @param template
 	 *            the commodity to copy - usually the one from the previous timeStamp
 	 */
-
-	public void copy(Commodity template) {
+	public Commodity(Commodity template) {
+		this.pk=new CommodityPK();
 		this.pk.timeStamp = template.pk.timeStamp;
 		this.pk.name = template.pk.name;
 		this.pk.project = template.pk.project;
@@ -233,7 +197,24 @@ public class Commodity extends Observable implements Serializable {
 		this.imageName = template.imageName;
 		this.displayOrder = template.displayOrder;
 	}
+	
+	/**
+	 * an observable list of type Commodity for display by ViewManager, at the current project and timeStampDisplayCursor. timeStampDisplayCursor, which
+	 * may diverge from timeStamp, identifies the row that the user last clicked on.
+	 * 
+	 * @return a list of Observable UseValues for the current project and timeStamp
+	 */
 
+	public static ObservableList<Commodity> commoditiesObservable() {
+		Commodity.commoditiesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp",
+				Simulation.timeStampDisplayCursor);
+		ObservableList<Commodity> result = FXCollections.observableArrayList();
+		for (Commodity u : Commodity.commoditiesAllQuery.getResultList()) {
+			result.add(u);
+		}
+		return result;
+	}
+	
 	/**
 	 * provides a wrapped version of the selected member which the display will recognise, as a ReadOnlyStringWrapper.
 	 * 
@@ -250,7 +231,7 @@ public class Commodity extends Observable implements Serializable {
 		case NAME:
 			return new ReadOnlyStringWrapper(pk.name);
 		case OWNERTYPE:
-			return new ReadOnlyStringWrapper(commodityOriginType.getText());
+			return new ReadOnlyStringWrapper(commodityOriginType.text());
 		case UNITPRICE:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, unitPrice));
 		case UNITVALUE:
@@ -626,10 +607,10 @@ public class Commodity extends Observable implements Serializable {
 	
 
 	/**
-	 * @return the commodityEntityManager
+	 * @return the entityManager
 	 */
 	public static EntityManager getEntityManager() {
-		return Commodity.commodityEntityManager;
+		return Commodity.entityManager;
 	}
 	
 	public double getTurnoverTime() {

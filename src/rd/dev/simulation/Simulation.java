@@ -237,17 +237,16 @@ public class Simulation {
 		Stock.getEntityManager().getTransaction().begin();
 		Industry.getEntityManager().getTransaction().begin();
 		SocialClass.getEntityManager().getTransaction().begin();
-		Global.getGlobalEntityManager().getTransaction().begin();
+		Global.getEntityManager().getTransaction().begin();
 
 		// Use values
 
 		logger.debug(" Persisting a new set of use values with timeStamp {}", timeStampIDCurrent + 1);
-		Commodity newUseValue;
+		Commodity comodity;
 		for (Commodity u : Commodity.commoditiesAll()) {
-			newUseValue = new Commodity();
-			newUseValue.copy(u);
-			newUseValue.setTimeStamp(timeStampIDCurrent + 1);
-			Commodity.getEntityManager().persist(newUseValue);
+			comodity = new Commodity(u);
+			comodity.setTimeStamp(timeStampIDCurrent + 1);
+			Commodity.getEntityManager().persist(comodity);
 		}
 
 		// Stocks
@@ -256,8 +255,7 @@ public class Simulation {
 		Stock newStock;
 		for (Stock s : Stock.stocksAll()) {
 			logger.log(Level.ALL, "   Persisting " + s.primaryKeyAsString());
-			newStock = new Stock();
-			newStock.copyStock(s);
+			newStock = new Stock(s);
 			newStock.setTimeStamp(timeStampIDCurrent + 1);
 			Stock.getEntityManager().persist(newStock);
 		}
@@ -268,8 +266,7 @@ public class Simulation {
 		Industry newIndustry;
 		for (Industry c : Industry.industriesAll()) {
 			logger.debug("  Persisting an industry whose use value is " + c.getIndustryName());
-			newIndustry = new Industry();
-			newIndustry.copyIndustry(c);
+			newIndustry = new Industry(c);
 			newIndustry.setTimeStamp(timeStampIDCurrent + 1);
 			Industry.getEntityManager().persist(newIndustry);
 		}
@@ -281,7 +278,7 @@ public class Simulation {
 		for (SocialClass sc : SocialClass.socialClassesAll()) {
 			logger.debug("  Persisting a social class whose name is " + sc.getSocialClassName());
 			newSocialClass = new SocialClass();
-			newSocialClass.copySocialClass(sc);
+			newSocialClass.copy(sc);
 			newSocialClass.setTimeStamp(timeStampIDCurrent + 1);
 			SocialClass.getEntityManager().persist(newSocialClass);
 		}
@@ -289,11 +286,9 @@ public class Simulation {
 		// Globals
 
 		logger.debug(" Persisting a new globals record with timeStamp {} ", timeStampIDCurrent + 1);
-		Global g = Global.getGlobal();
-		Global newGlobal = new Global();
-		newGlobal.copyGlobal(g);
+		Global newGlobal = new Global(Global.getGlobal());
 		newGlobal.setTimeStamp(timeStampIDCurrent + 1);
-		Global.getGlobalEntityManager().persist(newGlobal);
+		Global.getEntityManager().persist(newGlobal);
 
 		setComparators(timeStampIDCurrent + 1);
 
@@ -301,7 +296,7 @@ public class Simulation {
 		Industry.getEntityManager().getTransaction().commit();
 		Stock.getEntityManager().getTransaction().commit();
 		Commodity.getEntityManager().getTransaction().commit();
-		Global.getGlobalEntityManager().getTransaction().commit();
+		Global.getEntityManager().getTransaction().commit();
 
 		timeStampIDCurrent++;
 
@@ -376,7 +371,7 @@ public class Simulation {
 
 		Project thisProject = Project.projectSingle(Simulation.projectCurrent);
 
-		Project.entityManager.getTransaction().begin();
+		Project.getEntityManager().getTransaction().begin();
 
 		thisProject.setTimeStamp(Simulation.timeStampIDCurrent);
 		thisProject.setTimeStampDisplayCursor(Simulation.timeStampDisplayCursor);
@@ -384,7 +379,7 @@ public class Simulation {
 		thisProject.setButtonState(actionButtonsBox.getLastAction().getText());
 		thisProject.setPeriod(Simulation.getPeriodCurrent());
 
-		Project.entityManager.getTransaction().commit();
+		Project.getEntityManager().getTransaction().commit();
 
 		// retrieve the selected project record, and copy its various cursors and into the simulation cursors
 

@@ -1,5 +1,9 @@
 # Capitalism 9.0 announcements 2/19/2018 9:43:17 AM 
 
+## 2/20/2018 3:36:07 AM 
+
+Code tidy. No new executable
+
 ## 2/19/2018 9:05:37 PM 
 
 Data management overhauled. No changed in functionality except slightly faster.
