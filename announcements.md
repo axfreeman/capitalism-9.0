@@ -1,4 +1,12 @@
-# Capitalism 9.0 announcements 2/19/2018 9:43:17 AM 
+# Capitalism 9.0 announcements 2/22/2018 9:17:19 AM 
+
+## 2/22/2018 9:17:38 AM 
+
+All projects working; profit rate equalization has some remaining problems but code is in place, prices are successfully calculated and reproduction continues into the next period.
+Some changes in functionality.
+Hence new executable.
+User Guide now slightly out of date.
+Tutorial still under way.
 
 ## consolidated 2/20/2018 2:07:43 PM 
 

@@ -60,10 +60,13 @@ public class TabbedTableViewer extends VBox {
 	private TableColumn<Commodity, String> commodityDemandSupplySuperColumn;
 	private TableColumn<Commodity, String> commodityCapitalProfitSuperColumn;
 	private TableColumn<Commodity, String> commodityValuePriceSuperColumn;
+	private TableColumn<Commodity, String> commodityBasicsSuperColumn;
 
 	private TableColumn<Commodity, String> commodityTotalPriceColumn;
 	private TableColumn<Commodity, String> commodityAllocationShareColumn;
 	private TableColumn<Commodity, String> commodityProfitRateColumn;
+	private TableColumn<Commodity, String> commodityQuantityColumn;
+	private TableColumn<Commodity, String> commodityNameColumn;
 
 	// Industry Tables and their header columns
 
@@ -83,7 +86,7 @@ public class TabbedTableViewer extends VBox {
 	 * if two fields appear in different entity classes that describe the same thing, we can
 	 * provide for them to get the same tooltip.
 	 */
-	
+
 	public static enum HEADER_TOOL_TIPS {
 		// @formatter:off
 		COMMODITY("A commodity is anything that that society makes use of, and has established a quantitative measure for\n. "
@@ -163,6 +166,7 @@ public class TabbedTableViewer extends VBox {
 		TableUtilities.setSuperColumnHandler(commodityValuePriceSuperColumn, commodityTotalPriceColumn);
 		TableUtilities.setSuperColumnHandler(commodityDemandSupplySuperColumn, commodityAllocationShareColumn);
 		TableUtilities.setSuperColumnHandler(commodityCapitalProfitSuperColumn, commodityProfitRateColumn);
+		TableUtilities.setSuperColumnHandler(commodityBasicsSuperColumn, commodityQuantityColumn);
 	}
 
 	/**
@@ -170,14 +174,14 @@ public class TabbedTableViewer extends VBox {
 	 */
 	public void makeProductiveStocksViewTable() {
 		productiveStockHeaderColumn.getColumns().clear();
-		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.OWNER,true));
-		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.COMMODITY,true));
-		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.QUANTITY,false));
-		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.VALUE,false));
-		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.PRICE,false));
-		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.PRODUCTION_COEFFICIENT,false));
-		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.REPLENISHMENTDEMAND,false));
-		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.EXPANSIONDEMAND,false));
+		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.OWNER, true));
+		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.COMMODITY, true));
+		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.QUANTITY, false));
+		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.VALUE, false));
+		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.PRICE, false));
+		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.PRODUCTION_COEFFICIENT, false));
+		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.REPLENISHMENTDEMAND, false));
+		productiveStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.EXPANSIONDEMAND, false));
 	}
 
 	/**
@@ -185,11 +189,11 @@ public class TabbedTableViewer extends VBox {
 	 */
 	public void makeMoneyStocksViewTable() {
 		moneyStockHeaderColumn.getColumns().clear();
-		moneyStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.OWNERTYPE,true));
-		moneyStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.OWNER,true));
-		moneyStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.QUANTITY,false));
-		moneyStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.VALUE,false));
-		moneyStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.PRICE,false));
+		moneyStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.OWNERTYPE, true));
+		moneyStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.OWNER, true));
+		moneyStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.QUANTITY, false));
+		moneyStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.VALUE, false));
+		moneyStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.PRICE, false));
 	}
 
 	/**
@@ -197,12 +201,12 @@ public class TabbedTableViewer extends VBox {
 	 */
 	public void makeSalesStocksViewTable() {
 		salesStockHeaderColumn.getColumns().clear();
-		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.OWNERTYPE,true));
-		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.OWNER,true));
-		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.COMMODITY,false));
-		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.QUANTITY,false));
-		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.VALUE,false));
-		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.PRICE,false));
+		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.OWNERTYPE, true));
+		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.OWNER, true));
+		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.COMMODITY, false));
+		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.QUANTITY, false));
+		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.VALUE, false));
+		salesStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.PRICE, false));
 	}
 
 	/**
@@ -210,13 +214,13 @@ public class TabbedTableViewer extends VBox {
 	 */
 	public void makeConsumptionStocksViewTable() {
 		consumptionStockHeaderColumn.getColumns().clear();
-		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.OWNER,true));
-		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.COMMODITY,true));
-		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.QUANTITY,false));
-		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.VALUE,false));
-		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.PRICE,false));
-		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.REPLENISHMENTDEMAND,false));
-		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.CONSUMPTION_COEFFICIENT,false));
+		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.OWNER, true));
+		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.COMMODITY, true));
+		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.QUANTITY, false));
+		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.VALUE, false));
+		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.PRICE, false));
+		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.REPLENISHMENTDEMAND, false));
+		consumptionStockHeaderColumn.getColumns().add(new StockColumn(Stock.Selector.CONSUMPTION_COEFFICIENT, false));
 	}
 
 	/**
@@ -225,33 +229,28 @@ public class TabbedTableViewer extends VBox {
 	public void makeCommoditiesViewTable() {
 		commoditiesTable.getColumns().clear();
 
-		// Create the header columns
-		// Assume Garbage collector will dispose of the detached subColumns
-		commodityValuePriceSuperColumn=new TableColumn<Commodity,String>("Values and Prices");
-		// trying to detect why nested columns don't resize properly
-		logger.debug("#########SuperColumn prefwidth = {} maxwidth {} minwidth {} resizable {}", 
-				commodityValuePriceSuperColumn.getPrefWidth(),commodityValuePriceSuperColumn.getMaxWidth(),
-				commodityValuePriceSuperColumn.getMinWidth(),commodityValuePriceSuperColumn.isResizable());
-		commodityValuePriceSuperColumn.setResizable(true);
-		
-		commodityDemandSupplySuperColumn=new TableColumn<Commodity,String>("Demand and Supply");
-		commodityDemandSupplySuperColumn.setResizable(true);
-		
-		commodityCapitalProfitSuperColumn=new TableColumn<Commodity,String>("CapitalAndProfit");
-		commodityCapitalProfitSuperColumn.setResizable(true);
-		
-		
-		commoditiesTable.getColumns().add(new CommodityColumn(Commodity.SELECTOR.NAME, true));
-		commoditiesTable.getColumns().add(new CommodityColumn(Commodity.SELECTOR.FUNCTION_TYPE, true));
-		commoditiesTable.getColumns().add(new CommodityColumn(Commodity.SELECTOR.TOTALQUANTITY, false));
+		commodityNameColumn = new CommodityColumn(Commodity.SELECTOR.NAME, true);
+		commodityNameColumn.setMinWidth(80); // because some commodity names are quite long
+		commoditiesTable.getColumns().add(commodityNameColumn);
 
+		commodityBasicsSuperColumn = new TableColumn<Commodity, String>("Basics");
+		commoditiesTable.getColumns().add(commodityBasicsSuperColumn);
+		commodityBasicsSuperColumn.getColumns().add(new CommodityColumn(Commodity.SELECTOR.FUNCTION_TYPE, true));
+		commodityQuantityColumn=new CommodityColumn(Commodity.SELECTOR.TOTALQUANTITY, false);
+		commodityBasicsSuperColumn.getColumns().add(commodityQuantityColumn);
+		commodityBasicsSuperColumn.getColumns().add(new CommodityColumn(Commodity.SELECTOR.TURNOVERTIME, false));
+
+		commodityValuePriceSuperColumn = new TableColumn<Commodity, String>("Values and Prices");
+		commodityValuePriceSuperColumn.setResizable(true);
 		commoditiesTable.getColumns().add(commodityValuePriceSuperColumn);
-		commodityValuePriceSuperColumn.getColumns().add(new CommodityColumn(Commodity.SELECTOR.UNITVALUE, false));		
+		commodityValuePriceSuperColumn.getColumns().add(new CommodityColumn(Commodity.SELECTOR.UNITVALUE, false));
 		commodityValuePriceSuperColumn.getColumns().add(new CommodityColumn(Commodity.SELECTOR.UNITPRICE, false));
 		commodityValuePriceSuperColumn.getColumns().add(new CommodityColumn(Commodity.SELECTOR.TOTALVALUE, false));
 		commodityTotalPriceColumn = new CommodityColumn(Commodity.SELECTOR.TOTALPRICE, false);
 		commodityValuePriceSuperColumn.getColumns().add(commodityTotalPriceColumn);
 
+		commodityDemandSupplySuperColumn = new TableColumn<Commodity, String>("Demand and Supply");
+		commodityDemandSupplySuperColumn.setResizable(true);
 		commoditiesTable.getColumns().add(commodityDemandSupplySuperColumn);
 		commodityDemandSupplySuperColumn.getColumns().add(new CommodityColumn(Commodity.SELECTOR.TOTALSUPPLY, false));
 		commodityDemandSupplySuperColumn.getColumns().add(new CommodityColumn(Commodity.SELECTOR.REPLENISHMENT_DEMAND, false));
@@ -259,15 +258,14 @@ public class TabbedTableViewer extends VBox {
 		commodityAllocationShareColumn = new CommodityColumn(Commodity.SELECTOR.ALLOCATIONSHARE, false);
 		commodityDemandSupplySuperColumn.getColumns().add(commodityAllocationShareColumn);
 
+		commodityCapitalProfitSuperColumn = new TableColumn<Commodity, String>("CapitalAndProfit");
+		commodityCapitalProfitSuperColumn.setResizable(true);
 		commoditiesTable.getColumns().add(commodityCapitalProfitSuperColumn);
+		commodityProfitRateColumn = new CommodityColumn(Commodity.SELECTOR.PROFITRATE, false);
 		commodityCapitalProfitSuperColumn.getColumns().add(new CommodityColumn(Commodity.SELECTOR.INITIALCAPITAL, false));
 		commodityCapitalProfitSuperColumn.getColumns().add(new CommodityColumn(Commodity.SELECTOR.PROFIT, false));
-		commodityProfitRateColumn = new CommodityColumn(Commodity.SELECTOR.PROFITRATE, false);
 		commodityCapitalProfitSuperColumn.getColumns().add(commodityProfitRateColumn);
 		commodityCapitalProfitSuperColumn.getColumns().add(new CommodityColumn(Commodity.SELECTOR.SURPLUS, false));
-		
-		commoditiesTable.getColumns().add(new CommodityColumn(Commodity.SELECTOR.TURNOVERTIME, false));
-
 	}
 
 	/**
@@ -275,15 +273,15 @@ public class TabbedTableViewer extends VBox {
 	 */
 	public void makeSocialClassesViewTable() {
 		socialClassesTable.getColumns().clear();
-		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SOCIALCLASSNAME,true));
-		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SIZE,false));
-		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SALES,false));
-		for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION_TYPE.CONSUMER_GOOD)) {
+		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SOCIALCLASSNAME, true));
+		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SIZE, false));
+		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.SALES, false));
+		for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION.CONSUMER_GOOD)) {
 			socialClassesTable.getColumns().add(new SocialClassColumn(u));
 		}
-		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.MONEY,false));
-		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.REVENUE,false));
-		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.TOTAL,false));
+		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.MONEY, false));
+		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.REVENUE, false));
+		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.Selector.TOTAL, false));
 	}
 
 	/**
@@ -292,14 +290,14 @@ public class TabbedTableViewer extends VBox {
 	 */
 	public void makeIndustriesViewTable() {
 		industriesTable.getColumns().clear();
-		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.INDUSTRYNAME,true));
-		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.INITIALCAPITAL,false));
-		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.SALESSTOCK,false));
-		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.PRODUCTIVESTOCKS,false));
-		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.MONEYSTOCK,false));
-		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.CURRENTCAPITAL,false));
-		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.PROFIT,false));
-		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.PROFITRATE,false));
+		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.INDUSTRYNAME, true));
+		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.INITIALCAPITAL, false));
+		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.SALESSTOCK, false));
+		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.PRODUCTIVESTOCKS, false));
+		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.MONEYSTOCK, false));
+		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.CURRENTCAPITAL, false));
+		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.PROFIT, false));
+		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.PROFITRATE, false));
 	}
 
 	/**
@@ -308,16 +306,18 @@ public class TabbedTableViewer extends VBox {
 	 */
 	private void makeDynamicIndustriesTable() {
 		dynamicIndustryTable.getColumns().clear();
-		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.INDUSTRYNAME,true));
-		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.COMMODITYNAME,true));
-		for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION_TYPE.PRODUCTIVE_INPUT)) {
+		TableColumn<Industry, String> industryNameColumn = new IndustryColumn(Industry.Selector.INDUSTRYNAME, true);
+		industryNameColumn.setPrefWidth(100); // because some industry names are quite long
+		dynamicIndustryTable.getColumns().add(industryNameColumn);
+		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.COMMODITYNAME, true));
+		for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION.PRODUCTIVE_INPUT)) {
 			dynamicIndustryTable.getColumns().add(new IndustryColumn(u));
 		}
-		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.PROFIT,false));
-		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.SALESSTOCK,false));
-		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.OUTPUT,false));
-		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.PROPOSEDOUTPUT,false));
-		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.GROWTHRATE,false));
+		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.PROFIT, false));
+		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.SALESSTOCK, false));
+		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.OUTPUT, false));
+		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.PROPOSEDOUTPUT, false));
+		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.GROWTHRATE, false));
 	}
 
 	/**

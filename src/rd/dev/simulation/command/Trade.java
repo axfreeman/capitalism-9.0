@@ -32,7 +32,7 @@ import rd.dev.simulation.model.SocialClass;
 import rd.dev.simulation.utils.MathStuff;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.model.Commodity;
-import rd.dev.simulation.model.Commodity.ORIGIN_TYPE;
+import rd.dev.simulation.model.Commodity.ORIGIN;
 import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.Reporter;
 
@@ -78,7 +78,7 @@ public class Trade extends Simulation implements Command {
 							s.getCommodityName(), quantityPurchased * unitPrice);
 					Stock sellerMoneyStock = null;
 					Stock sellerSalesStock = null;
-					if (s.getCommodity().getCommodityOriginType() == ORIGIN_TYPE.SOCIALlY_PRODUCED){
+					if (s.getCommodity().getOrigin() == ORIGIN.SOCIALlY_PRODUCED){
 						// ask each class if it has some labour power to sell
 						// TODO at this point we only accept the first offer
 						// eventually we need to allow multiple sellers of Labour Power
@@ -133,7 +133,7 @@ public class Trade extends Simulation implements Command {
 		Reporter.report(logger, 1, "Social Classes will now try to purchase the stocks they need");
 		for (SocialClass buyer : SocialClass.socialClassesAll()) {
 			String buyerName = buyer.getSocialClassName();
-			for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION_TYPE.CONSUMER_GOOD)) {
+			for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION.CONSUMER_GOOD)) {
 				List<Industry> sellers = u.industries();
 
 				Industry seller=sellers.get(0);// TODO very temporary; just get the top one.

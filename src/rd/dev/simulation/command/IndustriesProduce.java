@@ -28,7 +28,7 @@ import rd.dev.simulation.model.Industry;
 import rd.dev.simulation.model.Global;
 import rd.dev.simulation.model.Stock;
 import rd.dev.simulation.model.Commodity;
-import rd.dev.simulation.model.Commodity.ORIGIN_TYPE;
+import rd.dev.simulation.model.Commodity.ORIGIN;
 import rd.dev.simulation.utils.Dialogues;
 import rd.dev.simulation.utils.MathStuff;
 import rd.dev.simulation.utils.Reporter;
@@ -52,7 +52,7 @@ public class IndustriesProduce extends Simulation implements Command {
 		// initialise the accounting for how much of this commodity is used up and how much is created in production in the current period
 		// so we can calculate how much surplus of it resulted from production in this period.
 
-		for (Commodity u : Commodity.commoditiesByOriginType(ORIGIN_TYPE.INDUSTRIALLY_PRODUCED)) {
+		for (Commodity u : Commodity.commoditiesByOrigin(ORIGIN.INDUSTRIALLY_PRODUCED)) {
 			u.setStockUsedUp(0);
 			u.setStockProduced(0);
 		}
@@ -70,7 +70,7 @@ public class IndustriesProduce extends Simulation implements Command {
 			double valueAdded = 0;
 			Reporter.report(logger, 1, " Industry [%s] is producing %.0f. units of its output; the melt is %.4f", commodityType, output, melt);
 
-			for (Stock s : Stock.stocksProductiveByIndustry(timeStampIDCurrent, commodityType)) {
+			for (Stock s : Stock.productiveByIndustry(timeStampIDCurrent, commodityType)) {
 
 				// a little consistency check ...
 				if (!s.getStockType().equals("Productive")) {
@@ -82,7 +82,7 @@ public class IndustriesProduce extends Simulation implements Command {
 				double coefficient = s.getProductionCoefficient();
 				double stockUsedUp = output * coefficient;
 				stockUsedUp = MathStuff.round(stockUsedUp);
-				if (s.getCommodity().getCommodityOriginType() == ORIGIN_TYPE.SOCIALlY_PRODUCED) {
+				if (s.getCommodity().getOrigin() == ORIGIN.SOCIALlY_PRODUCED) {
 					valueAdded += stockUsedUp * melt;
 					Reporter.report(logger, 2, "  Labour Power has added value amounting to %.0f (intrinsic %.0f) to commodity [%s]", valueAdded, stockUsedUp,c.getIndustryName());
 				} else {
@@ -117,8 +117,13 @@ public class IndustriesProduce extends Simulation implements Command {
 
 		// now (and only now) we can calculate the surplus (if any) of each of the use values
 
-		for (Commodity u : Commodity.commoditiesByOriginType(ORIGIN_TYPE.INDUSTRIALLY_PRODUCED)) {
+		for (Commodity u : Commodity.commoditiesByOrigin(ORIGIN.INDUSTRIALLY_PRODUCED)) {
 			u.setSurplusProduct(u.getStockProduced() - u.getStockUsedUp());
+		}
+		
+		// persist the profit that has been made, so that the Prices phase has access to it
+		for (Industry c:Industry.industriesAll()) {
+			c.persistProfit();
 		}
 	}
 }

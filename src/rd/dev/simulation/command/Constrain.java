@@ -76,7 +76,7 @@ public class Constrain extends Simulation implements Command {
 	 */
 
 	public void allocateToStocks() {
-		List<Stock> stockList = Stock.stocksSourcesOfDemand();
+		List<Stock> stockList = Stock.sourcesOfDemand();
 		Reporter.report(logger, 1, "Constraining demand for stocks, on the basis of constraints on output levels");
 
 		for (Stock s : stockList) {
@@ -104,7 +104,7 @@ public class Constrain extends Simulation implements Command {
 			double desiredOutputLevel = c.getOutput();
 			Reporter.report(logger, 1, "Estimating supply-constrained output for industry [%s] with unconstrained output %.0f",
 					c.getIndustryName(), desiredOutputLevel);
-			List<Stock> managedStocks = Stock.stocksProductiveByIndustry(timeStampIDCurrent, c.getIndustryName());
+			List<Stock> managedStocks = Stock.productiveByIndustry(timeStampIDCurrent, c.getIndustryName());
 			for (Stock s : managedStocks) {
 				double existingQuantity = s.getQuantity();
 				double quantityDemanded = s.getReplenishmentDemand();

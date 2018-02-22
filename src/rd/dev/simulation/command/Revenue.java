@@ -65,7 +65,7 @@ public class Revenue extends Simulation implements Command {
 			Stock donor = c.getMoneyStock();
 			recipient.modifyBy(profit);
 			donor.modifyBy(-profit);
-			Reporter.report(logger, 1, " Capitalist class has received $%.0f from industry [%s]",
+			Reporter.report(logger, 1, "Capitalist class has received $%.0f from industry [%s]",
 					profit, c.getIndustryName());
 
 			// Note: revenue is in effect a memo item, not a stock.
@@ -74,9 +74,8 @@ public class Revenue extends Simulation implements Command {
 			// TODO a stricter approach to the relation between money and revenue
 
 			capitalistRevenue+=profit;
-			
 		}
-		Reporter.report(logger, 1, " Capitalist revenue (disposable income) is now $%.0f", capitalistRevenue);
+		Reporter.report(logger, 1, "Capitalist revenue (disposable income) is now $%.0f", capitalistRevenue);
 		
 		capitalists.setRevenue(capitalistRevenue);
 	}

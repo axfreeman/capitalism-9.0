@@ -71,11 +71,6 @@ public class Accumulate extends Simulation implements Command {
 		advanceOneStep(ActionStates.C_M_Accumulate.getText(), ActionStates.C_M_Distribute.getText());
 		allocateToProductionIndustries();
 		allocateToConsumptionIndustries();
-
-		// start another period (so recompute the initial capitals)
-		// TODO setCapitals be part of advanceOnePeriod?
-		setCapitals(); 
-		Capitalism.simulation.advanceOnePeriod();
 	}
 
 	/**
@@ -85,10 +80,10 @@ public class Accumulate extends Simulation implements Command {
 	private void allocateToProductionIndustries() {
 		Reporter.report(logger, 1, "Allocating investment to the production goods industries");
 
-		for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION_TYPE.PRODUCTIVE_INPUT)) {
+		for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION.PRODUCTIVE_INPUT)) {
 
 			// Exclude socially-produced commodities
-			if (u.getCommodityOriginType() == Commodity.ORIGIN_TYPE.SOCIALlY_PRODUCED)
+			if (u.getOrigin() == Commodity.ORIGIN.SOCIALlY_PRODUCED)
 				continue;
 
 			Reporter.report(logger, 2, "Processing commodity %s", u.commodityName());
@@ -119,10 +114,10 @@ public class Accumulate extends Simulation implements Command {
 		double costs = 0;
 		Reporter.report(logger, 1, "Allocating investment to the consumption goods industries");
 		
-		for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION_TYPE.CONSUMER_GOOD)) {
+		for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION.CONSUMER_GOOD)) {
 
 			// Exclude socially-produced commodities
-			if (u.getCommodityOriginType() == Commodity.ORIGIN_TYPE.SOCIALlY_PRODUCED)
+			if (u.getOrigin() == Commodity.ORIGIN.SOCIALlY_PRODUCED)
 				continue;
 			
 			Reporter.report(logger, 2, "Processing commodity %s", u.commodityName());
@@ -131,7 +126,7 @@ public class Accumulate extends Simulation implements Command {
 			}
 		}
 
-		Reporter.report(logger, 1, "$%.0f will be allocated to finance accumulationin the production goods industries. $%.0f worth of Means of Production remain ",
+		Reporter.report(logger, 1, "$%.0f will be allocated to finance accumulation in the production goods industries. $%.0f worth of Means of Production remain ",
 				costs, surplusMeansOfProduction);
 	}
 }

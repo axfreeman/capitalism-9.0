@@ -16,7 +16,7 @@
 	</Appenders>
 	<Loggers>
 		<Root level="trace">
-			<AppenderRef ref="Console" level ="OFF"/>
+			<AppenderRef ref="Console" level ="DEBUG"/>
 			<AppenderRef ref="Debug" level = "OFF"/>
 			<AppenderRef ref="Userview" level="INFO"/>
 		</Root>

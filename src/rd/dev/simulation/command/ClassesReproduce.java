@@ -47,5 +47,12 @@ public class ClassesReproduce extends Simulation implements Command {
 			sc.consume();
 			sc.regenerate();
 		}
+		
+		Reporter.report(logger, 1, "Recompute values if necessary");
+		checkGlobalConsistency();
+
+		// recalculate unit values, because these will have changed as a result of production
+		computeUnitValues();
+
 	}
 }

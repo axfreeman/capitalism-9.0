@@ -292,7 +292,7 @@ public class SocialClass implements Serializable {
 
 	public ReadOnlyStringWrapper wrappedString(String consumptionStockName) {
 		try {
-			Stock namedStock = Stock.stockConsumptionByCommodityAndClassSingle(pk.timeStamp, pk.socialClassName, consumptionStockName);
+			Stock namedStock = Stock.consumptionByCommodityAndClassSingle(pk.timeStamp, pk.socialClassName, consumptionStockName);
 			String result = String.format(ViewManager.largeNumbersFormatString, namedStock.get(TabbedTableViewer.displayAttribute));
 			return new ReadOnlyStringWrapper(result);
 		} catch (Exception e) {
@@ -335,10 +335,14 @@ public class SocialClass implements Serializable {
 
 	public void consume() {
 		Reporter.report(logger, 1, "Replenishing the class [%s]", pk.socialClassName);
-		for (Stock s : Stock.stocksConsumptionByClass(Simulation.timeStampIDCurrent, pk.socialClassName)) {
+		for (Stock s : consumptionStocks()) {
 			double quantityConsumed = s.getQuantity();
 			s.modifyBy(-quantityConsumed);
-			Reporter.report(logger, 2, "Consumption stock of class [%s] reduced to %.0f from %.0f", pk.socialClassName, s.getQuantity(), quantityConsumed);
+			Commodity commodity=s.getCommodity();
+			double stockUsedUp= commodity.getStockUsedUp()+quantityConsumed;
+			commodity.setStockUsedUp(stockUsedUp);
+			Reporter.report(logger, 2, "Consumption stock of class [%s] reduced to %.0f from %.0f; used up stock now comes to %.0f",
+					pk.socialClassName, s.getQuantity(), quantityConsumed, stockUsedUp);
 		}
 	}
 	
@@ -348,7 +352,7 @@ public class SocialClass implements Serializable {
 	 * @return the money stock that is owned by this social class.
 	 */
 	public Stock getMoneyStock() {
-		return Stock.stockMoneyByIndustrySingle(pk.timeStamp, pk.socialClassName);
+		return Stock.stockMoneyByOwnerSingle(pk.timeStamp, pk.socialClassName);
 	}
 
 	/**
@@ -363,6 +367,14 @@ public class SocialClass implements Serializable {
 		return Stock.stockByPrimaryKey(Simulation.projectCurrent, pk.timeStamp, pk.socialClassName, "Labour Power", Stock.STOCKTYPE.SALES.text());
 	}
 
+	/**
+	 * a list of the various consumer goods owned by a this class, in the current project and the timeStamp of this class
+	 *
+	 * @return a list of the consumption stocks owned by this social class
+	 */
+	public List<Stock> consumptionStocks() {
+		return Stock.consumedByClass(pk.timeStamp,pk.socialClassName);
+	}
 
 	/**
 	 * temporary fix to yield the stock of necessities, while we convert to multiple consumption goods
@@ -372,7 +384,7 @@ public class SocialClass implements Serializable {
 	 */
 
 	public Stock getConsumptionStock() {
-		for (Stock s : Stock.stocksConsumptionByClass(Simulation.timeStampIDCurrent, pk.socialClassName)) {
+		for (Stock s : Stock.consumedByClass(Simulation.timeStampIDCurrent, pk.socialClassName)) {
 			if (s.getCommodityName().equals("Consumption"))
 				return s;
 			if (s.getCommodityName().equals("Necessities"))
@@ -390,7 +402,7 @@ public class SocialClass implements Serializable {
 	 */
 
 	public Stock getConsumptionStock(String commodityName) {
-		return Stock.stockConsumptionByCommodityAndClassSingle(pk.timeStamp, pk.socialClassName, commodityName);
+		return Stock.consumptionByCommodityAndClassSingle(pk.timeStamp, pk.socialClassName, commodityName);
 	}
 
 	// METHODS THAT RETRIEVE ATTRIBUTES OF STOCKS
@@ -501,6 +513,8 @@ public class SocialClass implements Serializable {
 			sc.setCustomComparator(socialClassByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, sc.getSocialClassName()));
 		}
 	}
+	
+	// Queries
 
 	/**
 	 * Get a single social class defined by its primary key, including a timeStamp that may differ from the current timeStamp
@@ -551,6 +565,8 @@ public class SocialClass implements Serializable {
 			return null;
 		}
 	}
+	
+	
 
 	/**
 	 * @return the entityManager

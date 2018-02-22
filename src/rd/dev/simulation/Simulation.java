@@ -109,7 +109,7 @@ public class Simulation {
 			p.setTimeStampComparatorCursor(timeStampComparatorCursor);
 
 			// set all project buttonState initially to the end of the non-existent previous period
-			p.setButtonState("Accumulate");
+			p.setButtonState("Prices");
 			Project.getEntityManager().getTransaction().commit();
 
 			// fetch this project's current timeStamp record (which must exist in the database or we flag an error but try to correct it)
@@ -157,7 +157,7 @@ public class Simulation {
 	/**
 	 * Test the invariants of motion. Calculates, for each commodity, the total price and total value based on what this commodity knows. Compares it with the
 	 * recorded totalprice and total value. Logs an error if they are not the same.
-
+	 * 
 	 * TODO incorporate further checks, as follows:
 	 * (1) no new value is created except in production
 	 * (2) total new value created in production is equal to total labour power used up
@@ -197,7 +197,7 @@ public class Simulation {
 
 		// a little consistency check
 
-		for (Stock s : Stock.stocksAll()) {
+		for (Stock s : Stock.all()) {
 			if (s.getQuantity() < 0 - MathStuff.epsilon) {
 				if (s.getStockType().equals(Stock.STOCKTYPE.MONEY.text())) {
 					Dialogues.alert(logger, "The owner %s has run out of money. "
@@ -253,7 +253,7 @@ public class Simulation {
 
 		logger.debug(" Persisting a new set of stocks with timeStamp {} ", timeStampIDCurrent + 1);
 		Stock newStock;
-		for (Stock s : Stock.stocksAll()) {
+		for (Stock s : Stock.all()) {
 			logger.log(Level.ALL, "   Persisting " + s.primaryKeyAsString());
 			newStock = new Stock(s);
 			newStock.setTimeStamp(timeStampIDCurrent + 1);
@@ -306,12 +306,58 @@ public class Simulation {
 	/**
 	 * tell every stock to record its value and price, based on the quantity of the stock, its unit value and its price
 	 */
-	public void calculateStockAggregates() {
+	private void calculateStockAggregates() {
 		Reporter.report(logger, 2, "Calculating stock values and prices from stock quantities, unit values and unit prices");
-		List<Stock> allStocks = Stock.stocksAll();
+		List<Stock> allStocks = Stock.all();
 		for (Stock s : allStocks) {
 			s.modifyTo(s.getQuantity());
 		}
+	}
+
+	/**
+	 * Reset all unit values to be the average value of all stocks.
+	 * Then recalculate stock values. Important. The new unit values were calculated on a
+	 * per-commodity basis. They are 'social' values; however production creates 'individual'
+	 * values on a per-industry basis. Now, individual industries must reconcile the value
+	 * of their product with social average values.
+	 */
+	public static void computeUnitValues() {
+		for (Commodity u : Commodity.commoditiesAll()) {
+			if (u.getFunction() != Commodity.FUNCTION.MONEY) {
+				double quantity = u.totalQuantity();
+				double newUnitValue = u.totalValue() / quantity;
+				Reporter.report(logger, 2, "The unit value of commodity [%s] was %.4f, and will be reset to %.4f", u.commodityName(), u.getUnitValue(),
+						newUnitValue);
+				u.setUnitValue(newUnitValue);
+			}
+		}
+		for (Stock s : Stock.all(timeStampIDCurrent)) {
+			s.reCalculateStockTotalValuesAndPrices();
+		}
+	}
+
+	/**
+	 * this helper method simply checks consistency
+	 */
+
+	public static void checkGlobalConsistency() {
+		double globalTotalValue = 0.0;
+		double globalTotalPrice = 0.0;
+		Global global = Global.getGlobal();
+		for (Commodity u : Commodity.commoditiesAll()) {
+			Reporter.report(logger, 2, "Commodity [%s] Total value is %.0f, and total price is %.0f", u.commodityName(), u.totalValue(), u.totalPrice());
+			globalTotalValue += u.totalValue();
+			globalTotalPrice += u.totalPrice();
+		}
+		Reporter.report(logger, 1, "Global total value is %.0f, and total price is %.0f", globalTotalValue, globalTotalPrice);
+
+		logger.debug("Recorded global total value is {}, and total value calculated from commodities is {}", global.totalValue(), globalTotalValue);
+		logger.debug("Recorded global total price is {}, and total price calculated from commodities is {}", global.totalPrice(), globalTotalPrice);
+
+		if (!MathStuff.equals(globalTotalValue, global.totalValue()))
+			Dialogues.alert(logger, "The total value of stocks is out of sync");
+		if (!MathStuff.equals(globalTotalPrice, global.totalPrice()))
+			Dialogues.alert(logger, "The total price of stocks is out of sync");
 	}
 
 	/**
@@ -329,11 +375,18 @@ public class Simulation {
 		}
 		Reporter.report(logger, 2, "Total initial capital is now $%.0f (intrinsic %.0f)", global.initialCapital(),
 				global.initialCapital() / global.getMelt());
+		Reporter.report(logger, 2, "The profit of the previous period has been erased from the record; it was stored during the price calculation");
+		// Erase the public record of the profit of the previous period
+		for (Industry c : Industry.industriesAll()) {
+			c.persistProfit();
+		}
 	}
 
 	public void advanceOnePeriod() {
 		periodCurrent++;
 		Reporter.report(logger, 0, "ADVANCING ONE PERIOD TO %d", periodCurrent);
+		// start another period so recompute the initial capitals and profits
+		setCapitals(); 
 	}
 
 	/**
@@ -354,7 +407,6 @@ public class Simulation {
 	 * @param actionButtonsBox
 	 *            the actionButtonsBox which has invoked the switch (and which knows the buttonState of the current project)
 	 */
-	
 
 	public static void switchProjects(int newProjectID, ActionButtonsBox actionButtonsBox) {
 		if (newProjectID == Simulation.projectCurrent) {
@@ -362,8 +414,8 @@ public class Simulation {
 			return;
 		}
 		Project newProject = Project.projectSingle(newProjectID);
-		if ((newProject.getPriceDynamics() == Project.PRICEDYNAMICS.DYNAMIC) || (newProject.getPriceDynamics() == Project.PRICEDYNAMICS.EQUALISE)) {
-			Dialogues.alert(logger, "Sorry, the Dynamic and Equalise options for price dynamics are not ready yet");
+		if ((newProject.getPriceDynamics() == Project.PRICEDYNAMICS.DYNAMIC)) {
+			Dialogues.alert(logger, "Sorry, the Dynamic option for price dynamics is not ready yet");
 			return;
 		}
 
@@ -393,7 +445,6 @@ public class Simulation {
 		// ViewManager.getTabbedTableViewer().buildTables();
 	}
 
-	
 	/**
 	 * for all persistent entities at the given timeStamp, set comparators that refer to the timeStampComparatorCursor
 	 * TODO previousComparator not yet properly implemented.
@@ -414,7 +465,7 @@ public class Simulation {
 			Dialogues.alert(logger, "Database fubar. Sorry, please contact developer");
 		}
 	}
-	
+
 	/**
 	 * @return the timeStampComparatorCursor
 	 */
@@ -431,9 +482,10 @@ public class Simulation {
 	}
 
 	/**
-
-
-	/**
+	 * 
+	 * 
+	 * /**
+	 * 
 	 * @return the periodCurrent
 	 */
 	public static int getPeriodCurrent() {

@@ -9,8 +9,8 @@ Project,timeStamp,SocialClassName,Size,ParticipationRatio,Revenue
 4,1,Workers,3000,1,0
 5,1,Capitalists,1500,0,1250
 5,1,Workers,3500,1,0
-6,1,Capitalists,1500,0,1500
-6,1,Workers,3000,1,0
+6,1,Capitalists,3000,0,3000
+6,1,Workers,6000,1,0
 7,1,Bankers,0,0,0
 7,1,Capitalists,10,0,10
 7,1,Workers,300,1,0

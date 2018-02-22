@@ -8,7 +8,7 @@ import rd.dev.simulation.command.IndustriesProduce;
 import rd.dev.simulation.command.ClassesReproduce;
 import rd.dev.simulation.command.Command;
 import rd.dev.simulation.command.Distribute;
-import rd.dev.simulation.command.ImmediateConsequences;
+import rd.dev.simulation.command.PriceDynamics;
 import rd.dev.simulation.command.PreTrade;
 import rd.dev.simulation.command.Produce;
 import rd.dev.simulation.command.Revenue;
@@ -49,14 +49,14 @@ public enum ActionStates {
 	C_P_ClassesReproduce("Reproduce",new ClassesReproduce(), 
 			"industries produce goods, consuming productive stocks and labour power",	
 			true), 
-	C_P_ImmediateConsequences("Consequences", new ImmediateConsequences(),
-			"The combined consequence of production and reproduction is a change in unit values and prices. This action calculates them",
-			true), 
 	C_M_Distribute("Distribution", new Distribute(),
 			"Distribution: recalculate unit values and prices and the MELT. Transfer surplus (M'-M)to the capitalist class. Accumulate",
 			false),
 	C_M_Revenue("Revenue", new Revenue(),"Distribute the surplus",true),
-	C_M_Accumulate("Accumulate", new Accumulate(),  "Use the surplus", true);
+	C_M_Accumulate("Accumulate", new Accumulate(),  "Use the surplus", true),
+	C_M_Prices("Prices", new PriceDynamics(),
+			"Recalculate prices, and if necessary, values, depending on the price dynamics of the project",
+			true);
 	
 	/**
 	 * the nextAction will be a primitive action if this is a primitive action (eg after Supply we have to do Demand).

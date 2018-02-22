@@ -301,7 +301,7 @@ public class Global implements Serializable {
 	public double totalValue() {
 		// TODO replace by a sum query
 		double totalValue = 0;
-		for (Stock s : Stock.stocksAll(pk.timeStamp)) {
+		for (Stock s : Stock.all(pk.timeStamp)) {
 			totalValue += s.getValue();
 		}
 		return totalValue;
@@ -313,7 +313,7 @@ public class Global implements Serializable {
 	public double totalPrice() {
 		// TODO replace by a sum query
 		double totalPrice = 0;
-		for (Stock s : Stock.stocksAll(pk.timeStamp)) {
+		for (Stock s : Stock.all(pk.timeStamp)) {
 			totalPrice += s.getPrice();
 		}
 		return totalPrice;
@@ -350,7 +350,11 @@ public class Global implements Serializable {
 	 * @return the total profit in the economy
 	 */
 	public double profit() {
-		return currentCapital() - initialCapital();
+		double profit=0.0;
+		for (Commodity commodity:Commodity.commoditiesAll()) {
+			profit +=commodity.profit();
+		}
+		return profit;
 	}
 
 	/**

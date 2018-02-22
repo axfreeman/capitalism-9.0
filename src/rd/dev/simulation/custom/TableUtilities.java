@@ -155,7 +155,6 @@ public class TableUtilities {
 	}
 
 	/**
-	 * experimental method.
 	 * make supercolumn headers clickable so user can contract and expand them
 	 * 
 	 * @param superColumn
@@ -205,23 +204,23 @@ public class TableUtilities {
 		Label label = new Label();
 		label.setText(superColumn.getText());
 		label.setGraphic(makeLittleMinus());
-		label.setMaxWidth(1000);
-		label.setPrefWidth(superColumn.getPrefWidth());
-		label.setPadding(Insets.EMPTY);
+//		label.setMaxWidth(1000);
+//		label.setPrefWidth(superColumn.getPrefWidth()-5);
+//		label.setPadding(new Insets(2));
 		
 // css style for column headers
-		String headerCSS=".table-view .column-header{\r\n" + 
+		String headerCSS=".table-view .column-header{\n" + 
 				"    -fx-text-fill: -fx-selection-bar-text;\r\n" + 
-				"    -fx-font-size: 10;\r\n" + 
-				"    -fx-size: 11 ;\r\n" + 
-				"    -fx-font-family: \"Arial\";\r\n" + 
-				"    -fx-background-color: silver;\r\n" +
+				"    -fx-font-size: 10;\n" + 
+				"    -fx-size: 11 ;\n" + 
+				"    -fx-font-family: \"Arial\";\n" + 
+				"    -fx-background-color: silver;\n" +
 				"}";
-		superColumn.getStyleClass().add(headerCSS);
+//		superColumn.getStyleClass().add(headerCSS);
 		final String cssNumberLabel= "-fx-background-color: silver;\n"
 				+ "-fx-border-color: silver;\n"
-				+ "-fx-border-width: 0;\n";
-		superColumn.setStyle(cssNumberLabel);
+				+ "-fx-border-width: 2;\n";
+//		superColumn.setStyle(cssNumberLabel);
 		superColumn.setGraphic(label);
 		superColumn.setText("");
 		label.addEventHandler(MouseEvent.MOUSE_CLICKED, eventHandler);

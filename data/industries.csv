@@ -10,8 +10,8 @@ project,timeStamp,industryName,CommodityName,output,GrowthRate
 4,1,Department IIb,Luxuries,600,0
 5,1,Consumption,Consumption,3000,0.1
 5,1,Means of Production,Means of Production,6000,0.1
-6,1,Means of Production,Means of Production,6000,0
-6,1,Consumption,Consumption,3000,0
+6,1,Department I,Means of Production,6000,0
+6,1,Department II,Consumption,6000,0
 7,1,Consumption,Consumption,200,0
 7,1,Circulating,Circulating,500,0
 7,1,Fixed,Fixed,500,0

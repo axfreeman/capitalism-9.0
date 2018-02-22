@@ -46,7 +46,7 @@ public class CircuitTableStockCell extends TableCell<Industry, String> {
 			logger.debug(" Null Industry");
 			return;
 		}
-		Stock theStock = Stock.stockProductiveByNameSingle(Simulation.timeStampDisplayCursor, industry.getIndustryName(), stockValueUseName);
+		Stock theStock = Stock.productiveNamedSingle(Simulation.timeStampDisplayCursor, industry.getIndustryName(), stockValueUseName);
 		
 		String deltaModifier="";
 		

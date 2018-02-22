@@ -45,8 +45,8 @@ import rd.dev.simulation.view.ViewManager;
 @NamedQueries({
 		@NamedQuery(name = "Primary", query = "SELECT u FROM Commodity u where u.pk.project= :project AND u.pk.timeStamp= :timeStamp and u.pk.name=:name"),
 		@NamedQuery(name = "All", query = "SELECT u FROM Commodity u where u.pk.project= :project and u.pk.timeStamp = :timeStamp"),
-		@NamedQuery(name = "CommodityOriginType", query = "SELECT u FROM Commodity u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.commodityOriginType=:commodityOriginType"),
-		@NamedQuery(name = "FunctionType", query = "SELECT u FROM Commodity u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.functionType=:functionType order by u.displayOrder")
+		@NamedQuery(name = "Origin", query = "SELECT u FROM Commodity u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.origin=:origin"),
+		@NamedQuery(name = "Function", query = "SELECT u FROM Commodity u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.function=:function order by u.displayOrder")
 })
 @Embeddable
 public class Commodity implements Serializable {
@@ -56,8 +56,8 @@ public class Commodity implements Serializable {
 	// The primary key (composite key containing project, timeStamp and industryName)
 	@EmbeddedId protected CommodityPK pk;
 
-	@Column(name = "originType") private ORIGIN_TYPE commodityOriginType; // whether this is produced by an enterprise or a class
-	@Column(name = "functionType") private FUNCTION_TYPE functionType;// see enum FUNCTION_TYPE for list of possible types
+	@Column(name = "originType") private ORIGIN origin; // whether this is produced by an enterprise or a class
+	@Column(name = "functionType") private FUNCTION function;// see enum FUNCTION for list of possible types
 	@Column(name = "turnoverTime") private double turnoverTime;
 	@Column(name = "unitValue") private double unitValue;
 	@Column(name = "unitPrice") private double unitPrice;
@@ -81,15 +81,15 @@ public class Commodity implements Serializable {
 	private static EntityManager entityManager;
 	private static TypedQuery<Commodity> commodityByPrimaryKeyQuery;
 	private static TypedQuery<Commodity> commoditiesAllQuery;
-	private static TypedQuery<Commodity> commoditiesByOriginTypeQuery;
+	private static TypedQuery<Commodity> commoditiesByOriginQuery;
 	private static TypedQuery<Commodity> commoditiesByFunctionQuery;
 
 	static {
 		entityManager = entityManagerFactory.createEntityManager();
 		commodityByPrimaryKeyQuery = entityManager.createNamedQuery("Primary", Commodity.class);
 		commoditiesAllQuery = entityManager.createNamedQuery("All", Commodity.class);
-		commoditiesByOriginTypeQuery = entityManager.createNamedQuery("CommodityOriginType", Commodity.class);
-		commoditiesByFunctionQuery = entityManager.createNamedQuery("FunctionType", Commodity.class);
+		commoditiesByOriginQuery = entityManager.createNamedQuery("Origin", Commodity.class);
+		commoditiesByFunctionQuery = entityManager.createNamedQuery("Function", Commodity.class);
 	}
 	
 	//Enums
@@ -97,10 +97,10 @@ public class Commodity implements Serializable {
 	 * Basic classification of commodity types: how are they used?
 	 * 
 	 */
-	public enum FUNCTION_TYPE {
+	public enum FUNCTION {
 		MONEY("Money"), PRODUCTIVE_INPUT("Productive Inputs"), CONSUMER_GOOD("Consumer Goods");
 		String text;
-		FUNCTION_TYPE(String text) {
+		FUNCTION(String text) {
 			this.text = text;
 		}
 		public String getText() {
@@ -112,10 +112,10 @@ public class Commodity implements Serializable {
 	 * Second Basic classification of commodity types (overlaps FUNCTION_TYPE): how do they come into being?
 	 *
 	 */
-	public enum ORIGIN_TYPE {
+	public enum ORIGIN {
 		SOCIALlY_PRODUCED("Social"), INDUSTRIALLY_PRODUCED("Capitalist"), MONEY("Money");
 		String text;
-		ORIGIN_TYPE(String text) {
+		ORIGIN(String text) {
 			this.text = text;
 		}
 		public String text() {
@@ -143,6 +143,7 @@ public class Commodity implements Serializable {
 		ALLOCATIONSHARE("Share","Allocation.png","The proportion of replenishment demand that can be satisfied from existing supply"), 
 		FUNCTION_TYPE("Commodity Type",null,"Whether this is a productive input,a consumption good, or money"), 
 		INITIALCAPITAL("Initial Capital","capital  2.png",TabbedTableViewer.HEADER_TOOL_TIPS.INITIALCAPITAL.text()), 
+		CURRENTCAPITAL("Capital","capital 1.png",TabbedTableViewer.HEADER_TOOL_TIPS.CAPITAL.text()),
 		PROFIT("Profit","profit.png",TabbedTableViewer.HEADER_TOOL_TIPS.PROFIT.text()), 
 		PROFITRATE("Profit Rate","profitRate.png" ,TabbedTableViewer.HEADER_TOOL_TIPS.PROFITRATE.text());
 		// @formatter:on
@@ -181,13 +182,13 @@ public class Commodity implements Serializable {
 		this.pk.timeStamp = template.pk.timeStamp;
 		this.pk.name = template.pk.name;
 		this.pk.project = template.pk.project;
-		this.commodityOriginType = template.commodityOriginType;
+		this.origin = template.origin;
 		this.turnoverTime = template.turnoverTime;
 		this.unitValue = template.unitValue;
 		this.unitPrice = template.unitPrice;
 		this.surplusProduct = template.surplusProduct;
 		this.allocationShare = template.allocationShare;
-		this.functionType = template.functionType;
+		this.function = template.function;
 		this.stockUsedUp = template.stockUsedUp;
 		this.stockProduced = template.stockProduced;
 		this.imageName = template.imageName;
@@ -227,7 +228,7 @@ public class Commodity implements Serializable {
 		case NAME:
 			return new ReadOnlyStringWrapper(pk.name);
 		case PRODUCERTYPE:
-			return new ReadOnlyStringWrapper(commodityOriginType.text());
+			return new ReadOnlyStringWrapper(origin.text());
 		case UNITPRICE:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, unitPrice));
 		case UNITVALUE:
@@ -251,9 +252,11 @@ public class Commodity implements Serializable {
 		case ALLOCATIONSHARE:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, allocationShare));
 		case FUNCTION_TYPE:
-			return new ReadOnlyStringWrapper(functionType.text);
+			return new ReadOnlyStringWrapper(function.text);
 		case INITIALCAPITAL:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, initialCapital()));
+		case CURRENTCAPITAL:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, currentCapital()));
 		case PROFIT:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, profit()));
 		case PROFITRATE:
@@ -304,6 +307,8 @@ public class Commodity implements Serializable {
 			return allocationShare != comparator.allocationShare;
 		case INITIALCAPITAL:
 			return initialCapital() != comparator.initialCapital();
+		case CURRENTCAPITAL:
+			return currentCapital()!= comparator.currentCapital();
 		case PROFIT:
 			return profit() != comparator.profit();
 		case PROFITRATE:
@@ -355,6 +360,10 @@ public class Commodity implements Serializable {
 			return String.format(ViewManager.smallNumbersFormatString, (allocationShare - comparator.allocationShare));
 		case PROFIT:
 			return String.format(ViewManager.largeNumbersFormatString, (profit() - comparator.profit()));
+		case INITIALCAPITAL:
+			return String.format(ViewManager.largeNumbersFormatString, (initialCapital() - comparator.initialCapital()));
+		case CURRENTCAPITAL:
+			return String.format(ViewManager.largeNumbersFormatString, (currentCapital() - comparator.currentCapital()));
 		case PROFITRATE:
 			return String.format(ViewManager.largeNumbersFormatString, (profitRate() - comparator.profitRate()));
 		default:
@@ -394,7 +403,7 @@ public class Commodity implements Serializable {
 		double totalQuantity = 0;
 		double totalValue = 0;
 		double totalPrice = 0;
-		for (Stock s : Stock.stocksByCommodity(this.pk.timeStamp, pk.name)) {
+		for (Stock s : Stock.comoditiesCalled(this.pk.timeStamp, pk.name)) {
 			totalQuantity += s.getQuantity();
 			totalValue += s.getValue();
 			totalPrice += s.getPrice();
@@ -408,12 +417,7 @@ public class Commodity implements Serializable {
 				pk.name, totalQuantity, totalPrice, totalValue);
 	}
 
-	/**
-	 * @return a list of industries that produce this commodity
-	 */
-	public List<Industry> industries() {
-		return Industry.industriesByCommodityName(pk.timeStamp, pk.name);
-	}
+
 
 	/**
 	 * 
@@ -428,34 +432,83 @@ public class Commodity implements Serializable {
 		this.comparator = comparator;
 	}
 
+	// aggregators
+	// TODO get aggregator queries working
+	
 	/**
-	 * 
-	 * @return the function of this commodity, as given by the {@code FUNCTION_TYPE} enum
+	 * @return the total value of this use value in the economy at this time
 	 */
 
-	public FUNCTION_TYPE getFunctionType() {
-		return functionType;
+	public double totalValue() {
+		double totalValue = 0;
+		for (Stock s : Stock.comoditiesCalled(pk.timeStamp, pk.name)) {
+			totalValue += s.getValue();
+		}
+		return totalValue;
 	}
 
-	public String commodityName() {
-		return pk.name;
+	/**
+	 * @return the total price of this use value in the economy at this time
+	 */
+
+	public double totalPrice() {
+		double totalPrice = 0;
+		for (Stock s : Stock.comoditiesCalled(pk.timeStamp, pk.name)) {
+			totalPrice += s.getPrice();
+		}
+		return totalPrice;
 	}
 
-	public int getTimeStamp() {
-		return pk.timeStamp;
+	/**
+	 * @return the total quantity of this use value in the economy at this time
+	 */
+
+	public double totalQuantity() {
+		double totalQuantity = 0;
+		for (Stock s : Stock.comoditiesCalled(pk.timeStamp, pk.name)) {
+			totalQuantity += s.getQuantity();
+		}
+		return totalQuantity;
 	}
 
-	public int getProject() {
-		return pk.project;
+	/**
+	 * @return total profit so far in the industries that produce this use value
+	 */
+
+	public double profit() {
+		double profit = 0;
+		for (Industry c : industries()) {
+			profit += c.profit();
+		}
+		return profit;
 	}
 
+	
+	/**
+	 * @return the profit rate so far in the industries that produce this use value
+	 */
+	public double profitRate() {
+		return profit() / initialCapital();
+	}
+
+	/**
+	 * @return the total capital invested in producing this use value
+	 */
+	public double initialCapital() {
+		double capital = 0;
+		for (Industry c : industries()) {
+			capital += c.getInitialCapital();
+		}
+		return capital;
+	}
+	
 	/**
 	 * The total supply of this commodity from all sales stocks of it
 	 * @return the total supply of this commmodity
 	 */
 	public double totalSupply() {
 		double supply = 0.0;
-		for (Stock s : Stock.stocksSalesByCommodity(pk.timeStamp, pk.name)) {
+		for (Stock s : Stock.salesByCommodity(pk.timeStamp, pk.name)) {
 			supply += s.getQuantity();
 		}
 		return supply;
@@ -469,7 +522,7 @@ public class Commodity implements Serializable {
 
 	public double replenishmentDemand() {
 		double demand = 0.0;
-		for (Stock s : Stock.stocksByCommodity(pk.timeStamp, pk.name)) {
+		for (Stock s : Stock.comoditiesCalled(pk.timeStamp, pk.name)) {
 			demand += s.getReplenishmentDemand();
 		}
 		return demand;
@@ -483,15 +536,33 @@ public class Commodity implements Serializable {
 
 	public double expansionDemand() {
 		double demand = 0.0;
-		for (Stock s : Stock.stocksByCommodity(pk.timeStamp, pk.name)) {
+		for (Stock s : Stock.comoditiesCalled(pk.timeStamp, pk.name)) {
 			demand += s.getExpansionDemand();
 		}
 		return demand;
 	}
 	
+	/**
+	 * @return the current capital of all the industries that produce this commodity
+	 */
+	
+	public double currentCapital() {
+		double currentCapital=0.0;
+		for (Industry c : industries()) {
+				currentCapital+= c.currentCapital();
+			}
+		return currentCapital;
+	}
 	
 	//QUERIES
 
+	/**
+	 * @return a list of industries that produce this commodity
+	 */
+	public List<Industry> industries() {
+		return Industry.industriesByCommodityName(pk.timeStamp, pk.name);
+	}
+	
 	/**
 	 * get the single commodity with the primary key given by all the parameters, including the timeStamp
 	 * 
@@ -544,30 +615,30 @@ public class Commodity implements Serializable {
 	}
 
 	/**
-	 * a list of all commodities of the given Origintype at the current timeStamp and project
+	 * a list of all commodities of the given origin at the current timeStamp and project
 	 * 
-	 * @param originType
+	 * @param origin
 	 *            the origin type of the Commodity (SOCIALLY_PRODUCED, INDUSTRIALLY_PRODUCED)
 	 * @return a list of industries of the specified origin type, at the latest timeStamp that has been persisted.
 	 * 
 	 */
-	public static List<Commodity> commoditiesByOriginType(Commodity.ORIGIN_TYPE originType) {
-		commoditiesByOriginTypeQuery.setParameter("project", Simulation.projectCurrent);
-		commoditiesByOriginTypeQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent);
-		commoditiesByOriginTypeQuery.setParameter("commodityOriginType", originType);
-		return commoditiesByOriginTypeQuery.getResultList();
+	public static List<Commodity> commoditiesByOrigin(Commodity.ORIGIN origin) {
+		commoditiesByOriginQuery.setParameter("project", Simulation.projectCurrent);
+		commoditiesByOriginQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent);
+		commoditiesByOriginQuery.setParameter("origin", origin);
+		return commoditiesByOriginQuery.getResultList();
 	}
 
 	/**
-	 * a list of all use values of the given functionType at the current timeStamp and project
+	 * a list of all use values of the given function at the current timeStamp and project
 	 * 
-	 * @param functionType
+	 * @param function
 	 *            the function type of the use value (PRODUCTIVE INPUT, CONSUMER GOOD, MONEY)
-	 * @return a list all use values of the given functionType at the current timeStamp and project
+	 * @return a list all use values with the given function at the current timeStamp and project
 	 */
-	public static List<Commodity> commoditiesByFunction(Commodity.FUNCTION_TYPE functionType) {
+	public static List<Commodity> commoditiesByFunction(Commodity.FUNCTION function) {
 		commoditiesByFunctionQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent).setParameter("project", Simulation.projectCurrent);
-		commoditiesByFunctionQuery.setParameter("functionType", functionType);
+		commoditiesByFunctionQuery.setParameter("function", function);
 		return commoditiesByFunctionQuery.getResultList();
 	}
 
@@ -577,11 +648,11 @@ public class Commodity implements Serializable {
 	 * @return the single use value of origin type SOCIALLY_PRODUCED, which will be labour poweer
 	 */
 	public static Commodity labourPower() {
-		commoditiesByOriginTypeQuery.setParameter("project", Simulation.projectCurrent);
-		commoditiesByOriginTypeQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent);
-		commoditiesByOriginTypeQuery.setParameter("commodityOriginType", Commodity.ORIGIN_TYPE.SOCIALlY_PRODUCED);
+		commoditiesByOriginQuery.setParameter("project", Simulation.projectCurrent);
+		commoditiesByOriginQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent);
+		commoditiesByOriginQuery.setParameter("origin", Commodity.ORIGIN.SOCIALlY_PRODUCED);
 		try {
-			return commoditiesByOriginTypeQuery.getSingleResult();
+			return commoditiesByOriginQuery.getSingleResult();
 		} catch (NoResultException r) {
 			return null;
 		}
@@ -601,6 +672,27 @@ public class Commodity implements Serializable {
 		}
 	}
 	
+	/**
+	 * 
+	 * @return the function of this commodity, as given by the {@code FUNCTION_TYPE} enum
+	 */
+
+	public FUNCTION getFunction() {
+		return function;
+	}
+
+	public String commodityName() {
+		return pk.name;
+	}
+
+	public int getTimeStamp() {
+		return pk.timeStamp;
+	}
+
+	public int getProject() {
+		return pk.project;
+	}
+
 
 	/**
 	 * @return the entityManager
@@ -622,7 +714,7 @@ public class Commodity implements Serializable {
 	}
 
 	public void setUnitPrice(double unitPrice) {
-		this.unitPrice = unitPrice;
+		this.unitPrice = MathStuff.round(unitPrice);
 	}
 
 	public double getUnitValue() {
@@ -630,15 +722,15 @@ public class Commodity implements Serializable {
 	}
 
 	public void setUnitValue(double unitValue) {
-		this.unitValue = unitValue;
+		this.unitValue = MathStuff.round(unitValue);
 	}
 
-	public ORIGIN_TYPE getCommodityOriginType() {
-		return this.commodityOriginType;
+	public ORIGIN getOrigin() {
+		return this.origin;
 	}
 
-	public void setCommodityOriginType(ORIGIN_TYPE originType) {
-		this.commodityOriginType = originType;
+	public void setOrigin(ORIGIN origin) {
+		this.origin = origin;
 	}
 
 	public double getAllocationShare() {
@@ -666,72 +758,6 @@ public class Commodity implements Serializable {
 	 */
 	public void setSurplusProduct(double surplus) {
 		this.surplusProduct = surplus;
-	}
-
-	/**
-	 * @return the total value of this use value in the economy at this time
-	 */
-
-	public double totalValue() {
-		double totalValue = 0;
-		for (Stock s : Stock.stocksByCommodity(pk.timeStamp, pk.name)) {
-			totalValue += s.getValue();
-		}
-		return totalValue;
-	}
-
-	/**
-	 * @return the total price of this use value in the economy at this time
-	 */
-
-	public double totalPrice() {
-		double totalPrice = 0;
-		for (Stock s : Stock.stocksByCommodity(pk.timeStamp, pk.name)) {
-			totalPrice += s.getPrice();
-		}
-		return totalPrice;
-	}
-
-	/**
-	 * @return the total quantity of this use value in the economy at this time
-	 */
-
-	public double totalQuantity() {
-		double totalQuantity = 0;
-		for (Stock s : Stock.stocksByCommodity(pk.timeStamp, pk.name)) {
-			totalQuantity += s.getQuantity();
-		}
-		return totalQuantity;
-	}
-
-	/**
-	 * @return total profit so far in the industries that produce this use value
-	 */
-
-	public double profit() {
-		double profit = 0;
-		for (Industry c : industries()) {
-			profit += c.profit();
-		}
-		return profit;
-	}
-
-	/**
-	 * @return the profit rate so far in the industries that produce this use value
-	 */
-	public double profitRate() {
-		return profit() / initialCapital();
-	}
-
-	/**
-	 * @return the total capital invested in producing this use value
-	 */
-	public double initialCapital() {
-		double capital = 0;
-		for (Industry c : industries()) {
-			capital += c.getInitialCapital();
-		}
-		return capital;
 	}
 
 	/**

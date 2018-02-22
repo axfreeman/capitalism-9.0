@@ -67,6 +67,7 @@ public class Industry implements Serializable {
 	@Column(name = "output") private double output;
 	@Column(name = "ProposedOutput") private double proposedOutput;
 	@Column(name = "InitialCapital") private double initialCapital;
+	@Column(name = "PersistedProfit") private double persistedProfit;
 	@Column(name = "Growthrate") private double growthRate;
 
 	// Comparators
@@ -157,7 +158,7 @@ public class Industry implements Serializable {
 
 	public OUTPUTTYPE outputType() {
 		Commodity u = getCommodity();
-		switch (u.getFunctionType()) {
+		switch (u.getFunction()) {
 		case PRODUCTIVE_INPUT:
 			return OUTPUTTYPE.PRODUCTIONGOODS;
 		case CONSUMER_GOOD:
@@ -191,6 +192,7 @@ public class Industry implements Serializable {
 		proposedOutput = template.proposedOutput;
 		growthRate = template.growthRate;
 		initialCapital = template.initialCapital;
+		persistedProfit=template.persistedProfit;
 	}
 	
 	/**
@@ -358,7 +360,7 @@ public class Industry implements Serializable {
 
 	public ReadOnlyStringWrapper wrappedString(String productiveStockName) {
 		try {
-			Stock namedStock = Stock.stockProductiveByNameSingle(pk.timeStamp, pk.industryName, productiveStockName);
+			Stock namedStock = Stock.productiveNamedSingle(pk.timeStamp, pk.industryName, productiveStockName);
 			String result = String.format(ViewManager.largeNumbersFormatString, namedStock.get(TabbedTableViewer.displayAttribute));
 			return new ReadOnlyStringWrapper(result);
 		} catch (Exception e) {
@@ -464,7 +466,7 @@ public class Industry implements Serializable {
 			Commodity u = s.getCommodity();
 
 			// Exclude socially-produced commodities
-			if (u.getCommodityOriginType() == Commodity.ORIGIN_TYPE.SOCIALlY_PRODUCED)
+			if (u.getOrigin() == Commodity.ORIGIN.SOCIALlY_PRODUCED)
 				continue;
 
 			double replenishmentDemand = s.getProductionCoefficient() * output;
@@ -528,7 +530,7 @@ public class Industry implements Serializable {
 			return Double.NaN;
 		}
 		double total = 0;
-		for (Stock s : Stock.stocksProductiveByIndustry(pk.timeStamp, pk.industryName)) {
+		for (Stock s : Stock.productiveByIndustry(pk.timeStamp, pk.industryName)) {
 			total += s.get(a);
 		}
 		return total;
@@ -540,7 +542,7 @@ public class Industry implements Serializable {
 	 * @return the money stock that is owned by this social class.
 	 */
 	public Stock getMoneyStock() {
-		return Stock.stockMoneyByIndustrySingle(pk.timeStamp, pk.industryName);
+		return Stock.stockMoneyByOwnerSingle(pk.timeStamp, pk.industryName);
 	}
 
 	/**
@@ -743,7 +745,7 @@ public class Industry implements Serializable {
 	 * @return a list of the productive stocks owned (managed) by this industry
 	 */
 	public List<Stock> productiveStocks() {
-		return Stock.stocksProductiveByIndustry(pk.timeStamp, pk.industryName);
+		return Stock.productiveByIndustry(pk.timeStamp, pk.industryName);
 	}
 
 	/**
@@ -754,7 +756,7 @@ public class Industry implements Serializable {
 	 *            the name of the stock
 	 */
 	public Stock productiveStock(String name) {
-		return Stock.stockProductiveByNameSingle(pk.timeStamp, pk.industryName, name);
+		return Stock.productiveNamedSingle(pk.timeStamp, pk.industryName, name);
 	}
 
 	/**
@@ -893,17 +895,31 @@ public class Industry implements Serializable {
 	public double currentCapital() {
 		return getMoneyPrice() + getSalesPrice() + productiveStocksAttribute(ValueExpression.PRICE);
 	}
-
+	
+	/**
+	 * Persist the profit. Needed because the Prices phase needs to 'remember' what profits were,
+	 * after revenue has been transferred to the capitalist class
+	 */
+	public void persistProfit() {
+		persistedProfit=currentCapital()-initialCapital;
+	}
+	
 	/**
 	 * The profit of this industry.
 	 * This is the current capital less the initial capital. It is thus a simple difference independent of sales,
 	 * and hence makes no assumption that profit is realised.
 	 * Like all capital, it is calculated using the price expression of the magnitudes involved.
 	 * 
+	 * We used the persisted magnitude of the currentCapital member because this must be 'remembered' 
+	 * in order that the Prices phase can have access to it. Otherwise it would vanish when profit
+	 * is transferred to the owner
+	 * 
+	 * TODO introduce a loaned capital variable to sort this out - further down the road, however.
+	 * 
 	 * @return the profit (so far) of this industry.
 	 */
 	public double profit() {
-		return currentCapital() - initialCapital;
+		return persistedProfit;
 	}
 
 	/**

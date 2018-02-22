@@ -164,7 +164,7 @@ public class Stock implements Serializable {
 	 * NOTE: here is a bug in H2 which prevents an enum type being used in a primary key;
 	 * in consequence, the type of the persistent field 'stockType' is, confusingly, String and not StockType.
 	 * For code transparency, this enum provides the text that is used in SQL queries, via its 'text' method
-	 * See for example {@link Stock#stockProductiveByNameSingle(int, String, String) stockProductiveByNameSingle}
+	 * See for example {@link Stock#productiveNamedSingle(int, String, String) stockProductiveByNameSingle}
 	 */
 	public static enum STOCKTYPE {
 		PRODUCTIVE("Productive"), CONSUMPTION("Consumption"), SALES("Sales"), MONEY("Money");
@@ -457,7 +457,6 @@ public class Stock implements Serializable {
 		return result;
 	}
 
-
 	/**
 	 * When the unit price or the unit value of a commodity changes, the price and value of each stock changes accordingly
 	 * This method enacts the change.
@@ -604,7 +603,7 @@ public class Stock implements Serializable {
 	 */
 
 	public static void setComparators(int timeStampID) {
-		for (Stock s : stocksAll(timeStampID)) {
+		for (Stock s : all(timeStampID)) {
 			s.setPreviousComparator(stockByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), s.getOwner(),
 					s.getCommodityName(), s.getStockType()));
 			s.setStartComparator(stockByPrimaryKey(Simulation.projectCurrent, 1, s.getOwner(), s.getCommodityName(), s.getStockType()));
@@ -650,7 +649,7 @@ public class Stock implements Serializable {
 	 * 
 	 * @return the single stock of money owned by the industry
 	 */
-	public static Stock stockMoneyByIndustrySingle(int timeStamp, String industry) {
+	public static Stock stockMoneyByOwnerSingle(int timeStamp, String industry) {
 		stockByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp).setParameter("owner", industry)
 				.setParameter("stockType", Stock.STOCKTYPE.MONEY.text()).setParameter("commodity", "Money");
 		try {
@@ -668,7 +667,7 @@ public class Stock implements Serializable {
 	 * 
 	 * @return a list of stocks at the current project and the given timeStamp
 	 */
-	public static List<Stock> stocksAll(int timeStamp) {
+	public static List<Stock> all(int timeStamp) {
 		stocksAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
 		return stocksAllQuery.getResultList();
 	}
@@ -678,7 +677,7 @@ public class Stock implements Serializable {
 	 * 
 	 * @return a list of stocks at the current project and timeStamp
 	 */
-	public static List<Stock> stocksAll() {
+	public static List<Stock> all() {
 		stocksAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
 		return stocksAllQuery.getResultList();
 	}
@@ -692,7 +691,7 @@ public class Stock implements Serializable {
 	 *            the commodity name of the stocks
 	 * @return a list of stocks for the given commodity at the currently selected time and for the currently selected project
 	 */
-	public static List<Stock> stocksByCommodity(int timeStamp, String commodityName) {
+	public static List<Stock> comoditiesCalled(int timeStamp, String commodityName) {
 		stocksByCommodityQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp).setParameter("commodity",
 				commodityName);
 		return stocksByCommodityQuery.getResultList();
@@ -703,7 +702,7 @@ public class Stock implements Serializable {
 	 * 
 	 * @return a list of all stocks that constitute sources of demand
 	 */
-	public static List<Stock> stocksSourcesOfDemand() {
+	public static List<Stock> sourcesOfDemand() {
 		stocksByOneOfTwoStockTypesQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
 		stocksByOneOfTwoStockTypesQuery.setParameter("stockType1", Stock.STOCKTYPE.PRODUCTIVE.text()).setParameter("stockType2",
 				Stock.STOCKTYPE.CONSUMPTION.text());
@@ -719,7 +718,7 @@ public class Stock implements Serializable {
 	 *            the industry that manages these productive stocks
 	 * @return a list of the productive stocks managed by this industry
 	 */
-	public static List<Stock> stocksProductiveByIndustry(int timeStamp, String industry) {
+	public static List<Stock> productiveByIndustry(int timeStamp, String industry) {
 		stocksByOwnerAndTypeQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
 		stocksByOwnerAndTypeQuery.setParameter("owner", industry).setParameter("stockType", Stock.STOCKTYPE.PRODUCTIVE.text());
 		return stocksByOwnerAndTypeQuery.getResultList();
@@ -736,7 +735,7 @@ public class Stock implements Serializable {
 	 *            the commodity of the stock
 	 * @return the single productive stock, with the given commodity, of the named industry
 	 */
-	public static Stock stockProductiveByNameSingle(int timeStamp, String industry, String commodity) {
+	public static Stock productiveNamedSingle(int timeStamp, String industry, String commodity) {
 		stockByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp)
 				.setParameter("owner", industry).setParameter("stockType", Stock.STOCKTYPE.PRODUCTIVE.text()).setParameter("commodity", commodity);
 		try {
@@ -755,7 +754,7 @@ public class Stock implements Serializable {
 	 *            the socialClass that consumes these stocks
 	 * @return a list of the consumption stocks owned by this social class
 	 */
-	public static List<Stock> stocksConsumptionByClass(int timeStamp, String socialClass) {
+	public static List<Stock> consumedByClass(int timeStamp, String socialClass) {
 		stocksByOwnerAndTypeQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
 		stocksByOwnerAndTypeQuery.setParameter("owner", socialClass).setParameter("stockType", Stock.STOCKTYPE.CONSUMPTION.text());
 		return stocksByOwnerAndTypeQuery.getResultList();
@@ -772,7 +771,7 @@ public class Stock implements Serializable {
 	 *            the required use value
 	 * @return the single consumption stocks of the given commodity that is owned by this social class
 	 */
-	public static Stock stockConsumptionByCommodityAndClassSingle(int timeStamp, String socialClass, String commodity) {
+	public static Stock consumptionByCommodityAndClassSingle(int timeStamp, String socialClass, String commodity) {
 		stockByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
 		stockByPrimaryKeyQuery.setParameter("owner", socialClass).setParameter("stockType", Stock.STOCKTYPE.CONSUMPTION.text()).setParameter("commodity",
 				commodity);
@@ -796,7 +795,7 @@ public class Stock implements Serializable {
 	 * @return a list of the sales stocks that contain the given use value
 	 *         Note: there can be more than one seller of the same use value
 	 */
-	public static List<Stock> stocksSalesByCommodity(int timeStamp, String commodity) {
+	public static List<Stock> salesByCommodity(int timeStamp, String commodity) {
 		stocksByCommodityAndTypeQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp).setParameter("commodity", commodity);
 		stocksByCommodityAndTypeQuery.setParameter("stockType", Stock.STOCKTYPE.SALES.text());
 		return stocksByCommodityAndTypeQuery.getResultList();
@@ -824,8 +823,8 @@ public class Stock implements Serializable {
 	 * @return the use value type of this stock
 	 */
 
-	public Commodity.FUNCTION_TYPE functionType() {
-		return getCommodity().getFunctionType();
+	public Commodity.FUNCTION functionType() {
+		return getCommodity().getFunction();
 	}
 
 	/**

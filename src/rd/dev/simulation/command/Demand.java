@@ -56,6 +56,7 @@ public class Demand extends Simulation implements Command {
 	public void execute() {
 		advanceOneStep(ActionStates.M_C_Demand.getText(), ActionStates.M_C_PreTrade.getText());
 		Reporter.report(logger, 0, "DEMAND");
+
 		computeProductiveDemand();
 		registerLabourResponse(Global.getGlobal().getLabourSupplyResponse());
 		computeSocialClassDemand();
@@ -90,7 +91,7 @@ public class Demand extends Simulation implements Command {
 
 		// First, set demand to zero for all stocks
 
-		for (Stock s : Stock.stocksAll()) {
+		for (Stock s : Stock.all()) {
 			s.setReplenishmentDemand(0);
 		}
 
@@ -173,7 +174,7 @@ public class Demand extends Simulation implements Command {
 			double proportionateIncrease = demandForLabourPower / supplyOfLabourPower;
 			Reporter.report(logger, 2, "Labour Power supply is %.0f and demand is %.0f. Supply from all sellers will increase by a factor of %.4f ",
 					supplyOfLabourPower, demandForLabourPower, proportionateIncrease);
-			for (Stock s : Stock.stocksSalesByCommodity(Simulation.timeStampIDCurrent, "Labour Power")) {
+			for (Stock s : Stock.salesByCommodity(Simulation.timeStampIDCurrent, "Labour Power")) {
 				s.modifyTo(s.getQuantity() * proportionateIncrease);
 			}
 			break;
@@ -220,7 +221,7 @@ public class Demand extends Simulation implements Command {
 		for (SocialClass sc:SocialClass.socialClassesAll()) {
 			Reporter.report(logger, 2, "Calculating demand from the social Class [%s] whose revenue is $%.0f", 
 					sc.getSocialClassName(),sc.getRevenue());
-			for (Stock s:Stock.stocksConsumptionByClass(Simulation.timeStampIDCurrent, sc.getSocialClassName())) {
+			for (Stock s:sc.consumptionStocks()) {
 				double demand = sc.getRevenue()*s.getConsumptionCoefficient();
 				Reporter.report(logger, 3, "This class's demand for the commodity [%s] is %.0f%% of its revenue, which is $%.0f", 
 						s.getCommodityName(), s.getConsumptionCoefficient()*100,demand);

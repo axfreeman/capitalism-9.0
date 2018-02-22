@@ -47,7 +47,7 @@ public class SocialClassTableStockCell extends TableCell<SocialClass, String> {
 			logger.debug(" Null Industry");
 			return;
 		}
-		Stock theStock = Stock.stockConsumptionByCommodityAndClassSingle(Simulation.timeStampDisplayCursor, socialClass.getSocialClassName(), stockValueUseName);
+		Stock theStock = Stock.consumptionByCommodityAndClassSingle(Simulation.timeStampDisplayCursor, socialClass.getSocialClassName(), stockValueUseName);
 		
 		String deltaModifier="";
 		

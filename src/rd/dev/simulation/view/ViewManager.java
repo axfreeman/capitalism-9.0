@@ -355,7 +355,7 @@ public class ViewManager {
 		Reporter.report(logger, 1, "RESTART OF ENTIRE SIMULATION REQUESTED");
 		Capitalism.dataHandler.restart();// fetch all the data
 		sm.startup();// pre-process all the data
-		actionButtonsBox.setActionStateFromLabel("Accumulate");
+		actionButtonsBox.setActionStateFromLabel("Prices");
 		refreshTimeStampTable();
 		refreshDisplay();
 		// capitalism.showMainWindow();// Set up the display (NOTE: this calls setMainApp and hence all the display initialization methods)
