@@ -57,7 +57,6 @@ public class PriceDynamics extends Simulation implements Command {
 		for (Stock s : Stock.all(timeStampIDCurrent)) {
 			s.reCalculateStockTotalValuesAndPrices();
 		}
-		advanceOnePeriod();
 	}
 
 	/**
@@ -69,23 +68,10 @@ public class PriceDynamics extends Simulation implements Command {
 		switch (currentProject.getPriceDynamics()) {
 		case SIMPLE:
 			// for the simple case do nothing
-			return;
+			break;
 		case DYNAMIC:
 			Dialogues.alert(logger, "Dynamic price adjustment not available yet, sorry");
-			// For the dynamic case do nothing much at present except reset the MELT.
-			// This can only change if the price dynamics are DYNAMIC, that is, if prices are
-			// established by market forces external to production. However as yet we don't
-			// have any code for price dynamics so this is here because eventually we will need it.
-
-			double oldMelt = global.getMelt();
-			double adjustmentFactor = global.totalPrice() / global.totalValue();
-			if (!MathStuff.equals(adjustmentFactor, 1)) {
-				double newMelt = oldMelt * (adjustmentFactor);
-				Reporter.report(logger, 1, "MELT was %.4f and will be reset to %.4f", oldMelt, newMelt);
-				global.setMelt(newMelt);
-			}
-
-			return;
+			break;
 		case EQUALISE:
 			Reporter.report(logger, 1, "Setting prices to equalise profit rates");
 			Reporter.report(logger, 2, "Average Profit Rate is currently recorded as %.4f", global.profitRate());
@@ -98,34 +84,57 @@ public class PriceDynamics extends Simulation implements Command {
 					Reporter.report(logger, 3, "Note: industry %s produces this commodity", c.getIndustryName());
 				}
 				double profitRate = global.profitRate();
-				double profit = global.profit();
-				double initialCapital = u.initialCapital();
-				double currentCapital = u.currentCapital();
+				double profit = u.profit();
+				double initialCapital = u.initialProductiveCapital();
 				double totalPrice = initialCapital * (1 + global.profitRate());
 				double totalValue = initialCapital + profit;
 				double priceValueRatio = totalPrice / totalValue;
 				double newUnitPrice = priceValueRatio * u.getUnitValue();
 				Reporter.report(logger, 2,
-						"Initial Capital $%.0f, current Capital $%.0f, profit rate %.4f, total price $%.0f, total value $%.0f, price-value ratio %.4f, new unit price $%.4f",
-						initialCapital, currentCapital, profitRate, totalPrice, totalValue, priceValueRatio, newUnitPrice);
+						"Initial Capital $%.0f, profit rate %.4f, total price $%.0f, total value $%.0f, price-value ratio %.4f, new unit price $%.4f",
+						initialCapital,  profitRate, totalPrice, totalValue, priceValueRatio, newUnitPrice);
 				u.setUnitPrice(newUnitPrice);
 			}
-			// if the prices of consumption goods have changed, the wage will change
-			double totalWage = 0;
-			for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION.CONSUMER_GOOD)) {
+			break;
+		default:
+			break;
+		}
+		double oldMelt = global.getMelt();
+		double adjustmentFactor = global.totalPrice() / global.totalValue();
+		if (!MathStuff.equals(adjustmentFactor, 1)) {
+			double newMelt = oldMelt * (adjustmentFactor);
+			Reporter.report(logger, 1, "MELT was %.4f and will be reset to %.4f", oldMelt, newMelt);
+			global.setMelt(newMelt);
+		}
+	}
+	/**
+	 * Not used yet. If 'full pricing' is selected, we need to re-price labour power because wage
+	 * goods are cheaper. However this is beyond the scope of the simple illustrations, so we
+	 * don't to this yet.
+	 */
+	@SuppressWarnings("unused")
+	private void resetWage() {
+		// if the prices of consumption goods have changed, the wage will change.
+		// first calculate what it would have cost, at the new prices, for what workers consumed
+		
+		double totalWage = 0;
+			for (Stock s:Stock.consumedByClass(timeStampIDCurrent, "Workers")) {
+				Commodity u=s.getCommodity();
 				double price = u.getUnitPrice();
 				Reporter.report(logger, 3, "Wage earners just consumed %.0f of [%s] which would add $%.0f to the price of their labour power at the new prices",
-						u.getStockUsedUp(), u.commodityName(), u.getStockUsedUp() * price);
-				totalWage += u.getStockUsedUp() * price;
+						s.getStockUsedUp(), u.commodityName(), s.getStockUsedUp() * price);
+				totalWage += s.getStockUsedUp() * price;
 			}
-			// multiple types of labour power are beyond us at this point because we cannot as yet attribute
-			// specific types of consumption to specific sellers of labour power
-			Commodity labourPower = Commodity.labourPower();
-			double labourPowerSupplied = labourPower.getStockUsedUp();
-			double wageRate = totalWage / labourPowerSupplied;
-			Reporter.report(logger, 2, "%.0f of Labour Power was consumed and the current cost of feeding them is $%.0f, so the wage will be reset to $%.4f",
-					labourPowerSupplied, totalWage, wageRate);
-			labourPower.setUnitPrice(wageRate);
-		}
+		
+		// now divide this by the number of workers.	
+		// multiple types of labour power are beyond us at this point because we cannot as yet attribute
+		// specific types of consumption to specific sellers of labour power
+		
+		Commodity labourPower = Commodity.labourPower();
+		double labourPowerSupplied = labourPower.getStockUsedUp();
+		double wageRate = totalWage / labourPowerSupplied;
+		Reporter.report(logger, 2, "%.0f of Labour Power was consumed and the current cost of feeding them is $%.0f, so the wage will be reset to $%.4f",
+				labourPowerSupplied, totalWage, wageRate);
+		labourPower.setUnitPrice(wageRate);
 	}
 }

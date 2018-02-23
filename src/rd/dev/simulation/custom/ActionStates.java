@@ -28,6 +28,7 @@ import rd.dev.simulation.command.Trade;
  */
 
 public enum ActionStates {
+	// @formatter:off
 	M_C_PreTrade("Exchange", new PreTrade(), 
 			"Exchange Money for Commodities", 
 			false), 
@@ -53,11 +54,12 @@ public enum ActionStates {
 			"Distribution: recalculate unit values and prices and the MELT. Transfer surplus (M'-M)to the capitalist class. Accumulate",
 			false),
 	C_M_Revenue("Revenue", new Revenue(),"Distribute the surplus",true),
-	C_M_Accumulate("Accumulate", new Accumulate(),  "Use the surplus", true),
 	C_M_Prices("Prices", new PriceDynamics(),
 			"Recalculate prices, and if necessary, values, depending on the price dynamics of the project",
-			true);
-	
+			true),
+	C_M_Accumulate("Accumulate", new Accumulate(),  "Use the surplus", true);
+	// @formatter:on
+
 	/**
 	 * the nextAction will be a primitive action if this is a primitive action (eg after Supply we have to do Demand).
 	 * if this is a superAction such as PreTrade, the nextAction is the next superAction
@@ -81,28 +83,28 @@ public enum ActionStates {
 	 */
 	private Command command;
 
-	/** 
-	 *the tooltip associated with the button that carries out this action
+	/**
+	 * the tooltip associated with the button that carries out this action
 	 */
-	 protected String tooltip;
-	 
-	 /**
-	  * true if this is a substate, false if it is a superstate
-	  */
+	protected String tooltip;
+
+	/**
+	 * true if this is a substate, false if it is a superstate
+	 */
 	protected boolean isSubState;
-	
+
 	/**
 	 * if this is a subState, superAction says what its superAction is
 	 * TODO not needed I think
 	 */
 	public ActionStates superAction;
-	
+
 	/**
 	 * an integer representation of superAction
 	 * TODO store the superAction directly into the database?
 	 */
 	protected int superActionAsInteger;
-	
+
 	/**
 	 * the button that executes this action, via its command member
 	 */
@@ -111,16 +113,21 @@ public enum ActionStates {
 	protected TreeItem<String> treeItem;
 
 	/**
-	 * if this is a superAction, this  list contains its subActions
+	 * if this is a superAction, this list contains its subActions
 	 */
-	protected ArrayList<ActionStates> children =new ArrayList<ActionStates>();
+	protected ArrayList<ActionStates> children = new ArrayList<ActionStates>();
 
 	/**
 	 * at last, the constructor
-	 * @param text the text that goes on the button and is used to store this actionState in the Project record
-	 * @param command the command that will be executed when the button is pressed
-	 * @param tooltip the tooltip that will be displayed when the mouse hovers over the button
-	 * @param isSubState true if this is a primitive command, false if it is a superAction
+	 * 
+	 * @param text
+	 *            the text that goes on the button and is used to store this actionState in the Project record
+	 * @param command
+	 *            the command that will be executed when the button is pressed
+	 * @param tooltip
+	 *            the tooltip that will be displayed when the mouse hovers over the button
+	 * @param isSubState
+	 *            true if this is a primitive command, false if it is a superAction
 	 */
 	ActionStates(String text, Command command, String tooltip, boolean isSubState) {
 		this.text = text;
@@ -159,7 +166,7 @@ public enum ActionStates {
 	 */
 	public void setParent(ActionStates superAction) {
 		superAction.children.add(this); // tell parent I am a child
-		this.superAction=superAction;   // tell me who my parent is
+		this.superAction = superAction;   // tell me who my parent is
 	}
 
 	public String getText() {

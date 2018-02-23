@@ -35,6 +35,10 @@ public class StockPK implements Serializable {
 	@Column(name = "timeStamp") protected int timeStamp;
 	@Column(name = "owner") protected String owner;
 	@Column(name = "commodity") protected String commodity;
+
+	// PRODUCTIVE, SALES, MONEY or CONSUMPTION
+	// We cannot use an enum because of a bug in H2, promised to be corrected in the next release,
+	// that breaks when an enum is in the primary key
 	@Column(name = "stockType") protected String stockType;
 
 	public StockPK() {

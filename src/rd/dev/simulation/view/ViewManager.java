@@ -134,6 +134,7 @@ public class ViewManager {
 	@FXML private Button togglePricesExpressionButton;
 	@FXML private Button graphicsToggle;
 	@FXML private Button loadButton;
+	@FXML private CheckBox fullRepricing;
 
 	// Radio Buttons 1
 
@@ -234,6 +235,7 @@ public class ViewManager {
 		setTip(toggleValuesExpressionButton, "Display Values as time instead of money");
 		setTip(togglePricesExpressionButton, "Display Prices as time instead of money");
 		setTip(restartButton, "Restart the current project from scratch");
+//		setTip(fullRepricing, "Not yet operational: when this is checked, money and labour power are included in repricing at the end of the period");
 	}
 
 	/**
@@ -251,6 +253,20 @@ public class ViewManager {
 		button.setTooltip(tip);
 	}
 
+	/**
+	 * adds a tooltip to a CheckBox. Overloads {@link setTip}
+	 * 
+	 * @param box
+	 *            the table
+	 * @param text
+	 *            the tooltip
+	 */
+	private void setTip(CheckBox box, String text) {
+		Tooltip tip = new Tooltip();
+		tip.setText(text);
+		tip.setFont(new Font(15));
+		box.setTooltip(tip);
+	}
 	/**
 	 * adds a tooltip to a RadioButton. Overloads {@link setTip}
 	 * 
@@ -355,7 +371,7 @@ public class ViewManager {
 		Reporter.report(logger, 1, "RESTART OF ENTIRE SIMULATION REQUESTED");
 		Capitalism.dataHandler.restart();// fetch all the data
 		sm.startup();// pre-process all the data
-		actionButtonsBox.setActionStateFromLabel("Prices");
+		actionButtonsBox.setActionStateFromLabel("Accumulate");
 		refreshTimeStampTable();
 		refreshDisplay();
 		// capitalism.showMainWindow();// Set up the display (NOTE: this calls setMainApp and hence all the display initialization methods)
@@ -479,11 +495,13 @@ public class ViewManager {
 	}
 
 	/**
-	 * populate the number fields in the globals grid from the current value of the Global persistent entity.
+	 * populate the number fields in the globals grid from the value of the Global persistent entity 
+	 * at the timeStamp given by the displayCurrsor
+	 * 
 	 * See also {@link initializeGlobalsGrid}
 	 */
 	private void populateGlobalsGrid() {
-		Global global = Global.getGlobal();
+		Global global = Global.getGlobal(Simulation.timeStampDisplayCursor);
 		switchableGrid.populate(smallNumbersFormatString, global);
 	}
 

@@ -43,6 +43,8 @@ public class ClassesReproduce extends Simulation implements Command {
 		Reporter.report(logger, 0, "REPRODUCE CLASSES");
 		advanceOneStep(ActionStates.C_P_ClassesReproduce.getText(), ActionStates.C_P_Produce.getText());
 
+		// NOTE: stockUsedUp has been initialised in the IndustriesProduce phase
+		
 		for (SocialClass sc : SocialClass.socialClassesAll()) {
 			sc.consume();
 			sc.regenerate();
@@ -53,6 +55,5 @@ public class ClassesReproduce extends Simulation implements Command {
 
 		// recalculate unit values, because these will have changed as a result of production
 		computeUnitValues();
-
 	}
 }

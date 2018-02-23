@@ -12,13 +12,13 @@
  DROP table if exists industries;
  CREATE TABLE industries ( project int default 1 not null, timeStamp VARCHAR (10) DEFAULT '1' not null, industryName Varchar(45)not null, 
  commodityName VARCHAR(45) default null,output double DEFAULT 0, proposedOutput double DEFAULT 0, GrowthRate double DEFAULT 0,
- InitialCapital double DEFAULT 0, persistedProfit double default 0,
+ InitialCapital double DEFAULT 0, persistedProfit double default 0,productiveCapital double default  0,
  primary key (project, timeStamp, industryName) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
  
  DROP table if exists stocks;
  CREATE TABLE stocks ( project int default 1 not null, timeStamp VARCHAR (10) DEFAULT '1' not null, OWNER varchar(45) not NULL, OWNERTYPE ENUM('CLASS','INDUSTRY') DEFAULT NULL, 
  commodity varchar(45) not NULL, stockType varchar(45) DEFAULT NULL, quantity double DEFAULT 0, value double DEFAULT 0, PRICE double DEFAULT 0, 
- productionCoefficient double DEFAULT 0, consumptionCoefficient double DEFAULT 0, 
+ productionCoefficient double DEFAULT 0, consumptionCoefficient double DEFAULT 0, stockUsedUp double DEFAULT 0,
  replenishmentDemand double DEFAULT 0, expansionDemand double DEFAULT 0, primary key (project, timeStamp, owner, commodity, stocktype) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
  
  DROP table if exists commodities;

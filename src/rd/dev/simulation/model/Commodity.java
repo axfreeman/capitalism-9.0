@@ -37,7 +37,7 @@ import rd.dev.simulation.utils.Reporter;
 import rd.dev.simulation.view.ViewManager;
 
 /**
- * Commodity is the persistent class for the commodities database table. The embedded primary key is the associated class CommodityPK. 
+ * Commodity is the persistent class for the commodities database table. The embedded primary key is the associated class CommodityPK.
  * All members of the primary key can be accessed via getters and setters in this, the main Commodity class
  */
 @Entity
@@ -91,8 +91,8 @@ public class Commodity implements Serializable {
 		commoditiesByOriginQuery = entityManager.createNamedQuery("Origin", Commodity.class);
 		commoditiesByFunctionQuery = entityManager.createNamedQuery("Function", Commodity.class);
 	}
-	
-	//Enums
+
+	// Enums
 	/**
 	 * Basic classification of commodity types: how are they used?
 	 * 
@@ -100,9 +100,11 @@ public class Commodity implements Serializable {
 	public enum FUNCTION {
 		MONEY("Money"), PRODUCTIVE_INPUT("Productive Inputs"), CONSUMER_GOOD("Consumer Goods");
 		String text;
+
 		FUNCTION(String text) {
 			this.text = text;
 		}
+
 		public String getText() {
 			return text;
 		}
@@ -115,9 +117,11 @@ public class Commodity implements Serializable {
 	public enum ORIGIN {
 		SOCIALlY_PRODUCED("Social"), INDUSTRIALLY_PRODUCED("Capitalist"), MONEY("Money");
 		String text;
+
 		ORIGIN(String text) {
 			this.text = text;
 		}
+
 		public String text() {
 			return text;
 		}
@@ -142,7 +146,8 @@ public class Commodity implements Serializable {
 		TOTALPRICE("Total Price","price.png","The total price of this commodity in existence. Should be equal to quantity X unit price"), 
 		ALLOCATIONSHARE("Share","Allocation.png","The proportion of replenishment demand that can be satisfied from existing supply"), 
 		FUNCTION_TYPE("Commodity Type",null,"Whether this is a productive input,a consumption good, or money"), 
-		INITIALCAPITAL("Initial Capital","capital  2.png",TabbedTableViewer.HEADER_TOOL_TIPS.INITIALCAPITAL.text()), 
+		INITIALCAPITAL("Initial Capital","capital  2.png",TabbedTableViewer.HEADER_TOOL_TIPS.INITIALCAPITAL.text()),
+		INITIALPRODUCTIVECAPITAL("Productive Capital","capital  2.png",TabbedTableViewer.HEADER_TOOL_TIPS.PRODUCTIVECAPITAL.text()),
 		CURRENTCAPITAL("Capital","capital 1.png",TabbedTableViewer.HEADER_TOOL_TIPS.CAPITAL.text()),
 		PROFIT("Profit","profit.png",TabbedTableViewer.HEADER_TOOL_TIPS.PROFIT.text()), 
 		PROFITRATE("Profit Rate","profitRate.png" ,TabbedTableViewer.HEADER_TOOL_TIPS.PROFITRATE.text());
@@ -156,19 +161,22 @@ public class Commodity implements Serializable {
 			this.imageName = imageName;
 			this.toolTip = toolTip;
 		}
+
 		public String text() {
 			return text;
 		}
+
 		public String imageName() {
 			return imageName;
 		}
+
 		public String tooltip() {
 			return toolTip;
 		}
 	}
-	
+
 	public Commodity() {
-		this.pk=new CommodityPK();
+		this.pk = new CommodityPK();
 	}
 
 	/**
@@ -178,7 +186,7 @@ public class Commodity implements Serializable {
 	 *            the commodity to copy - usually the one from the previous timeStamp
 	 */
 	public Commodity(Commodity template) {
-		this.pk=new CommodityPK();
+		this.pk = new CommodityPK();
 		this.pk.timeStamp = template.pk.timeStamp;
 		this.pk.name = template.pk.name;
 		this.pk.project = template.pk.project;
@@ -194,7 +202,7 @@ public class Commodity implements Serializable {
 		this.imageName = template.imageName;
 		this.displayOrder = template.displayOrder;
 	}
-	
+
 	/**
 	 * an observable list of type Commodity for display by ViewManager, at the current project and timeStampDisplayCursor. timeStampDisplayCursor, which
 	 * may diverge from timeStamp, identifies the row that the user last clicked on.
@@ -211,7 +219,7 @@ public class Commodity implements Serializable {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * provides a wrapped version of the selected member which the display will recognise, as a ReadOnlyStringWrapper.
 	 * 
@@ -255,6 +263,8 @@ public class Commodity implements Serializable {
 			return new ReadOnlyStringWrapper(function.text);
 		case INITIALCAPITAL:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, initialCapital()));
+		case INITIALPRODUCTIVECAPITAL:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, initialProductiveCapital()));
 		case CURRENTCAPITAL:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, currentCapital()));
 		case PROFIT:
@@ -308,7 +318,7 @@ public class Commodity implements Serializable {
 		case INITIALCAPITAL:
 			return initialCapital() != comparator.initialCapital();
 		case CURRENTCAPITAL:
-			return currentCapital()!= comparator.currentCapital();
+			return currentCapital() != comparator.currentCapital();
 		case PROFIT:
 			return profit() != comparator.profit();
 		case PROFITRATE:
@@ -390,7 +400,7 @@ public class Commodity implements Serializable {
 			comparator = startComparator;
 		}
 	}
-	
+
 	/**
 	 * Calculate the total quantity, value and price of this commodity, from the stocks of it
 	 * Validate against existing total if requested
@@ -400,24 +410,22 @@ public class Commodity implements Serializable {
 	 */
 
 	public void calculateAggregates(boolean validate) {
-		double totalQuantity = 0;
-		double totalValue = 0;
-		double totalPrice = 0;
+		double quantity = 0;
+		double value = 0;
+		double price = 0;
 		for (Stock s : Stock.comoditiesCalled(this.pk.timeStamp, pk.name)) {
-			totalQuantity += s.getQuantity();
-			totalValue += s.getValue();
-			totalPrice += s.getPrice();
+			quantity += s.getQuantity();
+			value += s.getValue();
+			price += s.getPrice();
 			logger.debug(String.format("  Stock of type [%s] with name [%s] has added quantity %.2f; value %.2f, and price %.2f. ",
 					s.getStockType(), s.getOwner(), s.getQuantity(), s.getPrice(), s.getValue()));
 		}
-		totalQuantity = MathStuff.round(totalQuantity);
-		totalValue = MathStuff.round(totalValue);
-		totalPrice = MathStuff.round(totalPrice);
+		quantity = MathStuff.round(quantity);
+		value = MathStuff.round(value);
+		price = MathStuff.round(price);
 		Reporter.report(logger, 2, "  Total quantity of the commodity [%s] is %.2f (value %.2f, price %.2f). ",
-				pk.name, totalQuantity, totalPrice, totalValue);
+				pk.name, quantity, price, value);
 	}
-
-
 
 	/**
 	 * 
@@ -434,7 +442,7 @@ public class Commodity implements Serializable {
 
 	// aggregators
 	// TODO get aggregator queries working
-	
+
 	/**
 	 * @return the total value of this use value in the economy at this time
 	 */
@@ -483,7 +491,6 @@ public class Commodity implements Serializable {
 		return profit;
 	}
 
-	
 	/**
 	 * @return the profit rate so far in the industries that produce this use value
 	 */
@@ -492,7 +499,7 @@ public class Commodity implements Serializable {
 	}
 
 	/**
-	 * @return the total capital invested in producing this use value
+	 * @return the total capital invested in producing this commodity
 	 */
 	public double initialCapital() {
 		double capital = 0;
@@ -501,9 +508,25 @@ public class Commodity implements Serializable {
 		}
 		return capital;
 	}
-	
+
+	/**
+	 * Returns the initial productive capital invested in producing this commodity.
+	 * This is equal to the initialCapital less the money stocks of the industry.
+	 * It is chiefly used in the pricing stage, if the user opts to ignore money as a store of value
+	 * 
+	 * @return the initial productive capital invested in producing this commodity
+	 */
+	public double initialProductiveCapital() {
+		double productiveCapital = 0.0;
+		for (Industry c : industries()) {
+			productiveCapital += c.getProductiveCapital();
+		}
+		return productiveCapital;
+	}
+
 	/**
 	 * The total supply of this commodity from all sales stocks of it
+	 * 
 	 * @return the total supply of this commmodity
 	 */
 	public double totalSupply() {
@@ -541,20 +564,20 @@ public class Commodity implements Serializable {
 		}
 		return demand;
 	}
-	
+
 	/**
 	 * @return the current capital of all the industries that produce this commodity
 	 */
-	
+
 	public double currentCapital() {
-		double currentCapital=0.0;
+		double currentCapital = 0.0;
 		for (Industry c : industries()) {
-				currentCapital+= c.currentCapital();
-			}
+			currentCapital += c.currentCapital();
+		}
 		return currentCapital;
 	}
-	
-	//QUERIES
+
+	// QUERIES
 
 	/**
 	 * @return a list of industries that produce this commodity
@@ -562,7 +585,7 @@ public class Commodity implements Serializable {
 	public List<Industry> industries() {
 		return Industry.industriesByCommodityName(pk.timeStamp, pk.name);
 	}
-	
+
 	/**
 	 * get the single commodity with the primary key given by all the parameters, including the timeStamp
 	 * 
@@ -615,6 +638,18 @@ public class Commodity implements Serializable {
 	}
 
 	/**
+	 * a list of all commodities at the current project and the given timeStamp
+	 * 
+	 * @param timeStamp
+	 *            the timeStamp of the commodities returned
+	 * @return a list of all commodities at the given timeStamp and the current project
+	 */
+	public static List<Commodity> commoditiesAll(int timeStamp) {
+		commoditiesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
+		return commoditiesAllQuery.getResultList();
+	}
+
+	/**
 	 * a list of all commodities of the given origin at the current timeStamp and project
 	 * 
 	 * @param origin
@@ -645,6 +680,7 @@ public class Commodity implements Serializable {
 	/**
 	 * return a single commodity of origin type SOCIALLY_PRODUCED, which will be labour power
 	 * TODO but not immediately; there could conceivably be more than one such
+	 * 
 	 * @return the single use value of origin type SOCIALLY_PRODUCED, which will be labour poweer
 	 */
 	public static Commodity labourPower() {
@@ -657,10 +693,12 @@ public class Commodity implements Serializable {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Set the comparators for the current commodities at the given timeStamp and for the current project
-	 * @param timeStampID the timeStamp of the commodities 
+	 * 
+	 * @param timeStampID
+	 *            the timeStamp of the commodities
 	 */
 	public static void setComparators(int timeStampID) {
 		commoditiesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStampID);
@@ -671,7 +709,7 @@ public class Commodity implements Serializable {
 			u.setCustomComparator(commodityByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, u.commodityName()));
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @return the function of this commodity, as given by the {@code FUNCTION_TYPE} enum
@@ -693,14 +731,13 @@ public class Commodity implements Serializable {
 		return pk.project;
 	}
 
-
 	/**
 	 * @return the entityManager
 	 */
 	public static EntityManager getEntityManager() {
 		return Commodity.entityManager;
 	}
-	
+
 	public double getTurnoverTime() {
 		return this.turnoverTime;
 	}
@@ -865,11 +902,10 @@ public class Commodity implements Serializable {
 	}
 
 	/**
-	 * @param toolTip the toolTip to set
+	 * @param toolTip
+	 *            the toolTip to set
 	 */
 	public void setToolTip(String toolTip) {
 		this.toolTip = toolTip;
 	}
-	
-	
 }

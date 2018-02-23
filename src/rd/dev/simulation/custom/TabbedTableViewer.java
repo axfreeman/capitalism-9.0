@@ -102,6 +102,7 @@ public class TabbedTableViewer extends VBox {
 				+ "in the relevant industries"),
 		INITIALCAPITAL("The initial capital, in money price terms, of a commodity or of the industries producing \n"
 				+ "this commodity, at the start of the period"),
+		PRODUCTIVECAPITAL("The initial capital excluding money"),
 		CAPITAL("Capital is defined as productive stocks plus sales stocks, plus money stocks"),
 		PROFIT("Profit is the difference, in money price terms, between the current capital\n"
 				+ " and the initial capital of all the industries producing this commodity"),
@@ -296,6 +297,7 @@ public class TabbedTableViewer extends VBox {
 		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.PRODUCTIVESTOCKS, false));
 		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.MONEYSTOCK, false));
 		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.CURRENTCAPITAL, false));
+		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.INITIALPRODUCTIVECAPITAL,false));
 		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.PROFIT, false));
 		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.PROFITRATE, false));
 	}

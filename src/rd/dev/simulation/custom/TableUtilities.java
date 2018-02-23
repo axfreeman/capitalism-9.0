@@ -27,7 +27,6 @@ import org.apache.logging.log4j.Logger;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.ContextMenu;
@@ -204,23 +203,25 @@ public class TableUtilities {
 		Label label = new Label();
 		label.setText(superColumn.getText());
 		label.setGraphic(makeLittleMinus());
+
+// somewhat unsuccessful code to style the header, kept as comments for reference		
 //		label.setMaxWidth(1000);
 //		label.setPrefWidth(superColumn.getPrefWidth()-5);
 //		label.setPadding(new Insets(2));
-		
 // css style for column headers
-		String headerCSS=".table-view .column-header{\n" + 
-				"    -fx-text-fill: -fx-selection-bar-text;\r\n" + 
-				"    -fx-font-size: 10;\n" + 
-				"    -fx-size: 11 ;\n" + 
-				"    -fx-font-family: \"Arial\";\n" + 
-				"    -fx-background-color: silver;\n" +
-				"}";
+//		String headerCSS=".table-view .column-header{\n" + 
+//				"    -fx-text-fill: -fx-selection-bar-text;\r\n" + 
+//				"    -fx-font-size: 10;\n" + 
+//				"    -fx-size: 11 ;\n" + 
+//				"    -fx-font-family: \"Arial\";\n" + 
+//				"    -fx-background-color: silver;\n" +
+//				"}";
 //		superColumn.getStyleClass().add(headerCSS);
-		final String cssNumberLabel= "-fx-background-color: silver;\n"
-				+ "-fx-border-color: silver;\n"
-				+ "-fx-border-width: 2;\n";
+//		final String cssNumberLabel= "-fx-background-color: silver;\n"
+//				+ "-fx-border-color: silver;\n"
+//				+ "-fx-border-width: 2;\n";
 //		superColumn.setStyle(cssNumberLabel);
+		
 		superColumn.setGraphic(label);
 		superColumn.setText("");
 		label.addEventHandler(MouseEvent.MOUSE_CLICKED, eventHandler);

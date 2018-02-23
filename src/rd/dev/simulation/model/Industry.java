@@ -63,12 +63,13 @@ public class Industry implements Serializable {
 	private static final Logger logger = LogManager.getLogger("Industry");
 
 	@EmbeddedId protected IndustryPK pk;
-	@Column(name = "commodityName") private String commodityName;
-	@Column(name = "output") private double output;
-	@Column(name = "ProposedOutput") private double proposedOutput;
-	@Column(name = "InitialCapital") private double initialCapital;
-	@Column(name = "PersistedProfit") private double persistedProfit;
-	@Column(name = "Growthrate") private double growthRate;
+	@Column(name = "commodityName") protected String commodityName;
+	@Column(name = "output") protected double output;
+	@Column(name = "ProposedOutput") protected double proposedOutput;
+	@Column(name = "InitialCapital") protected double initialCapital;
+	@Column(name = "PersistedProfit") protected double persistedProfit;
+	@Column(name = "Growthrate") protected double growthRate;
+	@Column(name = "productiveCapital") protected double productiveCapital;
 
 	// Comparators
 	@Transient private Industry comparator;
@@ -103,6 +104,7 @@ public class Industry implements Serializable {
 		OUTPUT("Output","constrained output.png",TabbedTableViewer.HEADER_TOOL_TIPS.OUTPUT.text()), 
 		PROPOSEDOUTPUT("Proposed Output","maximum output.png",null), 
 		INITIALCAPITAL("Initial Capital","capital  2.png",TabbedTableViewer.HEADER_TOOL_TIPS.INITIALCAPITAL.text()), 
+		INITIALPRODUCTIVECAPITAL("Productive Capital","capital  2.png",TabbedTableViewer.HEADER_TOOL_TIPS.PRODUCTIVECAPITAL.text()),
 		CURRENTCAPITAL("Current Capital","capital 1.png",TabbedTableViewer.HEADER_TOOL_TIPS.CAPITAL.text()), 
 		PROFIT("Profit","profit.png",TabbedTableViewer.HEADER_TOOL_TIPS.PROFIT.text()), 
 		PROFITRATE("Profit Rate","profitRate.png",TabbedTableViewer.HEADER_TOOL_TIPS.PROFITRATE.text()), 
@@ -146,8 +148,6 @@ public class Industry implements Serializable {
 		PRODUCTIONGOODS, CONSUMPTIONGOODS, ERROR
 	}
 
-	
-
 	/**
 	 * Report this industry's OUTPUTTYPE (production goods or consumer goods)
 	 * NOTE we work this out by looking at the use value.
@@ -155,7 +155,6 @@ public class Industry implements Serializable {
 	 * 
 	 * @return this industry's Output Type (production or consumer goods)
 	 */
-
 	public OUTPUTTYPE outputType() {
 		Commodity u = getCommodity();
 		switch (u.getFunction()) {
@@ -169,15 +168,17 @@ public class Industry implements Serializable {
 	}
 	
 	/**
-	 * A 'bare constructor' is required by JPA and this is it. However, when the new socialClass is constructed, the constructor does not automatically create a
-	 * new PK entity. So we create a 'hollow' primary key which must then be populated by the caller before persisting the entity
+	 * A 'bare constructor' is required by JPA and this is it. However, when the new socialClass is constructed, 
+	 * the constructor does not automatically create a new PK entity. So we create a 'hollow' primary key which 
+	 * must then be populated by the caller before persisting the entity
 	 */
 	public Industry() {
 		this.pk = new IndustryPK();
 	}
 
 	/**
-	 * make a carbon copy of an industry template
+	 * make a carbon copy of an industry template. This is the normal way a persistent entity is constructed, 
+	 * since each new record is a modified version of it immediate predecessor 
 	 * 
 	 * @param template
 	 *            the industry to be copied into this one.
@@ -192,6 +193,7 @@ public class Industry implements Serializable {
 		proposedOutput = template.proposedOutput;
 		growthRate = template.growthRate;
 		initialCapital = template.initialCapital;
+		productiveCapital=template.productiveCapital;
 		persistedProfit=template.persistedProfit;
 	}
 	
@@ -231,6 +233,8 @@ public class Industry implements Serializable {
 			return new ReadOnlyStringWrapper(commodityName);
 		case INITIALCAPITAL:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, initialCapital));
+		case INITIALPRODUCTIVECAPITAL:
+			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, productiveCapital));
 		case OUTPUT:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, output));
 		case PROPOSEDOUTPUT:
@@ -281,6 +285,8 @@ public class Industry implements Serializable {
 			return output != comparator.output;
 		case INITIALCAPITAL:
 			return initialCapital != comparator.initialCapital;
+		case INITIALPRODUCTIVECAPITAL:
+			return productiveCapital!=comparator.productiveCapital;
 		case PROFITRATE:
 			return profitRate() != comparator.profitRate();
 		case PROFIT:
@@ -330,6 +336,8 @@ public class Industry implements Serializable {
 			return String.format(ViewManager.largeNumbersFormatString, (output - comparator.output));
 		case INITIALCAPITAL:
 			return String.format(ViewManager.largeNumbersFormatString, (initialCapital - comparator.initialCapital));
+		case INITIALPRODUCTIVECAPITAL:
+			return String.format(ViewManager.largeNumbersFormatString, (productiveCapital - comparator.productiveCapital));
 		case PROFITRATE:
 			return String.format(ViewManager.smallNumbersFormatString, (profitRate() - comparator.profitRate()));
 		case PROFIT:
@@ -1071,6 +1079,20 @@ public class Industry implements Serializable {
 	 */
 	public void setEndComparator(Industry endComparator) {
 		this.endComparator = endComparator;
+	}
+
+	/**
+	 * @return the productiveCapital
+	 */
+	public double getProductiveCapital() {
+		return productiveCapital;
+	}
+
+	/**
+	 * @param productiveCapital the productiveCapital to set
+	 */
+	public void setProductiveCapital(double productiveCapital) {
+		this.productiveCapital = productiveCapital;
 	}
 
 }

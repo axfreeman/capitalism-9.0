@@ -51,11 +51,16 @@ public class IndustriesProduce extends Simulation implements Command {
 
 		// initialise the accounting for how much of this commodity is used up and how much is created in production in the current period
 		// so we can calculate how much surplus of it resulted from production in this period.
+		// TODO write a query to do this
 
 		for (Commodity u : Commodity.commoditiesByOrigin(ORIGIN.INDUSTRIALLY_PRODUCED)) {
 			u.setStockUsedUp(0);
 			u.setStockProduced(0);
 		}
+		
+		// remember the initial productive capital so we can equalize the profit rate, if this option is selected, excluding money
+		
+		Simulation.setInitialProductiveCapitals();
 		
 		// Now do the actual production: value process then production process
 		// all productive stocks except a stock of type labour power now contribute value to the product of the industry that owns them,
@@ -98,8 +103,9 @@ public class IndustriesProduce extends Simulation implements Command {
 				Reporter.report(logger, 2, "  %.0f units of [%s] were used up in producing the output [%s]", stockUsedUp, u.commodityName(),
 						c.getIndustryName());
 				double stockOfUSoFarUsedUp = u.getStockUsedUp();
-				u.setStockUsedUp(stockOfUSoFarUsedUp + stockUsedUp);
+				u.setStockUsedUp(stockOfUSoFarUsedUp + stockUsedUp); //TODO eliminate this and compute commodity stock usage from stocks themselves
 				s.modifyBy(-stockUsedUp);
+				s.setStockUsedUp(s.getStockUsedUp()+stockUsedUp);
 				}
 			}
 

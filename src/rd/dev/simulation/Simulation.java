@@ -23,7 +23,6 @@ package rd.dev.simulation;
 import java.util.List;
 import javax.persistence.PersistenceException;
 
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -61,11 +60,17 @@ public class Simulation {
 	public static int timeStampDisplayCursor; 				// determines which timeStamp is displayed
 	private static int timeStampComparatorCursor; 			// the timeStamp with which the displayed data is to be compared
 
-	// Determines the way that the supply of labour power responds to demand
-	// a primitive response function to be expanded and hopefully user-customized
-	// if FLEXIBLE, labour power will expand to meet demand (reserve army)
-	// if FIXED, labour power cannot expand to meet demand and provides a supply constraint on output
+	/**
+	 * if FULLPRICING is ON, money and labour power are included in the price dynamics
+	 */
+	private static boolean fullPricing = false;
 
+	/**
+	 * Determines how the supply of labour power responds to demand
+	 * a primitive response function to be expanded and hopefully user-customized
+	 * if FLEXIBLE, labour power will expand to meet demand (reserve army)
+	 * if FIXED, labour power cannot expand to meet demand and provides a supply constraint on output
+	 */
 	public static enum LABOUR_SUPPLY_RESPONSE {
 		FLEXIBLE("Flexible"), FIXED("Fixed");
 		String text;
@@ -109,7 +114,7 @@ public class Simulation {
 			p.setTimeStampComparatorCursor(timeStampComparatorCursor);
 
 			// set all project buttonState initially to the end of the non-existent previous period
-			p.setButtonState("Prices");
+			p.setButtonState("Accumulate");
 			Project.getEntityManager().getTransaction().commit();
 
 			// fetch this project's current timeStamp record (which must exist in the database or we flag an error but try to correct it)
@@ -254,7 +259,7 @@ public class Simulation {
 		logger.debug(" Persisting a new set of stocks with timeStamp {} ", timeStampIDCurrent + 1);
 		Stock newStock;
 		for (Stock s : Stock.all()) {
-			logger.log(Level.ALL, "   Persisting " + s.primaryKeyAsString());
+			logger.debug("Persisting {}", s.primaryKeyAsString());
 			newStock = new Stock(s);
 			newStock.setTimeStamp(timeStampIDCurrent + 1);
 			Stock.getEntityManager().persist(newStock);
@@ -262,10 +267,10 @@ public class Simulation {
 
 		// industries
 
-		logger.debug(" Persisting a new set of industries with timeStamp ", timeStampIDCurrent + 1);
+		logger.debug("Persisting a new set of industries with timeStamp ", timeStampIDCurrent + 1);
 		Industry newIndustry;
 		for (Industry c : Industry.industriesAll()) {
-			logger.debug("  Persisting an industry whose use value is " + c.getIndustryName());
+			logger.debug("Persisting an industry whose use value is " + c.getIndustryName());
 			newIndustry = new Industry(c);
 			newIndustry.setTimeStamp(timeStampIDCurrent + 1);
 			Industry.getEntityManager().persist(newIndustry);
@@ -273,7 +278,7 @@ public class Simulation {
 
 		// Social Classes
 
-		logger.debug(" Persisting a new set of social classes with timeStamp {}", timeStampIDCurrent + 1);
+		logger.debug("Persisting a new set of social classes with timeStamp {}", timeStampIDCurrent + 1);
 		SocialClass newSocialClass;
 		for (SocialClass sc : SocialClass.socialClassesAll()) {
 			logger.debug("  Persisting a social class whose name is " + sc.getSocialClassName());
@@ -285,7 +290,7 @@ public class Simulation {
 
 		// Globals
 
-		logger.debug(" Persisting a new globals record with timeStamp {} ", timeStampIDCurrent + 1);
+		logger.debug("Persisting a new globals record with timeStamp {} ", timeStampIDCurrent + 1);
 		Global newGlobal = new Global(Global.getGlobal());
 		newGlobal.setTimeStamp(timeStampIDCurrent + 1);
 		Global.getEntityManager().persist(newGlobal);
@@ -344,10 +349,26 @@ public class Simulation {
 		double globalTotalValue = 0.0;
 		double globalTotalPrice = 0.0;
 		Global global = Global.getGlobal();
-		for (Commodity u : Commodity.commoditiesAll()) {
-			Reporter.report(logger, 2, "Commodity [%s] Total value is %.0f, and total price is %.0f", u.commodityName(), u.totalValue(), u.totalPrice());
-			globalTotalValue += u.totalValue();
-			globalTotalPrice += u.totalPrice();
+		
+		//TODO this is somewhat hamfisted. Need queries to do this stuff.
+		if (Simulation.isFullPricing()) {
+			for (Commodity u : Commodity.commoditiesAll()) {
+				Reporter.report(logger, 2, "Commodity [%s] Total value is %.0f, and total price is %.0f", u.commodityName(), u.totalValue(), u.totalPrice());
+				globalTotalValue += u.totalValue();
+				globalTotalPrice += u.totalPrice();
+			}
+		} else {
+			for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION.PRODUCTIVE_INPUT)) {
+				Reporter.report(logger, 2, "Commodity [%s] Total value is %.0f, and total price is %.0f", u.commodityName(), u.totalValue(), u.totalPrice());
+				globalTotalValue += u.totalValue();
+				globalTotalPrice += u.totalPrice();
+
+			}
+			for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION.CONSUMER_GOOD)) {
+				Reporter.report(logger, 2, "Commodity [%s] Total value is %.0f, and total price is %.0f", u.commodityName(), u.totalValue(), u.totalPrice());
+				globalTotalValue += u.totalValue();
+				globalTotalPrice += u.totalPrice();
+			}
 		}
 		Reporter.report(logger, 1, "Global total value is %.0f, and total price is %.0f", globalTotalValue, globalTotalPrice);
 
@@ -365,7 +386,7 @@ public class Simulation {
 	 * Initialise the currentCapital to be the same.
 	 * Called at startup and thereafter afterAccumulate (i.e. at the very end of the whole industry and start of the next)
 	 */
-	protected void setCapitals() {
+	protected static void setCapitals() {
 		Global global = Global.getGlobal();
 		for (Industry c : Industry.industriesAll()) {
 			double initialCapital = c.currentCapital();
@@ -381,12 +402,29 @@ public class Simulation {
 			c.persistProfit();
 		}
 	}
+	
+	/**
+	 * initialise the initial productive capital of the industry, to be the price of its productive stocks
+	 * Chiefly used for profit-rate equalization when we don't do full repricing
+	 */
+	
+	protected static void setInitialProductiveCapitals() {
+		
+		for (Industry c:Industry.industriesAll()) {
+			double productiveCapital=0.0;
+			for (Stock s:c.productiveStocks()) {
+				productiveCapital+=s.getPrice();
+			}
+			productiveCapital+=c.getSalesPrice();
+			c.setProductiveCapital(productiveCapital);
+		}
+	}
 
 	public void advanceOnePeriod() {
 		periodCurrent++;
 		Reporter.report(logger, 0, "ADVANCING ONE PERIOD TO %d", periodCurrent);
 		// start another period so recompute the initial capitals and profits
-		setCapitals(); 
+		setCapitals();
 	}
 
 	/**
@@ -499,4 +537,20 @@ public class Simulation {
 	public static void setPeriodCurrent(int periodCurrent) {
 		Simulation.periodCurrent = periodCurrent;
 	}
+
+	/**
+	 * @return the fullPricing
+	 */
+	public static boolean isFullPricing() {
+		return fullPricing;
+	}
+
+	/**
+	 * @param fullPricing
+	 *            the fullPricing to set
+	 */
+	public void setFullPricing(boolean fullPricing) {
+		Simulation.fullPricing = fullPricing;
+	}
+
 }

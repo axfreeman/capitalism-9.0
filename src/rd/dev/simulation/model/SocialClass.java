@@ -338,9 +338,10 @@ public class SocialClass implements Serializable {
 		for (Stock s : consumptionStocks()) {
 			double quantityConsumed = s.getQuantity();
 			s.modifyBy(-quantityConsumed);
+			s.setStockUsedUp(s.getStockUsedUp()+quantityConsumed);
 			Commodity commodity=s.getCommodity();
 			double stockUsedUp= commodity.getStockUsedUp()+quantityConsumed;
-			commodity.setStockUsedUp(stockUsedUp);
+			commodity.setStockUsedUp(stockUsedUp);//TODO eliminate and replace by query based on stocks
 			Reporter.report(logger, 2, "Consumption stock of class [%s] reduced to %.0f from %.0f; used up stock now comes to %.0f",
 					pk.socialClassName, s.getQuantity(), quantityConsumed, stockUsedUp);
 		}

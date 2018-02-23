@@ -81,9 +81,18 @@ public class Global implements Serializable {
 	}
 
 	public static enum GLOBAL_SELECTOR {
-		INITIALCAPITAL("Initial Capital"), CURRENTCAPITAL("Current Capital"), PROFIT("Profit"), PROFITRATE("Profit Rate"), TOTALVALUE(
-				"Total Value"), TOTALPRICE("Total Price"), MELT("MELT"), POPULATION_GROWTH_RATE(
-						"Population Growth Rate"), PRICE_DYNAMICS("Price Dynamics"), LABOUR_SUPPLY_RESPONSE("Labour Supply Response");
+		// @formatter:off
+		INITIALCAPITAL("Initial Capital"), 
+		CURRENTCAPITAL("Current Capital"), 
+		PROFIT("Profit"), 
+		PROFITRATE("Profit Rate"), 
+		TOTALVALUE("Total Value"), 
+		TOTALPRICE("Total Price"), MELT("MELT"), 
+		POPULATION_GROWTH_RATE("Population Growth Rate"), 
+		PRICE_DYNAMICS("Price Dynamics"), 
+		LABOUR_SUPPLY_RESPONSE("Labour Supply Response");
+		// @formatter:on
+
 		String text;
 
 		GLOBAL_SELECTOR(String text) {
@@ -100,7 +109,7 @@ public class Global implements Serializable {
 	}
 
 	public Global(Global template) {
-		pk=new GlobalPK();
+		pk = new GlobalPK();
 		pk.timeStamp = template.pk.timeStamp;
 		pk.project = template.pk.project;
 		rateOfExploitation = template.getRateOfExploitation();
@@ -219,7 +228,7 @@ public class Global implements Serializable {
 		Global currentGlobal = globalQuery.getSingleResult();
 		currentGlobal.setPreviousComparator(getGlobal(Simulation.getTimeStampComparatorCursor()));
 		currentGlobal.setStartComparator(getGlobal(1));
-		currentGlobal.setPreviousComparator(getGlobal(Simulation.timeStampIDCurrent));
+		currentGlobal.setEndComparator(getGlobal(Simulation.timeStampIDCurrent));
 		currentGlobal.setCustomComparator(getGlobal(Simulation.timeStampIDCurrent));
 	}
 
@@ -302,7 +311,9 @@ public class Global implements Serializable {
 		// TODO replace by a sum query
 		double totalValue = 0;
 		for (Stock s : Stock.all(pk.timeStamp)) {
-			totalValue += s.getValue();
+			if ((!s.getStockType().equals("Money")) || (Simulation.isFullPricing())) {
+				totalValue += s.getValue();
+			}
 		}
 		return totalValue;
 	}
@@ -314,7 +325,9 @@ public class Global implements Serializable {
 		// TODO replace by a sum query
 		double totalPrice = 0;
 		for (Stock s : Stock.all(pk.timeStamp)) {
-			totalPrice += s.getPrice();
+			if ((!s.getStockType().equals("Money")) || (Simulation.isFullPricing())) {
+				totalPrice += s.getPrice();
+			}
 		}
 		return totalPrice;
 	}
@@ -326,7 +339,7 @@ public class Global implements Serializable {
 	public double initialCapital() {
 		double initialCapital = 0;
 		for (Industry c : Industry.industriesAll(pk.timeStamp)) {
-			initialCapital += c.getInitialCapital();
+			initialCapital += c.getProductiveCapital();
 		}
 		// TODO get this aggregate query working
 		// double checkInitialCapital;
@@ -347,12 +360,12 @@ public class Global implements Serializable {
 	}
 
 	/**
-	 * @return the total profit in the economy
+	 * @return the total profit in the economy for the current project and at the timeStamp of this global record
 	 */
 	public double profit() {
-		double profit=0.0;
-		for (Commodity commodity:Commodity.commoditiesAll()) {
-			profit +=commodity.profit();
+		double profit = 0.0;
+		for (Commodity commodity : Commodity.commoditiesAll(pk.timeStamp)) {
+			profit += commodity.profit();
 		}
 		return profit;
 	}

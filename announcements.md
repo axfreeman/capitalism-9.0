@@ -1,8 +1,12 @@
 # Capitalism 9.0 announcements 2/22/2018 9:17:19 AM 
 
-## 2/22/2018 9:17:38 AM 
+## 2/23/2018 3:20:18 PM 
 
-All projects working; profit rate equalization has some remaining problems but code is in place, prices are successfully calculated and reproduction continues into the next period.
+All benchmark projects working except low initial MELT.
+This now includes profit rate equalization (phew).
+To ensure equalization conforms to what is generally (and IMO wrongly) published, money is not included in the equalization.
+This is principally for tutorial purposes.
+Next up: including money, to illustrate the need for the correction. 
 Some changes in functionality.
 Hence new executable.
 User Guide now slightly out of date.

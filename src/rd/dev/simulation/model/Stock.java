@@ -89,6 +89,9 @@ public class Stock implements Serializable {
 
 	@Column(name = "consumptionCoefficient") private double consumptionCoefficient;
 
+	// how much of this was used up in production or reproduction
+	@Column (name = "stockUsedUp") private double stockUsedUp; 
+	
 	// Comparators
 	@Transient private Stock comparator;
 	@Transient private Stock previousComparator;
@@ -169,11 +172,9 @@ public class Stock implements Serializable {
 	public static enum STOCKTYPE {
 		PRODUCTIVE("Productive"), CONSUMPTION("Consumption"), SALES("Sales"), MONEY("Money");
 		private String text;
-
 		STOCKTYPE(String text) {
 			this.text = text;
 		}
-
 		public String text() {
 			return text;
 		}
@@ -186,11 +187,9 @@ public class Stock implements Serializable {
 	public enum OWNERTYPE {
 		CLASS("Social Class"), INDUSTRY("Industry");
 		private String text;
-
 		OWNERTYPE(String text) {
 			this.text = text;
 		}
-
 		public String text() {
 			return text;
 		}
@@ -270,6 +269,7 @@ public class Stock implements Serializable {
 		quantity = template.quantity;
 		replenishmentDemand = template.replenishmentDemand;
 		expansionDemand = template.expansionDemand;
+		stockUsedUp=template.stockUsedUp;
 	}
 
 	/**
@@ -1050,6 +1050,20 @@ public class Stock implements Serializable {
 	 */
 	public void setExpansionDemand(double expansionDemand) {
 		this.expansionDemand = expansionDemand;
+	}
+
+	/**
+	 * @return the stockUsedUp
+	 */
+	public double getStockUsedUp() {
+		return stockUsedUp;
+	}
+
+	/**
+	 * @param stockUsedUp the stockUsedUp to set
+	 */
+	public void setStockUsedUp(double stockUsedUp) {
+		this.stockUsedUp = stockUsedUp;
 	}
 
 }
