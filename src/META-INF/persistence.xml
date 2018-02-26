@@ -7,7 +7,7 @@
    
 	<persistence-unit name="DB_SOCIALCLASSES"
 		transaction-type="RESOURCE_LOCAL">
-		<class>rd.dev.simulation.model.SocialClass</class>
+		<class>capitalism.model.SocialClass</class>
 
 		<properties>
 			<property name="javax.persistence.jdbc.url"	value="jdbc:h2:mem:capitalism" />
@@ -21,7 +21,7 @@
 
 	<persistence-unit name="DB_GLOBALS" transaction-type="RESOURCE_LOCAL">
 
-		<class>rd.dev.simulation.model.Global</class>
+		<class>capitalism.model.Global</class>
 
 		<properties>
 			<property name="javax.persistence.jdbc.url"
@@ -38,7 +38,7 @@
 
 	<persistence-unit name="DB_INDUSTRIES"
 		transaction-type="RESOURCE_LOCAL">
-		<class>rd.dev.simulation.model.Industry</class>
+		<class>capitalism.model.Industry</class>
 
 		<properties>
 			<property name="javax.persistence.jdbc.url"
@@ -54,7 +54,7 @@
 	<persistence-unit name="DB_COMMODITIES"
 		transaction-type="RESOURCE_LOCAL">
 
-		<class>rd.dev.simulation.model.Commodity</class>
+		<class>capitalism.model.Commodity</class>
 
 		<properties>
 			<property name="javax.persistence.jdbc.url"
@@ -71,7 +71,7 @@
 
 	<persistence-unit name="DB_STOCKS" transaction-type="RESOURCE_LOCAL">
 
-		<class>rd.dev.simulation.model.Stock</class>
+		<class>capitalism.model.Stock</class>
 
 		<properties>
 			<property name="javax.persistence.jdbc.url"
@@ -88,7 +88,7 @@
 
 	<persistence-unit name="DB_PROJECT" transaction-type="RESOURCE_LOCAL">
 
-		<class>rd.dev.simulation.model.Project</class>
+		<class>capitalism.model.Project</class>
 
 		<properties>
 			<property name="javax.persistence.jdbc.url"
@@ -107,7 +107,7 @@
 	<persistence-unit name="DB_TIMESTAMP"
 		transaction-type="RESOURCE_LOCAL">
 
-		<class>rd.dev.simulation.model.TimeStamp</class>
+		<class>capitalism.model.TimeStamp</class>
 
 		<properties>
 			<property name="javax.persistence.jdbc.url"

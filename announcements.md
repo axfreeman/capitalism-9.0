@@ -1,5 +1,11 @@
 # Capitalism 9.0 announcements 2/22/2018 9:17:19 AM 
 
+## 2/25/2018 9:42:39 PM 
+
+Code restructured to prepare for possible migration to server-client framework.
+Some minor bugs may have been introduced.
+Hence no new executable.
+
 ## 2/23/2018 3:20:18 PM 
 
 All benchmark projects working except low initial MELT.
