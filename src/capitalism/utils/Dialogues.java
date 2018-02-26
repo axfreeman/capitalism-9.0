@@ -23,7 +23,7 @@ import java.io.File;
 
 import org.apache.logging.log4j.Logger;
 
-import capitalism.Capitalism;
+import capitalism.view.ViewManager;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.DirectoryChooser;
@@ -96,7 +96,7 @@ public class Dialogues {
 		chooser.setTitle(title);
 		File defaultDirectory = new File("c:/Users/afree/Documents");
 		chooser.setInitialDirectory(defaultDirectory);
-		File selectedDirectory = chooser.showDialog(Capitalism.getPrimaryStage());
+		File selectedDirectory = chooser.showDialog(ViewManager.getPrimaryStage());
 		return selectedDirectory;
 	}
 }

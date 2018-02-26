@@ -39,14 +39,21 @@ import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
+/**
+ * The logWindow is used by the simulation (see the userGuide) to report on the flows of value, price and 
+ * quantity in a manner that is accessible to the user, and complements the other reporting mechanisms
+ * such as the timeStampView and the tables. Also see {@link Reporter#createLogWindow()} and related code
+ *
+ */
+
 public class LogWindow {
 	private static final Logger logger = LogManager.getLogger(Reporter.class);
 	// this scene used for the logger window.
 
 	private static Scene logScene;
-	private Stage loggingStage = new Stage();
-	private HBox hBox = new HBox();
-	private TreeView<Label> treeView;
+	private Stage loggingStage=null;
+	private HBox hBox=null;
+	private TreeView<Label> treeView= null;
 	private double logWindowWidth = ViewManager.screenBounds.getWidth() * 0.5;
 	private double logWindowHeight = ViewManager.screenBounds.getHeight() * 0.9;
 	private TreeItem<Label> lastLevel1;
@@ -54,7 +61,8 @@ public class LogWindow {
 	private TreeItem<Label> lastLevel3;
 
 	public LogWindow() {
-
+		loggingStage=new Stage();
+		hBox=new HBox();
 		TreeItem<Label> rootItem = new TreeItem<Label>(new Label("Log"));
 		TreeItem<Label> firstLevel1Item=new TreeItem<Label>(new Label("STARTUP"));
 		TreeItem<Label> secondLevelItem=new TreeItem<Label>(new Label("Log Window Startup"));

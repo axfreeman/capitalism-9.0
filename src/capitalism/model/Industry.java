@@ -234,27 +234,27 @@ public class Industry implements Serializable {
 		case COMMODITYNAME:
 			return new ReadOnlyStringWrapper(commodityName);
 		case INITIALCAPITAL:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, initialCapital));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), initialCapital));
 		case INITIALPRODUCTIVECAPITAL:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, productiveCapital));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), productiveCapital));
 		case OUTPUT:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, output));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), output));
 		case PROPOSEDOUTPUT:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, proposedOutput));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), proposedOutput));
 		case GROWTHRATE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, growthRate));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), growthRate));
 		case MONEYSTOCK:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, moneyAttribute(valueExpression)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), moneyAttribute(valueExpression)));
 		case SALESSTOCK:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, salesAttribute(valueExpression)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), salesAttribute(valueExpression)));
 		case PRODUCTIVESTOCKS:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, productiveStocksAttribute(valueExpression)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), productiveStocksAttribute(valueExpression)));
 		case PROFIT:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, profit()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), profit()));
 		case PROFITRATE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, profitRate()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallNumbersFormatString(), profitRate()));
 		case CURRENTCAPITAL:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, currentCapital()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), currentCapital()));
 		default:
 			return null;
 		}
@@ -331,29 +331,29 @@ public class Industry implements Serializable {
 		case INDUSTRYNAME:
 			return item;
 		case PROPOSEDOUTPUT:
-			return String.format(ViewManager.largeNumbersFormatString, (proposedOutput - comparator.proposedOutput));
+			return String.format(ViewManager.getLargeNumbersFormatString(), (proposedOutput - comparator.proposedOutput));
 		case GROWTHRATE:
-			return String.format(ViewManager.smallNumbersFormatString, (growthRate - comparator.growthRate));
+			return String.format(ViewManager.getSmallNumbersFormatString(), (growthRate - comparator.growthRate));
 		case OUTPUT:
-			return String.format(ViewManager.largeNumbersFormatString, (output - comparator.output));
+			return String.format(ViewManager.getLargeNumbersFormatString(), (output - comparator.output));
 		case INITIALCAPITAL:
-			return String.format(ViewManager.largeNumbersFormatString, (initialCapital - comparator.initialCapital));
+			return String.format(ViewManager.getLargeNumbersFormatString(), (initialCapital - comparator.initialCapital));
 		case INITIALPRODUCTIVECAPITAL:
-			return String.format(ViewManager.largeNumbersFormatString, (productiveCapital - comparator.productiveCapital));
+			return String.format(ViewManager.getLargeNumbersFormatString(), (productiveCapital - comparator.productiveCapital));
 		case PROFITRATE:
-			return String.format(ViewManager.smallNumbersFormatString, (profitRate() - comparator.profitRate()));
+			return String.format(ViewManager.getSmallNumbersFormatString(), (profitRate() - comparator.profitRate()));
 		case PROFIT:
-			return String.format(ViewManager.largeNumbersFormatString, (profit() - comparator.profit()));
+			return String.format(ViewManager.getLargeNumbersFormatString(), (profit() - comparator.profit()));
 		case MONEYSTOCK:
-			return String.format(ViewManager.largeNumbersFormatString, (moneyAttribute(valueExpression) - comparator.moneyAttribute(valueExpression)));
+			return String.format(ViewManager.getLargeNumbersFormatString(), (moneyAttribute(valueExpression) - comparator.moneyAttribute(valueExpression)));
 		case SALESSTOCK:
-			return String.format(ViewManager.largeNumbersFormatString, (salesAttribute(valueExpression) - comparator.salesAttribute(valueExpression)));
+			return String.format(ViewManager.getLargeNumbersFormatString(), (salesAttribute(valueExpression) - comparator.salesAttribute(valueExpression)));
 		case PRODUCTIVESTOCKS:
 			double p1 = productiveStocksAttribute(valueExpression);
 			double p2 = comparator.productiveStocksAttribute(valueExpression);
-			return String.format(ViewManager.largeNumbersFormatString, (p1 - p2));
+			return String.format(ViewManager.getLargeNumbersFormatString(), (p1 - p2));
 		case CURRENTCAPITAL:
-			return String.format(ViewManager.largeNumbersFormatString, (currentCapital() - comparator.currentCapital()));
+			return String.format(ViewManager.getLargeNumbersFormatString(), (currentCapital() - comparator.currentCapital()));
 		default:
 			return item;
 		}
@@ -371,7 +371,7 @@ public class Industry implements Serializable {
 	public ReadOnlyStringWrapper wrappedString(String productiveStockName) {
 		try {
 			Stock namedStock = Stock.productiveNamedSingle(pk.timeStamp, pk.industryName, productiveStockName);
-			String result = String.format(ViewManager.largeNumbersFormatString, namedStock.get(TabbedTableViewer.displayAttribute));
+			String result = String.format(ViewManager.getLargeNumbersFormatString(), namedStock.get(TabbedTableViewer.displayAttribute));
 			return new ReadOnlyStringWrapper(result);
 		} catch (Exception e) {
 			return null;

@@ -181,7 +181,7 @@ public class TabbedTableViewer extends VBox {
 
 		getChildren().add(tabPane);
 		
-		ViewManager.graphicsState = ContentDisplay.TEXT_ONLY;		// initialize so start state is text only
+		ViewManager.setGraphicsState(ContentDisplay.TEXT_ONLY);		// initialize so start state is text only
 		setDisplayAttribute(Stock.ValueExpression.PRICE);			// start off displaying prices
 		buildTables();
 	}

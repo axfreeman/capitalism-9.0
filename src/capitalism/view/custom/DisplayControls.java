@@ -74,11 +74,9 @@ public class DisplayControls extends HBox {
 
 	private static ProjectCombo projectCombo = null;
 
-	private ViewManager vm =null;
-	
-	ButtonBar leftButtonBar =  new ButtonBar();
-	ButtonBar rightButtonBar =new ButtonBar();
-	Pane spacer = new Pane();
+	private static ButtonBar leftButtonBar =  new ButtonBar();
+	private static ButtonBar rightButtonBar =new ButtonBar();
+	private static Pane spacer = new Pane();
 	
 	public DisplayControls(){
 		ObservableList<Project> projects = Project.observableProjects();
@@ -102,15 +100,15 @@ public class DisplayControls extends HBox {
 		setTip(restartButton, "Restart the current project from scratch");
 		setTip(restartButton, "Restart the current project from scratch");
 		restartButton.setOnAction((event) -> {
-			vm.restart();
+			ViewManager.restart();
 		});
 		dataDumpButton.setOnAction((event) -> {
 			Reporter.report(logger, 1, "User requested dump of entire database to CSV files");
-			vm.dataDump();
+			ViewManager.dataDump();
 		});
 		loadButton.setOnAction((event) -> {
 			Reporter.report(logger, 1, "User requested loading the database from a new location");
-			vm.dataLoad();
+			ViewManager.dataLoad();
 		});
 		
 		leftButtonBar.getButtons().addAll(dataDumpButton,loadButton,restartButton);
@@ -171,22 +169,20 @@ public class DisplayControls extends HBox {
 	}
 	
 	public void toggleDecimals() {
-		if (ViewManager.largeNumbersFormatString.equals("%1$,.0f")) {
-			ViewManager.largeNumbersFormatString = "%1$,.2f";
-			ViewManager.smallNumbersFormatString = "%1$.4f";
+		if (ViewManager.getLargeNumbersFormatString().equals("%1$,.0f")) {
+			ViewManager.setLargeNumbersFormatString("%1$,.2f");
+			ViewManager.setSmallNumbersFormatString("%1$.4f");
 			setTip(toggleDecimalButton, "Display all large magnitudes to zero decimal places and all small magnitudes to two decimal places");
 			toggleDecimalButton.setText("<<..");
 		} else {
-			ViewManager.largeNumbersFormatString = "%1$,.0f";
-			ViewManager.smallNumbersFormatString = "%1$.2f";
+			ViewManager.setLargeNumbersFormatString("%1$,.0f");
+			ViewManager.setSmallNumbersFormatString("%1$.2f");
 			setTip(toggleDecimalButton, "Display all large magnitudes to two decimal places and all small magnitudes to four decimal places");
 			toggleDecimalButton.setText("..>>");
 		}
 		TabbedTableViewer.refreshTables();
 	}
-	public void registerViewManager(ViewManager vm) {
-		this.vm=vm;
-	}
+
 	public static void togglePriceExpression() {
 		if (pricesExpressionDisplay == DISPLAY_AS_EXPRESSION.MONEY) {
 			pricesExpressionDisplay = DISPLAY_AS_EXPRESSION.TIME;

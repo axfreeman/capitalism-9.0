@@ -264,26 +264,26 @@ public class TableUtilities {
 	 * 
 	 */
 	public static void switchHeaderDisplays(ArrayList<TableView<?>> tables) {
-		switch (ViewManager.graphicsState) {
+		switch (ViewManager.getGraphicsState()) {
 		case TEXT_ONLY:
-			ViewManager.graphicsState = ContentDisplay.GRAPHIC_ONLY;
+			ViewManager.setGraphicsState(ContentDisplay.GRAPHIC_ONLY);
 			break;
 		case GRAPHIC_ONLY:
-			ViewManager.graphicsState = ContentDisplay.TEXT_ONLY;
+			ViewManager.setGraphicsState(ContentDisplay.TEXT_ONLY);
 			break;
 		default:
-			ViewManager.graphicsState = ContentDisplay.TEXT_ONLY;
+			ViewManager.setGraphicsState(ContentDisplay.TEXT_ONLY);
 		}
 		for (TableView<?> table : tables) {
 			for (TableColumn<?, ?> column : table.getColumns()) {
 				if ("HasGraphic".equals(column.getUserData())) {
 					Label columnlabel = (Label) column.getGraphic();
-					columnlabel.setContentDisplay(ViewManager.graphicsState);
+					columnlabel.setContentDisplay(ViewManager.getGraphicsState());
 				}
 				for (TableColumn<?, ?> subColumn : column.getColumns()) {
 					if ("HasGraphic".equals(subColumn.getUserData())) {
 						Label columnlabel = (Label) subColumn.getGraphic();
-						columnlabel.setContentDisplay(ViewManager.graphicsState);
+						columnlabel.setContentDisplay(ViewManager.getGraphicsState());
 					}
 				}
 			}

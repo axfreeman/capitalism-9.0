@@ -22,50 +22,43 @@ package capitalism;
 
 import java.net.URL;
 import java.net.URLClassLoader;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import capitalism.utils.DBHandler;
 import capitalism.utils.Reporter;
 import capitalism.view.ViewManager;
 import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-
 
 public class Capitalism extends Application {
 
 	private static final Logger logger = LogManager.getLogger(Capitalism.class);
-	public static DBHandler dataHandler = new DBHandler();			// handles the initial database transactions such as creation and initialisation
-
-	public static ViewManager viewManager = null; 					// controls the display
+	public static DBHandler dataHandler = new DBHandler();		// handles the initial database transactions such as creation and initialisation
+	public static ViewManager viewManager = null; 				// controls all aspects of the display
+	private static String userBasePath = System.getProperty("user.home").replace('\\', '/') + "/Documents/Capsim/";
+	
 	/**
-	 * the base for all files that are created in, or copied into, the user's file system
+	 * The main class extends the javafx class 'Application' and therefore inherits {@code launch()} which is where the action begins
+	 * However, there ain't no such thing as a free launch.
+	 * The Order is:
+	 * 1. calls super.init()(does nothing unless overeridden)
+	 * 2. calls 'start()' (see below)
+	 * 3. waits until finished - either because of Platform.exit() or because last window is closed (provided Platform.implicitExit attribute is true)
+	 * 4. calls stop() to turn out the lights (does nothing unless overridden)
+	 * see https://docs.oracle.com/javase/8/javafx/api/javafx/application/Application.html
+	 * 
+	 * @param args the arguments supplied by the external caller. Ignored in this application
 	 */
-	public static String userBasePath = System.getProperty("user.home").replace('\\', '/') + "/Documents/Capsim/";
-
-	// graphic elements that need to be accessed by several different managers
-
-	private static Stage primaryStage;
-	private static BorderPane rootLayout = new BorderPane();
 
 	public static void main(String[] args) {
-		logger.debug("Entered Capitalism constructor");
+		// set up the logger files and log the fact that we have started
+		Reporter.initialiseLoggerFiles();
 
-		/*
-		 * 'Launch' is where the action begins.
-		 * However, there ain't no such thing as a free launch.
-		 * The Order is:
-		 * 1. calls super.init()(does nothing unless overeridden)
-		 * 2. calls 'start' (see below)
-		 * 3. waits until finished - either because of Platform.exit() or because last window is closed (provided Platform.implicitExit attribute is true)
-		 * 4. calls stop() to turn out the lights (does nothing unless overridden)
-		 * see https://docs.oracle.com/javase/8/javafx/api/javafx/application/Application.html
-		 */
-
+		logger.debug("STARTUP");
+		// Create the database and read in the user-defined persistent entities
+		dataHandler.initialiseDataBaseAndStart();
+		
+		// launch the application
 		launch();
 	}
 
@@ -81,77 +74,42 @@ public class Capitalism extends Application {
 	}
 
 	/**
-	 * Start is where the visualization begins. The primary stage and scene are built by InitRootLayout.
-	 * This creates a bare window in which the main application will be placed. It also displays this bare window.
-	 * Then ShowMainWindow creates a window to be located inside the root. It loads the FXML information and starts 
-	 * a ViewManager (aka 'Controller') to manage the display.
-	 * 
-	 * It also builds the dynamic tables, but does not display them.
+	 * A slightly complex procedure but necessary as far as I can see. 
+	 * {@code primaryStage} is supplied by the JavaFX launcher. We simply pass it to the viewManager statically,
+	 * because there is no need to instantiate multiplie copies of the primary stage (or it wouldn't be primary, would it?) 
+	 * Next, create the viewManager. There's only a single instance of it.
+	 * The constructor doesn't do much, but it does initialise a root layout which is a container for most of the
+	 * display, and it creates the LogWindow (again, a single instance) which is used for reporting. Thus, it must
+	 * be done before the next step, initialising the values and prices of the stocks and the commodities, and the global totals.
+	 * This, performed by the Simulation class static startup method, is needed because the information in the user-supplied 
+	 * data files is incomplete - it provides only the bare minimum. It is done before viewManager constructs most of its
+	 * custom controls (the display tables, buttons, etc) because to do this, viewManager needs the fully-initialised data.
+	 * Initialization is performed for all projects, so we can subsequently switch from one to the other.
+	 * Finally we ask the ViewManager to populate the display with the various custom controls that it manages.
 	 */
 
 	@Override public void start(Stage primaryStage) {
-		// set up the logger files and log the fact that we have started
-
-		Reporter.initialiseLoggerFiles();
-		logger.debug("CAPITALISM STARTUP: Entered the start procedure");
-
-		// initiaise all the persistent entities
-
-		dataHandler.initialiseDataBaseAndStart();
-		
-		// Initialise the values and prices of the stocks and the commodities, and the global totals.
-		// This is needed because the information in the user-supplied data files is incomplete - it provides only the bare minimum.
-		// It has to be done before viewManager starts up because it needs to access fully-initialised data.
-		// Initialization is performed for all projects, so we can subsequently switch from one to the other.
-
+		ViewManager.setPrimaryStage(primaryStage);
+		viewManager = new ViewManager();
 		Simulation.startup();
-
-		// set up the display (also creates viewManager, see comments)
-
-		Capitalism.primaryStage = primaryStage;
-		Capitalism.primaryStage.setTitle("Capitalism");
-		initRootLayout();
-		showMainWindow();
+		viewManager.startUp();
 	}
 
 	/**
-	 * Initialize the root layout.
+	 * @return the data handler.
 	 */
-
-	public void initRootLayout() {
-			rootLayout.setPrefHeight(800);
-			rootLayout.setPrefWidth(1300);
-			Scene scene = new Scene(rootLayout);
-			String css=getClass().getResource("/SimulationTheme.css").toExternalForm();
-			scene.getStylesheets().add(css);
-			primaryStage.setScene(scene);
-			primaryStage.setY(0);
-			primaryStage.show();
-	}
-
-	/**
-	 * Show the main window inside the root layout.
-	 */
-
-	public void showMainWindow() {
-		logger.debug("Entered showMainWindow");
-		AnchorPane simulationOverview = new AnchorPane();
-		simulationOverview.setPrefHeight(800);
-		simulationOverview.setPrefWidth(1300);
-		rootLayout.setCenter(simulationOverview);			// Set the overview stage into the center of the root layout.
-		viewManager=new ViewManager(simulationOverview);
-		viewManager.setUp(this);
-		}
-
-	/**
-	 * @return the main stage.
-	 */
-
-	public static Stage getPrimaryStage() {
-		return primaryStage;
-	}
 
 	public DBHandler getDBHandler() {
 		return dataHandler;
 	}
+
+	/**
+	 * Returns the base for all files that are created in, or copied into, the user's file system.
+	 * TODO Currently a fixed location, but could be made configurable
+	 * @return the userBasePath
+	 */
+	public static String getUserBasePath() {
+		return userBasePath;
+	}
+	
 }

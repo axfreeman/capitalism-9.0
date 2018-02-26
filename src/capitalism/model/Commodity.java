@@ -239,39 +239,39 @@ public class Commodity implements Serializable {
 		case PRODUCERTYPE:
 			return new ReadOnlyStringWrapper(origin.text());
 		case UNITPRICE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, unitPrice));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallNumbersFormatString(), unitPrice));
 		case UNITVALUE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, unitValue));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallNumbersFormatString(), unitValue));
 		case TOTALVALUE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalValue()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), totalValue()));
 		case TOTALPRICE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalPrice()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), totalPrice()));
 		case TOTALQUANTITY:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalQuantity()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), totalQuantity()));
 		case TOTALSUPPLY:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, totalSupply()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), totalSupply()));
 		case REPLENISHMENT_DEMAND:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, replenishmentDemand()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), replenishmentDemand()));
 		case EXPANSION_DEMAND:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, expansionDemand()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), expansionDemand()));
 		case SURPLUS:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, surplusProduct));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), surplusProduct));
 		case TURNOVERTIME:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, turnoverTime));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallNumbersFormatString(), turnoverTime));
 		case ALLOCATIONSHARE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, allocationShare));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallNumbersFormatString(), allocationShare));
 		case FUNCTION_TYPE:
 			return new ReadOnlyStringWrapper(function.text);
 		case INITIALCAPITAL:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, initialCapital()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), initialCapital()));
 		case INITIALPRODUCTIVECAPITAL:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, initialProductiveCapital()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), initialProductiveCapital()));
 		case CURRENTCAPITAL:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, currentCapital()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), currentCapital()));
 		case PROFIT:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, profit()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), profit()));
 		case PROFITRATE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, profitRate()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallNumbersFormatString(), profitRate()));
 		default:
 			return null;
 		}
@@ -350,33 +350,33 @@ public class Commodity implements Serializable {
 		case PRODUCERTYPE:
 			return item;
 		case UNITPRICE:
-			return String.format(ViewManager.smallNumbersFormatString, (unitPrice - comparator.unitPrice));
+			return String.format(ViewManager.getSmallNumbersFormatString(), (unitPrice - comparator.unitPrice));
 		case UNITVALUE:
-			return String.format(ViewManager.smallNumbersFormatString, (unitValue - comparator.unitValue));
+			return String.format(ViewManager.getSmallNumbersFormatString(), (unitValue - comparator.unitValue));
 		case TOTALVALUE:
-			return String.format(ViewManager.largeNumbersFormatString, (totalValue() - comparator.totalValue()));
+			return String.format(ViewManager.getLargeNumbersFormatString(), (totalValue() - comparator.totalValue()));
 		case TOTALPRICE:
-			return String.format(ViewManager.largeNumbersFormatString, (totalPrice() - comparator.totalPrice()));
+			return String.format(ViewManager.getLargeNumbersFormatString(), (totalPrice() - comparator.totalPrice()));
 		case TOTALQUANTITY:
-			return String.format(ViewManager.largeNumbersFormatString, (totalQuantity() - comparator.totalQuantity()));
+			return String.format(ViewManager.getLargeNumbersFormatString(), (totalQuantity() - comparator.totalQuantity()));
 		case TOTALSUPPLY:
-			return String.format(ViewManager.largeNumbersFormatString, (totalSupply() - comparator.totalSupply()));
+			return String.format(ViewManager.getLargeNumbersFormatString(), (totalSupply() - comparator.totalSupply()));
 		case REPLENISHMENT_DEMAND:
-			return String.format(ViewManager.largeNumbersFormatString, (replenishmentDemand() - comparator.replenishmentDemand()));
+			return String.format(ViewManager.getLargeNumbersFormatString(), (replenishmentDemand() - comparator.replenishmentDemand()));
 		case SURPLUS:
-			return String.format(ViewManager.largeNumbersFormatString, (surplusProduct - comparator.surplusProduct));
+			return String.format(ViewManager.getLargeNumbersFormatString(), (surplusProduct - comparator.surplusProduct));
 		case TURNOVERTIME:
-			return String.format(ViewManager.smallNumbersFormatString, (turnoverTime - comparator.getTurnoverTime()));
+			return String.format(ViewManager.getSmallNumbersFormatString(), (turnoverTime - comparator.getTurnoverTime()));
 		case ALLOCATIONSHARE:
-			return String.format(ViewManager.smallNumbersFormatString, (allocationShare - comparator.allocationShare));
+			return String.format(ViewManager.getSmallNumbersFormatString(), (allocationShare - comparator.allocationShare));
 		case PROFIT:
-			return String.format(ViewManager.largeNumbersFormatString, (profit() - comparator.profit()));
+			return String.format(ViewManager.getLargeNumbersFormatString(), (profit() - comparator.profit()));
 		case INITIALCAPITAL:
-			return String.format(ViewManager.largeNumbersFormatString, (initialCapital() - comparator.initialCapital()));
+			return String.format(ViewManager.getLargeNumbersFormatString(), (initialCapital() - comparator.initialCapital()));
 		case CURRENTCAPITAL:
-			return String.format(ViewManager.largeNumbersFormatString, (currentCapital() - comparator.currentCapital()));
+			return String.format(ViewManager.getLargeNumbersFormatString(), (currentCapital() - comparator.currentCapital()));
 		case PROFITRATE:
-			return String.format(ViewManager.largeNumbersFormatString, (profitRate() - comparator.profitRate()));
+			return String.format(ViewManager.getLargeNumbersFormatString(), (profitRate() - comparator.profitRate()));
 		default:
 			return item;
 		}

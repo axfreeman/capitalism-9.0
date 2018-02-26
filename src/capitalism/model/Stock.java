@@ -318,19 +318,19 @@ public class Stock implements Serializable {
 		case STOCKTYPE:
 			return new ReadOnlyStringWrapper(pk.stockType);
 		case QUANTITY:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, quantity));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), quantity));
 		case VALUE:
 			return new ReadOnlyStringWrapper(
-					String.format(ViewManager.largeNumbersFormatString, ViewManager.valueExpression(value, DisplayControls.valuesExpressionDisplay)));
+					String.format(ViewManager.getLargeNumbersFormatString(), ViewManager.valueExpression(value, DisplayControls.valuesExpressionDisplay)));
 		case PRICE:
 			return new ReadOnlyStringWrapper(
-					String.format(ViewManager.largeNumbersFormatString, ViewManager.valueExpression(price, DisplayControls.pricesExpressionDisplay)));
+					String.format(ViewManager.getLargeNumbersFormatString(), ViewManager.valueExpression(price, DisplayControls.pricesExpressionDisplay)));
 		case REPLENISHMENTDEMAND:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.largeNumbersFormatString, replenishmentDemand));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), replenishmentDemand));
 		case PRODUCTION_COEFFICIENT:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, productionCoefficient));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallNumbersFormatString(), productionCoefficient));
 		case CONSUMPTION_COEFFICIENT:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.smallNumbersFormatString, consumptionCoefficient));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallNumbersFormatString(), consumptionCoefficient));
 		default:
 			return null;
 		}
@@ -410,11 +410,11 @@ public class Stock implements Serializable {
 			return item;
 		switch (valueExpression) {
 		case QUANTITY:
-			return String.format(ViewManager.largeNumbersFormatString, quantity - comparator.quantity);
+			return String.format(ViewManager.getLargeNumbersFormatString(), quantity - comparator.quantity);
 		case VALUE:
-			return String.format(ViewManager.largeNumbersFormatString, value - comparator.value);
+			return String.format(ViewManager.getLargeNumbersFormatString(), value - comparator.value);
 		case PRICE:
-			return String.format(ViewManager.largeNumbersFormatString, price - comparator.price);
+			return String.format(ViewManager.getLargeNumbersFormatString(), price - comparator.price);
 		default:
 			return item;
 		}

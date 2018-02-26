@@ -128,25 +128,25 @@ public class Global implements Serializable {
 
 		switch (selector) {
 		case CURRENTCAPITAL:
-			return String.format(ViewManager.largeNumbersFormatString, currentCapital());
+			return String.format(ViewManager.getLargeNumbersFormatString(), currentCapital());
 		case INITIALCAPITAL:
-			return String.format(ViewManager.largeNumbersFormatString, initialCapital());
+			return String.format(ViewManager.getLargeNumbersFormatString(), initialCapital());
 		case LABOUR_SUPPLY_RESPONSE:
 			return String.format("%s", labourSupplyResponse.text());
 		case MELT:
-			return String.format(ViewManager.smallNumbersFormatString, melt);
+			return String.format(ViewManager.getSmallNumbersFormatString(), melt);
 		case POPULATION_GROWTH_RATE:
-			return String.format(ViewManager.smallNumbersFormatString, populationGrowthRate);
+			return String.format(ViewManager.getSmallNumbersFormatString(), populationGrowthRate);
 		case PRICE_DYNAMICS:
 			return String.format("%s", currentProject.getPriceDynamics().text);
 		case PROFIT:
-			return String.format(ViewManager.largeNumbersFormatString, profit());
+			return String.format(ViewManager.getLargeNumbersFormatString(), profit());
 		case PROFITRATE:
-			return String.format(ViewManager.smallNumbersFormatString, profitRate());
+			return String.format(ViewManager.getSmallNumbersFormatString(), profitRate());
 		case TOTALPRICE:
-			return String.format(ViewManager.largeNumbersFormatString, totalPrice());
+			return String.format(ViewManager.getLargeNumbersFormatString(), totalPrice());
 		case TOTALVALUE:
-			return String.format(ViewManager.largeNumbersFormatString, totalValue());
+			return String.format(ViewManager.getLargeNumbersFormatString(), totalValue());
 		default:
 			return "";
 		}
@@ -168,19 +168,19 @@ public class Global implements Serializable {
 		chooseComparison();
 		switch (selector) {
 		case CURRENTCAPITAL:
-			return String.format(ViewManager.largeNumbersFormatString, currentCapital() - comparator.currentCapital());
+			return String.format(ViewManager.getLargeNumbersFormatString(), currentCapital() - comparator.currentCapital());
 		case INITIALCAPITAL:
-			return String.format(ViewManager.largeNumbersFormatString, initialCapital() - comparator.initialCapital());
+			return String.format(ViewManager.getLargeNumbersFormatString(), initialCapital() - comparator.initialCapital());
 		case MELT:
-			return String.format(ViewManager.smallNumbersFormatString, melt - comparator.melt);
+			return String.format(ViewManager.getSmallNumbersFormatString(), melt - comparator.melt);
 		case PROFIT:
-			return String.format(ViewManager.largeNumbersFormatString, profit() - comparator.profit());
+			return String.format(ViewManager.getLargeNumbersFormatString(), profit() - comparator.profit());
 		case PROFITRATE:
-			return String.format(ViewManager.smallNumbersFormatString, profitRate() - comparator.profitRate());
+			return String.format(ViewManager.getSmallNumbersFormatString(), profitRate() - comparator.profitRate());
 		case TOTALPRICE:
-			return String.format(ViewManager.largeNumbersFormatString, totalPrice() - comparator.totalPrice());
+			return String.format(ViewManager.getLargeNumbersFormatString(), totalPrice() - comparator.totalPrice());
 		case TOTALVALUE:
-			return String.format(ViewManager.largeNumbersFormatString, totalValue() - comparator.totalValue());
+			return String.format(ViewManager.getLargeNumbersFormatString(), totalValue() - comparator.totalValue());
 		case LABOUR_SUPPLY_RESPONSE:
 		case POPULATION_GROWTH_RATE:
 		case PRICE_DYNAMICS:

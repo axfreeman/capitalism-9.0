@@ -102,7 +102,7 @@ public class DBHandler {
 	}
 
 	/**
-	 * copy a file from the .jar file into the user file system. The base directory for these files in the user system is {@code Utilities.userBasePath} and is
+	 * copy a file from the .jar file into the user file system. The base directory for these files in the user system is {@code Utilities.getUserBasePath()} and is
 	 * set there statically
 	 * 
 	 * for example {@code copyDataFilesToUserDirectory("/data","commodities.csv")} copies the file called {@code usecommodities.csv} to the location
@@ -131,19 +131,19 @@ public class DBHandler {
 	}
 
 	/**
-	 * copy all the data files into a standardised directory in the user's file system.
-	 * This is the easiest and most robust way to work around all the difficulties associated
-	 * with accessing data files in an exported .jar file
+	 * Copy all the data files into a standardised directory in the user's file system.
+	 * This is the easiest and most robust way I could think of to work around all the difficulties 
+	 * associated with accessing data files in an exported .jar file. Needs research.
 	 */
 	public void exportDataFiles() {
-		copyDataFilesToUserDirectory(Capitalism.userBasePath, "data/", "globals.csv");
-		copyDataFilesToUserDirectory(Capitalism.userBasePath, "data/", "industries.csv");
-		copyDataFilesToUserDirectory(Capitalism.userBasePath, "data/", "socialClasses.csv");
-		copyDataFilesToUserDirectory(Capitalism.userBasePath, "data/", "projects.csv");
-		copyDataFilesToUserDirectory(Capitalism.userBasePath, "data/", "stocks.csv");
-		copyDataFilesToUserDirectory(Capitalism.userBasePath, "data/", "timeStamps.csv");
-		copyDataFilesToUserDirectory(Capitalism.userBasePath, "data/", "commodities.csv");
-		copyDataFilesToUserDirectory(Capitalism.userBasePath, "data/", "CreateRawTables.sql");
+		copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "globals.csv");
+		copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "industries.csv");
+		copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "socialClasses.csv");
+		copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "projects.csv");
+		copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "stocks.csv");
+		copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "timeStamps.csv");
+		copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "commodities.csv");
+		copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "CreateRawTables.sql");
 	}
 
 	public void initialiseDataBaseAndStart() {

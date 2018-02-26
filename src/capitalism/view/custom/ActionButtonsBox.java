@@ -49,8 +49,6 @@ public class ActionButtonsBox extends VBox {
 	static private TreeView<String> treeView = null;
 	static OnePeriod onePeriod = new OnePeriod();
 
-	private ViewManager viewManager;
-
 	// the last action that was executed
 
 	private static ActionStates lastAction;
@@ -81,18 +79,6 @@ public class ActionButtonsBox extends VBox {
 	}
 
 	/**
-	 * tell the {@code actionButtonsBox} who is the view Manager. A once-for-all call.
-	 * MUST be called after the constructor and before using the actionButtonsBox ViewManager to refresh the display.
-	 * Don't see a way to do this in the constructor.
-	 * 
-	 * @param viewManager
-	 *            the viewManager that manages this actionButtonBox
-	 */
-	public void setViewManager(ViewManager viewManager) {
-		this.viewManager = viewManager;
-	}
-
-	/**
 	 * create a treeList of buttons from the information in the {@link ActionStates} class.
 	 */
 	private void createButtons() {
@@ -108,8 +94,8 @@ public class ActionButtonsBox extends VBox {
 			onePeriod.execute();
 			lastAction = ActionStates.C_M_Distribute;
 			enableButtons();
-			viewManager.refreshTimeStampTable();
-			viewManager.refreshDisplay();
+			ViewManager.refreshTimeStampTable();
+			ViewManager.refreshDisplay();
 		});
 
 		// First populate the superAction nodes
@@ -151,8 +137,8 @@ public class ActionButtonsBox extends VBox {
 			actionState.getCommand().execute();
 			lastAction = actionState;
 			enableButtons();
-			viewManager.refreshTimeStampTable();
-			viewManager.refreshDisplay();
+			ViewManager.refreshTimeStampTable();
+			ViewManager.refreshDisplay();
 
 		});
 		rootItem.getChildren().add(item);

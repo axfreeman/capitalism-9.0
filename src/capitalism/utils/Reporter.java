@@ -34,19 +34,31 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * The full functionality of the logging API is not really needed in this project. 
+ * Thus, the log4j files and the reporting window are separate reporting mechanisms,
+ * however this class allows us to send the same message to both of them, so we don't 
+ * have to write every logging call twice. Also see {@link LogWindow}
+ *
+ */
 public class Reporter {
 	private static final Logger logger = LogManager.getLogger(Reporter.class);
-	public static LogWindow logWindow = new LogWindow();				// used by ViewManager and Reporter to tell the user what's going on.
+	// used by ViewManager and Reporter to tell the user what's going on.
+
+	public static LogWindow logWindow;
+
+	/**
+	 * Empty constructor which does not initialise {@code logWindow}
+	 * See notes on {@link Reporter#createLogWindow()}
+	 */
 
 	public Reporter() {
-		
+
 	}
-	
+
 	/**
 	 * Report a message at the INFO level. This is both a helper function to simplify the logging code, and a wrapper to allow us to display what is going
-	 * on to the user in a structured way without the tortuous business of writing funky logging appenders. The full functionality of the logging API is not
-	 * really needed in this project. Thus, the log4j files and the reporting window are completely disconnected and their only relation to each other is
-	 * that this method sends the same message to both of them.
+	 * on to the user in a structured way without the tortuous business of writing funky logging appenders.
 	 * 
 	 * @param logger
 	 *            the logger of the calling class
@@ -60,21 +72,21 @@ public class Reporter {
 	 */
 	public static void report(Logger logger, int level, String formatString, Object... args) {
 		String message = String.format(formatString, args);
-		if (level==0) {
+		if (level == 0) {
 			logger.log(Level.INFO, "");
 		}
-		logger.log(Level.INFO, String.format("%d %s",level,message));
-		logWindow.addItem(message,level);
+		logger.log(Level.INFO, String.format("%d %s", level, message));
+		logWindow.addItem(message, level);
 	}
-	
+
 	/**
 	 * empty the log files, except the archive, and reinitialise them with a date stamp at the start of a new session
 	 * 
 	 */
 	public static void initialiseLoggerFiles() {
-		// the log files are written into the user directory specified by userBasePath/logfiles - currently fixed, but could be configurable
+		// the log files are written into the user directory specified by Capitalism.userBasePath/logfiles - currently fixed, but could be configurable
 
-		String logFilesBase = Capitalism.userBasePath + "\\logfiles\\";
+		String logFilesBase = Capitalism.getUserBasePath() + "\\logfiles\\";
 
 		String logFile1 = logFilesBase + "userview.log";
 		String logFile2 = logFilesBase + "debug.log";
@@ -94,5 +106,16 @@ public class Reporter {
 		} catch (IOException i) {
 			logger.error("The log file could not be initialised beause of" + i.getMessage());
 		}
+	}
+
+	/**
+	 * creates the log window which the user can view during the simulation.
+	 * This has to be called after the main application ({@link Capitalism#main(String[])}) has launched,
+	 * because otherwise, the scene graph is not in place. Therefore, it cannot be part of the
+	 * constructur for this class.
+	 */
+
+	public static void createLogWindow() {
+		logWindow = new LogWindow();
 	}
 }
