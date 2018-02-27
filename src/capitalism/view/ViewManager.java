@@ -43,7 +43,6 @@ import capitalism.view.tables.TabbedTableViewer;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
@@ -88,7 +87,6 @@ public class ViewManager {
 
 	// display parameters that can change as the simulation proceeds
 	
-	private static ContentDisplay graphicsState = ContentDisplay.TEXT_ONLY; // Whether to display graphics, text, or both
 	private static String largeNumbersFormatString = "%1$,.0f";	// Formats the display of large floating point numbers
 	private static String smallNumbersFormatString = "%1$.2f";   // Formats the display of small floating point numbers
 
@@ -497,19 +495,5 @@ public class ViewManager {
 	 */
 	public static void setSmallNumbersFormatString(String smallNumbersFormatString) {
 		ViewManager.smallNumbersFormatString = smallNumbersFormatString;
-	}
-
-	/**
-	 * @return the graphicsState
-	 */
-	public static ContentDisplay getGraphicsState() {
-		return graphicsState;
-	}
-
-	/**
-	 * @param graphicsState the graphicsState to set
-	 */
-	public static void setGraphicsState(ContentDisplay graphicsState) {
-		ViewManager.graphicsState = graphicsState;
 	}
 }

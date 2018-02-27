@@ -23,9 +23,7 @@ public class Glabel extends HBox {
 	Label numberLabel=new Label();
 
 	public Glabel() {
-
 		Pane pane=new Pane();
-
 		numberLabel.setPrefHeight(30);
 		numberLabel.setAlignment(Pos.CENTER_RIGHT);
 		numberLabel.setContentDisplay(ContentDisplay.RIGHT);
@@ -36,18 +34,18 @@ public class Glabel extends HBox {
 		
 		setHgrow(pane, Priority.ALWAYS);
 		setPadding(new Insets(3, 3, 3, 3));
-		final String cssBackground = "-fx-background-color: antiquewhite;\n"
-				+ "-fx-border-color: burlywood;\n"
+		final String cssBackground = "-fx-background-color: #DDDDDD;\n"
+				+ "-fx-border-color: silver;\n"
 				+ "-fx-border-width: 1;\n";
 		setStyle(cssBackground);
-		final String cssNumberLabel= "-fx-background-color: lightcyan;\n"
+		final String cssNumberLabel= "-fx-background-color: #F4F4F4;\n"
 				+ "-fx-border-color: silver;\n"
 				+ "-fx-border-width: 1;\n";
 		numberLabel.setStyle(cssNumberLabel);
 		numberLabel.setPadding(new Insets(2, 2, 2, 2));
 		DropShadow dropShadow = new DropShadow();
-		dropShadow.setOffsetX(1.0);
-		dropShadow.setOffsetY(1.0);
+		dropShadow.setOffsetX(0.5);
+		dropShadow.setOffsetY(0.5);
 		dropShadow.setColor(Color.CADETBLUE);
 		numberLabel.setEffect(dropShadow);
 	}

@@ -28,7 +28,7 @@ import capitalism.model.Commodity;
 import capitalism.model.Industry;
 import capitalism.model.SocialClass;
 import capitalism.model.Stock;
-import capitalism.view.ViewManager;
+import capitalism.view.custom.DisplayControls;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -84,6 +84,7 @@ public class TabbedTableViewer extends VBox {
 
 	private static ArrayList<TableView<?>> mainTables = new ArrayList<TableView<?>>();
 	private static ArrayList<TableView<?>> stockTables = new ArrayList<TableView<?>>();
+	private static ArrayList<TableView<?>> allTables = new ArrayList<TableView<?>>();
 
 	/**
 	 * This enum contains most of the tooltips applied to table columns displayed in the viewer.
@@ -134,6 +135,13 @@ public class TabbedTableViewer extends VBox {
 		mainTables.add(industriesTable);
 		mainTables.add(socialClassesTable);
 		mainTables.add(commoditiesTable);
+		// TODO there must be a better way...
+		for (TableView<?> table:stockTables) {
+			allTables.add(table);
+		}
+		for (TableView<?> table:mainTables) {
+			allTables.add(table);
+		}
 	}
 
 	/**
@@ -181,7 +189,7 @@ public class TabbedTableViewer extends VBox {
 
 		getChildren().add(tabPane);
 		
-		ViewManager.setGraphicsState(ContentDisplay.TEXT_ONLY);		// initialize so start state is text only
+		DisplayControls.setGraphicsState(ContentDisplay.TEXT_ONLY);		// initialize so start state is text only
 		setDisplayAttribute(Stock.ValueExpression.PRICE);			// start off displaying prices
 		buildTables();
 	}
@@ -394,8 +402,7 @@ public class TabbedTableViewer extends VBox {
 	 */
 
 	public void switchHeaderDisplays() {
-		TableUtilities.switchHeaderDisplays(mainTables);
-		TableUtilities.switchHeaderDisplays(stockTables);
+		TableUtilities.switchHeaderDisplays(allTables);
 	}
 
 	/**

@@ -92,7 +92,7 @@ public class Capitalism extends Application {
 		ViewManager.setPrimaryStage(primaryStage);
 		viewManager = new ViewManager();
 		Simulation.startup();
-		viewManager.startUp();
+		ViewManager.startUp();
 	}
 
 	/**

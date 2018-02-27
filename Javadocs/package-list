@@ -4,4 +4,5 @@ capitalism.model
 capitalism.utils
 capitalism.view
 capitalism.view.custom
+capitalism.view.custom.command
 capitalism.view.tables

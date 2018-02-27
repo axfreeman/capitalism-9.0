@@ -22,8 +22,8 @@
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import capitalism.Capitalism;
 import capitalism.model.TimeStamp;
+import capitalism.view.ViewManager;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.css.PseudoClass;
@@ -65,7 +65,7 @@ public class TimeStampView extends TreeView<TimeStamp> {
 			@Override public void changed(ObservableValue<? extends TreeItem<TimeStamp>> observable, TreeItem<TimeStamp> oldValue,
 					TreeItem<TimeStamp> newValue) {
 				TimeStamp selectedTimeStamp=newValue.getValue();
-				Capitalism.viewManager.viewTimeStamp(selectedTimeStamp);
+				ViewManager.viewTimeStamp(selectedTimeStamp);
 				}
 		});
 	}

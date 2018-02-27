@@ -5,7 +5,6 @@ import java.util.HashMap;
 import capitalism.model.Global;
 import capitalism.view.ViewManager;
 import capitalism.view.custom.TrackingControls;
-import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
@@ -25,7 +24,7 @@ import javafx.scene.paint.Color;
  */
 public class SwitchableGraphicsGrid extends AnchorPane {
 
-	@FXML GridPane gridPane=new GridPane();
+	private static GridPane gridPane=new GridPane();
 
 	HashMap<String, Label> labelsByDescription = new HashMap<String, Label>();
 
@@ -57,7 +56,7 @@ public class SwitchableGraphicsGrid extends AnchorPane {
 		DropShadow dropShadow = new DropShadow();
 		dropShadow.setOffsetX(2.0);
 		dropShadow.setOffsetY(2.0);
-		dropShadow.setColor(Color.BROWN);
+		dropShadow.setColor(Color.CADETBLUE);
 		setEffect(dropShadow);
 	}
 

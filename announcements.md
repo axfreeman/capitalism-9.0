@@ -1,10 +1,10 @@
 # Capitalism 9.0 announcements 2/22/2018 9:17:19 AM 
 
-## 2/26/2018 9:45:58 AM 
+## 2/27/2018 9:10:25 AM 
 
-The code has been restructured to clean up and prepare for possible migration to server-client framework.
-Some minor bugs may have been introduced.
-But it's clean enough for a new executable. If this breaks, please go back to the previous commit
+Icon-styled graphic interface (That's what all the restructuring was for).
+New Executable.
+New user guide on the way
 
 ## 2/23/2018 3:20:18 PM 
 

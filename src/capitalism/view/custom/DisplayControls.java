@@ -25,25 +25,36 @@ import org.apache.logging.log4j.Logger;
 import capitalism.Simulation;
 import capitalism.model.Global;
 import capitalism.model.Project;
-import capitalism.utils.Reporter;
-import capitalism.view.ViewManager;
-import capitalism.view.tables.TabbedTableViewer;
+import capitalism.view.custom.command.ColourHintsCommand;
+import capitalism.view.custom.command.LoadCommand;
+import capitalism.view.custom.command.OpenLogWindow;
+import capitalism.view.custom.command.RestartCommand;
+import capitalism.view.custom.command.SaveCommand;
+import capitalism.view.custom.command.ToggleDecimals;
+import capitalism.view.custom.command.ToggleGraphicsCommand;
+import capitalism.view.custom.command.TogglePricesCommand;
+import capitalism.view.custom.command.ToggleValuesCommand;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.text.Font;
 
+/**
+ * The bar where all the visual display controls are put.
+ * Fairly rough and ready. This class contains all the state variables such as the graphicsState,
+ * and assigns DisplayCommands to ImageButtons. Both these are 'in-house' classes.
+ */
+
 public class DisplayControls extends HBox {
 	final Logger logger = LogManager.getLogger("DisplayControlsBar");
+	public static ContentDisplay graphicsState = ContentDisplay.TEXT_ONLY; // Whether to display graphics, text, or both
 
-	// This enum and the following variables determine whether values, and prices, are displayed in units of money or time
-	// They control the 'hints' colouring of the columns and the symbols (eg '$', '#') placed before price and value magnitudes in the tables display
-
-	public enum DISPLAY_AS_EXPRESSION {
+	public static enum DISPLAY_AS_EXPRESSION {
 		MONEY, TIME;
 	}
 
@@ -52,26 +63,21 @@ public class DisplayControls extends HBox {
 
 	public static String moneyExpressionSymbol = "$";
 	public static String quantityExpressionSymbol = "#";
-
 	public static String pricesExpressionSymbol = moneyExpressionSymbol;
 	public static String valuesExpressionSymbol = moneyExpressionSymbol;
-	
 	public static boolean displayHints = false;
 
-	private Font buttonFonts = new Font(10);
-	private static Button dataDumpButton = new Button("Save");
-	private static Button loadButton = new Button("Load");
-	private static Button restartButton = new Button("Restart");
-	
-	private static Button colourHintButton= new Button("Hints");
-	private static Button logButton= new Button ("Log");
-	private static Button toggleDecimalButton= new Button(".>>");
-	private static Button toggleValuesExpressionButton= new Button ("$");
-	private static Button togglePricesExpressionButton= new Button ("$");
-	private static Button graphicsToggle= new Button ("Graphics");
+	private static ImageButton colourHintsButton= new ImageButton("hinton.png","hintoff.png",new ColourHintsCommand(),"No colour hints","Show colour hints");
+	private static ImageButton restartButton= new ImageButton("restart.png",null,new RestartCommand(),"Restart this project","Restart this project");
+	private static ImageButton toggleGraphicsButton= new ImageButton("graphics.png","text.png",new ToggleGraphicsCommand(),"Text column headers","Graphic column headers");
+	private static ImageButton toggleValuesButton=new ImageButton("timevalue.png","dollarvalue.png",new ToggleValuesCommand(),"Money values","Labour Time Values");
+	private static ImageButton togglePricesButton=new ImageButton("timeprice.png","dollarprice.png",new TogglePricesCommand(),"Money prices","Labour Time Prices"); 
+	private static ImageButton logButton = new ImageButton("log.png", null,new OpenLogWindow(),"Hide Log Window","Show Log Window");
+	private static ImageButton decimalsButton= new ImageButton("more.png", null,new ToggleDecimals(),"More digits after the decimal","Fewer digits after the decimal");
+	private static ImageButton dataLoadButton= new ImageButton("load.png",null,new LoadCommand(),"Load data from your computer","");
+	private static ImageButton dataDumpButton=new ImageButton("save2.png",null, new SaveCommand(),"Save the database to your computer","");
 
 	// this is the projectCombo box
-
 	private static ProjectCombo projectCombo = null;
 
 	private static ButtonBar leftButtonBar =  new ButtonBar();
@@ -93,124 +99,15 @@ public class DisplayControls extends HBox {
 	}
 	
 	private void buildLeftBar() {
-		dataDumpButton.setFont(buttonFonts);
-		loadButton.setFont(buttonFonts);
-		restartButton.setFont(buttonFonts);
-		setTip(dataDumpButton, "Save the current project including its history to a directory that you choose");
-		setTip(restartButton, "Restart the current project from scratch");
-		setTip(restartButton, "Restart the current project from scratch");
-		restartButton.setOnAction((event) -> {
-			ViewManager.restart();
-		});
-		dataDumpButton.setOnAction((event) -> {
-			Reporter.report(logger, 1, "User requested dump of entire database to CSV files");
-			ViewManager.dataDump();
-		});
-		loadButton.setOnAction((event) -> {
-			Reporter.report(logger, 1, "User requested loading the database from a new location");
-			ViewManager.dataLoad();
-		});
-		
-		leftButtonBar.getButtons().addAll(dataDumpButton,loadButton,restartButton);
+		leftButtonBar.getButtons().addAll(dataDumpButton,dataLoadButton,restartButton);
 	}
 	private void buildRightBar() {
-		colourHintButton.setFont(buttonFonts);
-		logButton.setFont(buttonFonts);
-		toggleDecimalButton.setFont(buttonFonts);
-		toggleValuesExpressionButton.setFont(buttonFonts);
-		togglePricesExpressionButton.setFont(buttonFonts);
-		graphicsToggle.setFont(buttonFonts);
-		setTip(colourHintButton, "Display colour hints to indicate quantity, value and price columns");
-		setTip(logButton, "Open a window displaying a step-by-step report on the simulation");
-		setTip(graphicsToggle, "Display icons instead of text labels for some of the columns, creating more space to view the results");
-		setTip(toggleDecimalButton, "Display magnitudes to two decimal points more");
-		setTip(toggleValuesExpressionButton, "Display Values as time instead of money");
-		setTip(togglePricesExpressionButton, "Display Prices as time instead of money");
-		colourHintButton.setOnAction((event) -> {
-			toggleHints();
-		});
-		logButton.setOnAction((event) -> {
-			Reporter.logWindow.showLoggerWindow();
-		});
-		toggleDecimalButton.setOnAction((event) -> {
-			toggleDecimals();
-		});
+		toggleValuesButton.setImageWidth(40);
+		togglePricesButton.setImageWidth(40);
+		logButton.setImageWidth(30);
+		logButton.setImageHeight(30);
 
-		toggleValuesExpressionButton.setOnAction((event) -> {
-			toggleValueExpression();
-		});
-
-		togglePricesExpressionButton.setOnAction((event) -> {
-			togglePriceExpression();
-		});
-
-		graphicsToggle.setOnAction((event) -> {
-			ViewManager.getTabbedTableViewer().switchHeaderDisplays();
-		});
-		rightButtonBar.getButtons().addAll(logButton,toggleDecimalButton,toggleValuesExpressionButton,togglePricesExpressionButton,graphicsToggle);
-	}
-	
-	/**
-	 * toggle on and off colour hints for the columns
-	 * 
-	 */
-	public void toggleHints() {
-		if (displayHints) {
-			setTip(colourHintButton, "Display colour hints to indicate quantity, value and price columns");
-			colourHintButton.setText("Hints");
-			displayHints = false;
-			setTip(colourHintButton, "");
-		} else {
-			displayHints = true;
-			setTip(colourHintButton, "Turn off colour hints for columns");
-			colourHintButton.setText("No Hints");
-		}
-		TabbedTableViewer.refreshTables();
-	}
-	
-	public void toggleDecimals() {
-		if (ViewManager.getLargeNumbersFormatString().equals("%1$,.0f")) {
-			ViewManager.setLargeNumbersFormatString("%1$,.2f");
-			ViewManager.setSmallNumbersFormatString("%1$.4f");
-			setTip(toggleDecimalButton, "Display all large magnitudes to zero decimal places and all small magnitudes to two decimal places");
-			toggleDecimalButton.setText("<<..");
-		} else {
-			ViewManager.setLargeNumbersFormatString("%1$,.0f");
-			ViewManager.setSmallNumbersFormatString("%1$.2f");
-			setTip(toggleDecimalButton, "Display all large magnitudes to two decimal places and all small magnitudes to four decimal places");
-			toggleDecimalButton.setText("..>>");
-		}
-		TabbedTableViewer.refreshTables();
-	}
-
-	public static void togglePriceExpression() {
-		if (pricesExpressionDisplay == DISPLAY_AS_EXPRESSION.MONEY) {
-			pricesExpressionDisplay = DISPLAY_AS_EXPRESSION.TIME;
-			pricesExpressionSymbol = quantityExpressionSymbol;
-			togglePricesExpressionButton.setText("$Prices");
-			setTip(togglePricesExpressionButton, "Display Prices as money instead of time");
-		} else {
-			pricesExpressionDisplay = DISPLAY_AS_EXPRESSION.MONEY;
-			pricesExpressionSymbol = moneyExpressionSymbol;
-			togglePricesExpressionButton.setText("#Prices");
-			setTip(togglePricesExpressionButton, "Display Prices as time instead of money");
-		}
-		TabbedTableViewer.refreshTables();
-	}
-
-	public static void toggleValueExpression() {
-		if (valuesExpressionDisplay == DISPLAY_AS_EXPRESSION.MONEY) {
-			valuesExpressionDisplay = DISPLAY_AS_EXPRESSION.TIME;
-			valuesExpressionSymbol = quantityExpressionSymbol;
-			toggleValuesExpressionButton.setText("$Values");
-			setTip(toggleValuesExpressionButton, "Display Prices as money instead of time");
-		} else {
-			valuesExpressionDisplay = DISPLAY_AS_EXPRESSION.MONEY;
-			valuesExpressionSymbol = moneyExpressionSymbol;
-			toggleValuesExpressionButton.setText("#Values");
-			setTip(toggleValuesExpressionButton, "Display Prices as time instead of money");
-		}
-		TabbedTableViewer.refreshTables();
+		rightButtonBar.getButtons().addAll(logButton,colourHintsButton, decimalsButton,toggleValuesButton,togglePricesButton,toggleGraphicsButton);
 	}
 	
 	/**
@@ -222,14 +119,6 @@ public class DisplayControls extends HBox {
 		Global global = Global.getGlobal();
 		moneyExpressionSymbol = global.getCurrencySymbol();
 		quantityExpressionSymbol = global.getQuantitySymbol();
-
-		// sneaky way to force the display options onto the new project
-
-		togglePriceExpression();
-		togglePriceExpression();
-		toggleValueExpression();
-		toggleValueExpression();
-
 	}
 	/**
 	 * adds a tooltip to a Button. Overloads {@link setTip}
@@ -245,8 +134,17 @@ public class DisplayControls extends HBox {
 		tip.setFont(new Font(15));
 		button.setTooltip(tip);
 	}
+	/**
+	 * @param graphicsState the graphicsState to set
+	 */
+	public static void setGraphicsState(ContentDisplay graphicsState) {
+		DisplayControls.graphicsState = graphicsState;
+	}
 
-
-
-
+	/**
+	 * @return the graphicsState
+	 */
+	public static ContentDisplay getGraphicsState() {
+		return graphicsState;
+	}
 }
