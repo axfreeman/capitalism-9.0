@@ -38,8 +38,9 @@ import capitalism.utils.MathStuff;
 import capitalism.utils.Reporter;
 import capitalism.utils.StringStuff;
 import capitalism.view.custom.ActionButtonsBox;
+import capitalism.view.custom.ActionStates;
 
-public class Simulation {
+public class Simulation extends Parameters{
 
 	private static final Logger logger = LogManager.getLogger(Simulation.class);
 
@@ -62,29 +63,6 @@ public class Simulation {
 	public static int timeStampDisplayCursor; 				// determines which timeStamp is displayed
 	private static int timeStampComparatorCursor; 			// the timeStamp with which the displayed data is to be compared
 
-	/**
-	 * if FULLPRICING is ON, money and labour power are included in the price dynamics
-	 */
-	private static boolean fullPricing = false;
-
-	/**
-	 * Determines how the supply of labour power responds to demand
-	 * a primitive response function to be expanded and hopefully user-customized
-	 * if FLEXIBLE, labour power will expand to meet demand (reserve army)
-	 * if FIXED, labour power cannot expand to meet demand and provides a supply constraint on output
-	 */
-	public static enum LABOUR_SUPPLY_RESPONSE {
-		FLEXIBLE("Flexible"), FIXED("Fixed");
-		String text;
-
-		private LABOUR_SUPPLY_RESPONSE(String text) {
-			this.text = text;
-		}
-
-		public String text() {
-			return text;
-		}
-	}
 
 	public Simulation() {
 	}
@@ -116,7 +94,7 @@ public class Simulation {
 			p.setTimeStampComparatorCursor(timeStampComparatorCursor);
 
 			// set all project buttonState initially to the end of the non-existent previous period
-			p.setButtonState("Accumulate");
+			p.setButtonState(ActionStates.lastState().text());
 			Project.getEntityManager().getTransaction().commit();
 
 			// fetch this project's current timeStamp record (which must exist in the database or we flag an error but try to correct it)
@@ -200,19 +178,9 @@ public class Simulation {
 	 *            the components(children) of this record, once these have been generated
 	 */
 
-	public void advanceOneStep(String description, String superState) {
+	public static void advanceOneStep(String description, String superState) {
 
-		// a little consistency check
-
-		for (Stock s : Stock.all()) {
-			if (s.getQuantity() < 0 - MathStuff.epsilon) {
-				if (s.getStockType().equals(Stock.STOCKTYPE.MONEY.text())) {
-					Dialogues.alert(logger, "The owner %s has run out of money. "
-							+ "This may be a data error:try giving it more. "
-							+ "If the problem persists, contact the developer", s.getOwner());
-				}
-			}
-		}
+		checkMoneySufficiency();
 
 		timeStampComparatorCursor = timeStampIDCurrent;
 		timeStampDisplayCursor = timeStampIDCurrent + 1;
@@ -311,6 +279,22 @@ public class Simulation {
 	}
 
 	/**
+	 * A consistency check: does everyone have at least some money?
+	 */
+	private static void checkMoneySufficiency() {
+		// a little consistency check
+		for (Stock s : Stock.all()) {
+			if (s.getQuantity() < 0 - MathStuff.epsilon) {
+				if (s.getStockType().equals(Stock.STOCKTYPE.MONEY.text())) {
+					Dialogues.alert(logger, "The owner %s has run out of money. "
+							+ "This may be a data error:try giving it more. "
+							+ "If the problem persists, contact the developer", s.getOwner());
+				}
+			}
+		}
+	}
+
+	/**
 	 * tell every stock to record its value and price, based on the quantity of the stock, its unit value and its price
 	 */
 	private static void calculateStockAggregates() {
@@ -353,7 +337,7 @@ public class Simulation {
 		Global global = Global.getGlobal();
 		
 		//TODO this is somewhat hamfisted. Need queries to do this stuff.
-		if (Simulation.isFullPricing()) {
+		if (Parameters.isFullPricing()) {
 			for (Commodity u : Commodity.commoditiesAll()) {
 				Reporter.report(logger, 2, "Commodity [%s] Total value is %.0f, and total price is %.0f", u.commodityName(), u.totalValue(), u.totalPrice());
 				globalTotalValue += u.totalValue();
@@ -422,7 +406,7 @@ public class Simulation {
 		}
 	}
 
-	public void advanceOnePeriod() {
+	public static void advanceOnePeriod() {
 		periodCurrent++;
 		Reporter.report(logger, 0, "ADVANCING ONE PERIOD TO %d", periodCurrent);
 		// start another period so recompute the initial capitals and profits
@@ -454,11 +438,6 @@ public class Simulation {
 			return;
 		}
 		Project newProject = Project.projectSingle(newProjectID);
-		if ((newProject.getPriceDynamics() == Project.PRICEDYNAMICS.DYNAMIC)) {
-			Dialogues.alert(logger, "Sorry, the Dynamic option for price dynamics is not ready yet");
-			return;
-		}
-
 		// record the current timeStamp, timeStampDisplayCursor and buttonState in the current project record, and persist it to the database
 
 		Project thisProject = Project.projectSingle(Simulation.projectCurrent);
@@ -468,7 +447,7 @@ public class Simulation {
 		thisProject.setTimeStamp(Simulation.timeStampIDCurrent);
 		thisProject.setTimeStampDisplayCursor(Simulation.timeStampDisplayCursor);
 		thisProject.setTimeStampComparatorCursor(Simulation.getTimeStampComparatorCursor());
-		thisProject.setButtonState(actionButtonsBox.getLastAction().getText());
+		thisProject.setButtonState(ActionButtonsBox.getLastAction().text());
 		thisProject.setPeriod(Simulation.getPeriodCurrent());
 
 		Project.getEntityManager().getTransaction().commit();
@@ -540,20 +519,7 @@ public class Simulation {
 		Simulation.periodCurrent = periodCurrent;
 	}
 
-	/**
-	 * @return the fullPricing
-	 */
-	public static boolean isFullPricing() {
-		return fullPricing;
-	}
 
-	/**
-	 * @param fullPricing
-	 *            the fullPricing to set
-	 */
-	public void setFullPricing(boolean fullPricing) {
-		Simulation.fullPricing = fullPricing;
-	}
 
 	/**
 	 * @return the projectCurrent

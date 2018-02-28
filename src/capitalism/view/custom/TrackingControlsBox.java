@@ -46,7 +46,7 @@ import javafx.scene.text.TextAlignment;
  * Controls that regulate how changes are displayed
  *
  */
-public class TrackingControls extends VBox {
+public class TrackingControlsBox extends VBox {
 	static final Logger logger = LogManager.getLogger("TrackingControls");
 
 	private GridPane grid = new GridPane();
@@ -85,9 +85,9 @@ public class TrackingControls extends VBox {
 	}
 	static COMPARATOR_STATE comparatorState = COMPARATOR_STATE.PREVIOUS;
 
-	public TrackingControls(){
+	public TrackingControlsBox(){
 		setMaxWidth(Double.MAX_VALUE);
-		setMinWidth(0);
+		setMinWidth(150);
 		setPrefHeight(750);
 		setPrefWidth(150);
 		

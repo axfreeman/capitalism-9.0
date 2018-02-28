@@ -28,7 +28,7 @@ import capitalism.model.Commodity;
 import capitalism.model.Industry;
 import capitalism.model.SocialClass;
 import capitalism.model.Stock;
-import capitalism.view.custom.DisplayControls;
+import capitalism.view.custom.DisplayControlsBox;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -189,7 +189,7 @@ public class TabbedTableViewer extends VBox {
 
 		getChildren().add(tabPane);
 		
-		DisplayControls.setGraphicsState(ContentDisplay.TEXT_ONLY);		// initialize so start state is text only
+		DisplayControlsBox.setGraphicsState(ContentDisplay.TEXT_ONLY);		// initialize so start state is text only
 		setDisplayAttribute(Stock.ValueExpression.PRICE);			// start off displaying prices
 		buildTables();
 	}

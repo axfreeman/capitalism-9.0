@@ -1,5 +1,10 @@
 # Capitalism 9.0 announcements 2/27/2018 9:48:22 AM 
 
+## 2/28/2018 9:04:22 AM 
+
+Intermediate restructure to allow user to select pricing, labour supply response and melt response
+No new executable as yet, because though the graphic interface works, the simulation has not been benchtested
+
 ## 2/27/2018 9:48:37 AM 
 
 Icon-styled graphic interface (That's what all the restructuring was for).

@@ -59,16 +59,16 @@ import capitalism.view.custom.ActionStates;
  * yet the working simulation of an actual economy.
  * 
  */
-public class Accumulate extends Simulation implements Command {
+public class Accumulate implements Command {
 	private static final Logger logger = LogManager.getLogger(Accumulate.class);
 	double surplusMeansOfProduction;
 
 	public void execute() {
 		Reporter.report(logger, 0, "ACCUMULATE");
-		advanceOneStep(ActionStates.C_M_Accumulate.getText(), ActionStates.C_M_Distribute.getText());
+		Simulation.advanceOneStep(ActionStates.C_M_Accumulate.text(), ActionStates.C_M_Distribute.text());
 		allocateToProductionIndustries();
 		allocateToConsumptionIndustries();
-		advanceOnePeriod();
+		Simulation.advanceOnePeriod();
 	}
 
 	/**

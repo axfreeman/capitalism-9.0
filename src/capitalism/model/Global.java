@@ -41,7 +41,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import capitalism.Simulation;
 import capitalism.utils.MathStuff;
 import capitalism.view.ViewManager;
-import capitalism.view.custom.TrackingControls;
+import capitalism.view.custom.TrackingControlsBox;
 
 /**
  *
@@ -63,7 +63,9 @@ public class Global implements Serializable {
 	@Column(name = "MELT") private double melt;
 	@Column(name = "PopulationGrowthRate") private double populationGrowthRate;
 	@Column(name = "InvestmentRatio") private double investmentRatio;
-	@Column(name = "LabourSupplyResponse") private Simulation.LABOUR_SUPPLY_RESPONSE labourSupplyResponse;
+	@Column(name = "LabourSupplyResponse") private Simulation.LABOUR_RESPONSE labourSupplyResponse;
+	@Column(name ="priceResponse") private Simulation.PRICE_RESPONSE priceResponse;
+	@Column(name ="meltResponse") private Simulation.MELT_RESPONSE meltResponse;
 	@Column(name = "CurrencySymbol") private String currencySymbol;
 	@Column(name = "QuantitySymbol") private String quantitySymbol;
 
@@ -91,8 +93,9 @@ public class Global implements Serializable {
 		TOTALVALUE("Total Value"), 
 		TOTALPRICE("Total Price"), MELT("MELT"), 
 		POPULATION_GROWTH_RATE("Population Growth Rate"), 
-		PRICE_DYNAMICS("Price Dynamics"), 
-		LABOUR_SUPPLY_RESPONSE("Labour Supply Response");
+		LABOUR_SUPPLY_RESPONSE("Labour Supply Response"),
+		PRICE_RESPONSE("Price Response"),
+		MELT_RESPONSE("MELT Response");
 		// @formatter:on
 
 		String text;
@@ -119,26 +122,28 @@ public class Global implements Serializable {
 		populationGrowthRate = template.getPopulationGrowthRate();
 		investmentRatio = template.investmentRatio;
 		labourSupplyResponse = template.labourSupplyResponse;
+		priceResponse=template.priceResponse;
+		meltResponse=template.meltResponse;
 		currencySymbol = template.currencySymbol;
 		quantitySymbol = template.quantitySymbol;
 	}
 
 	public String value(GLOBAL_SELECTOR selector) {
-		Project currentProject = Project.projectSingle(Simulation.projectCurrent);
-
 		switch (selector) {
 		case CURRENTCAPITAL:
 			return String.format(ViewManager.getLargeNumbersFormatString(), currentCapital());
 		case INITIALCAPITAL:
 			return String.format(ViewManager.getLargeNumbersFormatString(), initialCapital());
 		case LABOUR_SUPPLY_RESPONSE:
-			return String.format("%s", labourSupplyResponse.text());
+			return labourSupplyResponse.text();
+		case PRICE_RESPONSE:
+			return priceResponse.text();
+		case MELT_RESPONSE:
+			return meltResponse.text();
 		case MELT:
 			return String.format(ViewManager.getSmallNumbersFormatString(), melt);
 		case POPULATION_GROWTH_RATE:
 			return String.format(ViewManager.getSmallNumbersFormatString(), populationGrowthRate);
-		case PRICE_DYNAMICS:
-			return String.format("%s", currentProject.getPriceDynamics().text);
 		case PROFIT:
 			return String.format(ViewManager.getLargeNumbersFormatString(), profit());
 		case PROFITRATE:
@@ -182,8 +187,9 @@ public class Global implements Serializable {
 		case TOTALVALUE:
 			return String.format(ViewManager.getLargeNumbersFormatString(), totalValue() - comparator.totalValue());
 		case LABOUR_SUPPLY_RESPONSE:
+		case MELT_RESPONSE:
+		case PRICE_RESPONSE:
 		case POPULATION_GROWTH_RATE:
-		case PRICE_DYNAMICS:
 		default:
 			return item;
 		}
@@ -209,8 +215,9 @@ public class Global implements Serializable {
 		case MELT:
 			return melt != comparator.melt;
 		case LABOUR_SUPPLY_RESPONSE:
+		case PRICE_RESPONSE:
+		case MELT_RESPONSE:
 		case POPULATION_GROWTH_RATE:
-		case PRICE_DYNAMICS:
 			return false;
 		case PROFIT:
 			return profit() != comparator.profit();
@@ -422,7 +429,7 @@ public class Global implements Serializable {
 	 */
 
 	private void chooseComparison() {
-		switch (TrackingControls.getComparatorState()) {
+		switch (TrackingControlsBox.getComparatorState()) {
 		case CUSTOM:
 			comparator = customComparator;
 			break;
@@ -466,7 +473,7 @@ public class Global implements Serializable {
 	/**
 	 * @return the labourSupplyResponse
 	 */
-	public Simulation.LABOUR_SUPPLY_RESPONSE getLabourSupplyResponse() {
+	public Simulation.LABOUR_RESPONSE getLabourSupplyResponse() {
 		return labourSupplyResponse;
 	}
 
@@ -474,7 +481,7 @@ public class Global implements Serializable {
 	 * @param labourSupplyResponse
 	 *            the labourSupplyResponse to set
 	 */
-	public void setLabourSupplyResponse(Simulation.LABOUR_SUPPLY_RESPONSE labourSupplyResponse) {
+	public void setLabourSupplyResponse(Simulation.LABOUR_RESPONSE labourSupplyResponse) {
 		this.labourSupplyResponse = labourSupplyResponse;
 	}
 
@@ -583,4 +590,31 @@ public class Global implements Serializable {
 		this.endComparator = endComparator;
 	}
 
+	/**
+	 * @return the priceResponse
+	 */
+	public Simulation.PRICE_RESPONSE getPriceResponse() {
+		return priceResponse;
+	}
+
+	/**
+	 * @param priceResponse the priceResponse to set
+	 */
+	public void setPriceResponse(Simulation.PRICE_RESPONSE priceResponse) {
+		this.priceResponse = priceResponse;
+	}
+
+	/**
+	 * @return the meltResponse
+	 */
+	public Simulation.MELT_RESPONSE getMeltResponse() {
+		return meltResponse;
+	}
+
+	/**
+	 * @param meltResponse the meltResponse to set
+	 */
+	public void setMeltResponse(Simulation.MELT_RESPONSE meltResponse) {
+		this.meltResponse = meltResponse;
+	}
 }

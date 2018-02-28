@@ -24,8 +24,8 @@ import org.apache.logging.log4j.Logger;
 
 import capitalism.model.Commodity;
 import capitalism.view.ViewManager;
-import capitalism.view.custom.DisplayControls;
-import capitalism.view.custom.TrackingControls;
+import capitalism.view.custom.DisplayControlsBox;
+import capitalism.view.custom.TrackingControlsBox;
 import javafx.scene.control.TableCell;
 import javafx.scene.paint.Color;
 
@@ -57,13 +57,13 @@ public class CommodityTableCell extends TableCell<Commodity, String> {
 		
 		if (commodity.changed(useValueSelector)) {
 			setTextFill(Color.RED);
-			deltaModifier=(TrackingControls.displayDeltas?ViewManager.deltaSymbol:"");
+			deltaModifier=(TrackingControlsBox.displayDeltas?ViewManager.deltaSymbol:"");
 		}
 
-		String valueModifier= deltaModifier+DisplayControls.valuesExpressionSymbol;
-		String priceModifier= deltaModifier+DisplayControls.pricesExpressionSymbol;
+		String valueModifier= deltaModifier+DisplayControlsBox.valuesExpressionSymbol;
+		String priceModifier= deltaModifier+DisplayControlsBox.pricesExpressionSymbol;
 
-		if(TrackingControls.displayDeltas) {
+		if(TrackingControlsBox.displayDeltas) {
 			item=commodity.showDelta(item, useValueSelector);
 		}
 		switch (useValueSelector) {
@@ -72,13 +72,13 @@ public class CommodityTableCell extends TableCell<Commodity, String> {
 		case TOTALSUPPLY:
 		case TOTALQUANTITY:
 		case PROFITRATE:
-			if (DisplayControls.displayHints)
+			if (DisplayControlsBox.displayHints)
 				setStyle("-fx-background-color: rgba(220,220,220,0.3)");
 			item=deltaModifier+item;
 			break;
 		case UNITVALUE:
 		case TOTALVALUE:
-			if (DisplayControls.displayHints)
+			if (DisplayControlsBox.displayHints)
 				setStyle("-fx-background-color: rgb(255,225,225,0.3)");
 			item = valueModifier+ item;
 			break;
@@ -86,7 +86,7 @@ public class CommodityTableCell extends TableCell<Commodity, String> {
 		case TOTALPRICE:
 		case INITIALCAPITAL:
 		case PROFIT:
-			if (DisplayControls.displayHints)
+			if (DisplayControlsBox.displayHints)
 				setStyle("-fx-background-color: rgba(255,240,204,0.3)");
 			item = priceModifier + item;
 			break;

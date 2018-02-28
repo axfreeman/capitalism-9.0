@@ -25,8 +25,7 @@ import java.util.ArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import capitalism.view.ViewManager;
-import capitalism.view.custom.DisplayControls;
+import capitalism.view.custom.DisplayControlsBox;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
@@ -257,7 +256,7 @@ public class TableUtilities {
 	 * Set all columns in the viewer to display a graphic only, if the graphic has been set. This will only work for those columns which have been 'doctored'
 	 * using {@code doctorColumnHeaders()}. It applies to all doctored tables - individual tables are not(at present) singled out.
 	 * <p>
-	 * NOTE; the option to display both text and graphics is not available in the enum {@link DisplayControls#graphicsState}, but we could possibly achieve the
+	 * NOTE; the option to display both text and graphics is not available in the enum {@link DisplayControlsBox#graphicsState}, but we could possibly achieve the
 	 * effect by 'undoctoring' the column headers.
 	 * 
 	 * @param tables
@@ -265,26 +264,26 @@ public class TableUtilities {
 	 * 
 	 */
 	public static void switchHeaderDisplays(ArrayList<TableView<?>> tables) {
-		switch (DisplayControls.getGraphicsState()) {
+		switch (DisplayControlsBox.getGraphicsState()) {
 		case TEXT_ONLY:
-			DisplayControls.setGraphicsState(ContentDisplay.GRAPHIC_ONLY);
+			DisplayControlsBox.setGraphicsState(ContentDisplay.GRAPHIC_ONLY);
 			break;
 		case GRAPHIC_ONLY:
-			DisplayControls.setGraphicsState(ContentDisplay.TEXT_ONLY);
+			DisplayControlsBox.setGraphicsState(ContentDisplay.TEXT_ONLY);
 			break;
 		default:
-			DisplayControls.setGraphicsState(ContentDisplay.TEXT_ONLY);
+			DisplayControlsBox.setGraphicsState(ContentDisplay.TEXT_ONLY);
 		}
 		for (TableView<?> table : tables) {
 			for (TableColumn<?, ?> column : table.getColumns()) {
 				if ("HasGraphic".equals(column.getUserData())) {
 					Label columnlabel = (Label) column.getGraphic();
-					columnlabel.setContentDisplay(DisplayControls.getGraphicsState());
+					columnlabel.setContentDisplay(DisplayControlsBox.getGraphicsState());
 				}
 				for (TableColumn<?, ?> subColumn : column.getColumns()) {
 					if ("HasGraphic".equals(subColumn.getUserData())) {
 						Label columnlabel = (Label) subColumn.getGraphic();
-						columnlabel.setContentDisplay(DisplayControls.getGraphicsState());
+						columnlabel.setContentDisplay(DisplayControlsBox.getGraphicsState());
 					}
 				}
 			}

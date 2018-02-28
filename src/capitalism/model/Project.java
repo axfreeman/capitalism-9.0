@@ -46,7 +46,6 @@ public class Project implements Serializable {
 
 	@Id @EmbeddedId @Column(unique = true, nullable = false) private int projectID;
 	@Column(name = "description") private String description;
-	@Column(name = "priceDynamics") private PRICEDYNAMICS priceDynamics;
 	@Column(name = "currentTimeStamp") private int timeStamp;
 	@Column(name = "currentTimeStampCursor") private int timeStampDisplayCursor;
 	@Column(name = "currentTimeStampComparatorCursor") private int timeStampComparatorCursor;
@@ -80,15 +79,6 @@ public class Project implements Serializable {
 			return text;
 		}
 	}
-
-	/**
-	 * @return the priceDynamics
-	 */
-	public PRICEDYNAMICS getPriceDynamics() {
-		return priceDynamics;
-	}
-
-
 	
 	/**
 	 * To be used in startup: set button state to the end of the non-existent last state of the previous period
@@ -98,8 +88,7 @@ public class Project implements Serializable {
 	 */
 
 	public void setInitialButtonState() {
-		String distributeText = ActionStates.C_M_Distribute.getText();
-		this.buttonState = distributeText;
+		this.buttonState = ActionStates.lastSuperState().text();
 
 	}
 	

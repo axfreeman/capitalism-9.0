@@ -24,8 +24,8 @@ import org.apache.logging.log4j.Logger;
 
 import capitalism.model.SocialClass;
 import capitalism.view.ViewManager;
-import capitalism.view.custom.DisplayControls;
-import capitalism.view.custom.TrackingControls;
+import capitalism.view.custom.DisplayControlsBox;
+import capitalism.view.custom.TrackingControlsBox;
 import javafx.scene.control.TableCell;
 import javafx.scene.paint.Color;
 
@@ -54,13 +54,13 @@ public class SocialClassTableCell extends TableCell<SocialClass, String> {
 		
 		if (socialClass.changed(selector,TabbedTableViewer.displayAttribute)) {
 			setTextFill(Color.RED);
-			deltaModifier=(TrackingControls.displayDeltas?ViewManager.deltaSymbol:"");
+			deltaModifier=(TrackingControlsBox.displayDeltas?ViewManager.deltaSymbol:"");
 		}
 
-		String valueModifier= deltaModifier+DisplayControls.valuesExpressionSymbol;
-		String priceModifier= deltaModifier+DisplayControls.pricesExpressionSymbol;
+		String valueModifier= deltaModifier+DisplayControlsBox.valuesExpressionSymbol;
+		String priceModifier= deltaModifier+DisplayControlsBox.pricesExpressionSymbol;
 
-		if(TrackingControls.displayDeltas) {
+		if(TrackingControlsBox.displayDeltas) {
 			item=socialClass.showDelta(item, selector,TabbedTableViewer.displayAttribute);
 		}
 
@@ -73,21 +73,21 @@ public class SocialClassTableCell extends TableCell<SocialClass, String> {
 			case TOTAL:
 				switch (TabbedTableViewer.displayAttribute) {
 				case PRICE:
-					if (DisplayControls.displayHints) setStyle("-fx-background-color: rgba(255,240,204,0.3)");
+					if (DisplayControlsBox.displayHints) setStyle("-fx-background-color: rgba(255,240,204,0.3)");
 					setText(priceModifier+item);
 					break;
 				case VALUE:
-					if (DisplayControls.displayHints) setStyle("-fx-background-color: rgb(255,225,225,0.3)");
+					if (DisplayControlsBox.displayHints) setStyle("-fx-background-color: rgb(255,225,225,0.3)");
 					setText(valueModifier+item);
 					break;
 				case QUANTITY:
-					if (DisplayControls.displayHints) setStyle("-fx-background-color: rgba(220,220,220,0.3)");
+					if (DisplayControlsBox.displayHints) setStyle("-fx-background-color: rgba(220,220,220,0.3)");
 					setText(deltaModifier+item);
 					break;
 				}
 				break;
 			case QUANTITYDEMANDED:
-				if (DisplayControls.displayHints) setStyle("-fx-background-color: rgba(220,220,220,0.3)");
+				if (DisplayControlsBox.displayHints) setStyle("-fx-background-color: rgba(220,220,220,0.3)");
 				setText(deltaModifier+item);
 				break;
 			default:

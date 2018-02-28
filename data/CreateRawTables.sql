@@ -2,7 +2,8 @@
  CREATE TABLE globals ( project int default 1 not null, timeStamp VARCHAR (10) DEFAULT '1' not null, RateOfExploitation double DEFAULT NULL, 
  MELT double DEFAULT NULL, initialCapital double DEFAULT NULL, persistedProfit double DEFAULT NULL, profit double DEFAULT NULL, ProfitRate double DEFAULT NULL, 
  PopulationGrowthRate double DEFAULT NULL, totalValue double DEFAULT 0, totalPrice double DEFAULT 0, investmentRatio double DEFAULT 0.0, 
- labourSupplyResponse ENUM('FLEXIBLE','FIXED') DEFAULT 'FIXED', CurrencySymbol VARCHAR(10) DEFAULT '£', quantitySymbol VARCHAR(10) DEFAULT '#', 
+ labourSupplyResponse ENUM('FLEXIBLE','FIXED') DEFAULT 'FIXED', meltResponse ENUM('FIXED', 'DYNAMIC') DEFAULT 'FIXED', 
+ priceResponse ENUM  ('VALUES','EQUALIZED','DYNAMIC') DEFAULT 'VALUES', CurrencySymbol VARCHAR(10) DEFAULT '£', quantitySymbol VARCHAR(10) DEFAULT '#', 
  Primary Key (project, timeStamp) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
  
  DROP table if exists socialClasses;
@@ -32,7 +33,7 @@
  CREATE INDEX IDX_TO_DISPLAYORDER ON COMMODITIES(displayOrder); 
  
  DROP table if exists projects;
- CREATE TABLE projects ( ProjectID INT NOT NULL, Description VARCHAR(45) NULL, priceDynamics ENUM('SIMPLE','EQUALISE','DYNAMIC') DEFAULT 'SIMPLE',
+ CREATE TABLE projects ( ProjectID INT NOT NULL, Description VARCHAR(45) NULL, 
  currentTimeStamp INT DEFAULT 1, currentTimeStampCursor INT DEFAULT 1, currentTimeStampComparatorCursor INT DEFAULT 1,
  period INT DEFAULT 1, ButtonState VARCHAR(20) DEFAULT NULL, PRIMARY KEY (ProjectID));
  
@@ -40,8 +41,8 @@
  CREATE TABLE timeStamps (timeStampID int Default 1 NOT NULL, projectFK INT default 1 NOT NULL, period INT DEFAULT NULL,superState VARCHAR(45) default NULL, 
  COMPARATORTIMESTAMPID INT DEFAULT 1, Description VARCHAR(30) default NULL, PRIMARY KEY (timeStampID,projectFK));
  
- insert into globals (project,timeStamp,Melt,PopulationGrowthRate,investmentRatio,labourSupplyResponse, CurrencySymbol,quantitySymbol) 
- select project,timeStamp,Melt,PopulationGrowthRate,investmentRatio,labourSupplyResponse,CurrencySymbol,quantitySymbol 
+ insert into globals (project,timeStamp,Melt,PopulationGrowthRate,investmentRatio,labourSupplyResponse, meltResponse, priceResponse, CurrencySymbol,quantitySymbol) 
+ select project,timeStamp,Melt,PopulationGrowthRate,investmentRatio,labourSupplyResponse,  meltResponse, priceResponse, CurrencySymbol,quantitySymbol 
  from CSVREAD('~/Documents/Capsim/data/globals.csv');
 
  insert into socialClasses select * from CSVREAD('~/Documents/Capsim/data/socialClasses.csv');	
@@ -55,7 +56,7 @@
  INSERT INTO timestamps (timeStampID, projectFK, PERIOD,superState, COMPARATORTIMESTAMPID, Description) 
  SELECT TIMESTAMPID, PROJECTFK, PERIOD, SUPERSTATE, COMPARATORTIMESTAMPID, DESCRIPTION FROM CSVREAD('~/Documents/Capsim/data/timeStamps.csv');
  
- insert into projects (ProjectID, Description,priceDynamics) select ProjectID, Description,priceDynamics from CSVREAD('~/Documents/Capsim/data/projects.csv');
+ insert into projects (ProjectID, Description) select ProjectID, Description from CSVREAD('~/Documents/Capsim/data/projects.csv');
 
  update projects set currentTimeStamp =1 where ProjectID=1;
  

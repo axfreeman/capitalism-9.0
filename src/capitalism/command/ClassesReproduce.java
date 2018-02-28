@@ -41,7 +41,7 @@ public class ClassesReproduce extends Simulation implements Command {
 
 	public void execute() {
 		Reporter.report(logger, 0, "REPRODUCE CLASSES");
-		advanceOneStep(ActionStates.C_P_ClassesReproduce.getText(), ActionStates.C_P_Produce.getText());
+		advanceOneStep(ActionStates.C_P_ClassesReproduce.text(), ActionStates.C_P_Produce.text());
 
 		// NOTE: stockUsedUp has been initialised in the IndustriesProduce phase
 		

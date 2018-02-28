@@ -73,9 +73,9 @@ public enum ActionStates {
 		ActionStates.M_C_Constrain.setSuccessor(ActionStates.M_C_Trade);
 		ActionStates.M_C_Trade.setSuccessor(ActionStates.C_P_Produce);
 		ActionStates.C_P_IndustriesProduce.setSuccessor(ActionStates.C_P_ClassesReproduce);
-		ActionStates.C_P_ClassesReproduce.setSuccessor(ActionStates.C_M_Distribute);
-		ActionStates.C_M_Revenue.setSuccessor(ActionStates.C_M_Prices);
-		ActionStates.C_M_Prices.setSuccessor(ActionStates.C_M_Accumulate);
+		ActionStates.C_P_ClassesReproduce.setSuccessor(ActionStates.C_M_Prices);
+		ActionStates.C_M_Prices.setSuccessor(ActionStates.C_M_Distribute);
+		ActionStates.C_M_Revenue.setSuccessor(ActionStates.C_M_Accumulate);
 		ActionStates.C_M_Accumulate.setSuccessor(ActionStates.M_C_PreTrade);
 		
 		ActionStates.M_C_PreTrade.setPermissibleSubAction(ActionStates.M_C_Demand);
@@ -87,8 +87,8 @@ public enum ActionStates {
 		ActionStates.M_C_Trade.setParent(ActionStates.M_C_PreTrade);
 		ActionStates.C_P_IndustriesProduce.setParent(ActionStates.C_P_Produce);
 		ActionStates.C_P_ClassesReproduce.setParent(ActionStates.C_P_Produce);
+		ActionStates.C_M_Prices.setParent(ActionStates.C_P_Produce);
 		ActionStates.C_M_Revenue.setParent(ActionStates.C_M_Distribute);
-		ActionStates.C_M_Prices.setParent(ActionStates.C_M_Distribute);
 		ActionStates.C_M_Accumulate.setParent(ActionStates.C_M_Distribute);
 	}
 
@@ -108,7 +108,7 @@ public enum ActionStates {
 	 * the text to be used on this actionState's button.
 	 * Also used to serialise it in the Project persistent entity
 	 */
-	public String text;
+	protected String text;
 
 	/**
 	 * the command that will be executed when this button is pressed
@@ -201,7 +201,7 @@ public enum ActionStates {
 		this.superAction = superAction;   // tell me who my parent is
 	}
 
-	public String getText() {
+	public String text() {
 		return text;
 	}
 
@@ -223,5 +223,13 @@ public enum ActionStates {
 	public void setButton(Button button) {
 		this.button = button;
 	}
-
+	/** 
+	 * @return the last state at the end of the period
+	 */
+	public static ActionStates lastState() {
+		return C_M_Accumulate;
+	}
+	public static ActionStates lastSuperState() {
+		return ActionStates.C_M_Distribute;
+	}
 }

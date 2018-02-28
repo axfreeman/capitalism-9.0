@@ -26,8 +26,8 @@ import capitalism.Simulation;
 import capitalism.model.Industry;
 import capitalism.model.Stock;
 import capitalism.view.ViewManager;
-import capitalism.view.custom.DisplayControls;
-import capitalism.view.custom.TrackingControls;
+import capitalism.view.custom.DisplayControlsBox;
+import capitalism.view.custom.TrackingControlsBox;
 import javafx.scene.control.TableCell;
 import javafx.scene.paint.Color;
 
@@ -55,29 +55,29 @@ public class CircuitTableStockCell extends TableCell<Industry, String> {
 		
 		if (theStock.changed(TabbedTableViewer.displayAttribute)) {
 			setTextFill(Color.RED);
-			deltaModifier=(TrackingControls.displayDeltas?ViewManager.deltaSymbol:"");
+			deltaModifier=(TrackingControlsBox.displayDeltas?ViewManager.deltaSymbol:"");
 		}
 
-		String valueModifier= deltaModifier+DisplayControls.valuesExpressionSymbol;
-		String priceModifier= deltaModifier+DisplayControls.pricesExpressionSymbol;
+		String valueModifier= deltaModifier+DisplayControlsBox.valuesExpressionSymbol;
+		String priceModifier= deltaModifier+DisplayControlsBox.pricesExpressionSymbol;
 
-		if(TrackingControls.displayDeltas) {
+		if(TrackingControlsBox.displayDeltas) {
 			item=theStock.showDelta(item,TabbedTableViewer.displayAttribute);
 		}
 		
 		switch (TabbedTableViewer.displayAttribute) {
 		case PRICE:
-			if (DisplayControls.displayHints)
+			if (DisplayControlsBox.displayHints)
 				setStyle("-fx-background-color: rgba(255,240,204,0.3)");
 			setText(priceModifier+ item);
 			break;
 		case VALUE:
-			if (DisplayControls.displayHints)
+			if (DisplayControlsBox.displayHints)
 				setStyle("-fx-background-color: rgb(255,225,225,0.3)");
 			setText(valueModifier+ item);
 			break;
 		case QUANTITY:
-			if (DisplayControls.displayHints)
+			if (DisplayControlsBox.displayHints)
 				setStyle("-fx-background-color: rgba(220,220,220,0.3)");
 			setText(item);
 			break;

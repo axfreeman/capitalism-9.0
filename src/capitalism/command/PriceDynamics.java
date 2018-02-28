@@ -46,9 +46,9 @@ public class PriceDynamics extends Simulation implements Command {
 	 */
 
 	public void execute() {
-		currentProject = Project.projectSingle(projectCurrent);
-		Reporter.report(logger, 0, "PRICE DYNAMICS (%s)", currentProject.getPriceDynamics());
-		advanceOneStep(ActionStates.C_M_Prices.getText(), ActionStates.C_M_Distribute.getText());
+		Global global = Global.getGlobal();
+		Reporter.report(logger, 0, "PRICE DYNAMICS (%s)", global.getPriceResponse());
+		advanceOneStep(ActionStates.C_M_Prices.text(), ActionStates.C_P_Produce.text());
 
 		// adjust prices depending on the price adjustment mechanism specific to the project (no change, equalization, or dynamic)
 		computePrices();
@@ -65,14 +65,14 @@ public class PriceDynamics extends Simulation implements Command {
 
 	private void computePrices() {
 		Global global = Global.getGlobal();
-		switch (currentProject.getPriceDynamics()) {
-		case SIMPLE:
+		switch (global.getPriceResponse()) {
+		case VALUES:
 			// for the simple case do nothing
 			break;
 		case DYNAMIC:
 			Dialogues.alert(logger, "Dynamic price adjustment not available yet, sorry");
 			break;
-		case EQUALISE:
+		case EQUALIZED:
 			Reporter.report(logger, 1, "Setting prices to equalise profit rates");
 			Reporter.report(logger, 2, "Average Profit Rate is currently recorded as %.4f", global.profitRate());
 

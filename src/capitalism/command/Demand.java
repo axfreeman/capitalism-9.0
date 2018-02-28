@@ -55,7 +55,7 @@ public class Demand extends Simulation implements Command {
 	private static final Logger logger = LogManager.getLogger(Demand.class);
 
 	public void execute() {
-		advanceOneStep(ActionStates.M_C_Demand.getText(), ActionStates.M_C_PreTrade.getText());
+		advanceOneStep(ActionStates.M_C_Demand.text(), ActionStates.M_C_PreTrade.text());
 		Reporter.report(logger, 0, "DEMAND");
 
 		computeProductiveDemand();
@@ -161,7 +161,7 @@ public class Demand extends Simulation implements Command {
 	 *            if this is FLEXIBLE, the supply changes to match demand
 	 *            if it is FIXED,supply is unaffected by demand
 	 */
-	private void registerLabourResponse(Simulation.LABOUR_SUPPLY_RESPONSE response) {
+	private void registerLabourResponse(Simulation.LABOUR_RESPONSE response) {
 		//TODO but not very soon: there may be other socially-produced commodities to worry about
 		Commodity labourPower = Commodity.labourPower();
 		double demandForLabourPower = labourPower.replenishmentDemand();

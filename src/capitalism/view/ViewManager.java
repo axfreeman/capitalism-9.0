@@ -34,10 +34,10 @@ import capitalism.utils.Dialogues;
 import capitalism.utils.Reporter;
 import capitalism.view.custom.ActionButtonsBox;
 import capitalism.view.custom.ActionStates;
-import capitalism.view.custom.DisplayControls;
+import capitalism.view.custom.DisplayControlsBox;
 import capitalism.view.custom.TimeStampView;
 import capitalism.view.custom.TimeStampViewItem;
-import capitalism.view.custom.TrackingControls;
+import capitalism.view.custom.TrackingControlsBox;
 import capitalism.view.tables.SwitchableGraphicsGrid;
 import capitalism.view.tables.TabbedTableViewer;
 import javafx.geometry.Rectangle2D;
@@ -101,8 +101,8 @@ public class ViewManager {
 	private static TimeStampView tree;
 	private static SwitchableGraphicsGrid switchableGrid;
 	private static TabbedTableViewer tabbedTableViewer;
-	private static DisplayControls displayControls;
-	private static TrackingControls trackingControls;
+	private static DisplayControlsBox displayControlsBox;
+	private static TrackingControlsBox trackingControlsBox;
 
 	public ViewManager() {
 		logger.debug("Creating ViewManager");
@@ -173,15 +173,15 @@ public class ViewManager {
 		manePane.setMaxWidth(Double.MAX_VALUE);
 		VBox.setVgrow(manePane, Priority.ALWAYS);
 		tabbedTableViewer = new TabbedTableViewer();
-		displayControls = new DisplayControls();
-		trackingControls = new TrackingControls();
-		manePane.getChildren().addAll(trackingControls, simulationResultsPane);
+		displayControlsBox = new DisplayControlsBox();
+		trackingControlsBox = new TrackingControlsBox();
+		manePane.getChildren().addAll(trackingControlsBox, simulationResultsPane);
 		switchableGrid = new SwitchableGraphicsGrid();
 		simulationResultsPane.setMaxHeight(Double.MAX_VALUE);
 		simulationResultsPane.setMaxWidth(Double.MAX_VALUE);
 		simulationResultsPane.setPrefHeight(700);
 		simulationResultsPane.setPrefWidth(836);
-		simulationResultsPane.getChildren().add(displayControls);
+		simulationResultsPane.getChildren().add(displayControlsBox);
 		simulationResultsPane.getChildren().add(switchableGrid);
 		simulationResultsPane.getChildren().add(tabbedTableViewer);
 		HBox.setHgrow(simulationResultsPane, Priority.ALWAYS);
@@ -191,7 +191,7 @@ public class ViewManager {
 		if (actionButtonsBox == null) {
 			actionButtonsBox = new ActionButtonsBox();
 		}
-		trackingControls.getChildren().add(actionButtonsBox);
+		trackingControlsBox.getChildren().add(actionButtonsBox);
 	}
 
 	/**
@@ -290,8 +290,8 @@ public class ViewManager {
 	 * @return the requested expression of the value magnitude - unchanged if expressionDisplay is TIME but divided by MELT if expressionDisplay is MONEY
 	 */
 
-	public static double valueExpression(double intrinsicValueExpression, DisplayControls.DISPLAY_AS_EXPRESSION valuesExpressionDisplay) {
-		if (valuesExpressionDisplay == DisplayControls.DISPLAY_AS_EXPRESSION.MONEY) {
+	public static double valueExpression(double intrinsicValueExpression, DisplayControlsBox.DISPLAY_AS_EXPRESSION valuesExpressionDisplay) {
+		if (valuesExpressionDisplay == DisplayControlsBox.DISPLAY_AS_EXPRESSION.MONEY) {
 			return intrinsicValueExpression;
 		} else {
 			Global global = Global.getGlobal();
@@ -332,7 +332,7 @@ public class ViewManager {
 			Simulation.switchProjects(newValue.getProjectID(), actionButtonsBox);
 
 			// user has the option to choose the monetary unit and its visual expression
-			DisplayControls.setExpressionSymbols();
+			DisplayControlsBox.setExpressionSymbols();
 
 			// the timeStamp has been reset in DataManager. Our responsibility is to display the consequences of the change
 			refreshTimeStampTable();
@@ -352,7 +352,7 @@ public class ViewManager {
 	public static void refreshTimeStampTable() {
 		int periods = Simulation.periodCurrent;
 		if (tree != null) {// we've already created one tree, so now we have to delete it and start over
-			trackingControls.getChildren().remove(tree);
+			trackingControlsBox.getChildren().remove(tree);
 		}
 		tree = new TimeStampView();
 		tree.setShowRoot(false);
@@ -391,15 +391,15 @@ public class ViewManager {
 				if (a.superAction == null) { // it's not a baby
 
 					TimeStampViewItem superStateRoot = new TimeStampViewItem(
-							new TimeStamp(-1, Simulation.projectCurrent, periodItem.getValue().getPeriod(), a.getText(), -1, a.getText()));
+							new TimeStamp(-1, Simulation.projectCurrent, periodItem.getValue().getPeriod(), a.text(), -1, a.text()));
 					periodItem.getChildren().add(superStateRoot);
-					logger.debug("Adding the superstate action called {} in period {}", a.getText(), thisPeriod);
+					logger.debug("Adding the superstate action called {} in period {}", a.text(), thisPeriod);
 
 					// add all the children.
 					// these are taken from the timeStamp table, not the actionState table. Thus, we only add the states that have been reached in the
 					// simulation
 
-					for (TimeStamp childStamp : TimeStamp.timeStampsBySuperState(thisPeriod, a.text)) {
+					for (TimeStamp childStamp : TimeStamp.timeStampsBySuperState(thisPeriod, a.text())) {
 						logger.debug("Processing the timestamp called {}", childStamp.getDescription());
 						TimeStampViewItem childState = new TimeStampViewItem(childStamp);
 
@@ -412,7 +412,7 @@ public class ViewManager {
 				}
 			}
 		}
-		trackingControls.getChildren().add(1, tree);
+		trackingControlsBox.getChildren().add(1, tree);
 	}
 
 	public static int getLastPeriod(int project) {
@@ -433,8 +433,8 @@ public class ViewManager {
 	 */
 	public static void refreshDisplay() {
 		int currentProject = Simulation.projectCurrent;
-		TrackingControls.getProjectCursorLabel().setText("Project " + currentProject);
-		TrackingControls.getTimeStampCursorLabel().setText("Time " + Simulation.timeStampDisplayCursor);
+		TrackingControlsBox.getProjectCursorLabel().setText("Project " + currentProject);
+		TrackingControlsBox.getTimeStampCursorLabel().setText("Time " + Simulation.timeStampDisplayCursor);
 
 		logger.debug(String.format("Refresh Display with project %d, timestamp %d and comparator %d",
 				currentProject, Simulation.timeStampDisplayCursor, Simulation.getTimeStampComparatorCursor()));

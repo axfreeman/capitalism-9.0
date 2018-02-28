@@ -92,7 +92,7 @@ public class ActionButtonsBox extends VBox {
 
 		rootButton.setOnAction((event) -> {
 			onePeriod.execute();
-			lastAction = ActionStates.C_M_Distribute;
+			lastAction = ActionStates.lastSuperState();
 			enableButtons();
 			ViewManager.refreshTimeStampTable();
 			ViewManager.refreshDisplay();
@@ -119,19 +119,19 @@ public class ActionButtonsBox extends VBox {
 		treeView.prefHeight(USE_COMPUTED_SIZE);
 		this.getChildren().add(treeView);
 
-		lastAction = ActionStates.C_M_Distribute;
+		lastAction = ActionStates.lastSuperState();
 		enableButtons();
 	}
 
 	public void addActionState(ActionStates actionState, TreeItem<String> rootItem) {
 		TreeItem<String> item = new TreeItem<String>("");
-		Button button = new Button(actionState.getText());
+		Button button = new Button(actionState.text());
 		button.setPadding(Insets.EMPTY);
 		button.setMaxSize(80, 12);
 		button.setTooltip(new Tooltip(actionState.tooltip));
 		allButtons.add(button);
 		actionState.setButton(button);
-		actionStatesFromLabel.put(actionState.getText(), actionState);
+		actionStatesFromLabel.put(actionState.text(), actionState);
 		item.setGraphic(button);
 		button.setOnAction((event) -> {
 			actionState.getCommand().execute();
@@ -156,12 +156,12 @@ public class ActionButtonsBox extends VBox {
 		if (nextAction == ActionStates.M_C_PreTrade) { // we are at the beginning, enable the One Period Button
 			treeView.getRoot().getGraphic().setDisable(false);
 		}
-		logger.debug("The last action was {} and the action {} will be enabled", lastAction.getText(), nextAction.getText());
+		logger.debug("The last action was {} and the action {} will be enabled", lastAction.text(), nextAction.text());
 		nextAction.button.setDisable(false);
 		if (nextAction.firstSubAction != null) {
 			nextAction.firstSubAction.button.setDisable(false);
 			logger.debug("Enabling the subAction button with text {} from the super actionState {}", nextAction.firstSubAction.button.getText(),
-					nextAction.getText());
+					nextAction.text());
 		}
 	}
 
@@ -180,7 +180,7 @@ public class ActionButtonsBox extends VBox {
 		enableButtons();
 	}
 
-	public ActionStates getLastAction() {
+	public static ActionStates getLastAction() {
 		return lastAction;
 	}
 }

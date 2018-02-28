@@ -46,7 +46,7 @@ public class IndustriesProduce extends Simulation implements Command {
 	 */
 	public void execute() {
 		Reporter.report(logger, 0, "INDUSTRY PRODUCTION");
-		advanceOneStep(ActionStates.C_P_IndustriesProduce.getText(), ActionStates.C_P_Produce.getText());
+		advanceOneStep(ActionStates.C_P_IndustriesProduce.text(), ActionStates.C_P_Produce.text());
 		Global global = Global.getGlobal();
 		double melt = global.getMelt();
 

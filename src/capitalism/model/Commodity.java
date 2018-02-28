@@ -31,7 +31,7 @@ import capitalism.Simulation;
 import capitalism.utils.MathStuff;
 import capitalism.utils.Reporter;
 import capitalism.view.ViewManager;
-import capitalism.view.custom.TrackingControls;
+import capitalism.view.custom.TrackingControlsBox;
 import capitalism.view.tables.TabbedTableViewer;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
@@ -387,7 +387,7 @@ public class Commodity implements Serializable {
 	 */
 
 	private void chooseComparison() {
-		switch (TrackingControls.getComparatorState()) {
+		switch (TrackingControlsBox.getComparatorState()) {
 		case CUSTOM:
 			comparator = customComparator;
 			break;

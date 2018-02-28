@@ -48,7 +48,7 @@ public class Constrain extends Simulation implements Command {
 	public void execute() {
 		Reporter.report(logger, 0, "CONSTRAINTS");
 
-		advanceOneStep(ActionStates.M_C_Constrain.getText(), ActionStates.M_C_PreTrade.getText());
+		advanceOneStep(ActionStates.M_C_Constrain.text(), ActionStates.M_C_PreTrade.text());
 
 		// calculate what proportion of demand can actually be satisfied
 

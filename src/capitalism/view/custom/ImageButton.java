@@ -31,8 +31,9 @@ public class ImageButton extends Button {
 		offView.setFitHeight(20);
 		offView.setFitWidth(20);
 		setGraphic(onView);
-		setPrefWidth(30);
-		setMaxWidth(30);
+		setPrefWidth(60);
+		setMaxWidth(60);
+		setMinWidth(60);
 		onTip=new Tooltip(onTipText);
 		offTip= new Tooltip (offTipText);
 		ImageButton thisButton=this;

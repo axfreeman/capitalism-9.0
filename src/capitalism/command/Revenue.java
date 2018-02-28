@@ -37,7 +37,7 @@ public class Revenue extends Simulation implements Command {
 
 	public void execute() {
 		Reporter.report(logger, 0, "REVENUE");
-		advanceOneStep(ActionStates.C_M_Revenue.getText(), ActionStates.C_M_Distribute.getText());
+		advanceOneStep(ActionStates.C_M_Revenue.text(), ActionStates.C_M_Distribute.text());
 
 		// Revenue properly speaking.
 		// Capitalists receive profits.

@@ -48,7 +48,7 @@ public class Trade extends Simulation implements Command {
 
 	public void execute() {
 		Reporter.report(logger, 0, "TRADE");
-		advanceOneStep(ActionStates.M_C_Trade.getText(), ActionStates.M_C_PreTrade.getText());
+		advanceOneStep(ActionStates.M_C_Trade.text(), ActionStates.M_C_PreTrade.text());
 
 		productivePurchasesTrade();
 		socialClassesTrade();

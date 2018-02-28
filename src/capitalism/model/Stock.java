@@ -31,8 +31,8 @@ import capitalism.utils.Dialogues;
 import capitalism.utils.MathStuff;
 import capitalism.utils.Reporter;
 import capitalism.view.ViewManager;
-import capitalism.view.custom.DisplayControls;
-import capitalism.view.custom.TrackingControls;
+import capitalism.view.custom.DisplayControlsBox;
+import capitalism.view.custom.TrackingControlsBox;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -287,9 +287,9 @@ public class Stock implements Serializable {
 		case QUANTITY:
 			return quantity;
 		case VALUE:
-			return ViewManager.valueExpression(value, DisplayControls.valuesExpressionDisplay);
+			return ViewManager.valueExpression(value, DisplayControlsBox.valuesExpressionDisplay);
 		case PRICE:
-			return ViewManager.valueExpression(price, DisplayControls.pricesExpressionDisplay);
+			return ViewManager.valueExpression(price, DisplayControlsBox.pricesExpressionDisplay);
 		default:
 			throw new RuntimeException("ERROR: unknown attribute selector");
 		}
@@ -321,10 +321,10 @@ public class Stock implements Serializable {
 			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), quantity));
 		case VALUE:
 			return new ReadOnlyStringWrapper(
-					String.format(ViewManager.getLargeNumbersFormatString(), ViewManager.valueExpression(value, DisplayControls.valuesExpressionDisplay)));
+					String.format(ViewManager.getLargeNumbersFormatString(), ViewManager.valueExpression(value, DisplayControlsBox.valuesExpressionDisplay)));
 		case PRICE:
 			return new ReadOnlyStringWrapper(
-					String.format(ViewManager.getLargeNumbersFormatString(), ViewManager.valueExpression(price, DisplayControls.pricesExpressionDisplay)));
+					String.format(ViewManager.getLargeNumbersFormatString(), ViewManager.valueExpression(price, DisplayControlsBox.pricesExpressionDisplay)));
 		case REPLENISHMENTDEMAND:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), replenishmentDemand));
 		case PRODUCTION_COEFFICIENT:
@@ -425,7 +425,7 @@ public class Stock implements Serializable {
 	 */
 
 	private void chooseComparison() {
-		switch (TrackingControls.getComparatorState()) {
+		switch (TrackingControlsBox.getComparatorState()) {
 		case CUSTOM:
 			comparator = customComparator;
 			break;

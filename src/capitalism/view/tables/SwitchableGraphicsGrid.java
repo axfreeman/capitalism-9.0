@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 import capitalism.model.Global;
 import capitalism.view.ViewManager;
-import capitalism.view.custom.TrackingControls;
+import capitalism.view.custom.TrackingControlsBox;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
@@ -71,9 +71,9 @@ public class SwitchableGraphicsGrid extends AnchorPane {
 
 		if (global.changed(selector)) {
 			label.setTextFill(Color.RED);
-			if (TrackingControls.displayDeltas) {
+			if (TrackingControlsBox.displayDeltas) {
 				text=global.showDelta(text, selector);
-				deltaModifier=(TrackingControls.displayDeltas?ViewManager.deltaSymbol:"");
+				deltaModifier=(TrackingControlsBox.displayDeltas?ViewManager.deltaSymbol:"");
 			}
 		}
 		label.setText(deltaModifier+text);
@@ -96,7 +96,5 @@ public class SwitchableGraphicsGrid extends AnchorPane {
 		setGridCell(1, 1, global, Global.GLOBAL_SELECTOR.TOTALPRICE);
 		setGridCell(1, 2, global, Global.GLOBAL_SELECTOR.MELT);
 		setGridCell(1, 3, global, Global.GLOBAL_SELECTOR.POPULATION_GROWTH_RATE);
-		setGridCell(0, 4, global, Global.GLOBAL_SELECTOR.PRICE_DYNAMICS);
-		setGridCell(1, 4, global, Global.GLOBAL_SELECTOR.LABOUR_SUPPLY_RESPONSE);
 	}
 }
