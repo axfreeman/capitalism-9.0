@@ -445,6 +445,19 @@ public class Commodity implements Serializable {
 	// TODO get aggregator queries working
 
 	/**
+	 * nothing more than a testbed so far here
+	 * @return stockUsedUp
+	 */
+	public double stockUsedUp() {
+		Reporter.report(logger, 1, "Starting Computation");
+		Query query = Commodity.getEntityManager().createQuery("Select SUM(u.stockUsedUp) from Commodity u");
+		double stockUsed=(double)query.getSingleResult();
+		Reporter.report(logger, 0, "Computed stock used up was %.4f",stockUsed);
+		return stockUsed;
+	}
+
+
+	/**
 	 * @return the total value of this use value in the economy at this time
 	 */
 

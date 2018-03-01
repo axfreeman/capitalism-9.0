@@ -47,6 +47,9 @@ public enum ActionStates {
 	C_P_IndustriesProduce("Produce", new IndustriesProduce(), 
 			"Industries produce goods", 
 			true), 
+	C_P_Prices("Prices", new PriceDynamics(),
+			"Recalculate prices, and if necessary, values, depending on the price dynamics of the project",
+			true),
 	C_P_ClassesReproduce("Reproduce",new ClassesReproduce(), 
 			"industries produce goods, consuming productive stocks and labour power",	
 			true), 
@@ -54,9 +57,6 @@ public enum ActionStates {
 			"Distribution: recalculate unit values and prices and the MELT. Transfer surplus (M'-M)to the capitalist class. Accumulate",
 			false),
 	C_M_Revenue("Revenue", new Revenue(),"Distribute the surplus",true),
-	C_M_Prices("Prices", new PriceDynamics(),
-			"Recalculate prices, and if necessary, values, depending on the price dynamics of the project",
-			true),
 	C_M_Accumulate("Accumulate", new Accumulate(),  "Use the surplus", true);
 	// @formatter:on
 
@@ -72,9 +72,9 @@ public enum ActionStates {
 		ActionStates.M_C_Demand.setSuccessor(ActionStates.M_C_Constrain);
 		ActionStates.M_C_Constrain.setSuccessor(ActionStates.M_C_Trade);
 		ActionStates.M_C_Trade.setSuccessor(ActionStates.C_P_Produce);
-		ActionStates.C_P_IndustriesProduce.setSuccessor(ActionStates.C_P_ClassesReproduce);
-		ActionStates.C_P_ClassesReproduce.setSuccessor(ActionStates.C_M_Prices);
-		ActionStates.C_M_Prices.setSuccessor(ActionStates.C_M_Distribute);
+		ActionStates.C_P_IndustriesProduce.setSuccessor(ActionStates.C_P_Prices);
+		ActionStates.C_P_Prices.setSuccessor(ActionStates.C_P_ClassesReproduce);
+		ActionStates.C_P_ClassesReproduce.setSuccessor(ActionStates.C_M_Distribute);
 		ActionStates.C_M_Revenue.setSuccessor(ActionStates.C_M_Accumulate);
 		ActionStates.C_M_Accumulate.setSuccessor(ActionStates.M_C_PreTrade);
 		
@@ -87,7 +87,7 @@ public enum ActionStates {
 		ActionStates.M_C_Trade.setParent(ActionStates.M_C_PreTrade);
 		ActionStates.C_P_IndustriesProduce.setParent(ActionStates.C_P_Produce);
 		ActionStates.C_P_ClassesReproduce.setParent(ActionStates.C_P_Produce);
-		ActionStates.C_M_Prices.setParent(ActionStates.C_P_Produce);
+		ActionStates.C_P_Prices.setParent(ActionStates.C_P_Produce);
 		ActionStates.C_M_Revenue.setParent(ActionStates.C_M_Distribute);
 		ActionStates.C_M_Accumulate.setParent(ActionStates.C_M_Distribute);
 	}

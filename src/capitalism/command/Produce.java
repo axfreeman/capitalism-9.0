@@ -28,10 +28,11 @@ public class Produce extends Simulation implements Command {
 	}
 	
 	/**
-	 * combines @link CircuitsProduce and @link ClassesReproduce in one button press
+	 * combines {@link IndustriesProduce}, {@link PriceDynamics} and {@link ClassesReproduce} in one button press
 	 */
 	public void execute() {
 		ActionStates.C_P_IndustriesProduce.getCommand().execute();
+		ActionStates.C_P_Prices.getCommand().execute();
 		ActionStates.C_P_ClassesReproduce.getCommand().execute();
 	 }
 }

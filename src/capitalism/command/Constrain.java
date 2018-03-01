@@ -104,8 +104,8 @@ public class Constrain extends Simulation implements Command {
 		for (Industry c : industries) {
 			double desiredOutputLevel = c.getOutput();
 			Reporter.report(logger, 1, "Estimating supply-constrained output for industry [%s] with unconstrained output %.0f",
-					c.getIndustryName(), desiredOutputLevel);
-			List<Stock> managedStocks = Stock.productiveByIndustry(timeStampIDCurrent, c.getIndustryName());
+					c.getName(), desiredOutputLevel);
+			List<Stock> managedStocks = Stock.productiveByIndustry(timeStampIDCurrent, c.getName());
 			for (Stock s : managedStocks) {
 				double existingQuantity = s.getQuantity();
 				double quantityDemanded = s.getReplenishmentDemand();
@@ -124,7 +124,7 @@ public class Constrain extends Simulation implements Command {
 				}
 			}
 			Reporter.report(logger, 2, "Output of [%s] has been set to %.0f; unconstrained output was %.0f",
-					c.getIndustryName(), desiredOutputLevel, c.getOutput());
+					c.getName(), desiredOutputLevel, c.getOutput());
 			c.setOutput(desiredOutputLevel);
 		}
 	}

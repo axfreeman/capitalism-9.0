@@ -79,7 +79,7 @@ public class Parameters {
 	 * Determines whether the MELT is constant, or adjusts to the prices when these are set externally 
 	 */
 	public static enum MELT_RESPONSE {
-		FIXED("Fixed"), DYNAMIC("Dynamic");
+		VALUE_DRIVEN("Value-Driven"), PRICE_DRIVEN("Price-Driven");
 		String text;
 
 		private MELT_RESPONSE(String text) {
@@ -91,17 +91,17 @@ public class Parameters {
 		}
 		public static ObservableList<String>options(){
 		    return FXCollections.observableArrayList(
-			        FIXED.text(),
-			        DYNAMIC.text()
+			        VALUE_DRIVEN.text(),
+			        PRICE_DRIVEN.text()
 			    );
 		}
 		public static MELT_RESPONSE fromText(String text) {
 			switch (text) {
 			case "Dynamic":
-				return DYNAMIC;
+				return PRICE_DRIVEN;
 			case "Fixed":
 			default:
-				return FIXED;
+				return VALUE_DRIVEN;
 			}
 		}
 	}

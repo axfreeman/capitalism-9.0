@@ -54,7 +54,7 @@ import javafx.collections.ObservableList;
 @Table(name = "industries")
 @NamedQueries({
 		@NamedQuery(name = "All", query = "Select c from Industry c where c.pk.project = :project and c.pk.timeStamp = :timeStamp"),
-		@NamedQuery(name = "Primary", query = "Select c from Industry c where c.pk.project= :project and c.pk.timeStamp = :timeStamp and c.pk.industryName= :industryName"),
+		@NamedQuery(name = "Primary", query = "Select c from Industry c where c.pk.project= :project and c.pk.timeStamp = :timeStamp and c.pk.name= :industryName"),
 		@NamedQuery(name = "InitialCapital", query = "Select sum(c.initialCapital) from Industry c where c.pk.project=:project and c.pk.timeStamp=:timeStamp"),
 		@NamedQuery(name= "CommodityName",query ="Select c from Industry c where c.pk.project=:project and c.pk.timeStamp=:timeStamp and c.commodityName=:commodityName")
 })
@@ -187,7 +187,7 @@ public class Industry implements Serializable {
 	 */
 	public Industry(Industry template) {
 		this.pk=new IndustryPK();
-		pk.industryName = template.getIndustryName();
+		pk.name = template.getName();
 		pk.timeStamp = template.getTimeStamp();
 		pk.project = template.getProject();
 		commodityName=template.commodityName;
@@ -230,7 +230,7 @@ public class Industry implements Serializable {
 	public ReadOnlyStringWrapper wrappedString(Selector selector, Stock.ValueExpression valueExpression) {
 		switch (selector) {
 		case INDUSTRYNAME:
-			return new ReadOnlyStringWrapper(pk.industryName);
+			return new ReadOnlyStringWrapper(pk.name);
 		case COMMODITYNAME:
 			return new ReadOnlyStringWrapper(commodityName);
 		case INITIALCAPITAL:
@@ -370,7 +370,7 @@ public class Industry implements Serializable {
 
 	public ReadOnlyStringWrapper wrappedString(String productiveStockName) {
 		try {
-			Stock namedStock = Stock.productiveNamedSingle(pk.timeStamp, pk.industryName, productiveStockName);
+			Stock namedStock = Stock.productiveNamedSingle(pk.timeStamp, pk.name, productiveStockName);
 			String result = String.format(ViewManager.getLargeNumbersFormatString(), namedStock.get(TabbedTableViewer.displayAttribute));
 			return new ReadOnlyStringWrapper(result);
 		} catch (Exception e) {
@@ -448,7 +448,7 @@ public class Industry implements Serializable {
 		computeDemand(extraOutput);
 		double costOfExpansion = expansionCosts();
 		Reporter.report(logger, 2, "Industry [%s] expands from %.0f to %.0f costing $%.0f ",
-				pk.industryName, output, output + extraOutput, costOfExpansion);
+				pk.name, output, output + extraOutput, costOfExpansion);
 
 		// transfer funds from the donor class, and reduce its revenue accordingly
 		// TODO this should be a method of the SocialClass class
@@ -487,7 +487,7 @@ public class Industry implements Serializable {
 		}
 		if (minimumGrowthRate == Double.MAX_VALUE) {
 			Dialogues.alert(logger, "Industry {} seems to have no inputs. Please look at your data. If the problem persists, contact the developer",
-					pk.industryName);
+					pk.name);
 			minimumGrowthRate = 0;
 		}
 		growthRate = minimumGrowthRate;
@@ -540,7 +540,7 @@ public class Industry implements Serializable {
 			return Double.NaN;
 		}
 		double total = 0;
-		for (Stock s : Stock.productiveByIndustry(pk.timeStamp, pk.industryName)) {
+		for (Stock s : Stock.productiveByIndustry(pk.timeStamp, pk.name)) {
 			total += s.get(a);
 		}
 		return total;
@@ -552,7 +552,7 @@ public class Industry implements Serializable {
 	 * @return the money stock that is owned by this social class.
 	 */
 	public Stock getMoneyStock() {
-		return Stock.stockMoneyByOwnerSingle(pk.timeStamp, pk.industryName);
+		return Stock.stockMoneyByOwnerSingle(pk.timeStamp, pk.name);
 	}
 
 	/**
@@ -562,7 +562,7 @@ public class Industry implements Serializable {
 	 */
 	public Stock getSalesStock() {
 
-		return Stock.stockByPrimaryKey(Simulation.projectCurrent, pk.timeStamp, pk.industryName, commodityName,
+		return Stock.stockByPrimaryKey(Simulation.projectCurrent, pk.timeStamp, pk.name, commodityName,
 				Stock.STOCKTYPE.SALES.text());
 	}
 
@@ -652,10 +652,10 @@ public class Industry implements Serializable {
 	
 	public static void setComparators(int timeStampID) {
 		for (Industry c : industriesAll(timeStampID)) {
-			c.setPreviousComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), c.getIndustryName()));
-			c.setStartComparator(industryByPrimaryKey(Simulation.projectCurrent, 1, c.getIndustryName()));
-			c.setEndComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, c.getIndustryName()));
-			c.setCustomComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, c.getIndustryName()));
+			c.setPreviousComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), c.getName()));
+			c.setStartComparator(industryByPrimaryKey(Simulation.projectCurrent, 1, c.getName()));
+			c.setEndComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, c.getName()));
+			c.setCustomComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, c.getName()));
 		}
 	}
 
@@ -730,7 +730,7 @@ public class Industry implements Serializable {
 		if (s != null) {
 			s.setQuantity(quantity);
 		} else {
-			logger.error("Industry {} attempted to set the quantity demanded of its consumption stock, but it does not have one", pk.industryName);
+			logger.error("Industry {} attempted to set the quantity demanded of its consumption stock, but it does not have one", pk.name);
 		}
 	}
 
@@ -745,7 +745,7 @@ public class Industry implements Serializable {
 		if (s != null) {
 			s.setQuantity(quantity);
 		} else {
-			logger.error("Industry {} attempted to set the quantity demanded of its consumption stock, but it does not have one", pk.industryName);
+			logger.error("Industry {} attempted to set the quantity demanded of its consumption stock, but it does not have one", pk.name);
 		}
 	}
 
@@ -755,7 +755,7 @@ public class Industry implements Serializable {
 	 * @return a list of the productive stocks owned (managed) by this industry
 	 */
 	public List<Stock> productiveStocks() {
-		return Stock.productiveByIndustry(pk.timeStamp, pk.industryName);
+		return Stock.productiveByIndustry(pk.timeStamp, pk.name);
 	}
 
 	/**
@@ -766,7 +766,7 @@ public class Industry implements Serializable {
 	 *            the name of the stock
 	 */
 	public Stock productiveStock(String name) {
-		return Stock.productiveNamedSingle(pk.timeStamp, pk.industryName, name);
+		return Stock.productiveNamedSingle(pk.timeStamp, pk.name, name);
 	}
 
 	/**
@@ -789,8 +789,8 @@ public class Industry implements Serializable {
 		pk.timeStamp = timeStamp;
 	}
 
-	public String getIndustryName() {
-		return pk.industryName;
+	public String getName() {
+		return pk.name;
 	}
 
 	public double getOutput() {
@@ -878,7 +878,7 @@ public class Industry implements Serializable {
 		ArrayList<String> contents = new ArrayList<>();
 		contents.add(Integer.toString(pk.timeStamp));
 		contents.add(Integer.toString(pk.project));
-		contents.add((pk.industryName));
+		contents.add((pk.name));
 		for (Stock s : productiveStocks()) {
 			contents.add(String.format("%.2f", s.getQuantity()));
 			contents.add(String.format("%.2f", s.getPrice()));

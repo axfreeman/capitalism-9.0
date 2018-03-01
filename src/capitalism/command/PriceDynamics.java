@@ -34,27 +34,43 @@ import capitalism.utils.MathStuff;
 import capitalism.utils.Reporter;
 import capitalism.view.custom.ActionStates;
 
-public class PriceDynamics extends Simulation implements Command {
+/**
+ * Implements the project- and user-determined pricing policies. This is the traditional 'end of the period'
+ * when new prices and new values are established. It appears (confusingly, perhaps) in the middle of the
+ * period as we currently present it because it is followed by distribution.
+ * 
+ * In reality, as established in 'axiomatic foundations', the aim is to account separately for the effects
+ * of production and distribution, not to establish a particular time within the calculation when prices
+ * change. It's nevertheless a confusing issue and requires thought and documentation.
+ * 
+ * Be that as it may, the process is
+ * 
+ * (1) establish the new prices (2) calculate the MELT (3) recompute unit and total values and prices
+ * 
+ * The recomputed values are the values of the 'next' period in the traditional sense. Thus, we suppose
+ * that distribution and accumulation take place on the basis of the new prices arising from production.
+ * 
+ * We could possible place distribution at the start of the period, which would allow the new prices
+ * to be established at the end of it.
+ */
+
+public class PriceDynamics implements Command {
 	private static final Logger logger = LogManager.getLogger(PriceDynamics.class);
 	Project currentProject = null;
 
-	/**
-	 * Calculate the unit value and price of each commodity.
-	 * Recalculate the MELT.
-	 * Tell the stocks to adjust the total values and prices
-	 * TODO: the value of money has to be dealt with properly. For now, deal with by exempting money from the adjustment
-	 */
+	private static Global global;
 
 	public void execute() {
-		Global global = Global.getGlobal();
+		global = Global.getGlobal();
 		Reporter.report(logger, 0, "PRICE DYNAMICS (%s)", global.getPriceResponse());
-		advanceOneStep(ActionStates.C_M_Prices.text(), ActionStates.C_P_Produce.text());
+		Simulation.advanceOneStep(ActionStates.C_P_Prices.text(), ActionStates.C_P_Produce.text());
 
 		// adjust prices depending on the price adjustment mechanism specific to the project (no change, equalization, or dynamic)
-		computePrices();
+		computeRelativePrices();
+		computeAbsolutePrices();
 
 		// recalculate the values and prices of each stock on the basis of the new unit values and prices
-		for (Stock s : Stock.all(timeStampIDCurrent)) {
+		for (Stock s : Stock.all(Simulation.timeStampIDCurrent)) {
 			s.reCalculateStockTotalValuesAndPrices();
 		}
 	}
@@ -63,11 +79,11 @@ public class PriceDynamics extends Simulation implements Command {
 	 * adjust prices, depending on the setting of the price dynamics in the current project
 	 */
 
-	private void computePrices() {
-		Global global = Global.getGlobal();
+	private static void computeRelativePrices() {
 		switch (global.getPriceResponse()) {
 		case VALUES:
-			// for the simple case do nothing
+			// for the simple case do not adjust relative prices.
+			// however, absolute prices may be adjusted in the next stage
 			break;
 		case DYNAMIC:
 			Dialogues.alert(logger, "Dynamic price adjustment not available yet, sorry");
@@ -81,7 +97,7 @@ public class PriceDynamics extends Simulation implements Command {
 				Reporter.report(logger, 2, "Setting profit-equalizing price for commodity [%s] in which profit rate is %.4f",
 						u.commodityName(), u.profitRate());
 				for (Industry c : u.industries()) {
-					Reporter.report(logger, 3, "Note: industry %s produces this commodity", c.getIndustryName());
+					Reporter.report(logger, 3, "Note: industry %s produces this commodity", c.getName());
 				}
 				double profitRate = global.profitRate();
 				double profit = u.profit();
@@ -92,44 +108,65 @@ public class PriceDynamics extends Simulation implements Command {
 				double newUnitPrice = priceValueRatio * u.getUnitValue();
 				Reporter.report(logger, 2,
 						"Initial Capital $%.0f, profit rate %.4f, total price $%.0f, total value $%.0f, price-value ratio %.4f, new unit price $%.4f",
-						initialCapital,  profitRate, totalPrice, totalValue, priceValueRatio, newUnitPrice);
+						initialCapital, profitRate, totalPrice, totalValue, priceValueRatio, newUnitPrice);
 				u.setUnitPrice(newUnitPrice);
 			}
 			break;
 		default:
 			break;
 		}
+	}
+
+	/**
+	 * Depending on the rules governing it, this method now adjusts the MELT.
+	 * 
+	 * If the rule is Value-Driven, and total price is higher than total value, then prices have to adjust to fit the values
+	 */
+	private static void computeAbsolutePrices() {
 		double oldMelt = global.getMelt();
+		double newMelt = oldMelt;
 		double adjustmentFactor = global.totalPrice() / global.totalValue();
 		if (!MathStuff.equals(adjustmentFactor, 1)) {
-			double newMelt = oldMelt * (adjustmentFactor);
-			Reporter.report(logger, 1, "MELT was %.4f and will be reset to %.4f", oldMelt, newMelt);
+			switch (global.getMeltResponse()) {
+			case VALUE_DRIVEN: // just accept the existing MELT; prices will then be adjusted to fit
+				Reporter.report(logger, 1, "Value-driven MELT remains unchanged at $%.4f. Prices will be recomputed",oldMelt);
+				break;
+			case PRICE_DRIVEN: // the prices have established a new MELT; values will be adjusted to fit
+				Reporter.report(logger, 1, "Price-driven MELT was %.4f and will be reset to %.4f. Values will be recomputed", oldMelt, newMelt);
+				newMelt = oldMelt / adjustmentFactor;
+				break;
+
+			}
 			global.setMelt(newMelt);
+		}else {
+			Reporter.report(logger, 1, "Prices and values have the same monetary expression. The MELT was not reset");
 		}
 	}
+
 	/**
 	 * Not used yet. If 'full pricing' is selected, we need to re-price labour power because wage
 	 * goods are cheaper. However this is beyond the scope of the simple illustrations, so we
-	 * don't to this yet.
+	 * don't do this yet.
+	 * 
+	 * Optionally we may also include, in here, the computation of the value of money.
 	 */
-	@SuppressWarnings("unused")
-	private void resetWage() {
+	@SuppressWarnings("unused") private void resetWage() {
 		// if the prices of consumption goods have changed, the wage will change.
 		// first calculate what it would have cost, at the new prices, for what workers consumed
-		
+
 		double totalWage = 0;
-			for (Stock s:Stock.consumedByClass(timeStampIDCurrent, "Workers")) {
-				Commodity u=s.getCommodity();
-				double price = u.getUnitPrice();
-				Reporter.report(logger, 3, "Wage earners just consumed %.0f of [%s] which would add $%.0f to the price of their labour power at the new prices",
-						s.getStockUsedUp(), u.commodityName(), s.getStockUsedUp() * price);
-				totalWage += s.getStockUsedUp() * price;
-			}
-		
-		// now divide this by the number of workers.	
+		for (Stock s : Stock.consumedByClass(Simulation.timeStampIDCurrent, "Workers")) {
+			Commodity u = s.getCommodity();
+			double price = u.getUnitPrice();
+			Reporter.report(logger, 3, "Wage earners just consumed %.0f of [%s] which would add $%.0f to the price of their labour power at the new prices",
+					s.getStockUsedUp(), u.commodityName(), s.getStockUsedUp() * price);
+			totalWage += s.getStockUsedUp() * price;
+		}
+
+		// now divide this by the number of workers.
 		// multiple types of labour power are beyond us at this point because we cannot as yet attribute
 		// specific types of consumption to specific sellers of labour power
-		
+
 		Commodity labourPower = Commodity.labourPower();
 		double labourPowerSupplied = labourPower.getStockUsedUp();
 		double wageRate = totalWage / labourPowerSupplied;

@@ -43,12 +43,12 @@ import capitalism.view.custom.ActionStates;
  * @author afree
  *
  */
-public class Trade extends Simulation implements Command {
+public class Trade implements Command {
 	private static final Logger logger = LogManager.getLogger(Trade.class);
 
 	public void execute() {
 		Reporter.report(logger, 0, "TRADE");
-		advanceOneStep(ActionStates.M_C_Trade.text(), ActionStates.M_C_PreTrade.text());
+		Simulation.advanceOneStep(ActionStates.M_C_Trade.text(), ActionStates.M_C_PreTrade.text());
 
 		productivePurchasesTrade();
 		socialClassesTrade();
@@ -62,7 +62,7 @@ public class Trade extends Simulation implements Command {
 		Reporter.report(logger, 1, "The %d industries will now try to purchase the stocks they need. ", industries.size());
 
 		for (Industry buyer : industries) {
-			String buyerName = buyer.getIndustryName();
+			String buyerName = buyer.getName();
 			Stock buyerMoneyStock = buyer.getMoneyStock();
 			List<Stock> stocks = buyer.productiveStocks();
 
@@ -110,7 +110,7 @@ public class Trade extends Simulation implements Command {
 							double marketShare=seller.getSalesQuantity()/stockCommodity.totalSupply();
 							double quantitySold=marketShare*quantityPurchased;
 							Reporter.report(logger, 2, "The industry [%s] is selling %.0f units of [%s]", 
-									seller.getIndustryName(), quantitySold, stockCommodity.commodityName());
+									seller.getName(), quantitySold, stockCommodity.commodityName());
 							sellerMoneyStock = seller.getMoneyStock();
 							sellerSalesStock = seller.getSalesStock();
 							try {

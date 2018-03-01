@@ -35,7 +35,7 @@ public class IndustryPK implements Serializable {
 	static final long serialVersionUID = 001L;
 	@Basic(optional = false) @Column(name = "project") protected int project;
 	@Basic(optional = false) @Column(name = "timeStamp") protected int timeStamp;
-	@Basic(optional = false) @Column(name = "industryName") protected String industryName;
+	@Basic(optional = false) @Column(name = "industryName") protected String name;
 
 	public IndustryPK() {
 	}
@@ -43,7 +43,7 @@ public class IndustryPK implements Serializable {
 	public IndustryPK(int project, int timeStamp, String industryName) {
 		this.project = project;
 		this.timeStamp = timeStamp;
-		this.industryName = industryName;
+		this.name = industryName;
 	}
 	
 	@Override
@@ -51,7 +51,7 @@ public class IndustryPK implements Serializable {
 		int hash = 0;
 		hash += (int) project;
 		hash += timeStamp;
-		hash += (industryName != null ? industryName.hashCode() : 0);
+		hash += (name != null ? name.hashCode() : 0);
 		return hash;
 	}
 
@@ -68,8 +68,8 @@ public class IndustryPK implements Serializable {
 		if (this.timeStamp != other.timeStamp) {
 			return false;
 		}
-		if ((this.industryName == null && other.industryName != null)
-				|| (this.industryName != null && !this.industryName.equals(other.industryName))) {
+		if ((this.name == null && other.name != null)
+				|| (this.name != null && !this.name.equals(other.name))) {
 			return false;
 		}
 		return true;
@@ -77,7 +77,7 @@ public class IndustryPK implements Serializable {
 
 	@Override
 	public String toString() {
-		return "demo.IndustriesPK[ project=" + project + ", timeStamp=" + timeStamp + ", industryName=" + industryName + " ]";
+		return "demo.IndustriesPK[ project=" + project + ", timeStamp=" + timeStamp + ", industryName=" + name + " ]";
 	}
 
 }

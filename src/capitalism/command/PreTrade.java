@@ -22,22 +22,22 @@ package capitalism.command;
 import capitalism.Simulation;
 import capitalism.view.custom.ActionStates;
 
-public class PreTrade extends Simulation implements Command {
+public class PreTrade implements Command {
 
 	public PreTrade() {
 	}
 	
 	/**
-	 * combines @link registerSupply, @link registerDemand and @link allocate in one button press.
-	 * If we are have just completed one of these operations, do the remainder
+	 * combines {@link Demand} and {@link Constrain} in one button press.
 	 */
 	public void execute() {
 		int startTimeStamp =Simulation.timeStampIDCurrent;
 		ActionStates.M_C_Demand.getCommand().execute();
 		ActionStates.M_C_Constrain.getCommand().execute();
 		ActionStates.M_C_Trade.getCommand().execute();
+		
 		// since this is a super-action, the comparison should be with the state at the beginning of the whole set of actions
 		Simulation.setTimeStampComparatorCursor(startTimeStamp);
-		setComparators(Simulation.timeStampIDCurrent);	
+		Simulation.setComparators(Simulation.timeStampIDCurrent);	
 	}
 }

@@ -67,7 +67,7 @@ public class Revenue extends Simulation implements Command {
 			recipient.modifyBy(profit);
 			donor.modifyBy(-profit);
 			Reporter.report(logger, 1, "Capitalist class has received $%.0f from industry [%s]",
-					profit, c.getIndustryName());
+					profit, c.getName());
 
 			// Note: revenue is in effect a memo item, not a stock.
 			// its use is to determine what classes consume.

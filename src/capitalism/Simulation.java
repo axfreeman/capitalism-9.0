@@ -240,7 +240,7 @@ public class Simulation extends Parameters{
 		logger.debug("Persisting a new set of industries with timeStamp ", timeStampIDCurrent + 1);
 		Industry newIndustry;
 		for (Industry c : Industry.industriesAll()) {
-			logger.debug("Persisting an industry whose use value is " + c.getIndustryName());
+			logger.debug("Persisting an industry whose use value is " + c.getName());
 			newIndustry = new Industry(c);
 			newIndustry.setTimeStamp(timeStampIDCurrent + 1);
 			Industry.getEntityManager().persist(newIndustry);
@@ -317,8 +317,8 @@ public class Simulation extends Parameters{
 			if (u.getFunction() != Commodity.FUNCTION.MONEY) {
 				double quantity = u.totalQuantity();
 				double newUnitValue = u.totalValue() / quantity;
-				Reporter.report(logger, 2, "The unit value of commodity [%s] was %.4f, and will be reset to %.4f", u.commodityName(), u.getUnitValue(),
-						newUnitValue);
+				Reporter.report(logger, 2, "The unit value of commodity [%s] was %.4f, and will be reset to %.4f", 
+						u.commodityName(), u.getUnitValue(),newUnitValue);
 				u.setUnitValue(newUnitValue);
 			}
 		}
@@ -376,7 +376,7 @@ public class Simulation extends Parameters{
 		Global global = Global.getGlobal();
 		for (Industry c : Industry.industriesAll()) {
 			double initialCapital = c.currentCapital();
-			Reporter.report(logger, 3, "The initial capital of the industry[%s] is now $%.0f (intrinsic %.0f)", c.getIndustryName(), initialCapital,
+			Reporter.report(logger, 3, "The initial capital of the industry[%s] is now $%.0f (intrinsic %.0f)", c.getName(), initialCapital,
 					initialCapital / global.getMelt());
 			c.setInitialCapital(initialCapital);
 		}

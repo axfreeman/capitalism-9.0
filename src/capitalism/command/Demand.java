@@ -51,11 +51,11 @@ import capitalism.view.custom.ActionStates;
  * The stock is consumed 'evenly' over several periods. In each such period, however, the classes will try to acquire extra consumption goods to get up to
  * the stock levels that correspond to their size.
  */
-public class Demand extends Simulation implements Command {
+public class Demand implements Command {
 	private static final Logger logger = LogManager.getLogger(Demand.class);
 
 	public void execute() {
-		advanceOneStep(ActionStates.M_C_Demand.text(), ActionStates.M_C_PreTrade.text());
+		Simulation.advanceOneStep(ActionStates.M_C_Demand.text(), ActionStates.M_C_PreTrade.text());
 		Reporter.report(logger, 0, "DEMAND");
 
 		computeProductiveDemand();
@@ -103,7 +103,7 @@ public class Demand extends Simulation implements Command {
 		for (Industry c : Industry.industriesAll()) {
 			double totalCost = 0;
 			Reporter.report(logger, 2, "Estimating demand from industry %s at output level %.0f", 
-					c.getIndustryName(),c.getOutput());
+					c.getName(),c.getOutput());
 			double moneyAvailable = c.getMoneyQuantity();
 
 			// at this stage, constrainedOutput has been set in the Accumulate phase of the past period using plausible private plans for expansion.
@@ -140,7 +140,7 @@ public class Demand extends Simulation implements Command {
 				
 				resources = moneyAvailable+anticipatedMoneyFromSales;
 				if (revisedTotalCost < resources + MathStuff.epsilon) {
-					Dialogues.alert(logger, "Industry %s is unable to finance its expected level of output", c.getIndustryName());
+					Dialogues.alert(logger, "Industry %s is unable to finance its expected level of output", c.getName());
 				}else {
 					Reporter.report(logger, 2, "Output has been reduced to %.0f", output);
 				}

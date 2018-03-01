@@ -505,7 +505,7 @@ public class Stock implements Serializable {
 	public void modifyBy(double quantity, double valueAdded) {
 		double oldValue = value;
 		modifyBy(quantity);
-		setValue(oldValue + valueAdded); // overwrite what was done by the simple call to changeBy
+		setValue(MathStuff.round(oldValue + valueAdded)); // overwrite what was done by the simple call to changeBy
 	}
 
 	/**

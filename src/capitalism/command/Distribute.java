@@ -41,7 +41,7 @@ public class Distribute extends Simulation implements Command {
 	 */
 	public void execute() {
 		ActionStates.C_M_Revenue.getCommand().execute();
-		ActionStates.C_M_Prices.getCommand().execute();
+		ActionStates.C_P_Prices.getCommand().execute();
 		ActionStates.C_M_Accumulate.getCommand().execute();
 	}
 }

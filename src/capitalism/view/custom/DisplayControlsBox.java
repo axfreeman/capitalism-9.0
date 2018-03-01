@@ -93,8 +93,8 @@ public class DisplayControlsBox extends HBox {
 
 	// convenient list in case we want to do something to all the buttons (at present, not much except add them to the HBox)
 	static {
-		imageButtons.addAll(Arrays.asList(colourHintsButton, restartButton, toggleGraphicsButton, toggleValuesButton, togglePricesButton, logButton,
-				decimalsButton, dataLoadButton, dataDumpButton));
+		imageButtons.addAll(Arrays.asList(toggleGraphicsButton, colourHintsButton, toggleValuesButton, togglePricesButton, logButton,
+				decimalsButton, dataLoadButton, dataDumpButton,restartButton));
 	}
 	
 	// this is the projectCombo box

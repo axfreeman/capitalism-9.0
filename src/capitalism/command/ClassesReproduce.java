@@ -28,7 +28,7 @@ import capitalism.model.SocialClass;
 import capitalism.utils.Reporter;
 import capitalism.view.custom.ActionStates;
 
-public class ClassesReproduce extends Simulation implements Command {
+public class ClassesReproduce implements Command {
 	private static final Logger logger = LogManager.getLogger(ClassesReproduce.class);
 
 	/**
@@ -41,19 +41,18 @@ public class ClassesReproduce extends Simulation implements Command {
 
 	public void execute() {
 		Reporter.report(logger, 0, "REPRODUCE CLASSES");
-		advanceOneStep(ActionStates.C_P_ClassesReproduce.text(), ActionStates.C_P_Produce.text());
+		Simulation.advanceOneStep(ActionStates.C_P_ClassesReproduce.text(), ActionStates.C_P_Produce.text());
 
 		// NOTE: stockUsedUp has been initialised in the IndustriesProduce phase
-		
 		for (SocialClass sc : SocialClass.socialClassesAll()) {
 			sc.consume();
 			sc.regenerate();
 		}
 		
 		Reporter.report(logger, 1, "Recompute values if necessary");
-		checkGlobalConsistency();
+		Simulation.checkGlobalConsistency();
 
 		// recalculate unit values, because these will have changed as a result of production
-		computeUnitValues();
+		Simulation.computeUnitValues();
 	}
 }
