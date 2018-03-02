@@ -25,7 +25,7 @@ import java.util.HashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import capitalism.command.OnePeriod;
+import capitalism.controller.command.OnePeriod;
 import capitalism.model.Project;
 import capitalism.utils.Dialogues;
 import capitalism.view.ViewManager;
@@ -153,7 +153,7 @@ public class ActionButtonsBox extends VBox {
 			button.setDisable(true);
 		}
 		ActionStates nextAction = lastAction.nextAction;
-		if (nextAction == ActionStates.M_C_PreTrade) { // we are at the beginning, enable the One Period Button
+		if (nextAction == ActionStates.M_C_Exchange) { // we are at the beginning, enable the One Period Button
 			treeView.getRoot().getGraphic().setDisable(false);
 		}
 		logger.debug("The last action was {} and the action {} will be enabled", lastAction.text(), nextAction.text());

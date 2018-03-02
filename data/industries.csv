@@ -1,8 +1,8 @@
 project,timeStamp,industryName,CommodityName,output,GrowthRate
 1,1,Department I,Means of Production,6000,0
 1,1,Department II,Consumption,3000,0
-2,1,Consumption,Consumption,3000,0
-2,1,Means of Production,Means of Production,6000,0
+2,1,DII,Consumption,3000,0
+2,1,DI,Means of Production,6000,0
 3,1,Consumption,Consumption,1500,0
 3,1,Means of Production,Means of Production,3000,0
 4,1,Department I,Means of Production,6000,0

@@ -20,9 +20,11 @@
 
 package capitalism.view.tables;
 
-import capitalism.Simulation;
+import capitalism.controller.Simulation;
 import capitalism.model.Commodity;
 import capitalism.model.SocialClass;
+import capitalism.view.TabbedTableViewer;
+import capitalism.view.TableUtilities;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.util.Callback;
@@ -45,7 +47,7 @@ public class SocialClassColumn extends TableColumn<SocialClass, String> {
 	 * @param alignedLeft
 	 *            true if the data in this column should be displayed aligned to the left (typically text fields such as commodity names or owner names)
 	 */
-	SocialClassColumn(SocialClass.Selector selector, boolean alignedLeft) {
+	public SocialClassColumn(SocialClass.Selector selector, boolean alignedLeft) {
 		super(selector.text());
 		setCellFactory(new Callback<TableColumn<SocialClass, String>, TableCell<SocialClass, String>>() {
 			@Override public TableCell<SocialClass, String> call(TableColumn<SocialClass, String> col) {
@@ -71,7 +73,7 @@ public class SocialClassColumn extends TableColumn<SocialClass, String> {
 	 *            an enum specifying which commodity's stock to display
 	 */
 
-	SocialClassColumn(Commodity u) {
+	public SocialClassColumn(Commodity u) {
 		String consumptionStockName=u.commodityName();
 		setCellFactory(new Callback<TableColumn<SocialClass, String>, TableCell<SocialClass, String>>() {
 			@Override public TableCell<SocialClass, String> call(TableColumn<SocialClass, String> col) {

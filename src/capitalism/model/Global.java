@@ -37,8 +37,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.TypedQuery;
 import javax.xml.bind.annotation.XmlRootElement;
-
-import capitalism.Simulation;
+import capitalism.controller.Simulation;
 import capitalism.utils.MathStuff;
 import capitalism.view.ViewManager;
 import capitalism.view.custom.TrackingControlsBox;
@@ -64,8 +63,8 @@ public class Global implements Serializable {
 	@Column(name = "PopulationGrowthRate") private double populationGrowthRate;
 	@Column(name = "InvestmentRatio") private double investmentRatio;
 	@Column(name = "LabourSupplyResponse") private Simulation.LABOUR_RESPONSE labourSupplyResponse;
-	@Column(name ="priceResponse") private Simulation.PRICE_RESPONSE priceResponse;
-	@Column(name ="meltResponse") private Simulation.MELT_RESPONSE meltResponse;
+	@Column(name = "priceResponse") private Simulation.PRICE_RESPONSE priceResponse;
+	@Column(name = "meltResponse") private Simulation.MELT_RESPONSE meltResponse;
 	@Column(name = "CurrencySymbol") private String currencySymbol;
 	@Column(name = "QuantitySymbol") private String quantitySymbol;
 
@@ -122,8 +121,8 @@ public class Global implements Serializable {
 		populationGrowthRate = template.getPopulationGrowthRate();
 		investmentRatio = template.investmentRatio;
 		labourSupplyResponse = template.labourSupplyResponse;
-		priceResponse=template.priceResponse;
-		meltResponse=template.meltResponse;
+		priceResponse = template.priceResponse;
+		meltResponse = template.meltResponse;
 		currencySymbol = template.currencySymbol;
 		quantitySymbol = template.quantitySymbol;
 	}
@@ -131,9 +130,9 @@ public class Global implements Serializable {
 	public String value(GLOBAL_SELECTOR selector) {
 		switch (selector) {
 		case CURRENTCAPITAL:
-			return String.format(ViewManager.getLargeNumbersFormatString(), currentCapital());
+			return String.format(ViewManager.getLargeFormat(), currentCapital());
 		case INITIALCAPITAL:
-			return String.format(ViewManager.getLargeNumbersFormatString(), initialCapital());
+			return String.format(ViewManager.getLargeFormat(), initialCapital());
 		case LABOUR_SUPPLY_RESPONSE:
 			return labourSupplyResponse.text();
 		case PRICE_RESPONSE:
@@ -141,17 +140,17 @@ public class Global implements Serializable {
 		case MELT_RESPONSE:
 			return meltResponse.text();
 		case MELT:
-			return String.format(ViewManager.getSmallNumbersFormatString(), melt);
+			return String.format(ViewManager.getSmallFormat(), melt);
 		case POPULATION_GROWTH_RATE:
-			return String.format(ViewManager.getSmallNumbersFormatString(), populationGrowthRate);
+			return String.format(ViewManager.getSmallFormat(), populationGrowthRate);
 		case PROFIT:
-			return String.format(ViewManager.getLargeNumbersFormatString(), profit());
+			return String.format(ViewManager.getLargeFormat(), profit());
 		case PROFITRATE:
-			return String.format(ViewManager.getSmallNumbersFormatString(), profitRate());
+			return String.format(ViewManager.getSmallFormat(), profitRate());
 		case TOTALPRICE:
-			return String.format(ViewManager.getLargeNumbersFormatString(), totalPrice());
+			return String.format(ViewManager.getLargeFormat(), totalPrice());
 		case TOTALVALUE:
-			return String.format(ViewManager.getLargeNumbersFormatString(), totalValue());
+			return String.format(ViewManager.getLargeFormat(), totalValue());
 		default:
 			return "";
 		}
@@ -173,19 +172,19 @@ public class Global implements Serializable {
 		chooseComparison();
 		switch (selector) {
 		case CURRENTCAPITAL:
-			return String.format(ViewManager.getLargeNumbersFormatString(), currentCapital() - comparator.currentCapital());
+			return String.format(ViewManager.getLargeFormat(), currentCapital() - comparator.currentCapital());
 		case INITIALCAPITAL:
-			return String.format(ViewManager.getLargeNumbersFormatString(), initialCapital() - comparator.initialCapital());
+			return String.format(ViewManager.getLargeFormat(), initialCapital() - comparator.initialCapital());
 		case MELT:
-			return String.format(ViewManager.getSmallNumbersFormatString(), melt - comparator.melt);
+			return String.format(ViewManager.getSmallFormat(), melt - comparator.melt);
 		case PROFIT:
-			return String.format(ViewManager.getLargeNumbersFormatString(), profit() - comparator.profit());
+			return String.format(ViewManager.getLargeFormat(), profit() - comparator.profit());
 		case PROFITRATE:
-			return String.format(ViewManager.getSmallNumbersFormatString(), profitRate() - comparator.profitRate());
+			return String.format(ViewManager.getSmallFormat(), profitRate() - comparator.profitRate());
 		case TOTALPRICE:
-			return String.format(ViewManager.getLargeNumbersFormatString(), totalPrice() - comparator.totalPrice());
+			return String.format(ViewManager.getLargeFormat(), totalPrice() - comparator.totalPrice());
 		case TOTALVALUE:
-			return String.format(ViewManager.getLargeNumbersFormatString(), totalValue() - comparator.totalValue());
+			return String.format(ViewManager.getLargeFormat(), totalValue() - comparator.totalValue());
 		case LABOUR_SUPPLY_RESPONSE:
 		case MELT_RESPONSE:
 		case PRICE_RESPONSE:
@@ -348,7 +347,7 @@ public class Global implements Serializable {
 	public double initialCapital() {
 		double initialCapital = 0;
 		for (Industry c : Industry.industriesAll(pk.timeStamp)) {
-			initialCapital += c.getProductiveCapital();
+			initialCapital += c.productiveCapital();
 		}
 		// TODO get this aggregate query working
 		// double checkInitialCapital;
@@ -598,7 +597,8 @@ public class Global implements Serializable {
 	}
 
 	/**
-	 * @param priceResponse the priceResponse to set
+	 * @param priceResponse
+	 *            the priceResponse to set
 	 */
 	public void setPriceResponse(Simulation.PRICE_RESPONSE priceResponse) {
 		this.priceResponse = priceResponse;
@@ -612,7 +612,8 @@ public class Global implements Serializable {
 	}
 
 	/**
-	 * @param meltResponse the meltResponse to set
+	 * @param meltResponse
+	 *            the meltResponse to set
 	 */
 	public void setMeltResponse(Simulation.MELT_RESPONSE meltResponse) {
 		this.meltResponse = meltResponse;

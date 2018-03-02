@@ -1,6 +1,6 @@
 package capitalism.view.custom;
 
-import capitalism.view.custom.command.DisplayCommand;
+import capitalism.view.command.DisplayCommand;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tooltip;

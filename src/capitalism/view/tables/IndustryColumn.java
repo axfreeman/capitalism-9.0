@@ -19,9 +19,11 @@
 */
 package capitalism.view.tables;
 
-import capitalism.Simulation;
+import capitalism.controller.Simulation;
 import capitalism.model.Commodity;
 import capitalism.model.Industry;
+import capitalism.view.TabbedTableViewer;
+import capitalism.view.TableUtilities;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.util.Callback;
@@ -44,11 +46,11 @@ public class IndustryColumn extends TableColumn<Industry, String> {
 	 * @param alignedLeft
 	 *            true if the field data is to be displayed aligned left (typically text strings such as the names of commodities or owners)
 	 */
-	IndustryColumn(Industry.Selector selector, boolean alignedLeft) {
+	public IndustryColumn(Industry.Selector selector, boolean alignedLeft) {
 		super(selector.text());
 		setCellFactory(new Callback<TableColumn<Industry, String>, TableCell<Industry, String>>() {
 			@Override public TableCell<Industry, String> call(TableColumn<Industry, String> col) {
-				return new CircuitTableCell(selector);
+				return new IndustryTableCell(selector);
 			}
 		});
 		setCellValueFactory(cellData -> cellData.getValue().wrappedString(selector, TabbedTableViewer.displayAttribute));
@@ -71,11 +73,11 @@ public class IndustryColumn extends TableColumn<Industry, String> {
 	 * 
 	 */
 
-	IndustryColumn(Commodity commodity) {
+	public IndustryColumn(Commodity commodity) {
 		String productiveStockName=commodity.commodityName();
 		setCellFactory(new Callback<TableColumn<Industry, String>, TableCell<Industry, String>>() {
 			@Override public TableCell<Industry, String> call(TableColumn<Industry, String> col) {
-				return new CircuitTableStockCell(productiveStockName);
+				return new IndustryTableStockCell(productiveStockName);
 			}
 		});
 		setText(productiveStockName);

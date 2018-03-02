@@ -38,14 +38,15 @@ import javax.persistence.TypedQuery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import capitalism.Simulation;
+import capitalism.controller.Simulation;
 import capitalism.model.Stock.ValueExpression;
 import capitalism.utils.Dialogues;
 import capitalism.utils.MathStuff;
 import capitalism.utils.Reporter;
+import capitalism.view.TabbedTableViewer;
 import capitalism.view.ViewManager;
+import capitalism.view.custom.DisplayControlsBox;
 import capitalism.view.custom.TrackingControlsBox;
-import capitalism.view.tables.TabbedTableViewer;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -56,7 +57,7 @@ import javafx.collections.ObservableList;
 		@NamedQuery(name = "All", query = "Select c from Industry c where c.pk.project = :project and c.pk.timeStamp = :timeStamp"),
 		@NamedQuery(name = "Primary", query = "Select c from Industry c where c.pk.project= :project and c.pk.timeStamp = :timeStamp and c.pk.name= :industryName"),
 		@NamedQuery(name = "InitialCapital", query = "Select sum(c.initialCapital) from Industry c where c.pk.project=:project and c.pk.timeStamp=:timeStamp"),
-		@NamedQuery(name= "CommodityName",query ="Select c from Industry c where c.pk.project=:project and c.pk.timeStamp=:timeStamp and c.commodityName=:commodityName")
+		@NamedQuery(name = "CommodityName", query = "Select c from Industry c where c.pk.project=:project and c.pk.timeStamp=:timeStamp and c.commodityName=:commodityName")
 })
 
 @Embeddable
@@ -93,7 +94,7 @@ public class Industry implements Serializable {
 		industriesPrimaryQuery = entityManager.createNamedQuery("Primary", Industry.class);
 		industriesAllQuery = entityManager.createNamedQuery("All", Industry.class);
 		industryInitialCapitalQuery = entityManager.createNamedQuery("InitialCapital", Industry.class);
-		industriesByCommodityQuery=entityManager.createNamedQuery("CommodityName", Industry.class);
+		industriesByCommodityQuery = entityManager.createNamedQuery("CommodityName", Industry.class);
 	}
 
 	/**
@@ -168,10 +169,20 @@ public class Industry implements Serializable {
 			return OUTPUTTYPE.ERROR;
 		}
 	}
-	
+
 	/**
-	 * A 'bare constructor' is required by JPA and this is it. However, when the new socialClass is constructed, 
-	 * the constructor does not automatically create a new PK entity. So we create a 'hollow' primary key which 
+	 * Controls whether value properties are reported as intrinsic or extrinsic
+	 * This is managed distinctly from whether the value magnitude is returned to the caller as intrinsic or extrinsic
+	 * It's really only for display purposes and not any other
+	 */
+
+	private enum ATTRIBUTE {
+		INITIALCAPITAL, INITIALPRODUCTIVECAPITAL, CURRENTCAPITAL, PROFIT;
+	}
+
+	/**
+	 * A 'bare constructor' is required by JPA and this is it. However, when the new socialClass is constructed,
+	 * the constructor does not automatically create a new PK entity. So we create a 'hollow' primary key which
 	 * must then be populated by the caller before persisting the entity
 	 */
 	public Industry() {
@@ -179,26 +190,26 @@ public class Industry implements Serializable {
 	}
 
 	/**
-	 * make a carbon copy of an industry template. This is the normal way a persistent entity is constructed, 
-	 * since each new record is a modified version of it immediate predecessor 
+	 * make a carbon copy of an industry template. This is the normal way a persistent entity is constructed,
+	 * since each new record is a modified version of it immediate predecessor
 	 * 
 	 * @param template
 	 *            the industry to be copied into this one.
 	 */
 	public Industry(Industry template) {
-		this.pk=new IndustryPK();
+		this.pk = new IndustryPK();
 		pk.name = template.getName();
 		pk.timeStamp = template.getTimeStamp();
 		pk.project = template.getProject();
-		commodityName=template.commodityName;
+		commodityName = template.commodityName;
 		output = template.output;
 		proposedOutput = template.proposedOutput;
 		growthRate = template.growthRate;
 		initialCapital = template.initialCapital;
-		productiveCapital=template.productiveCapital;
-		persistedProfit=template.persistedProfit;
+		productiveCapital = template.productiveCapital;
+		persistedProfit = template.persistedProfit;
 	}
-	
+
 	/**
 	 * an observable list of type Industry for display by ViewManager, at the current project and timeStampDisplayCursor. timeStampDisplayCursor, which
 	 * may diverge from timeStamp, identifies the row that the user last clicked on.
@@ -234,27 +245,27 @@ public class Industry implements Serializable {
 		case COMMODITYNAME:
 			return new ReadOnlyStringWrapper(commodityName);
 		case INITIALCAPITAL:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), initialCapital));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.INITIALCAPITAL)));
 		case INITIALPRODUCTIVECAPITAL:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), productiveCapital));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.INITIALPRODUCTIVECAPITAL)));
 		case OUTPUT:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), output));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), output));
 		case PROPOSEDOUTPUT:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), proposedOutput));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), proposedOutput));
 		case GROWTHRATE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), growthRate));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), growthRate));
 		case MONEYSTOCK:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), moneyAttribute(valueExpression)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), moneyAttribute(valueExpression)));
 		case SALESSTOCK:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), salesAttribute(valueExpression)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), salesAttribute(valueExpression)));
 		case PRODUCTIVESTOCKS:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), productiveStocksAttribute(valueExpression)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), productiveStocksAttribute(valueExpression)));
 		case PROFIT:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), profit()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.PROFIT)));
 		case PROFITRATE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallNumbersFormatString(), profitRate()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallFormat(), profitRate()));
 		case CURRENTCAPITAL:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), currentCapital()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.CURRENTCAPITAL)));
 		default:
 			return null;
 		}
@@ -286,15 +297,15 @@ public class Industry implements Serializable {
 		case OUTPUT:
 			return output != comparator.output;
 		case INITIALCAPITAL:
-			return initialCapital != comparator.initialCapital;
+			return initialCapital != comparator.initialCapital;// no need to access expressionOf() because the result will be the same
 		case INITIALPRODUCTIVECAPITAL:
-			return productiveCapital!=comparator.productiveCapital;
+			return productiveCapital != comparator.productiveCapital;// no need to access expressionOf() because the result will be the same
 		case PROFITRATE:
 			return profitRate() != comparator.profitRate();
 		case PROFIT:
-			return profit() != comparator.profit();
+			return profit() != comparator.profit();// no need to access expressionOf() because the result will be the same
 		case MONEYSTOCK:
-			return moneyAttribute(valueExpression) != comparator.moneyAttribute(valueExpression);
+			return moneyAttribute(valueExpression) != comparator.moneyAttribute(valueExpression);//TODO using the attribute() method is superfluous I think throughout.
 		case SALESSTOCK:
 			return salesAttribute(valueExpression) != comparator.salesAttribute(valueExpression);
 		case PRODUCTIVESTOCKS:
@@ -302,7 +313,7 @@ public class Industry implements Serializable {
 			double p2 = comparator.productiveStocksAttribute(valueExpression);
 			return !MathStuff.equals(p1, p2);
 		case CURRENTCAPITAL:
-			return currentCapital() != comparator.currentCapital();
+			return currentCapital() != comparator.currentCapital();// no need to access expressionOf() because the result will be the same
 		default:
 			return false;
 		}
@@ -331,29 +342,29 @@ public class Industry implements Serializable {
 		case INDUSTRYNAME:
 			return item;
 		case PROPOSEDOUTPUT:
-			return String.format(ViewManager.getLargeNumbersFormatString(), (proposedOutput - comparator.proposedOutput));
+			return String.format(ViewManager.getLargeFormat(), proposedOutput - comparator.proposedOutput);
 		case GROWTHRATE:
-			return String.format(ViewManager.getSmallNumbersFormatString(), (growthRate - comparator.growthRate));
+			return String.format(ViewManager.getSmallFormat(), growthRate - comparator.growthRate);
 		case OUTPUT:
-			return String.format(ViewManager.getLargeNumbersFormatString(), (output - comparator.output));
+			return String.format(ViewManager.getLargeFormat(), output - comparator.output);
 		case INITIALCAPITAL:
-			return String.format(ViewManager.getLargeNumbersFormatString(), (initialCapital - comparator.initialCapital));
+			return String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.INITIALCAPITAL)- comparator.expressionOf(ATTRIBUTE.INITIALCAPITAL));
 		case INITIALPRODUCTIVECAPITAL:
-			return String.format(ViewManager.getLargeNumbersFormatString(), (productiveCapital - comparator.productiveCapital));
+			return String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.INITIALPRODUCTIVECAPITAL)- comparator.expressionOf(ATTRIBUTE.INITIALPRODUCTIVECAPITAL));
 		case PROFITRATE:
-			return String.format(ViewManager.getSmallNumbersFormatString(), (profitRate() - comparator.profitRate()));
+			return String.format(ViewManager.getSmallFormat(), profitRate() - comparator.profitRate());
 		case PROFIT:
-			return String.format(ViewManager.getLargeNumbersFormatString(), (profit() - comparator.profit()));
+			return String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.PROFIT)- comparator.expressionOf(ATTRIBUTE.PROFIT));
 		case MONEYSTOCK:
-			return String.format(ViewManager.getLargeNumbersFormatString(), (moneyAttribute(valueExpression) - comparator.moneyAttribute(valueExpression)));
+			return String.format(ViewManager.getLargeFormat(), moneyAttribute(valueExpression) - comparator.moneyAttribute(valueExpression));
 		case SALESSTOCK:
-			return String.format(ViewManager.getLargeNumbersFormatString(), (salesAttribute(valueExpression) - comparator.salesAttribute(valueExpression)));
+			return String.format(ViewManager.getLargeFormat(), salesAttribute(valueExpression) - comparator.salesAttribute(valueExpression));
 		case PRODUCTIVESTOCKS:
 			double p1 = productiveStocksAttribute(valueExpression);
 			double p2 = comparator.productiveStocksAttribute(valueExpression);
-			return String.format(ViewManager.getLargeNumbersFormatString(), (p1 - p2));
+			return String.format(ViewManager.getLargeFormat(), (p1 - p2));
 		case CURRENTCAPITAL:
-			return String.format(ViewManager.getLargeNumbersFormatString(), (currentCapital() - comparator.currentCapital()));
+			return String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.CURRENTCAPITAL)- comparator.expressionOf(ATTRIBUTE.CURRENTCAPITAL));
 		default:
 			return item;
 		}
@@ -371,10 +382,90 @@ public class Industry implements Serializable {
 	public ReadOnlyStringWrapper wrappedString(String productiveStockName) {
 		try {
 			Stock namedStock = Stock.productiveNamedSingle(pk.timeStamp, pk.name, productiveStockName);
-			String result = String.format(ViewManager.getLargeNumbersFormatString(), namedStock.get(TabbedTableViewer.displayAttribute));
+			String result = String.format(ViewManager.getLargeFormat(), namedStock.get(TabbedTableViewer.displayAttribute));
 			return new ReadOnlyStringWrapper(result);
 		} catch (Exception e) {
 			return null;
+		}
+	}
+
+	/**
+	 * Retrieve the total quantity, value or price of the productive stocks owned by this industry, depending on the attribute
+	 * 
+	 * @return the total quantity, value or price of the productive stocks owned by this industry, depending on the attribute
+	 * @param a
+	 *            an attribute from the enum class Stock.ValueExpression: selects one of QUANTITY, VALUE or PRICE. If QUANTITY, NaN is returned
+	 * @return the total of the selected attribute owned by this industry
+	 */
+	public Double productiveStocksAttribute(Stock.ValueExpression a) {
+		if (a == Stock.ValueExpression.QUANTITY) {
+			return Double.NaN;
+		}
+		double total = 0;
+		for (Stock s : Stock.productiveByIndustry(pk.timeStamp, pk.name)) {
+			total += s.get(a);
+		}
+		return total;
+	}
+
+	/**
+	 * generic selector which returns a numerical attribute of the sales stock depending on the {@link Stock.ValueExpression}
+	 * 
+	 * @param a
+	 *            (QUANTITY, VALUE OR PRICE) selects whether to return the quantity, the value or the price of this stock
+	 * @return the quantity of money if a=QUANTITY, etc.
+	 */
+	public double salesAttribute(Stock.ValueExpression a) {
+		return getSalesStock().get(a);
+	}
+
+	/**
+	 * generic selector which returns a numerical attribute of the money stock depending on the {@link Stock.ValueExpression}
+	 * 
+	 * @param a
+	 *            (QUANTITY, VALUE OR PRICE) selects whether to return the quantity, the value or the price of this stock
+	 * @return the quantity of money if a=QUANTITY, etc.
+	 */
+	public double moneyAttribute(Stock.ValueExpression a) {
+		return getMoneyStock().get(a);
+	}
+
+	
+	/**
+	 * generic selector which returns a numerical property of the commodity depending on the calling valueProperty.
+	 * used exclusively in displaying the magnitudes involved, though I haven't worked out how to stop it
+	 * being used for something else.
+	 * 
+	 * @param valueProperty
+	 *            selects the property of this commodity that we wish to display (VALUE, PRICE, UNIT_VALUE,UNIT_Price)
+	 * @return the value property, either as an intrinsic or a monetary magnitude depending on
+	 *         {@link DisplayControlsBox#expressionDisplay} and {@link DisplayControlsBox#expressionDisplay}
+	 */
+	public double expressionOf(ATTRIBUTE valueProperty) {
+		Global global = Global.getGlobal();
+		double melt = global.getMelt();
+		double expression;
+		switch (valueProperty) {
+		
+		case CURRENTCAPITAL:
+			expression = currentCapital();
+			break;
+		case INITIALCAPITAL:
+			expression = initialCapital();
+			break;
+		case INITIALPRODUCTIVECAPITAL:
+			expression = productiveCapital();
+			break;
+		case PROFIT:
+			expression = profit();
+			break;
+		default:
+			return Double.NaN;
+		}
+		if (DisplayControlsBox.expressionDisplay == DisplayControlsBox.DISPLAY_AS_EXPRESSION.MONEY) {
+			return expression;
+		} else {
+			return (expression==0)?0:expression / melt;
 		}
 	}
 
@@ -494,28 +585,6 @@ public class Industry implements Serializable {
 		return growthRate;
 	}
 
-	/**
-	 * generic selector which returns a numerical attribute of the money stock depending on the {@link Stock.ValueExpression}
-	 * 
-	 * @param a
-	 *            (QUANTITY, VALUE OR PRICE) selects whether to return the quantity, the value or the price of this stock
-	 * @return the quantity of money if a=QUANTITY, etc.
-	 */
-	public double salesAttribute(Stock.ValueExpression a) {
-		return getSalesStock().get(a);
-	}
-
-	/**
-	 * generic selector which returns a numerical attribute of the money stock depending on the {@link Stock.ValueExpression}
-	 * 
-	 * @param a
-	 *            (QUANTITY, VALUE OR PRICE) selects whether to return the quantity, the value or the price of this stock
-	 * @return the quantity of money if a=QUANTITY, etc.
-	 */
-	public double moneyAttribute(Stock.ValueExpression a) {
-		return getMoneyStock().get(a);
-	}
-
 	// METHODS THAT REPORT THINGS WE NEED TO KNOW ABOUT THIS INDUSTRY BY INTERROGATING ITS STOCKS
 
 	/**
@@ -525,25 +594,6 @@ public class Industry implements Serializable {
 	 */
 	public Commodity getCommodity() {
 		return Commodity.commodityByPrimaryKey(pk.project, pk.timeStamp, commodityName);
-	}
-
-	/**
-	 * Retrieve the total quantity, value or price of the productive stocks owned by this industry, depending on the attribute
-	 * 
-	 * @return the total quantity, value or price of the productive stocks owned by this industry, depending on the attribute
-	 * @param a
-	 *            an attribute from the enum class Stock.ValueExpression: selects one of QUANTITY, VALUE or PRICE. If QUANTITY, NaN is returned
-	 * @return the total of the selected attribute owned by this industry
-	 */
-	public Double productiveStocksAttribute(Stock.ValueExpression a) {
-		if (a == Stock.ValueExpression.QUANTITY) {
-			return Double.NaN;
-		}
-		double total = 0;
-		for (Stock s : Stock.productiveByIndustry(pk.timeStamp, pk.name)) {
-			total += s.get(a);
-		}
-		return total;
 	}
 
 	/**
@@ -610,7 +660,6 @@ public class Industry implements Serializable {
 		return industriesAllQuery.getResultList();
 	}
 
-
 	/**
 	 * a list of industries, for the current project and the given timeStamp, that produce a given use value
 	 * 
@@ -647,9 +696,10 @@ public class Industry implements Serializable {
 	/**
 	 * set the comparators for the industries records in the current project for the named timeStampID
 	 * 
-	 * @param timeStampID the timeStampID of the industries whose comparators are to be reset
+	 * @param timeStampID
+	 *            the timeStampID of the industries whose comparators are to be reset
 	 */
-	
+
 	public static void setComparators(int timeStampID) {
 		for (Industry c : industriesAll(timeStampID)) {
 			c.setPreviousComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), c.getName()));
@@ -776,7 +826,6 @@ public class Industry implements Serializable {
 		return entityManager;
 	}
 
-
 	public Integer getProject() {
 		return pk.project;
 	}
@@ -856,7 +905,7 @@ public class Industry implements Serializable {
 	/**
 	 * @return the initialCapital
 	 */
-	public double getInitialCapital() {
+	public double initialCapital() {
 		return initialCapital;
 	}
 
@@ -905,22 +954,22 @@ public class Industry implements Serializable {
 	public double currentCapital() {
 		return getMoneyPrice() + getSalesPrice() + productiveStocksAttribute(ValueExpression.PRICE);
 	}
-	
+
 	/**
 	 * Persist the profit. Needed because the Prices phase needs to 'remember' what profits were,
 	 * after revenue has been transferred to the capitalist class
 	 */
 	public void persistProfit() {
-		persistedProfit=currentCapital()-initialCapital;
+		persistedProfit = currentCapital() - initialCapital;
 	}
-	
+
 	/**
 	 * The profit of this industry.
 	 * This is the current capital less the initial capital. It is thus a simple difference independent of sales,
 	 * and hence makes no assumption that profit is realised.
 	 * Like all capital, it is calculated using the price expression of the magnitudes involved.
 	 * 
-	 * We used the persisted magnitude of the currentCapital member because this must be 'remembered' 
+	 * We used the persisted magnitude of the currentCapital member because this must be 'remembered'
 	 * in order that the Prices phase can have access to it. Otherwise it would vanish when profit
 	 * is transferred to the owner
 	 * 
@@ -1086,12 +1135,13 @@ public class Industry implements Serializable {
 	/**
 	 * @return the productiveCapital
 	 */
-	public double getProductiveCapital() {
+	public double productiveCapital() {
 		return productiveCapital;
 	}
 
 	/**
-	 * @param productiveCapital the productiveCapital to set
+	 * @param productiveCapital
+	 *            the productiveCapital to set
 	 */
 	public void setProductiveCapital(double productiveCapital) {
 		this.productiveCapital = productiveCapital;

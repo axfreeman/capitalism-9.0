@@ -14,20 +14,20 @@ PROJECT,TIMESTAMP,OWNER,OWNERTYPE,COMMODITY,STOCKTYPE,QUANTITY,PRODUCTIONCOEFFIC
 1,1,Capitalists,CLASS,Money,Money,1500,0,0
 1,1,Capitalists,CLASS,Consumption,Consumption,0,0,1
 1,1,Workers,CLASS,Labour Power,Sales,3000,0,0
-2,1,Means of Production,INDUSTRY,Labour Power,Productive,0,0.333333333,0
-2,1,Means of Production,INDUSTRY,Consumption,Productive,0,0,0
-2,1,Consumption,INDUSTRY,Consumption,Sales,3000,0,0
+2,1,DI,INDUSTRY,Labour Power,Productive,0,0.333333333,0
+2,1,DI,INDUSTRY,Consumption,Productive,0,0,0
+2,1,DII,INDUSTRY,Consumption,Sales,3000,0,0
 2,1,Workers,CLASS,Consumption,Consumption,0,0,1
 2,1,Capitalists,CLASS,Consumption,Consumption,0,0,1
-2,1,Consumption,INDUSTRY,Consumption,Productive,0,0,0
-2,1,Consumption,INDUSTRY,Labour Power,Productive,0,0.333333333,0
-2,1,Means of Production,INDUSTRY,Means of Production,Sales,6000,0,0
+2,1,DII,INDUSTRY,Consumption,Productive,0,0,0
+2,1,DII,INDUSTRY,Labour Power,Productive,0,0.333333333,0
+2,1,DI,INDUSTRY,Means of Production,Sales,6000,0,0
 2,1,Capitalists,CLASS,Money,Money,1500,0,0
-2,1,Means of Production,INDUSTRY,Means of Production,Productive,0,0.666666667,0
+2,1,DI,INDUSTRY,Means of Production,Productive,0,0.666666667,0
 2,1,Workers,CLASS,Money,Money,1500,0,0
-2,1,Consumption,INDUSTRY,Money,Money,3000,0,0
-2,1,Means of Production,INDUSTRY,Money,Money,6000,0,0
-2,1,Consumption,INDUSTRY,Means of Production,Productive,0,0.666666667,0
+2,1,DII,INDUSTRY,Money,Money,3000,0,0
+2,1,DI,INDUSTRY,Money,Money,6000,0,0
+2,1,DII,INDUSTRY,Means of Production,Productive,0,0.666666667,0
 2,1,Workers,CLASS,Labour Power,Sales,3000,0,0
 3,1,Consumption,INDUSTRY,Money,Money,3000,0,0
 3,1,Capitalists,CLASS,Consumption,Consumption,0,0,1

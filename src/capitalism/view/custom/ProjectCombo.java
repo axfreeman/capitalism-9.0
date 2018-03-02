@@ -24,7 +24,6 @@ import org.apache.logging.log4j.Logger;
 
 import capitalism.Capitalism;
 import capitalism.model.Project;
-import capitalism.view.tables.ProjectCell;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;

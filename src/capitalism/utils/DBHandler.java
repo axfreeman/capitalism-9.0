@@ -32,7 +32,8 @@ import capitalism.Capitalism;
 
 public class DBHandler {
 	private static final Logger logger = LogManager.getLogger(DBHandler.class);
-	private Connection conn; 
+	private Connection conn;
+
 	public DBHandler() {
 	}
 
@@ -84,25 +85,32 @@ public class DBHandler {
 
 	/**
 	 * create the connection and execute the initialization file
+	 * 
+	 * @return true if successful, false otherwise
 	 */
-	private void openDatabase() {
+	private boolean openDatabase() {
 		try {
 			Class.forName("org.h2.Driver");
 			String urlPath = "jdbc:h2:mem:capitalism";
 			logger.debug("Attempting to connect to the database using URL {} ", urlPath);
 			conn = DriverManager.getConnection("jdbc:h2:mem:capitalism;INIT=RUNSCRIPT FROM '~/Documents/Capsim/data/CreateRawTables.sql'", "sa", "");
 			logger.debug("Successful connection to the H2 database");
+			return true;
 		} catch (SQLException s) {
 			logger.error("H2 Connection to the database failed because\n" + s.getMessage());
+			return false;
 		} catch (ClassNotFoundException c) {
 			logger.error("SQL class not found. the exception handler says:/n" + c.getMessage());
+			return false;
 		} catch (Exception e) {
 			logger.error("H2Database initialization files could not be loaded because:\n" + e.getMessage());
+			return false;
 		}
 	}
 
 	/**
-	 * copy a file from the .jar file into the user file system. The base directory for these files in the user system is {@code Utilities.getUserBasePath()} and is
+	 * copy a file from the .jar file into the user file system. The base directory for these files in the user system is {@code Utilities.getUserBasePath()}
+	 * and is
 	 * set there statically
 	 * 
 	 * for example {@code copyDataFilesToUserDirectory("/data","commodities.csv")} copies the file called {@code usecommodities.csv} to the location
@@ -132,23 +140,35 @@ public class DBHandler {
 
 	/**
 	 * Copy all the data files into a standardised directory in the user's file system.
-	 * This is the easiest and most robust way I could think of to work around all the difficulties 
+	 * This is the easiest and most robust way I could think of to work around all the difficulties
 	 * associated with accessing data files in an exported .jar file. Needs research.
+	 * 
+	 * @return true if successful, false otherwise
 	 */
-	public void exportDataFiles() {
-		copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "globals.csv");
-		copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "industries.csv");
-		copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "socialClasses.csv");
-		copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "projects.csv");
-		copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "stocks.csv");
-		copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "timeStamps.csv");
-		copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "commodities.csv");
-		copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "CreateRawTables.sql");
+	public boolean exportDataFiles() {
+		try {
+			copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "globals.csv");
+			copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "industries.csv");
+			copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "socialClasses.csv");
+			copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "projects.csv");
+			copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "stocks.csv");
+			copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "timeStamps.csv");
+			copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "commodities.csv");
+			copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "CreateRawTables.sql");
+			return true;
+		} catch (RuntimeException e) {
+			logger.error("Could not copy files to the user directory because {}", e.getMessage());
+			return false;
+		}
 	}
 
-	public void initialiseDataBaseAndStart() {
-		exportDataFiles();
-		openDatabase();
+	/**
+	 * export the data files to the user directory and open them
+	 * @return true if it worked, false otherwise
+	 */
+	public boolean initialiseDataBaseAndStart() {
+		if (!exportDataFiles()) return false;
+		return openDatabase();
 	}
 
 	/**

@@ -23,6 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import capitalism.model.SocialClass;
+import capitalism.view.TabbedTableViewer;
 import capitalism.view.ViewManager;
 import capitalism.view.custom.DisplayControlsBox;
 import capitalism.view.custom.TrackingControlsBox;
@@ -57,9 +58,9 @@ public class SocialClassTableCell extends TableCell<SocialClass, String> {
 			deltaModifier=(TrackingControlsBox.displayDeltas?ViewManager.deltaSymbol:"");
 		}
 
-		String valueModifier= deltaModifier+DisplayControlsBox.valuesExpressionSymbol;
-		String priceModifier= deltaModifier+DisplayControlsBox.pricesExpressionSymbol;
-
+		String valueAndPriceModifier= deltaModifier+DisplayControlsBox.expressionSymbol;
+		String quantityModifier=deltaModifier;
+		
 		if(TrackingControlsBox.displayDeltas) {
 			item=socialClass.showDelta(item, selector,TabbedTableViewer.displayAttribute);
 		}
@@ -74,21 +75,21 @@ public class SocialClassTableCell extends TableCell<SocialClass, String> {
 				switch (TabbedTableViewer.displayAttribute) {
 				case PRICE:
 					if (DisplayControlsBox.displayHints) setStyle("-fx-background-color: rgba(255,240,204,0.3)");
-					setText(priceModifier+item);
+					setText(valueAndPriceModifier+item);
 					break;
 				case VALUE:
 					if (DisplayControlsBox.displayHints) setStyle("-fx-background-color: rgb(255,225,225,0.3)");
-					setText(valueModifier+item);
+					setText(valueAndPriceModifier+item);
 					break;
 				case QUANTITY:
 					if (DisplayControlsBox.displayHints) setStyle("-fx-background-color: rgba(220,220,220,0.3)");
-					setText(deltaModifier+item);
+					setText(quantityModifier+item);
 					break;
 				}
 				break;
 			case QUANTITYDEMANDED:
 				if (DisplayControlsBox.displayHints) setStyle("-fx-background-color: rgba(220,220,220,0.3)");
-				setText(deltaModifier+item);
+				setText(quantityModifier+item);
 				break;
 			default:
 				setText(deltaModifier+item);

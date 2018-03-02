@@ -26,7 +26,7 @@ import javax.persistence.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import capitalism.Simulation;
+import capitalism.controller.Simulation;
 import capitalism.utils.Dialogues;
 import capitalism.utils.MathStuff;
 import capitalism.utils.Reporter;
@@ -287,9 +287,9 @@ public class Stock implements Serializable {
 		case QUANTITY:
 			return quantity;
 		case VALUE:
-			return ViewManager.valueExpression(value, DisplayControlsBox.valuesExpressionDisplay);
+			return ViewManager.valueExpression(value, DisplayControlsBox.expressionDisplay);
 		case PRICE:
-			return ViewManager.valueExpression(price, DisplayControlsBox.pricesExpressionDisplay);
+			return ViewManager.valueExpression(price, DisplayControlsBox.expressionDisplay);
 		default:
 			throw new RuntimeException("ERROR: unknown attribute selector");
 		}
@@ -318,19 +318,19 @@ public class Stock implements Serializable {
 		case STOCKTYPE:
 			return new ReadOnlyStringWrapper(pk.stockType);
 		case QUANTITY:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), quantity));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), quantity));
 		case VALUE:
 			return new ReadOnlyStringWrapper(
-					String.format(ViewManager.getLargeNumbersFormatString(), ViewManager.valueExpression(value, DisplayControlsBox.valuesExpressionDisplay)));
+					String.format(ViewManager.getLargeFormat(), ViewManager.valueExpression(value, DisplayControlsBox.expressionDisplay)));
 		case PRICE:
 			return new ReadOnlyStringWrapper(
-					String.format(ViewManager.getLargeNumbersFormatString(), ViewManager.valueExpression(price, DisplayControlsBox.pricesExpressionDisplay)));
+					String.format(ViewManager.getLargeFormat(), ViewManager.valueExpression(price, DisplayControlsBox.expressionDisplay)));
 		case REPLENISHMENTDEMAND:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), replenishmentDemand));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), replenishmentDemand));
 		case PRODUCTION_COEFFICIENT:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallNumbersFormatString(), productionCoefficient));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallFormat(), productionCoefficient));
 		case CONSUMPTION_COEFFICIENT:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallNumbersFormatString(), consumptionCoefficient));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallFormat(), consumptionCoefficient));
 		default:
 			return null;
 		}
@@ -410,11 +410,11 @@ public class Stock implements Serializable {
 			return item;
 		switch (valueExpression) {
 		case QUANTITY:
-			return String.format(ViewManager.getLargeNumbersFormatString(), quantity - comparator.quantity);
+			return String.format(ViewManager.getLargeFormat(), quantity - comparator.quantity);
 		case VALUE:
-			return String.format(ViewManager.getLargeNumbersFormatString(), value - comparator.value);
+			return String.format(ViewManager.getLargeFormat(), value - comparator.value);
 		case PRICE:
-			return String.format(ViewManager.getLargeNumbersFormatString(), price - comparator.price);
+			return String.format(ViewManager.getLargeFormat(), price - comparator.price);
 		default:
 			return item;
 		}
@@ -935,23 +935,11 @@ public class Stock implements Serializable {
 		this.value = value;
 	}
 
-	public double getIntrinsicValue() {
-		return value / Global.getGlobal().getMelt();
-	}
-
 	/**
 	 * @return the price
 	 */
 	public double getPrice() {
 		return price;
-	}
-
-	/**
-	 * @return the intrinsic expression of the price
-	 */
-
-	public double getIntrinsicPrice() {
-		return price / Global.getGlobal().getMelt();
 	}
 
 	/**

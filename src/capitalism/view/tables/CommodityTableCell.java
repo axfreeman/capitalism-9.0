@@ -32,10 +32,10 @@ import javafx.scene.paint.Color;
 public class CommodityTableCell extends TableCell<Commodity, String> {
 	static final Logger logger = LogManager.getLogger("CommodityTableCell");
 
-	Commodity.SELECTOR useValueSelector;
+	Commodity.SELECTOR selector;
 
-	public CommodityTableCell(Commodity.SELECTOR useValueSelector) {
-		this.useValueSelector = useValueSelector;
+	public CommodityTableCell(Commodity.SELECTOR selector) {
+		this.selector = selector;
 	}
 
 	@Override protected void updateItem(String item, boolean empty) {
@@ -55,18 +55,18 @@ public class CommodityTableCell extends TableCell<Commodity, String> {
 		}
 		String deltaModifier="";
 		
-		if (commodity.changed(useValueSelector)) {
+		if (commodity.changed(selector)) {
 			setTextFill(Color.RED);
 			deltaModifier=(TrackingControlsBox.displayDeltas?ViewManager.deltaSymbol:"");
 		}
 
-		String valueModifier= deltaModifier+DisplayControlsBox.valuesExpressionSymbol;
-		String priceModifier= deltaModifier+DisplayControlsBox.pricesExpressionSymbol;
-
+		String valueAndPriceModifier= deltaModifier+DisplayControlsBox.expressionSymbol;
+		String quantityModifier=deltaModifier;
+		
 		if(TrackingControlsBox.displayDeltas) {
-			item=commodity.showDelta(item, useValueSelector);
+			item=commodity.showDelta(item, selector);
 		}
-		switch (useValueSelector) {
+		switch (selector) {
 		case ALLOCATIONSHARE:
 		case REPLENISHMENT_DEMAND:
 		case TOTALSUPPLY:
@@ -74,13 +74,13 @@ public class CommodityTableCell extends TableCell<Commodity, String> {
 		case PROFITRATE:
 			if (DisplayControlsBox.displayHints)
 				setStyle("-fx-background-color: rgba(220,220,220,0.3)");
-			item=deltaModifier+item;
+			item=quantityModifier+item;
 			break;
 		case UNITVALUE:
 		case TOTALVALUE:
 			if (DisplayControlsBox.displayHints)
 				setStyle("-fx-background-color: rgb(255,225,225,0.3)");
-			item = valueModifier+ item;
+			item = valueAndPriceModifier+ item;
 			break;
 		case UNITPRICE:
 		case TOTALPRICE:
@@ -88,10 +88,10 @@ public class CommodityTableCell extends TableCell<Commodity, String> {
 		case PROFIT:
 			if (DisplayControlsBox.displayHints)
 				setStyle("-fx-background-color: rgba(255,240,204,0.3)");
-			item = priceModifier + item;
+			item = valueAndPriceModifier + item;
 			break;
 		default:
-			item=deltaModifier+item;
+			item=quantityModifier+item;
 		}
 		setText(item);
 	}

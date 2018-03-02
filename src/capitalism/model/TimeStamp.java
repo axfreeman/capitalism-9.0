@@ -8,7 +8,7 @@ import javax.persistence.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import capitalism.Simulation;
+import capitalism.controller.Simulation;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 

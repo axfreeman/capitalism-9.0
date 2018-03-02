@@ -21,6 +21,7 @@
 package capitalism.view.tables;
 
 import capitalism.model.Stock;
+import capitalism.view.TableUtilities;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.util.Callback;
@@ -42,7 +43,7 @@ public class StockColumn extends TableColumn<Stock,String>{
 	 * @param leftAlign true if the text in the field should be left aligned (right align is the default)
 	 * 
 	 */
-	StockColumn(Stock.Selector selector,boolean leftAlign) {
+	public StockColumn(Stock.Selector selector,boolean leftAlign) {
 		super(selector.text());
 		setCellFactory(new Callback<TableColumn<Stock, String>, TableCell<Stock, String>>() {
 			@Override public TableCell<Stock, String> call(TableColumn<Stock, String> col) {

@@ -25,13 +25,13 @@ import javax.persistence.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import capitalism.Simulation;
+import capitalism.controller.Simulation;
 import capitalism.model.Stock.ValueExpression;
 import capitalism.utils.Dialogues;
 import capitalism.utils.Reporter;
+import capitalism.view.TabbedTableViewer;
 import capitalism.view.ViewManager;
 import capitalism.view.custom.TrackingControlsBox;
-import capitalism.view.tables.TabbedTableViewer;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -171,19 +171,19 @@ public class SocialClass implements Serializable {
 		case SOCIALCLASSNAME:
 			return new ReadOnlyStringWrapper(pk.socialClassName);
 		case SIZE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), size));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), size));
 		case CONSUMPTIONSTOCKS:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), consumptionAttribute(valueExpression)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), consumptionAttribute(valueExpression)));
 		case MONEY:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), moneyAttribute(valueExpression)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), moneyAttribute(valueExpression)));
 		case SALES:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), salesAttribute(valueExpression)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), salesAttribute(valueExpression)));
 		case QUANTITYDEMANDED:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), consumptionQuantityDemanded()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), consumptionQuantityDemanded()));
 		case REVENUE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), revenue));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), revenue));
 		case TOTAL:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), totalAttribute(valueExpression)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), totalAttribute(valueExpression)));
 		default:
 			return null;
 		}
@@ -244,20 +244,20 @@ public class SocialClass implements Serializable {
 		case SOCIALCLASSNAME:
 			return item;
 		case SIZE:
-			return String.format(ViewManager.getLargeNumbersFormatString(), size - comparator.size);
+			return String.format(ViewManager.getLargeFormat(), size - comparator.size);
 		case CONSUMPTIONSTOCKS:
-			return String.format(ViewManager.getLargeNumbersFormatString(),
+			return String.format(ViewManager.getLargeFormat(),
 					consumptionAttribute(displayAttribute) - comparator.consumptionAttribute(displayAttribute));
 		case MONEY:
-			return String.format(ViewManager.getLargeNumbersFormatString(), moneyAttribute(displayAttribute) - comparator.moneyAttribute(displayAttribute));
+			return String.format(ViewManager.getLargeFormat(), moneyAttribute(displayAttribute) - comparator.moneyAttribute(displayAttribute));
 		case QUANTITYDEMANDED:
-			return String.format(ViewManager.getLargeNumbersFormatString(), consumptionQuantityDemanded() - comparator.consumptionQuantityDemanded());
+			return String.format(ViewManager.getLargeFormat(), consumptionQuantityDemanded() - comparator.consumptionQuantityDemanded());
 		case REVENUE:
-			return String.format(ViewManager.getLargeNumbersFormatString(), revenue - comparator.revenue);
+			return String.format(ViewManager.getLargeFormat(), revenue - comparator.revenue);
 		case SALES:
-			return String.format(ViewManager.getLargeNumbersFormatString(), salesAttribute(displayAttribute) - comparator.salesAttribute(displayAttribute));
+			return String.format(ViewManager.getLargeFormat(), salesAttribute(displayAttribute) - comparator.salesAttribute(displayAttribute));
 		case TOTAL:
-			return String.format(ViewManager.getLargeNumbersFormatString(), totalAttribute(displayAttribute) - comparator.totalAttribute(displayAttribute));
+			return String.format(ViewManager.getLargeFormat(), totalAttribute(displayAttribute) - comparator.totalAttribute(displayAttribute));
 		default:
 			return item;
 		}
@@ -295,7 +295,7 @@ public class SocialClass implements Serializable {
 	public ReadOnlyStringWrapper wrappedString(String consumptionStockName) {
 		try {
 			Stock namedStock = Stock.consumptionByCommodityAndClassSingle(pk.timeStamp, pk.socialClassName, consumptionStockName);
-			String result = String.format(ViewManager.getLargeNumbersFormatString(), namedStock.get(TabbedTableViewer.displayAttribute));
+			String result = String.format(ViewManager.getLargeFormat(), namedStock.get(TabbedTableViewer.displayAttribute));
 			return new ReadOnlyStringWrapper(result);
 		} catch (Exception e) {
 			return null;

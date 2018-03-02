@@ -1,8 +1,9 @@
 capitalism
-capitalism.command
+capitalism.controller
+capitalism.controller.command
 capitalism.model
 capitalism.utils
 capitalism.view
+capitalism.view.command
 capitalism.view.custom
-capitalism.view.custom.command
 capitalism.view.tables

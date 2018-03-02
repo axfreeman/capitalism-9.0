@@ -2,25 +2,25 @@ package capitalism.view.custom;
 
 import java.util.ArrayList;
 
-import capitalism.command.Accumulate;
-import capitalism.command.ClassesReproduce;
-import capitalism.command.Command;
-import capitalism.command.Constrain;
-import capitalism.command.Demand;
-import capitalism.command.Distribute;
-import capitalism.command.IndustriesProduce;
-import capitalism.command.PreTrade;
-import capitalism.command.PriceDynamics;
-import capitalism.command.Produce;
-import capitalism.command.Revenue;
-import capitalism.command.Trade;
+import capitalism.controller.command.Accumulate;
+import capitalism.controller.command.ClassesReproduce;
+import capitalism.controller.command.Command;
+import capitalism.controller.command.Constrain;
+import capitalism.controller.command.Demand;
+import capitalism.controller.command.Distribute;
+import capitalism.controller.command.Exchange;
+import capitalism.controller.command.IndustriesProduce;
+import capitalism.controller.command.Prices;
+import capitalism.controller.command.Produce;
+import capitalism.controller.command.Revenue;
+import capitalism.controller.command.Trade;
 import javafx.scene.control.Button;
 import javafx.scene.control.TreeItem;
 
 /**
  * This class is central to the operation of the simulation.
  * It defines the possible actions of the simulation, which are of two types: (1) sub-actions such as {@link Demand} which carry out
- * primitive actions;(2) super-actions such as {@link PreTrade} which conducts a series of primitive actions. The super-Actions correspond to normal
+ * primitive actions;(2) super-actions such as {@link Exchange} which conducts a series of primitive actions. The super-Actions correspond to normal
  * economic phases or 'aspects' of the reproduction of an economy namely the purchase of commodities, the production of commodities, and the distribution of
  * revenues. The primitives don't have a distinct economic meaning but can help understand the logical components of a complete economic activity. This is
  * given visual representation at several places in the simulation, notably in the logfile and in the actionButtons, which have a tree structure so that the
@@ -29,7 +29,7 @@ import javafx.scene.control.TreeItem;
 
 public enum ActionStates {
 	// @formatter:off
-	M_C_PreTrade("Exchange", new PreTrade(), 
+	M_C_Exchange("Exchange", new Exchange(), 
 			"Exchange Money for Commodities", 
 			false), 
 	M_C_Demand("Demand", new Demand(), 
@@ -47,7 +47,7 @@ public enum ActionStates {
 	C_P_IndustriesProduce("Produce", new IndustriesProduce(), 
 			"Industries produce goods", 
 			true), 
-	C_P_Prices("Prices", new PriceDynamics(),
+	C_P_Prices("Prices", new Prices(),
 			"Recalculate prices, and if necessary, values, depending on the price dynamics of the project",
 			true),
 	C_P_ClassesReproduce("Reproduce",new ClassesReproduce(), 
@@ -65,31 +65,41 @@ public enum ActionStates {
 	// and work our way through the simulation in a logical order
 	
 	static {
-		ActionStates.M_C_PreTrade.setSuccessor(ActionStates.C_P_Produce);
+		// the superstates and their succession
+		ActionStates.M_C_Exchange.setSuccessor(ActionStates.C_P_Produce);
 		ActionStates.C_P_Produce.setSuccessor(ActionStates.C_M_Distribute);
-		ActionStates.C_M_Distribute.setSuccessor(ActionStates.M_C_PreTrade);
+		ActionStates.C_M_Distribute.setSuccessor(ActionStates.M_C_Exchange);
 
+		// the exchange superstate and its substates
+		ActionStates.M_C_Exchange.setPermissibleSubAction(ActionStates.M_C_Demand);
+		// say they are substates
+		ActionStates.M_C_Demand.setParent(ActionStates.M_C_Exchange);
+		ActionStates.M_C_Constrain.setParent(ActionStates.M_C_Exchange);
+		ActionStates.M_C_Trade.setParent(ActionStates.M_C_Exchange);
+		//define their succession
 		ActionStates.M_C_Demand.setSuccessor(ActionStates.M_C_Constrain);
 		ActionStates.M_C_Constrain.setSuccessor(ActionStates.M_C_Trade);
 		ActionStates.M_C_Trade.setSuccessor(ActionStates.C_P_Produce);
+
+		// the produce superstate and its substates
+		ActionStates.C_P_Produce.setPermissibleSubAction(ActionStates.C_P_IndustriesProduce);
+		// say they are substates
+		ActionStates.C_P_IndustriesProduce.setParent(ActionStates.C_P_Produce);
+		ActionStates.C_P_Prices.setParent(ActionStates.C_P_Produce);
+		ActionStates.C_P_ClassesReproduce.setParent(ActionStates.C_P_Produce);
+		//define their succession
 		ActionStates.C_P_IndustriesProduce.setSuccessor(ActionStates.C_P_Prices);
 		ActionStates.C_P_Prices.setSuccessor(ActionStates.C_P_ClassesReproduce);
 		ActionStates.C_P_ClassesReproduce.setSuccessor(ActionStates.C_M_Distribute);
-		ActionStates.C_M_Revenue.setSuccessor(ActionStates.C_M_Accumulate);
-		ActionStates.C_M_Accumulate.setSuccessor(ActionStates.M_C_PreTrade);
 		
-		ActionStates.M_C_PreTrade.setPermissibleSubAction(ActionStates.M_C_Demand);
-		ActionStates.C_P_Produce.setPermissibleSubAction(ActionStates.C_P_IndustriesProduce);
+		// the distribute superstate and its substates
 		ActionStates.C_M_Distribute.setPermissibleSubAction(ActionStates.C_M_Revenue);
-
-		ActionStates.M_C_Demand.setParent(ActionStates.M_C_PreTrade);
-		ActionStates.M_C_Constrain.setParent(ActionStates.M_C_PreTrade);
-		ActionStates.M_C_Trade.setParent(ActionStates.M_C_PreTrade);
-		ActionStates.C_P_IndustriesProduce.setParent(ActionStates.C_P_Produce);
-		ActionStates.C_P_ClassesReproduce.setParent(ActionStates.C_P_Produce);
-		ActionStates.C_P_Prices.setParent(ActionStates.C_P_Produce);
+		// say they are substates
 		ActionStates.C_M_Revenue.setParent(ActionStates.C_M_Distribute);
 		ActionStates.C_M_Accumulate.setParent(ActionStates.C_M_Distribute);
+		//define their succession
+		ActionStates.C_M_Revenue.setSuccessor(ActionStates.C_M_Accumulate);
+		ActionStates.C_M_Accumulate.setSuccessor(ActionStates.M_C_Exchange);
 	}
 
 	/**
@@ -231,5 +241,8 @@ public enum ActionStates {
 	}
 	public static ActionStates lastSuperState() {
 		return ActionStates.C_M_Distribute;
+	}
+	public ArrayList<ActionStates> getChildren() {
+		return children;
 	}
 }

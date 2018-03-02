@@ -26,7 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import capitalism.Capitalism;
-import capitalism.Simulation;
+import capitalism.controller.Simulation;
 import capitalism.model.Global;
 import capitalism.model.Project;
 import capitalism.model.TimeStamp;
@@ -38,8 +38,6 @@ import capitalism.view.custom.DisplayControlsBox;
 import capitalism.view.custom.TimeStampView;
 import capitalism.view.custom.TimeStampViewItem;
 import capitalism.view.custom.TrackingControlsBox;
-import capitalism.view.tables.SwitchableGraphicsGrid;
-import capitalism.view.tables.TabbedTableViewer;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.CheckBox;
@@ -87,8 +85,8 @@ public class ViewManager {
 
 	// display parameters that can change as the simulation proceeds
 	
-	private static String largeNumbersFormatString = "%1$,.0f";	// Formats the display of large floating point numbers
-	private static String smallNumbersFormatString = "%1$.2f";   // Formats the display of small floating point numbers
+	private static String largeFormat = "%1$,.0f";	// Formats the display of large floating point numbers
+	private static String smallFormat = "%1$.2f";   // Formats the display of small floating point numbers
 
 	// graphic elements and custom controls
 	private static Stage primaryStage;
@@ -271,12 +269,12 @@ public class ViewManager {
 
 	/**
 	 * populate the number fields in the globals grid from the value of the Global persistent entity
-	 * at the timeStamp given by the displayCurrsor
+	 * at the timeStamp given by the displayCursor
 	 * 
 	 */
 	private static void populateGlobalsGrid() {
 		Global global = Global.getGlobal(Simulation.timeStampDisplayCursor);
-		switchableGrid.populate(smallNumbersFormatString, global);
+		switchableGrid.populate(smallFormat, global);
 	}
 
 	/**
@@ -470,30 +468,30 @@ public class ViewManager {
 	}
 
 	/**
-	 * @return the largeNumbersFormatString
+	 * @return the largeFormat
 	 */
-	public static String getLargeNumbersFormatString() {
-		return largeNumbersFormatString;
+	public static String getLargeFormat() {
+		return largeFormat;
 	}
 
 	/**
-	 * @param largeNumbersFormatString the largeNumbersFormatString to set
+	 * @param largeFormat the largeFormat to set
 	 */
-	public static void setLargeNumbersFormatString(String largeNumbersFormatString) {
-		ViewManager.largeNumbersFormatString = largeNumbersFormatString;
+	public static void setLargeFormat(String largeFormat) {
+		ViewManager.largeFormat = largeFormat;
 	}
 
 	/**
-	 * @return the smallNumbersFormatString
+	 * @return the smallFormat
 	 */
-	public static String getSmallNumbersFormatString() {
-		return smallNumbersFormatString;
+	public static String getSmallFormat() {
+		return smallFormat;
 	}
 
 	/**
-	 * @param smallNumbersFormatString the smallNumbersFormatString to set
+	 * @param smallFormat the smallFormat to set
 	 */
-	public static void setSmallNumbersFormatString(String smallNumbersFormatString) {
-		ViewManager.smallNumbersFormatString = smallNumbersFormatString;
+	public static void setSmallFormat(String smallFormat) {
+		ViewManager.smallFormat = smallFormat;
 	}
 }

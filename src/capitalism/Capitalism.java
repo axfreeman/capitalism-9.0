@@ -24,6 +24,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import capitalism.controller.Simulation;
 import capitalism.utils.DBHandler;
 import capitalism.utils.Reporter;
 import capitalism.view.ViewManager;
@@ -56,7 +58,10 @@ public class Capitalism extends Application {
 
 		logger.debug("STARTUP");
 		// Create the database and read in the user-defined persistent entities
-		dataHandler.initialiseDataBaseAndStart();
+		if (!dataHandler.initialiseDataBaseAndStart()) {
+			logger.error("Data error on startup. Sorry, could not continue");
+			return;
+		};
 		
 		// launch the application
 		launch();

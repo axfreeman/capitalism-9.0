@@ -27,12 +27,13 @@ import javax.persistence.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import capitalism.Simulation;
+import capitalism.controller.Simulation;
 import capitalism.utils.MathStuff;
 import capitalism.utils.Reporter;
+import capitalism.view.TabbedTableViewer;
 import capitalism.view.ViewManager;
+import capitalism.view.custom.DisplayControlsBox;
 import capitalism.view.custom.TrackingControlsBox;
-import capitalism.view.tables.TabbedTableViewer;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -85,6 +86,8 @@ public class Commodity implements Serializable {
 	private static TypedQuery<Commodity> commoditiesByOriginQuery;
 	private static TypedQuery<Commodity> commoditiesByFunctionQuery;
 
+	// initialise the entitManagers and queries statically once only, hopefully to reduce expensive requests for connections and query-building
+	// TODO test with the EclipseLink profiler
 	static {
 		entityManager = entityManagerFactory.createEntityManager();
 		commodityByPrimaryKeyQuery = entityManager.createNamedQuery("Primary", Commodity.class);
@@ -176,6 +179,16 @@ public class Commodity implements Serializable {
 		}
 	}
 
+	/**
+	 * Controls whether value properties are reported as intrinsic or extrinsic
+	 * This is managed distinctly from whether the value magnitude is returned to the caller as intrinsic or extrinsic
+	 * It's really only for display purposes and not any other
+	 */
+
+	private enum ATTRIBUTE {
+		VALUE, PRICE, UNIT_VALUE, UNIT_PRICE, INITIAL_CAPITAL, INITIAL_PRODUCTIVE_CAPITAL, CURRENT_CAPITAL, PROFIT;
+	}
+
 	public Commodity() {
 		this.pk = new CommodityPK();
 	}
@@ -239,39 +252,39 @@ public class Commodity implements Serializable {
 		case PRODUCERTYPE:
 			return new ReadOnlyStringWrapper(origin.text());
 		case UNITPRICE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallNumbersFormatString(), unitPrice));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallFormat(), expressionOf(ATTRIBUTE.UNIT_PRICE)));
 		case UNITVALUE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallNumbersFormatString(), unitValue));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallFormat(), expressionOf(ATTRIBUTE.UNIT_VALUE)));
 		case TOTALVALUE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), totalValue()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.VALUE)));
 		case TOTALPRICE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), totalPrice()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.PRICE)));
 		case TOTALQUANTITY:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), totalQuantity()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), totalQuantity()));
 		case TOTALSUPPLY:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), totalSupply()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), totalSupply()));
 		case REPLENISHMENT_DEMAND:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), replenishmentDemand()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), replenishmentDemand()));
 		case EXPANSION_DEMAND:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), expansionDemand()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expansionDemand()));
 		case SURPLUS:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), surplusProduct));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), surplusProduct));
 		case TURNOVERTIME:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallNumbersFormatString(), turnoverTime));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallFormat(), turnoverTime));
 		case ALLOCATIONSHARE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallNumbersFormatString(), allocationShare));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallFormat(), allocationShare));
 		case FUNCTION_TYPE:
 			return new ReadOnlyStringWrapper(function.text);
 		case INITIALCAPITAL:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), initialCapital()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.INITIAL_CAPITAL)));
 		case INITIALPRODUCTIVECAPITAL:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), initialProductiveCapital()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.INITIAL_PRODUCTIVE_CAPITAL)));
 		case CURRENTCAPITAL:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), currentCapital()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.CURRENT_CAPITAL)));
 		case PROFIT:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeNumbersFormatString(), profit()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.PROFIT)));
 		case PROFITRATE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallNumbersFormatString(), profitRate()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallFormat(), profitRate()));
 		default:
 			return null;
 		}
@@ -297,13 +310,13 @@ public class Commodity implements Serializable {
 		case PRODUCERTYPE:
 			return false;
 		case UNITPRICE:
-			return unitPrice != comparator.getUnitPrice();
+			return unitPrice != comparator.getUnitPrice();// no need to convert to intrinsic/extrinsic. The result will be the same
 		case UNITVALUE:
-			return unitValue != comparator.getUnitValue();
+			return unitValue != comparator.getUnitValue();// no need to convert to intrinsic/extrinsic. The result will be the same
 		case TOTALVALUE:
-			return totalValue() != comparator.totalValue();
+			return expressionOf(ATTRIBUTE.VALUE) != expressionOf(ATTRIBUTE.VALUE);
 		case TOTALPRICE:
-			return totalPrice() != comparator.totalPrice();
+			return expressionOf(ATTRIBUTE.PRICE) != expressionOf(ATTRIBUTE.PRICE);
 		case TOTALQUANTITY:
 			return totalQuantity() != comparator.totalQuantity();
 		case TOTALSUPPLY:
@@ -317,11 +330,11 @@ public class Commodity implements Serializable {
 		case ALLOCATIONSHARE:
 			return allocationShare != comparator.allocationShare;
 		case INITIALCAPITAL:
-			return initialCapital() != comparator.initialCapital();
+			return initialCapital() != comparator.initialCapital();// no need to convert to intrinsic/extrinsic. The result will be the same
 		case CURRENTCAPITAL:
-			return currentCapital() != comparator.currentCapital();
+			return currentCapital() != comparator.currentCapital();// no need to convert to intrinsic/extrinsic. The result will be the same
 		case PROFIT:
-			return profit() != comparator.profit();
+			return profit() != comparator.profit();// no need to convert to intrinsic/extrinsic. The result will be the same
 		case PROFITRATE:
 			return profitRate() != comparator.profitRate();
 		default:
@@ -350,33 +363,35 @@ public class Commodity implements Serializable {
 		case PRODUCERTYPE:
 			return item;
 		case UNITPRICE:
-			return String.format(ViewManager.getSmallNumbersFormatString(), (unitPrice - comparator.unitPrice));
+			return String.format(ViewManager.getSmallFormat(), (expressionOf(ATTRIBUTE.UNIT_PRICE) - comparator.expressionOf(ATTRIBUTE.UNIT_PRICE)));
 		case UNITVALUE:
-			return String.format(ViewManager.getSmallNumbersFormatString(), (unitValue - comparator.unitValue));
+			return String.format(ViewManager.getSmallFormat(), (expressionOf(ATTRIBUTE.UNIT_VALUE) - comparator.expressionOf(ATTRIBUTE.UNIT_VALUE)));
 		case TOTALVALUE:
-			return String.format(ViewManager.getLargeNumbersFormatString(), (totalValue() - comparator.totalValue()));
+			return String.format(ViewManager.getLargeFormat(), (expressionOf(ATTRIBUTE.VALUE) - comparator.expressionOf(ATTRIBUTE.VALUE)));
 		case TOTALPRICE:
-			return String.format(ViewManager.getLargeNumbersFormatString(), (totalPrice() - comparator.totalPrice()));
+			return String.format(ViewManager.getLargeFormat(), (expressionOf(ATTRIBUTE.PRICE) - comparator.expressionOf(ATTRIBUTE.PRICE)));
 		case TOTALQUANTITY:
-			return String.format(ViewManager.getLargeNumbersFormatString(), (totalQuantity() - comparator.totalQuantity()));
+			return String.format(ViewManager.getLargeFormat(), (totalQuantity() - comparator.totalQuantity()));
 		case TOTALSUPPLY:
-			return String.format(ViewManager.getLargeNumbersFormatString(), (totalSupply() - comparator.totalSupply()));
+			return String.format(ViewManager.getLargeFormat(), (totalSupply() - comparator.totalSupply()));
 		case REPLENISHMENT_DEMAND:
-			return String.format(ViewManager.getLargeNumbersFormatString(), (replenishmentDemand() - comparator.replenishmentDemand()));
+			return String.format(ViewManager.getLargeFormat(), (replenishmentDemand() - comparator.replenishmentDemand()));
 		case SURPLUS:
-			return String.format(ViewManager.getLargeNumbersFormatString(), (surplusProduct - comparator.surplusProduct));
+			return String.format(ViewManager.getLargeFormat(), (surplusProduct - comparator.surplusProduct));
 		case TURNOVERTIME:
-			return String.format(ViewManager.getSmallNumbersFormatString(), (turnoverTime - comparator.getTurnoverTime()));
+			return String.format(ViewManager.getSmallFormat(), (turnoverTime - comparator.getTurnoverTime()));
 		case ALLOCATIONSHARE:
-			return String.format(ViewManager.getSmallNumbersFormatString(), (allocationShare - comparator.allocationShare));
+			return String.format(ViewManager.getSmallFormat(), (allocationShare - comparator.allocationShare));
 		case PROFIT:
-			return String.format(ViewManager.getLargeNumbersFormatString(), (profit() - comparator.profit()));
+			return String.format(ViewManager.getLargeFormat(), ((expressionOf(ATTRIBUTE.PROFIT) - comparator.expressionOf(ATTRIBUTE.PROFIT))));
 		case INITIALCAPITAL:
-			return String.format(ViewManager.getLargeNumbersFormatString(), (initialCapital() - comparator.initialCapital()));
+			return String.format(ViewManager.getLargeFormat(),
+					((expressionOf(ATTRIBUTE.INITIAL_CAPITAL) - comparator.expressionOf(ATTRIBUTE.INITIAL_CAPITAL))));
 		case CURRENTCAPITAL:
-			return String.format(ViewManager.getLargeNumbersFormatString(), (currentCapital() - comparator.currentCapital()));
+			return String.format(ViewManager.getLargeFormat(),
+					((expressionOf(ATTRIBUTE.CURRENT_CAPITAL) - comparator.expressionOf(ATTRIBUTE.CURRENT_CAPITAL))));
 		case PROFITRATE:
-			return String.format(ViewManager.getLargeNumbersFormatString(), (profitRate() - comparator.profitRate()));
+			return String.format(ViewManager.getLargeFormat(), (profitRate() - comparator.profitRate()));
 		default:
 			return item;
 		}
@@ -402,6 +417,56 @@ public class Commodity implements Serializable {
 		}
 	}
 
+	/**
+	 * generic selector which returns a numerical property of the commodity depending on the calling valueProperty.
+	 * used exclusively in displaying the magnitudes involved, though I haven't worked out how to stop it
+	 * being used for something else.
+	 * 
+	 * @param valueProperty
+	 *            selects the property of this commodity that we wish to display (VALUE, PRICE, UNIT_VALUE,UNIT_Price)
+	 * @return the value property, either as an intrinsic or a monetary magnitude depending on
+	 *         {@link DisplayControlsBox#expressionDisplay} and {@link DisplayControlsBox#expressionDisplay}
+	 */
+	public double expressionOf(ATTRIBUTE valueProperty) {
+		Global global = Global.getGlobal();
+		double melt = global.getMelt();
+		double expression;
+		switch (valueProperty) {
+		case VALUE:
+			expression = totalValue();
+			break;
+		case PRICE:
+			expression = totalPrice();
+			break;
+		case UNIT_VALUE:
+			expression = unitValue;
+			break;
+		case UNIT_PRICE:
+			expression = unitPrice;
+			break;
+		case CURRENT_CAPITAL:
+			expression = currentCapital();
+			break;
+		case INITIAL_CAPITAL:
+			expression = initialCapital();
+			break;
+		case INITIAL_PRODUCTIVE_CAPITAL:
+			expression = initialProductiveCapital();
+			break;
+		case PROFIT:
+			expression = profit();
+			break;
+		default:
+			return Double.NaN;
+		}
+		if (DisplayControlsBox.expressionDisplay == DisplayControlsBox.DISPLAY_AS_EXPRESSION.MONEY) {
+			return expression;
+		} else {
+			return (expression==0)?0:expression / melt;
+		}
+	}
+	
+	
 	/**
 	 * Calculate the total quantity, value and price of this commodity, from the stocks of it
 	 * Validate against existing total if requested
@@ -446,16 +511,16 @@ public class Commodity implements Serializable {
 
 	/**
 	 * nothing more than a testbed so far here
+	 * 
 	 * @return stockUsedUp
 	 */
 	public double stockUsedUp() {
 		Reporter.report(logger, 1, "Starting Computation");
 		Query query = Commodity.getEntityManager().createQuery("Select SUM(u.stockUsedUp) from Commodity u");
-		double stockUsed=(double)query.getSingleResult();
-		Reporter.report(logger, 0, "Computed stock used up was %.4f",stockUsed);
+		double stockUsed = (double) query.getSingleResult();
+		Reporter.report(logger, 0, "Computed stock used up was %.4f", stockUsed);
 		return stockUsed;
 	}
-
 
 	/**
 	 * @return the total value of this use value in the economy at this time
@@ -518,7 +583,7 @@ public class Commodity implements Serializable {
 	public double initialCapital() {
 		double capital = 0;
 		for (Industry c : industries()) {
-			capital += c.getInitialCapital();
+			capital += c.initialCapital();
 		}
 		return capital;
 	}
@@ -533,7 +598,7 @@ public class Commodity implements Serializable {
 	public double initialProductiveCapital() {
 		double productiveCapital = 0.0;
 		for (Industry c : industries()) {
-			productiveCapital += c.getProductiveCapital();
+			productiveCapital += c.productiveCapital();
 		}
 		return productiveCapital;
 	}

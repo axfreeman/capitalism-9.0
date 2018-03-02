@@ -21,6 +21,7 @@
 package capitalism.view.tables;
 
 import capitalism.model.Commodity;
+import capitalism.view.TableUtilities;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.util.Callback;
@@ -43,7 +44,7 @@ public class CommodityColumn extends TableColumn<Commodity, String> {
 	 *            true of the data is to be displayed aligned to the left in the column
 	 * 
 	 */
-	CommodityColumn(Commodity.SELECTOR selector, boolean alignedLeft) {
+	public CommodityColumn(Commodity.SELECTOR selector, boolean alignedLeft) {
 		super(selector.text());
 		setCellFactory(new Callback<TableColumn<Commodity, String>, TableCell<Commodity, String>>() {
 			@Override public TableCell<Commodity, String> call(TableColumn<Commodity, String> col) {

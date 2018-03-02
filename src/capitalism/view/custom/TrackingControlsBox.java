@@ -21,9 +21,9 @@
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import capitalism.Simulation;
+import capitalism.view.TabbedTableViewer;
 import capitalism.view.ViewManager;
-import capitalism.view.tables.TabbedTableViewer;
+import capitalism.controller.Simulation;
 import capitalism.model.Stock;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;

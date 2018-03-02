@@ -432,8 +432,8 @@ extends javafx.application.Application</pre>
 <h4>initializeActionStates</h4>
 <pre>public&nbsp;void&nbsp;initializeActionStates()</pre>
 <div class="block">Initialise the <a href="../../../rd/dev/simulation/custom/ActionStates.html" title="enum in capitalism.custom"><code>ActionStates </code></a> enum class. This class is central to the operation of the simulation.
- It defines the possible actions of the simulation, which are of two types: (1) sub-actions such as <a href="../../../rd/dev/simulation/command/Demand.html" title="class in capitalism.command"><code>Demand</code></a> which carry out
- primitive actions;(2) super-actions such as <a href="../../../rd/dev/simulation/command/PreTrade.html" title="class in capitalism.command"><code>PreTrade</code></a> which conducts a series of primitive actions. The super-Actions correspond to normal
+ It defines the possible actions of the simulation, which are of two types: (1) sub-actions such as <a href="../../../rd/dev/simulation/command/Demand.html" title="class in capitalism.controller.command"><code>Demand</code></a> which carry out
+ primitive actions;(2) super-actions such as <a href="../../../rd/dev/simulation/command/PreTrade.html" title="class in capitalism.controller.command"><code>PreTrade</code></a> which conducts a series of primitive actions. The super-Actions correspond to normal
  economic phases or 'aspects' of the reproduction of an economy namely the purchase of commodities, the production of commodities, and the distribution of
  revenues. The primitives don't have a distinct economic meaning but can help understand the logical components of a complete economic activity. This is
  given visual representation at several places in the simulation, notably in the logfile and in the actionButtons, which have a tree structure so that the
