@@ -78,9 +78,13 @@ public class TabbedTableViewer extends VBox {
 
 	// Industry Tables and their header columns
 
-	private static TableView<Industry> industriesTable =new TableView<Industry> ();
-	private static TableView<Industry> dynamicIndustryTable= new TableView<Industry> ();
+	private static TableView<Industry> industryCapitalAccountTable =new TableView<Industry> ();
+	private static TableView<Industry> industryProductionAccountsTable= new TableView<Industry> ();
 	private static TableView<SocialClass> socialClassesTable=  new TableView<SocialClass> ();
+	private static TableColumn<Industry, String> inputSuperColumn;
+	private static TableColumn<Industry,String> productiveInputsColumn;
+	private static TableColumn<Industry, String> outputSuperColumn;
+	private static TableColumn<Industry,String> outputColumn;
 
 	/**
 	 * Simple static lists of tables, so utilities can get at them
@@ -135,8 +139,8 @@ public class TabbedTableViewer extends VBox {
 		stockTables.add(moneyStockTable);
 		stockTables.add(consumptionStockTable);
 		stockTables.add(productiveStockTable);
-		mainTables.add(dynamicIndustryTable);
-		mainTables.add(industriesTable);
+		mainTables.add(industryProductionAccountsTable);
+		mainTables.add(industryCapitalAccountTable);
 		mainTables.add(socialClassesTable);
 		mainTables.add(commoditiesTable);
 		// TODO there must be a better way...
@@ -209,10 +213,13 @@ public class TabbedTableViewer extends VBox {
 		makeSalesStocksViewTable();
 		makeConsumptionStocksViewTable();
 		makeCommoditiesViewTable();
-		makeIndustriesViewTable();
-		makeDynamicIndustriesTable();
+		makeIndustriesCapitalAccountsTable();
+		makeIndustriesProductionAccountsTable();
 		makeSocialClassesViewTable();
 
+		TableUtilities.setSuperColumnHandler(inputSuperColumn, productiveInputsColumn);
+		TableUtilities.setSuperColumnHandler(outputSuperColumn, outputColumn);
+		
 		TableUtilities.setSuperColumnHandler(commodityValuePriceSuperColumn, commodityTotalPriceColumn);
 		TableUtilities.setSuperColumnHandler(commodityDemandSupplySuperColumn, commodityAllocationShareColumn);
 		TableUtilities.setSuperColumnHandler(commodityCapitalProfitSuperColumn, commodityProfitRateColumn);
@@ -338,37 +345,45 @@ public class TabbedTableViewer extends VBox {
 	 * Build the Industries tableView and cellFactories.
 	 * Only call this when we want to rebuild the display from scratch, for example when starting up or switching projects
 	 */
-	public void makeIndustriesViewTable() {
-		industriesTable.getColumns().clear();
-		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.INDUSTRYNAME, true));
-		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.INITIALCAPITAL, false));
-		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.SALESSTOCK, false));
-		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.PRODUCTIVESTOCKS, false));
-		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.MONEYSTOCK, false));
-		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.CURRENTCAPITAL, false));
-		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.INITIALPRODUCTIVECAPITAL, false));
-		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.PROFIT, false));
-		industriesTable.getColumns().add(new IndustryColumn(Industry.Selector.PROFITRATE, false));
+	public void makeIndustriesCapitalAccountsTable() {
+		industryCapitalAccountTable.getColumns().clear();
+		industryCapitalAccountTable.getColumns().add(new IndustryColumn(Industry.Selector.INDUSTRYNAME, true));
+		industryCapitalAccountTable.getColumns().add(new IndustryColumn(Industry.Selector.INITIALCAPITAL, false));
+		industryCapitalAccountTable.getColumns().add(new IndustryColumn(Industry.Selector.SALESSTOCK, false));
+		industryCapitalAccountTable.getColumns().add(new IndustryColumn(Industry.Selector.PRODUCTIVESTOCKS, false));
+		industryCapitalAccountTable.getColumns().add(new IndustryColumn(Industry.Selector.MONEYSTOCK, false));
+		industryCapitalAccountTable.getColumns().add(new IndustryColumn(Industry.Selector.CURRENTCAPITAL, false));
+		industryCapitalAccountTable.getColumns().add(new IndustryColumn(Industry.Selector.INITIALPRODUCTIVECAPITAL, false));
+		industryCapitalAccountTable.getColumns().add(new IndustryColumn(Industry.Selector.PROFIT, false));
+		industryCapitalAccountTable.getColumns().add(new IndustryColumn(Industry.Selector.PROFITRATE, false));
 	}
 
 	/**
 	 * Build the DynamicIndustriesTable and cellFactories.
 	 * Only call this when we want to rebuild the display from scratch, for example when starting up or switching projects
 	 */
-	private void makeDynamicIndustriesTable() {
-		dynamicIndustryTable.getColumns().clear();
+	private void makeIndustriesProductionAccountsTable() {
+		industryProductionAccountsTable.getColumns().clear();
 		TableColumn<Industry, String> industryNameColumn = new IndustryColumn(Industry.Selector.INDUSTRYNAME, true);
 		industryNameColumn.setPrefWidth(100); // because some industry names are quite long
-		dynamicIndustryTable.getColumns().add(industryNameColumn);
-		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.COMMODITYNAME, true));
+		industryProductionAccountsTable.getColumns().add(industryNameColumn);
+		industryProductionAccountsTable.getColumns().add(new IndustryColumn(Industry.Selector.COMMODITYNAME, true));
+
+		inputSuperColumn= new TableColumn<Industry, String>("Inputs");
+		inputSuperColumn.setResizable(true);
+		industryProductionAccountsTable.getColumns().add(inputSuperColumn);
+		productiveInputsColumn= new IndustryColumn(Industry.Selector.PRODUCTIVESTOCKS, false);
 		for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION.PRODUCTIVE_INPUT)) {
-			dynamicIndustryTable.getColumns().add(new IndustryColumn(u));
+			inputSuperColumn.getColumns().add(new IndustryColumn(u));
 		}
-		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.PROFIT, false));
-		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.SALESSTOCK, false));
-		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.OUTPUT, false));
-		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.PROPOSEDOUTPUT, false));
-		dynamicIndustryTable.getColumns().add(new IndustryColumn(Industry.Selector.GROWTHRATE, false));
+		inputSuperColumn.getColumns().add(productiveInputsColumn);
+
+		outputSuperColumn=new TableColumn<Industry, String>("Outputs");
+		outputColumn=new IndustryColumn(Industry.Selector.OUTPUT, false);
+		industryProductionAccountsTable.getColumns().add(outputSuperColumn);
+		outputSuperColumn.getColumns().add(outputColumn);
+		outputSuperColumn.getColumns().add(new IndustryColumn(Industry.Selector.PROPOSEDOUTPUT, false));
+		outputSuperColumn.getColumns().add(new IndustryColumn(Industry.Selector.GROWTHRATE, false));
 	}
 
 	/**
@@ -381,9 +396,9 @@ public class TabbedTableViewer extends VBox {
 		salesStockTable.setItems(Stock.stocksByStockTypeObservable("Sales"));
 		consumptionStockTable.setItems(Stock.stocksByStockTypeObservable("Consumption"));
 		commoditiesTable.setItems(Commodity.commoditiesObservable());
-		industriesTable.setItems(Industry.industriesObservable());
+		industryCapitalAccountTable.setItems(Industry.industriesObservable());
 		socialClassesTable.setItems(SocialClass.socialClassesObservable());
-		dynamicIndustryTable.setItems(Industry.industriesObservable());
+		industryProductionAccountsTable.setItems(Industry.industriesObservable());
 	}
 
 	/**

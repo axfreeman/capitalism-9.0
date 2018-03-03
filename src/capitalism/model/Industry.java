@@ -111,7 +111,7 @@ public class Industry implements Serializable {
 		CURRENTCAPITAL("Current Capital","capital 1.png",TabbedTableViewer.HEADER_TOOL_TIPS.CAPITAL.text()), 
 		PROFIT("Profit","profit.png",TabbedTableViewer.HEADER_TOOL_TIPS.PROFIT.text()), 
 		PROFITRATE("Profit Rate","profitRate.png",TabbedTableViewer.HEADER_TOOL_TIPS.PROFITRATE.text()), 
-		PRODUCTIVESTOCKS("Inputs","inputs.png","The value or price of all stocks, including labour power, that are used in production and owned by this industry"), 
+		PRODUCTIVESTOCKS("Total Inputs","inputs.png","The value or price of all stocks, including labour power, that are used in production and owned by this industry"), 
 		MONEYSTOCK("Money","money.png","The stock of money owned by this industry"), 
 		SALESSTOCK("Sales","inventory.png","The sales stock owned by this industry"), 
 		GROWTHRATE("Growth Rate","growthrate.png","The rate of growth that this industry claims it can achieve, given the resources");
@@ -229,7 +229,7 @@ public class Industry implements Serializable {
 	 * provides a wrapped version of the selected member which the display will recognise, as a ReadOnlyStringWrapper.
 	 * 
 	 * We don't mind the hardwiring because we don't really intend this code to be re-usable, it's not hard to modify, and it results in compact
-	 * and readable usage code (see (@link {@link TabbedTableViewer#makeIndustriesViewTable()})
+	 * and readable usage code (see (@link {@link TabbedTableViewer#makeIndustriesCapitalAccountsTable()})
 	 * 
 	 * @param selector
 	 *            chooses which member to evaluate
@@ -276,7 +276,7 @@ public class Industry implements Serializable {
 	 * comes from a different timeStamp.
 	 * 
 	 * We don't mind the hardwiring because we don't really intend this code to be re-usable, it's not hard to modify, and it results in compact
-	 * and readable usage code (see (@link {@link TabbedTableViewer#makeIndustriesViewTable()})
+	 * and readable usage code (see (@link {@link TabbedTableViewer#makeIndustriesCapitalAccountsTable()})
 	 * 
 	 * @param selector
 	 *            chooses which member to evaluate

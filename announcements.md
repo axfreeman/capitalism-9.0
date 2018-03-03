@@ -1,7 +1,8 @@
-# Capitalism 9.0 announcements 3/2/2018 4:00:56 PM 
+# Capitalism 9.0 announcements 3/3/2018 8:16:17 AM 
 
 New icon-based interface, wider selection of pricing and MELT responses.
 Updated spreadsheet illustrations in Docs folder
+New executable
 
 The following benchmark projects now available and tested:
 1. Simple Reproduction (basic introduction: the simplest possible example of a working economy)
@@ -9,10 +10,8 @@ The following benchmark projects now available and tested:
 3. Simple Reproduction with halved period (shows the relation between stocks, flows, and turnover time)
 4. Simple Reproduction with two consumption goods
 5. Expanded Reproduction (illustrates accumulation and a number of other features)
-8. Simple Reproduction with two production goods
-
-The following is available and was tested prior to the most recent changes but has now to be re-tested:
 6. Profit Rate equalization
+8. Simple Reproduction with two production goods
 
 The next goal is to complete work on the following:
 7. Dynamic market adjustment (the original simulation)

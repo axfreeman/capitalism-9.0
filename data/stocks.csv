@@ -92,7 +92,7 @@ PROJECT,TIMESTAMP,OWNER,OWNERTYPE,COMMODITY,STOCKTYPE,QUANTITY,PRODUCTIONCOEFFIC
 6,1,Department II,INDUSTRY,Money,Money,4000,0,0
 6,1,Department I,INDUSTRY,Labour Power,Productive,0,0.333333333,0
 6,1,Department II,INDUSTRY,Labour Power,Productive,0,0.666666667,0
-6,1,Workers,CLASS,Labour Power,Sales,3000,0,0
+6,1,Workers,CLASS,Labour Power,Sales,6000,0,0
 6,1,Capitalists,CLASS,Money,Money,3000,0,0
 6,1,Department I,INDUSTRY,Money,Money,6000,0,0
 6,1,Department I,INDUSTRY,Means of Production,Productive,0,0.666666667,0
