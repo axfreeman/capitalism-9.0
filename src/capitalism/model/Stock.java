@@ -23,6 +23,11 @@ package capitalism.model;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -69,18 +74,19 @@ import javafx.collections.ObservableList;
 		@NamedQuery(name = "Demand", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp=:timeStamp "
 				+ "and (s.pk.stockType = :stockType1 or s.pk.stockType=:stockType2)")
 })
-
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name="Stock")
 public class Stock implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = LogManager.getLogger(Stock.class);
 
-	@EmbeddedId protected StockPK pk;
-	@Column(name = "ownertype") private OWNERTYPE ownerType;
-	@Column(name = "quantity") private double quantity;
-	@Column(name = "value") private double value;
-	@Column(name = "price") private double price;
-	@Column(name = "replenishmentDemand") private double replenishmentDemand;
-	@Column(name = "expansionDemand") private double expansionDemand;
+	@XmlElement @EmbeddedId protected StockPK pk;
+	@XmlElement @Column(name = "ownertype") private OWNERTYPE ownerType;
+	@XmlElement @Column(name = "quantity") private double quantity;
+	@XmlElement @Column(name = "value") private double value;
+	@XmlElement @Column(name = "price") private double price;
+	@XmlElement @Column(name = "replenishmentDemand") private double replenishmentDemand;
+	@XmlElement @Column(name = "expansionDemand") private double expansionDemand;
 
 	// the proportion of this stock used up in producing one unit of output.
 	// ONLY relevant if this is of stockType PRODUCTIVE_INPUT (in which case the owner will be an industry)

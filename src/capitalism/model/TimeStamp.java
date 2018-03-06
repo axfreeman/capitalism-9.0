@@ -4,6 +4,10 @@ import java.io.Serializable;
 import java.util.List;
 
 import javax.persistence.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,17 +28,18 @@ import javafx.collections.ObservableList;
 		@NamedQuery(name = "timeStamp.project.timeStamp", query = "SELECT t FROM TimeStamp t where t.pk.projectFK = :project and t.pk.timeStampID = :timeStamp"),
 		@NamedQuery(name = "superStates", query = "Select t from TimeStamp t where t.pk.projectFK=:project and t.period= :period and t.superState=:superState")
 })
-
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name="TimeStamp")
 public class TimeStamp implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@SuppressWarnings("unused") private static final Logger logger = LogManager.getLogger(TimeStamp.class);
 
-	@EmbeddedId protected TimeStampPK pk;
-	@Column(name = "description") protected String description;
-	@Column(name = "superState") protected String superState;
-	@Column(name = "period") protected int period;
-	@Column(name = "COMPARATORTIMESTAMPID") protected int comparatorTimeStampID;
+	@XmlElement @EmbeddedId private TimeStampPK pk;
+	@XmlElement @Column(name = "description") protected String description;
+	@XmlElement @Column(name = "superState") protected String superState;
+	@XmlElement @Column(name = "period") protected int period;
+	@XmlElement @Column(name = "COMPARATORTIMESTAMPID") protected int comparatorTimeStampID;
 	
 	private static EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DB_TIMESTAMP");
 	private static EntityManager entityManager;

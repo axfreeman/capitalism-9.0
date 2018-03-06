@@ -25,17 +25,23 @@ import java.io.Serializable;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author afree
  */
 @Embeddable
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name="IndustryPK")
 public class IndustryPK implements Serializable {
 	static final long serialVersionUID = 001L;
-	@Basic(optional = false) @Column(name = "project") protected int project;
-	@Basic(optional = false) @Column(name = "timeStamp") protected int timeStamp;
-	@Basic(optional = false) @Column(name = "industryName") protected String name;
+	@XmlElement @Basic(optional = false) @Column(name = "project") protected int project;
+	@XmlElement @Basic(optional = false) @Column(name = "timeStamp") protected int timeStamp;
+	@XmlElement @Basic(optional = false) @Column(name = "industryName") protected String name;
 
 	public IndustryPK() {
 	}

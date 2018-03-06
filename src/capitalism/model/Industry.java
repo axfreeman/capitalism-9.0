@@ -35,6 +35,11 @@ import javax.persistence.Persistence;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.TypedQuery;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -61,18 +66,20 @@ import javafx.collections.ObservableList;
 })
 
 @Embeddable
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name="Industry")
 public class Industry implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = LogManager.getLogger("Industry");
 
-	@EmbeddedId protected IndustryPK pk;
-	@Column(name = "commodityName") protected String commodityName;
-	@Column(name = "output") protected double output;
-	@Column(name = "ProposedOutput") protected double proposedOutput;
-	@Column(name = "InitialCapital") protected double initialCapital;
-	@Column(name = "PersistedProfit") protected double persistedProfit;
-	@Column(name = "Growthrate") protected double growthRate;
-	@Column(name = "productiveCapital") protected double productiveCapital;
+	@XmlElement @EmbeddedId protected IndustryPK pk;
+	@XmlElement @Column(name = "commodityName") protected String commodityName;
+	@XmlElement @Column(name = "output") protected double output;
+	@XmlElement @Column(name = "ProposedOutput") protected double proposedOutput;
+	@XmlElement @Column(name = "InitialCapital") protected double initialCapital;
+	@XmlElement @Column(name = "PersistedProfit") protected double persistedProfit;
+	@XmlElement @Column(name = "Growthrate") protected double growthRate;
+	@XmlElement @Column(name = "productiveCapital") protected double productiveCapital;
 
 	// Comparators
 	@Transient private Industry comparator;

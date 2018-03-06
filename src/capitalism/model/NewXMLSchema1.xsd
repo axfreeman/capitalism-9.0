@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+   <xsd:complexType name="commodity">
+      <xsd:sequence>
+         <xsd:element name="pk" type="commodityPK" minOccurs="0"/>
+         <xsd:element name="origin" type="origin" minOccurs="0"/>
+         <xsd:element name="function" type="function" minOccurs="0"/>
+         <xsd:element name="turnoverTime" type="xsd:double"/>
+         <xsd:element name="unitValue" type="xsd:double"/>
+         <xsd:element name="unitPrice" type="xsd:double"/>
+         <xsd:element name="surplusProduct" type="xsd:double"/>
+         <xsd:element name="allocationShare" type="xsd:double"/>
+         <xsd:element name="stockUsedUp" type="xsd:double"/>
+         <xsd:element name="stockProduced" type="xsd:double"/>
+         <xsd:element name="imageName" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="toolTip" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="displayOrder" type="xsd:int"/>
+      </xsd:sequence>
+   </xsd:complexType>
+   <xsd:complexType name="globalPK"/>
+   <xsd:complexType name="project">
+      <xsd:sequence>
+         <xsd:element name="buttonState" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="description" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="period" type="xsd:int"/>
+         <xsd:element name="projectID" type="xsd:int"/>
+         <xsd:element name="timeStamp" type="xsd:int"/>
+         <xsd:element name="timeStampComparatorCursor" type="xsd:int"/>
+         <xsd:element name="timeStampDisplayCursor" type="xsd:int"/>
+      </xsd:sequence>
+   </xsd:complexType>
+   <xsd:complexType name="global">
+      <xsd:sequence>
+         <xsd:element name="comparator" type="global" minOccurs="0"/>
+         <xsd:element name="currencySymbol" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="customComparator" type="global" minOccurs="0"/>
+         <xsd:element name="endComparator" type="global" minOccurs="0"/>
+         <xsd:element name="investmentRatio" type="xsd:double"/>
+         <xsd:element name="labourSupplyResponse" type="labour_RESPONSE" minOccurs="0"/>
+         <xsd:element name="melt" type="xsd:double"/>
+         <xsd:element name="meltResponse" type="melt_RESPONSE" minOccurs="0"/>
+         <xsd:element name="populationGrowthRate" type="xsd:double"/>
+         <xsd:element name="previousComparator" type="global" minOccurs="0"/>
+         <xsd:element name="priceResponse" type="price_RESPONSE" minOccurs="0"/>
+         <xsd:element name="quantitySymbol" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="rateOfExploitation" type="xsd:double"/>
+         <xsd:element name="startComparator" type="global" minOccurs="0"/>
+      </xsd:sequence>
+   </xsd:complexType>
+   <xsd:complexType name="industry">
+      <xsd:sequence>
+         <xsd:element name="pk" type="industryPK" minOccurs="0"/>
+         <xsd:element name="commodityName" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="output" type="xsd:double"/>
+         <xsd:element name="proposedOutput" type="xsd:double"/>
+         <xsd:element name="initialCapital" type="xsd:double"/>
+         <xsd:element name="persistedProfit" type="xsd:double"/>
+         <xsd:element name="growthRate" type="xsd:double"/>
+         <xsd:element name="productiveCapital" type="xsd:double"/>
+      </xsd:sequence>
+   </xsd:complexType>
+   <xsd:complexType name="timeStampPK"/>
+   <xsd:complexType name="commodityPK">
+      <xsd:sequence>
+         <xsd:element name="project" type="xsd:int"/>
+         <xsd:element name="timeStamp" type="xsd:int"/>
+         <xsd:element name="name" type="xsd:string" minOccurs="0"/>
+      </xsd:sequence>
+   </xsd:complexType>
+   <xsd:complexType name="timeStamp">
+      <xsd:sequence>
+         <xsd:element name="comparatorTimeStampID" type="xsd:int"/>
+         <xsd:element name="description" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="period" type="xsd:int"/>
+         <xsd:element name="superState" type="xsd:string" minOccurs="0"/>
+      </xsd:sequence>
+   </xsd:complexType>
+   <xsd:complexType name="industryPK">
+      <xsd:sequence>
+         <xsd:element name="project" type="xsd:int"/>
+         <xsd:element name="timeStamp" type="xsd:int"/>
+         <xsd:element name="name" type="xsd:string" minOccurs="0"/>
+      </xsd:sequence>
+   </xsd:complexType>
+   <xsd:complexType name="stockPK"/>
+   <xsd:complexType name="socialClass">
+      <xsd:sequence>
+         <xsd:element name="customComparator" type="socialClass" minOccurs="0"/>
+         <xsd:element name="endComparator" type="socialClass" minOccurs="0"/>
+         <xsd:element name="participationRatio" type="xsd:double"/>
+         <xsd:element name="previousComparator" type="socialClass" minOccurs="0"/>
+         <xsd:element name="revenue" type="xsd:double"/>
+         <xsd:element name="size" type="xsd:double"/>
+         <xsd:element name="startComparator" type="socialClass" minOccurs="0"/>
+         <xsd:element name="timeStamp" type="xsd:int"/>
+      </xsd:sequence>
+   </xsd:complexType>
+   <xsd:complexType name="stock">
+      <xsd:sequence>
+         <xsd:element name="commodityName" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="consumptionCoefficient" type="xsd:double"/>
+         <xsd:element name="customComparator" type="stock" minOccurs="0"/>
+         <xsd:element name="endComparator" type="stock" minOccurs="0"/>
+         <xsd:element name="expansionDemand" type="xsd:double"/>
+         <xsd:element name="previousComparator" type="stock" minOccurs="0"/>
+         <xsd:element name="price" type="xsd:double"/>
+         <xsd:element name="productionCoefficient" type="xsd:double"/>
+         <xsd:element name="quantity" type="xsd:double"/>
+         <xsd:element name="replenishmentDemand" type="xsd:double"/>
+         <xsd:element name="startComparator" type="stock" minOccurs="0"/>
+         <xsd:element name="stockType" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="stockUsedUp" type="xsd:double"/>
+         <xsd:element name="timeStamp" type="xsd:int"/>
+         <xsd:element name="value" type="xsd:double"/>
+      </xsd:sequence>
+   </xsd:complexType>
+   <xsd:complexType name="socialClassPK"/>
+   <xsd:element name="commodity" type="commodity"/>
+   <xsd:element name="industryPK" type="industryPK"/>
+   <xsd:element name="global" type="global"/>
+   <xsd:element name="industry" type="industry"/>
+   <xsd:element name="commodityPK" type="commodityPK"/>
+   <xsd:simpleType name="labour_RESPONSE">
+      <xsd:restriction base="xsd:string">
+         <xsd:enumeration value="FIXED"/>
+         <xsd:enumeration value="FLEXIBLE"/>
+      </xsd:restriction>
+   </xsd:simpleType>
+   <xsd:simpleType name="melt_RESPONSE">
+      <xsd:restriction base="xsd:string">
+         <xsd:enumeration value="VALUE_DRIVEN"/>
+         <xsd:enumeration value="PRICE_DRIVEN"/>
+      </xsd:restriction>
+   </xsd:simpleType>
+   <xsd:simpleType name="origin">
+      <xsd:restriction base="xsd:string">
+         <xsd:enumeration value="SOCIALlY_PRODUCED"/>
+         <xsd:enumeration value="INDUSTRIALLY_PRODUCED"/>
+         <xsd:enumeration value="MONEY"/>
+      </xsd:restriction>
+   </xsd:simpleType>
+   <xsd:simpleType name="function">
+      <xsd:restriction base="xsd:string">
+         <xsd:enumeration value="MONEY"/>
+         <xsd:enumeration value="PRODUCTIVE_INPUT"/>
+         <xsd:enumeration value="CONSUMER_GOOD"/>
+      </xsd:restriction>
+   </xsd:simpleType>
+   <xsd:simpleType name="price_RESPONSE">
+      <xsd:restriction base="xsd:string">
+         <xsd:enumeration value="VALUES"/>
+         <xsd:enumeration value="EQUALIZED"/>
+         <xsd:enumeration value="DYNAMIC"/>
+      </xsd:restriction>
+   </xsd:simpleType>
+</xsd:schema>

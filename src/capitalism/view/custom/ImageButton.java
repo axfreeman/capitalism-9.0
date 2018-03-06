@@ -19,6 +19,16 @@ public class ImageButton extends Button {
 	private String offURL;
 	private boolean state;
 	
+	/**
+	 * Create an image that launches an action when clicked once.
+	 * Normally, a toggle with two states. 
+	 * Styled so that images and toolTips are swapped when the state swaps
+	 * @param onImageURL the image to show in the 'on' state
+	 * @param offImageURL the image to show in the 'off' state
+	 * @param command the {link capitalism.view.command} to execute
+	 * @param offTipText  the tooltip to display in the off state
+	 * @param onTipText the tooltip to display in the on state
+	 */
 	public ImageButton(String onImageURL, String offImageURL,DisplayCommand command, String offTipText, String onTipText) {
 		state=true;
 		onURL=onImageURL;

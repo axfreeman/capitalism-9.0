@@ -23,6 +23,10 @@ package capitalism.model;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.*;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlAccessType;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,25 +55,27 @@ import javafx.collections.ObservableList;
 		@NamedQuery(name = "Function", query = "SELECT u FROM Commodity u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.function=:function order by u.displayOrder")
 })
 @Embeddable
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement
 public class Commodity implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = LogManager.getLogger("Commodity");
 
 	// The primary key (composite key containing project, timeStamp and industryName)
-	@EmbeddedId protected CommodityPK pk;
+	@XmlElement @EmbeddedId protected CommodityPK pk;
 
-	@Column(name = "originType") private ORIGIN origin; // whether this is produced by an enterprise or a class
-	@Column(name = "functionType") private FUNCTION function;// see enum FUNCTION for list of possible types
-	@Column(name = "turnoverTime") private double turnoverTime;
-	@Column(name = "unitValue") private double unitValue;
-	@Column(name = "unitPrice") private double unitPrice;
-	@Column(name = "surplusProduct") private double surplusProduct; // if after production there is an excess of inventory over use, it is recorded here
-	@Column(name = "allocationShare") private double allocationShare;// proportion of total demand that can actually be supplied
-	@Column(name = "stockUsedUp") private double stockUsedUp; // stock used up in production in the current period
-	@Column(name = "stockProduced") private double stockProduced; // stock produced in the current period
-	@Column(name = "imageName") private String imageName; // a graphical image that can be used in column headers in place of text
-	@Column(name = "tooltip") private String toolTip;// an optional user-supplied description of the commodity
-	@Column(name = "displayOrder") private int displayOrder; // used to determine which order to display columns
+	@XmlElement @Column(name = "originType") private ORIGIN origin; // whether this is produced by an enterprise or a class
+	@XmlElement @Column(name = "functionType") private FUNCTION function;// see enum FUNCTION for list of possible types
+	@XmlElement @Column(name = "turnoverTime") private double turnoverTime;
+	@XmlElement @Column(name = "unitValue") private double unitValue;
+	@XmlElement @Column(name = "unitPrice") private double unitPrice;
+	@XmlElement @Column(name = "surplusProduct") private double surplusProduct; // if after production there is an excess of inventory over use, it is recorded here
+	@XmlElement @Column(name = "allocationShare") private double allocationShare;// proportion of total demand that can actually be supplied
+	@XmlElement @Column(name = "stockUsedUp") private double stockUsedUp; // stock used up in production in the current period
+	@XmlElement @Column(name = "stockProduced") private double stockProduced; // stock produced in the current period
+	@XmlElement @Column(name = "imageName") private String imageName; // a graphical image that can be used in column headers in place of text
+	@XmlElement @Column(name = "tooltip") private String toolTip;// an optional user-supplied description of the commodity
+	@XmlElement @Column(name = "displayOrder") private int displayOrder; // used to determine which order to display columns
 
 	// Comparators
 	@Transient private Commodity comparator;

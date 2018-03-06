@@ -21,25 +21,31 @@ package capitalism.model;
 
 import java.io.Serializable;
 import javax.persistence.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * The primary key class for the stocks database table.
  * 
  */
 @Embeddable
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name="StockPK")
 public class StockPK implements Serializable {
 	// default serial project id, required for serializable classes.
 	private static final long serialVersionUID = 1L;
 
-	@Column(name = "project") protected int project;
-	@Column(name = "timeStamp") protected int timeStamp;
-	@Column(name = "owner") protected String owner;
-	@Column(name = "commodity") protected String commodity;
+	@XmlElement @Column(name = "project") protected int project;
+	@XmlElement @Column(name = "timeStamp") protected int timeStamp;
+	@XmlElement @Column(name = "owner") protected String owner;
+	@XmlElement @Column(name = "commodity") protected String commodity;
 
 	// PRODUCTIVE, SALES, MONEY or CONSUMPTION
 	// We cannot use an enum because of a bug in H2, promised to be corrected in the next release,
 	// that breaks when an enum is in the primary key
-	@Column(name = "stockType") protected String stockType;
+	@XmlElement @Column(name = "stockType") protected String stockType;
 
 	public StockPK() {
 	}

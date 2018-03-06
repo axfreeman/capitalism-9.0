@@ -4,13 +4,19 @@ import java.io.Serializable;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 @Embeddable
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name="TimeStampPK")
 public class TimeStampPK implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	@Basic(optional = false) @Column(name = "timeStampID") protected int timeStampID;
-	@Basic(optional = false) @Column(name = "projectFK") protected int projectFK;
+	@XmlElement @Basic(optional = false) @Column(name = "timeStampID") protected int timeStampID;
+	@XmlElement @Basic(optional = false) @Column(name = "projectFK") protected int projectFK;
 
 	protected TimeStampPK() {
 	}
@@ -47,6 +53,20 @@ public class TimeStampPK implements Serializable {
 	@Override
 	public String toString() {
 		return "demo.TimeStampPK[ timeStamp=" + timeStampID + ", project=" + projectFK + " ]";
+	}
+
+	/**
+	 * @return the timeStampID
+	 */
+	public int getTimeStampID() {
+		return timeStampID;
+	}
+
+	/**
+	 * @param timeStampID the timeStampID to set
+	 */
+	public void setTimeStampID(int timeStampID) {
+		this.timeStampID = timeStampID;
 	}
 
 }

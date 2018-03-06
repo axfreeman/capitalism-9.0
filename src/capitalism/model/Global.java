@@ -36,6 +36,9 @@ import javax.persistence.Persistence;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.TypedQuery;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import capitalism.controller.Simulation;
 import capitalism.utils.MathStuff;
@@ -53,20 +56,21 @@ import capitalism.view.custom.TrackingControlsBox;
 		@NamedQuery(query = "SELECT c FROM Global c where c.pk.project = :project", name = "globals.project"),
 		@NamedQuery(query = "SELECT c FROM Global c where c.pk.project = :project and c.pk.timeStamp = :timeStamp", name = "globals.project.timeStamp")
 })
-@XmlRootElement
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name="Global")
 public class Global implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	@EmbeddedId protected GlobalPK pk;
-	@Column(name = "RateOfExploitation") private double rateOfExploitation;
-	@Column(name = "MELT") private double melt;
-	@Column(name = "PopulationGrowthRate") private double populationGrowthRate;
-	@Column(name = "InvestmentRatio") private double investmentRatio;
-	@Column(name = "LabourSupplyResponse") private Simulation.LABOUR_RESPONSE labourSupplyResponse;
-	@Column(name = "priceResponse") private Simulation.PRICE_RESPONSE priceResponse;
-	@Column(name = "meltResponse") private Simulation.MELT_RESPONSE meltResponse;
-	@Column(name = "CurrencySymbol") private String currencySymbol;
-	@Column(name = "QuantitySymbol") private String quantitySymbol;
+	@XmlElement @Column(name = "RateOfExploitation") private double rateOfExploitation;
+	@XmlElement @Column(name = "MELT") private double melt;
+	@XmlElement @Column(name = "PopulationGrowthRate") private double populationGrowthRate;
+	@XmlElement @Column(name = "InvestmentRatio") private double investmentRatio;
+	@XmlElement @Column(name = "LabourSupplyResponse") private Simulation.LABOUR_RESPONSE labourSupplyResponse;
+	@XmlElement @Column(name = "priceResponse") private Simulation.PRICE_RESPONSE priceResponse;
+	@XmlElement @Column(name = "meltResponse") private Simulation.MELT_RESPONSE meltResponse;
+	@XmlElement @Column(name = "CurrencySymbol") private String currencySymbol;
+	@XmlElement @Column(name = "QuantitySymbol") private String quantitySymbol;
 
 	@Transient private Global comparator = null;
 	@Transient private Global previousComparator;

@@ -22,6 +22,11 @@ package capitalism.model;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -48,20 +53,22 @@ import javafx.collections.ObservableList;
 })
 
 @Embeddable
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name="SocialClass")
 public class SocialClass implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = LogManager.getLogger(SocialClass.class);
 
-	@EmbeddedId protected SocialClassPK pk;
-	@Column(name = "Size") protected double size;
+	@XmlElement @EmbeddedId protected SocialClassPK pk;
+	@XmlElement @Column(name = "Size") protected double size;
 
 	// The proportion of the population of this class that supplies labour power
 	// Not yet used, but intended for 'mixed' classes (eg small producers, pension-holders)
 	
-	@Column(name = "ParticipationRatio") protected double participationRatio;
+	@XmlElement @Column(name = "ParticipationRatio") protected double participationRatio;
 	
 	// the money that this class will spend in the current period
-	@Column(name = "Revenue") protected double revenue;
+	@XmlElement @Column(name = "Revenue") protected double revenue;
 
 	// Comparators
 	@Transient private SocialClass comparator;

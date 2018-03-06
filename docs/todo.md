@@ -25,6 +25,7 @@ A Use value called 'consumption' must exist (Better: configure the name of the c
 A Use value called 'Labour Power' must exist 
 Every circuit's name must be some useValue. Not every usevalue needs to be produced(Money) but if it is consumed it must be produced (& vice versa? No: eg collectors' items)
 Every Productive Stock must belong to a circuit and consist of a usevalue
+Every Industry must have exactly one stock of every possible input
 Every Sales Stock must belong to a circuit or a social class and consist of a usevalue
 Every Money Stock must belong to a circuit or a social class and consist of a usevalue
 Every social class must have a sales stock for labour power even if it doesn't have any to sell (!)

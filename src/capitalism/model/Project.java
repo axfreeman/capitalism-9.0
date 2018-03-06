@@ -24,6 +24,10 @@ import java.io.Serializable;
 import java.util.List;
 
 import javax.persistence.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import capitalism.view.custom.ActionStates;
 import javafx.collections.FXCollections;
@@ -40,17 +44,18 @@ import javafx.collections.ObservableList;
 		@NamedQuery(name = "Project.findAll", query = "SELECT v FROM Project v"),
 		@NamedQuery(name = "Project.findOne", query = "SELECT p from Project p where p.projectID= :project")
 })
-
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name="Project")
 public class Project implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id @EmbeddedId @Column(unique = true, nullable = false) private int projectID;
-	@Column(name = "description") private String description;
-	@Column(name = "currentTimeStamp") private int timeStamp;
-	@Column(name = "currentTimeStampCursor") private int timeStampDisplayCursor;
-	@Column(name = "currentTimeStampComparatorCursor") private int timeStampComparatorCursor;
-	@Column(name = "period") private int period;
-	@Column(name = "buttonState") private String buttonState;
+	@XmlElement @Column(name = "description") private String description;
+	@XmlElement @Column(name = "currentTimeStamp") private int timeStamp;
+	@XmlElement @Column(name = "currentTimeStampCursor") private int timeStampDisplayCursor;
+	@XmlElement @Column(name = "currentTimeStampComparatorCursor") private int timeStampComparatorCursor;
+	@XmlElement @Column(name = "period") private int period;
+	@XmlElement @Column(name = "buttonState") private String buttonState;
 	
 	private static EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DB_PROJECT");
 	private static EntityManager entityManager;

@@ -22,19 +22,25 @@ package capitalism.model;
 
 import java.io.Serializable;
 import javax.persistence.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * The primary key class for the socialClass database table.
  * 
  */
 @Embeddable
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name="SocialClassPK")
 public class SocialClassPK implements Serializable {
 	// default serial project id, required for serializable classes.
 	private static final long serialVersionUID = 1L;
 
-	protected int project;
-	protected int timeStamp;
-	protected String socialClassName;
+	@XmlElement protected int project;
+	@XmlElement protected int timeStamp;
+	@XmlElement protected String socialClassName;
 
 	
 	public SocialClassPK() {

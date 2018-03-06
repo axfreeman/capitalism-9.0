@@ -182,6 +182,7 @@ public class DBHandler {
 
 		String baseDirectoryURL;
 		try {
+			if (saveDirectory==null) return;
 			baseDirectoryURL = saveDirectory.getCanonicalPath().replace('\\', '/');
 		} catch (IOException e) {
 			Dialogues.alert(logger, "Failed to create a meaningful name for the save directory");
@@ -227,4 +228,22 @@ public class DBHandler {
 			e.printStackTrace();
 		}
 	}
+	
+	/**
+	 * experimental XML writer to save one project to memory
+	 */
+	public void writeToXML() {
+		try {
+			Class.forName("org.h2.Driver");
+			String queryFirstPart = "jdbc:h2:mem:capitalism;";// this will be an XML connector
+			String queryWhole = queryFirstPart;
+			logger.debug("Attempting to connect to the database using {} ", queryWhole);
+			conn = DriverManager.getConnection(queryWhole, "sa", "");
+			Reporter.report(logger, 0, "Successfully connected");
+		} catch (Exception e) {
+			Dialogues.alert(logger, "Could not load the data because:\n" + e.getMessage());
+		}
+		
+	}
 }
+

@@ -34,7 +34,7 @@ import capitalism.view.command.GraphicsCommand;
 import capitalism.view.command.LoadCommand;
 import capitalism.view.command.OpenLogWindow;
 import capitalism.view.command.RestartCommand;
-import capitalism.view.command.SaveCommand;
+import capitalism.view.command.DumpCommand;
 import capitalism.view.command.ValueExpressionCommand;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -51,7 +51,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.text.Font;
 
 /**
- * The bar where all the visual display controls are put.
+ * The bar where all the visual display controls go.
  * Fairly rough and ready. This class contains all the state variables such as the graphicsState,
  * and assigns DisplayCommands to ImageButtons. Both these are 'in-house' classes.
  */
@@ -71,18 +71,22 @@ public class DisplayControlsBox extends HBox {
 	public static String expressionSymbol = moneyExpressionSymbol;
 	public static boolean displayHints = false;
 
-	private static ImageButton colourHintsButton = new ImageButton("hinton.png", "hintoff.png", new ColourHintsCommand(), "No colour hints",
-			"Show colour hints");
-	private static ImageButton restartButton = new ImageButton("restart.png", null, new RestartCommand(), "Restart this project", "Restart this project");
-	private static ImageButton graphicsButton = new ImageButton("graphics.png", "text.png", new GraphicsCommand(), "Text column headers",
-			"Graphic column headers");
-	private static ImageButton expressionButton = new ImageButton("time.png", "dollar.png", new ValueExpressionCommand(), "Money values",
-			"Labour Time Values");
-	private static ImageButton logButton = new ImageButton("log.png", null, new OpenLogWindow(), "Hide Log Window", "Show Log Window");
-	private static ImageButton decimalsButton = new ImageButton("more.png", null, new DecimalsCommand(), "More digits after the decimal",
-			"Fewer digits after the decimal");
-	private static ImageButton dataLoadButton = new ImageButton("loadbw.png", null, new LoadCommand(), "", "Load data from your computer");
-	private static ImageButton dataDumpButton = new ImageButton("savebw.png", null, new SaveCommand(), "", "Save the database to your computer");
+	private static ImageButton colourHintsButton = new ImageButton("hinton.png", "hintoff.png", new ColourHintsCommand(), 
+			"No colour hints",	"Show colour hints");
+	private static ImageButton restartButton = new ImageButton("restart.png", null, new RestartCommand(), 
+			"Restart this project", "Restart this project");
+	private static ImageButton graphicsButton = new ImageButton("graphics.png", "text.png", new GraphicsCommand(), 
+			"Text column headers","Graphic column headers");
+	private static ImageButton expressionButton = new ImageButton("time.png", "dollar.png", new ValueExpressionCommand(), 
+			"Money values","Labour Time Values");
+	private static ImageButton logButton = new ImageButton("log.png", null, new OpenLogWindow(), 
+			"Hide Log Window", "Show Log Window");
+	private static ImageButton decimalsButton = new ImageButton("more.png", null, new DecimalsCommand(), 
+			"More digits after the decimal","Fewer digits after the decimal");
+	private static ImageButton dataLoadButton = new ImageButton("loadbw.png", null, new LoadCommand(), 
+			"", "Load data from your computer");
+	private static ImageButton dataDumpButton = new ImageButton("savebw.png", null, new DumpCommand(), 
+			"", "Save the database to your computer");
 
 	private static ArrayList<ImageButton> imageButtons=new ArrayList<ImageButton>();
 
