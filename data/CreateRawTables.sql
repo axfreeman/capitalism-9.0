@@ -1,11 +1,3 @@
- DROP table if exists globals;
- CREATE TABLE globals ( project int default 1 not null, timeStamp VARCHAR (10) DEFAULT '1' not null, RateOfExploitation double DEFAULT NULL, 
- MELT double DEFAULT NULL, initialCapital double DEFAULT NULL, persistedProfit double DEFAULT NULL, profit double DEFAULT NULL, ProfitRate double DEFAULT NULL, 
- PopulationGrowthRate double DEFAULT NULL, totalValue double DEFAULT 0, totalPrice double DEFAULT 0, investmentRatio double DEFAULT 0.0, 
- labourSupplyResponse ENUM('FLEXIBLE','FIXED') DEFAULT 'FIXED', meltResponse ENUM('VALUE_DRIVEN', 'PRICE_DRIVEN') DEFAULT 'PRICE_DRIVEN', 
- priceResponse ENUM  ('VALUES','EQUALIZED','DYNAMIC') DEFAULT 'VALUES', CurrencySymbol VARCHAR(10) DEFAULT '£', quantitySymbol VARCHAR(10) DEFAULT '#', 
- Primary Key (project, timeStamp) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
- 
  DROP table if exists socialClasses;
  CREATE TABLE socialclasses ( project INT DEFAULT 1 NOT NULL, timeStamp VARCHAR (10) DEFAULT '1' NOT NULL, SocialClassName VARCHAR(45) DEFAULT NULL, 
  Size DOUBLE DEFAULT NULL, participationRatio double DEFAULT 1, revenue double DEFAULT 0, primary key (project, timeStamp, SocialClassName)) ENGINE=INNODB DEFAULT CHARSET=UTF8;
@@ -39,12 +31,13 @@
  
  DROP table if exists timeStamps;
  CREATE TABLE timeStamps (timeStampID int Default 1 NOT NULL, projectFK INT default 1 NOT NULL, period INT DEFAULT NULL,superState VARCHAR(45) default NULL, 
- COMPARATORTIMESTAMPID INT DEFAULT 1, Description VARCHAR(30) default NULL, PRIMARY KEY (timeStampID,projectFK));
+ COMPARATORTIMESTAMPID INT DEFAULT 1, Description VARCHAR(30) default NULL,  RateOfExploitation double DEFAULT NULL, 
+ MELT double DEFAULT NULL, initialCapital double DEFAULT NULL, persistedProfit double DEFAULT NULL, profit double DEFAULT NULL, 
+ ProfitRate double DEFAULT NULL,  PopulationGrowthRate double DEFAULT NULL, totalValue double DEFAULT 0, totalPrice double DEFAULT 0, 
+ investmentRatio double DEFAULT 0.0,  labourSupplyResponse ENUM('FLEXIBLE','FIXED') DEFAULT 'FIXED', meltResponse ENUM('VALUE_DRIVEN', 
+ 'PRICE_DRIVEN') DEFAULT 'PRICE_DRIVEN',  priceResponse ENUM  ('VALUES','EQUALIZED','DYNAMIC') DEFAULT 'VALUES', 
+ CurrencySymbol VARCHAR(10) DEFAULT '£', quantitySymbol VARCHAR(10) DEFAULT '#',  PRIMARY KEY (timeStampID,projectFK));
  
- insert into globals (project,timeStamp,Melt,PopulationGrowthRate,investmentRatio,labourSupplyResponse, meltResponse, priceResponse, CurrencySymbol,quantitySymbol) 
- select project,timeStamp,Melt,PopulationGrowthRate,investmentRatio,labourSupplyResponse,  meltResponse, priceResponse, CurrencySymbol,quantitySymbol 
- from CSVREAD('~/Documents/Capsim/data/globals.csv');
-
  insert into socialClasses select * from CSVREAD('~/Documents/Capsim/data/socialClasses.csv');	
  
  insert into industries (PROJECT, TIMESTAMP, INDUSTRYNAME, COMMODITYNAME, OUTPUT, GROWTHRATE) select PROJECT, TIMESTAMP, 
@@ -53,8 +46,11 @@
  insert into commodities (PROJECT, TIMESTAMP, NAME,functionType,UNITVALUE,UNITPRICE,TURNOVERTIME,originType,IMAGENAME,DISPLAYORDER,TOOLTIP) 
  select PROJECT, TIMESTAMP, NAME,functionType,UNITVALUE,UNITPRICE,TURNOVERTIME,originType,IMAGENAME,DISPLAYORDER, TOOLTIP from CSVREAD('~/Documents/Capsim/data/commodities.csv');
 
- INSERT INTO timestamps (timeStampID, projectFK, PERIOD,superState, COMPARATORTIMESTAMPID, Description) 
- SELECT TIMESTAMPID, PROJECTFK, PERIOD, SUPERSTATE, COMPARATORTIMESTAMPID, DESCRIPTION FROM CSVREAD('~/Documents/Capsim/data/timeStamps.csv');
+ INSERT INTO timestamps (timeStampID, projectFK, PERIOD,superState, COMPARATORTIMESTAMPID, Description,Melt,PopulationGrowthRate,investmentRatio,
+ labourSupplyResponse, meltResponse, priceResponse, CurrencySymbol,quantitySymbol) 
+ SELECT TIMESTAMPID, PROJECTFK, PERIOD, SUPERSTATE, COMPARATORTIMESTAMPID, DESCRIPTION,
+ Melt,PopulationGrowthRate,investmentRatio,labourSupplyResponse,  meltResponse, priceResponse, CurrencySymbol,quantitySymbol
+ FROM CSVREAD('~/Documents/Capsim/data/timeStamps.csv');
  
  insert into projects (ProjectID, Description) select ProjectID, Description from CSVREAD('~/Documents/Capsim/data/projects.csv');
 
@@ -62,11 +58,6 @@
  
  update projects set currentTimeStampCursor =1 where ProjectID=1;
 
- -- not all columns are filled for every type of stock: for example, sales and money stocks have no coefficient
- -- we keep them all in the same table, because for certain operations (for example calculating total value) we need to iterate over all stocks
- -- and because it greatly simplifies the code.
- -- possibly, in a future version, separate tables could be introduced for each type of stock, with proper functional abstraction to deal with the variety among them.
- 
  insert into stocks (PROJECT, TIMESTAMP, OWNER, OWNERTYPE, COMMODITY, STOCKTYPE, QUANTITY, PRODUCTIONCOEFFICIENT, CONSUMPTIONCOEFFICIENT) 
  select PROJECT, TIMESTAMP, OWNER, OWNERTYPE, COMMODITY, STOCKTYPE, QUANTITY, PRODUCTIONCOEFFICIENT,CONSUMPTIONCOEFFICIENT from CSVREAD('~/Documents/Capsim/data/stocks.csv');
  

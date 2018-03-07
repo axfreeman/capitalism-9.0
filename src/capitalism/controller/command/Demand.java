@@ -24,7 +24,6 @@ import org.apache.logging.log4j.Logger;
 
 import capitalism.controller.Simulation;
 import capitalism.model.Commodity;
-import capitalism.model.Global;
 import capitalism.model.Industry;
 import capitalism.model.SocialClass;
 import capitalism.model.Stock;
@@ -59,7 +58,7 @@ public class Demand implements Command {
 		Reporter.report(logger, 0, "DEMAND");
 
 		computeProductiveDemand();
-		registerLabourResponse(Global.getGlobal().getLabourSupplyResponse());
+		registerLabourResponse(Simulation.currentTimeStamp.getLabourSupplyResponse());
 		computeSocialClassDemand();
 	}
 

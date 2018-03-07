@@ -434,8 +434,7 @@ public class Commodity implements Serializable {
 	 *         {@link DisplayControlsBox#expressionDisplay} and {@link DisplayControlsBox#expressionDisplay}
 	 */
 	public double expressionOf(ATTRIBUTE valueProperty) {
-		Global global = Global.getGlobal();
-		double melt = global.getMelt();
+		double melt = Simulation.currentTimeStamp.getMelt();
 		double expression;
 		switch (valueProperty) {
 		case VALUE:

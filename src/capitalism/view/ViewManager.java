@@ -27,7 +27,6 @@ import org.apache.logging.log4j.Logger;
 
 import capitalism.Capitalism;
 import capitalism.controller.Simulation;
-import capitalism.model.Global;
 import capitalism.model.Project;
 import capitalism.model.TimeStamp;
 import capitalism.utils.Dialogues;
@@ -268,13 +267,13 @@ public class ViewManager {
 	}
 
 	/**
-	 * populate the number fields in the globals grid from the value of the Global persistent entity
-	 * at the timeStamp given by the displayCursor
+	 * populate the number fields in the summary grid from the value of the TimeStamp persistent entity
+	 * defined by the displayCursor
 	 * 
 	 */
-	private static void populateGlobalsGrid() {
-		Global global = Global.getGlobal(Simulation.timeStampDisplayCursor);
-		switchableGrid.populate(smallFormat, global);
+	private static void populateSummaryGrid() {
+		TimeStamp timeStamp = TimeStamp.getTimeStamp(Simulation.timeStampDisplayCursor);
+		switchableGrid.populate(smallFormat, timeStamp);
 	}
 
 	/**
@@ -292,8 +291,7 @@ public class ViewManager {
 		if (valuesExpressionDisplay == DisplayControlsBox.DISPLAY_AS_EXPRESSION.MONEY) {
 			return intrinsicValueExpression;
 		} else {
-			Global global = Global.getGlobal();
-			double melt = global.getMelt();
+			double melt = Simulation.currentTimeStamp.getMelt();
 			return intrinsicValueExpression / melt;
 		}
 	}
@@ -443,7 +441,7 @@ public class ViewManager {
 
 		tabbedTableViewer.repopulateTabbedTables();
 		TabbedTableViewer.refreshTables();
-		populateGlobalsGrid();
+		populateSummaryGrid();
 	}
 
 	/**

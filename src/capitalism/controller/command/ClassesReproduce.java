@@ -50,7 +50,7 @@ public class ClassesReproduce implements Command {
 		}
 		
 		Reporter.report(logger, 1, "Recompute values if necessary");
-		Simulation.checkGlobalConsistency();
+		Simulation.checkConsistency();
 
 		// recalculate unit values, because these will have changed as a result of production
 		Simulation.computeUnitValues();

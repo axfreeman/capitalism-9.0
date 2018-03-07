@@ -1,9 +1,0 @@
-project,timeStamp,MELT,PopulationGrowthRate,InvestmentRatio,LabourSupplyResponse,priceResponse,meltResponse,CurrencySymbol,QuantitySymbol
-1,1,1,0,0,FIXED,VALUES,,$,#
-2,1,0.5,0,0,FIXED,VALUES,PRICE_DRIVEN,$,#
-3,1,1,0,0,FIXED,VALUES,,$,#
-4,1,1,0,0,FIXED,VALUES,,$,#
-5,1,1,0,0.5,FLEXIBLE,VALUES,,£,H
-6,1,1,0,0,FLEXIBLE,EQUALIZED,PRICE_DRIVEN,$,#
-7,1,0.5,0.01,0,FIXED,DYNAMIC,PRICE_DRIVEN,$,#
-8,1,1,0,0,FIXED,VALUES,,$,#

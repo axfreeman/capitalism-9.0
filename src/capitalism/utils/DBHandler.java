@@ -147,7 +147,6 @@ public class DBHandler {
 	 */
 	public boolean exportDataFiles() {
 		try {
-			copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "globals.csv");
 			copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "industries.csv");
 			copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "socialClasses.csv");
 			copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "projects.csv");

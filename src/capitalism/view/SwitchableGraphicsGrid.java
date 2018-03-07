@@ -2,7 +2,7 @@ package capitalism.view;
 
 import java.util.HashMap;
 
-import capitalism.model.Global;
+import capitalism.model.TimeStamp;
 import capitalism.view.custom.TrackingControlsBox;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
@@ -15,10 +15,10 @@ import javafx.scene.layout.RowConstraints;
 import javafx.scene.paint.Color;
 
 /**
- * rough and ready custom GUI control to display a numeric quantity and a description of it. Used to display the values in a Global entity.
+ * rough and ready custom GUI control to display a numeric quantity and a description of it. Used to display the values in a TimeStamp entity.
  * The descriptions and the numbers are left and right aligned within each grid element
  * This is done by the {@code Glabel} controls that are added to the grid by the {@link setGridCell} method.
- * TODO find a way to bind this to the persistent entity Global
+ * TODO find a way to bind this to the persistent entity TimeStamp
  *
  */
 public class SwitchableGraphicsGrid extends AnchorPane {
@@ -59,19 +59,19 @@ public class SwitchableGraphicsGrid extends AnchorPane {
 		setEffect(dropShadow);
 	}
 
-	public void setGridCell(int col, int row, Global global, Global.GLOBAL_SELECTOR selector) {
+	public void setGridCell(int col, int row, TimeStamp timeStamp, TimeStamp.GLOBAL_SELECTOR selector) {
 		Glabel glabel = new Glabel();
 		glabel.setDescription(selector.text());
 		gridPane.add(glabel, row, col);
 		Label label = glabel.getNumberLabel();
-		String text = global.value(selector);
+		String text = timeStamp.value(selector);
 		
 		String deltaModifier="";
 
-		if (global.changed(selector)) {
+		if (timeStamp.changed(selector)) {
 			label.setTextFill(Color.RED);
 			if (TrackingControlsBox.displayDeltas) {
-				text=global.showDelta(text, selector);
+				text=timeStamp.showDelta(text, selector);
 				deltaModifier=(TrackingControlsBox.displayDeltas?ViewManager.deltaSymbol:"");
 			}
 		}
@@ -79,21 +79,21 @@ public class SwitchableGraphicsGrid extends AnchorPane {
 	}
 
 	/**
-	 * fill out the values in the grid from the supplied Global
+	 * fill out the values in the grid from the supplied TimeStamp
 	 * 
 	 * @param floatFormatString
-	 *            a format string that determines how the global is displayed
-	 * @param global
-	 *            the persistent Global that is used to get the numeric values
+	 *            a format string that determines how the timeStamp is displayed
+	 * @param timeStamp
+	 *            the persistent TimeStamp that is used to get the numeric values
 	 */
-	public void populate(String floatFormatString, Global global) {
-		setGridCell(0, 0, global, Global.GLOBAL_SELECTOR.INITIALCAPITAL);
-		setGridCell(0, 1, global, Global.GLOBAL_SELECTOR.CURRENTCAPITAL);
-		setGridCell(0, 2, global, Global.GLOBAL_SELECTOR.PROFIT);
-		setGridCell(0, 3, global, Global.GLOBAL_SELECTOR.PROFITRATE);
-		setGridCell(1, 0, global, Global.GLOBAL_SELECTOR.TOTALVALUE);
-		setGridCell(1, 1, global, Global.GLOBAL_SELECTOR.TOTALPRICE);
-		setGridCell(1, 2, global, Global.GLOBAL_SELECTOR.MELT);
-		setGridCell(1, 3, global, Global.GLOBAL_SELECTOR.POPULATION_GROWTH_RATE);
+	public void populate(String floatFormatString, TimeStamp timeStamp) {
+		setGridCell(0, 0, timeStamp, TimeStamp.GLOBAL_SELECTOR.INITIALCAPITAL);
+		setGridCell(0, 1, timeStamp, TimeStamp.GLOBAL_SELECTOR.CURRENTCAPITAL);
+		setGridCell(0, 2, timeStamp, TimeStamp.GLOBAL_SELECTOR.PROFIT);
+		setGridCell(0, 3, timeStamp, TimeStamp.GLOBAL_SELECTOR.PROFITRATE);
+		setGridCell(1, 0, timeStamp, TimeStamp.GLOBAL_SELECTOR.TOTALVALUE);
+		setGridCell(1, 1, timeStamp, TimeStamp.GLOBAL_SELECTOR.TOTALPRICE);
+		setGridCell(1, 2, timeStamp, TimeStamp.GLOBAL_SELECTOR.MELT);
+		setGridCell(1, 3, timeStamp, TimeStamp.GLOBAL_SELECTOR.POPULATION_GROWTH_RATE);
 	}
 }

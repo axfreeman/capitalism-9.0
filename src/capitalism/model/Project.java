@@ -135,7 +135,7 @@ public class Project implements Serializable {
 		if (project == null) {
 			return 0;
 		} else {
-			return project.getTimeStamp();
+			return project.getTimeStampID();
 		}
 	}
 
@@ -188,7 +188,7 @@ public class Project implements Serializable {
 	/**
 	 * @return the timeStamp that this simulation has so far reached (only set when switching to a different project)
 	 */
-	public int getTimeStamp() {
+	public int getTimeStampID() {
 		return timeStamp;
 	}
 

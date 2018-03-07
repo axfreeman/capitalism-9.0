@@ -26,8 +26,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import capitalism.controller.Simulation;
-import capitalism.model.Global;
 import capitalism.model.Project;
+import capitalism.model.TimeStamp;
 import capitalism.view.command.ColourHintsCommand;
 import capitalism.view.command.DecimalsCommand;
 import capitalism.view.command.GraphicsCommand;
@@ -151,46 +151,45 @@ public class DisplayControlsBox extends HBox {
 		meltCombo.valueProperty().addListener(new ChangeListener<String>() {
 			@Override public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
 				meltCombo.setPromptText(newValue);
-				Global currentGlobal = Global.getGlobal();
-				currentGlobal.setMeltResponse(Simulation.MELT_RESPONSE.fromText(newValue));
+				Simulation.currentTimeStamp.setMeltResponse(Simulation.MELT_RESPONSE.fromText(newValue));
 			}
 		});
 		labourSupplyCombo.valueProperty().addListener(new ChangeListener<String>() {
 			@Override public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
 				labourSupplyCombo.setPromptText(newValue);
-				Global currentGlobal = Global.getGlobal();
-				currentGlobal.setLabourSupplyResponse(Simulation.LABOUR_RESPONSE.fromText(newValue));
+				Simulation.currentTimeStamp.setLabourSupplyResponse(Simulation.LABOUR_RESPONSE.fromText(newValue));
 			}
 		});
 		pricingCombo.valueProperty().addListener(new ChangeListener<String>() {
 			@Override public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
 				pricingCombo.setPromptText(newValue);
-				Global currentGlobal = Global.getGlobal();
-				currentGlobal.setPriceResponse(Simulation.PRICE_RESPONSE.fromText(newValue));
+				Simulation.currentTimeStamp.setPriceResponse(Simulation.PRICE_RESPONSE.fromText(newValue));
 			}
 		});
 	}
 	
 	/**
-	 * When we switch projects, there will be a new global. The parameter combos therefore have to be reset
+	 * When we switch projects, its timeStamp record will have new parameters. 
+	 * The parameter combos therefore have to be reset
 	 */
 	
 	public static void setParameterComboPrompts() {
-		Global global = Global.getGlobal();
-		labourSupplyCombo.setPromptText(global.getLabourSupplyResponse().text());
-		meltCombo.setPromptText(global.getPriceResponse().text());
-		pricingCombo.setPromptText(global.getMeltResponse().text());
+		labourSupplyCombo.setPromptText(Simulation.currentTimeStamp.getLabourSupplyResponse().text());
+		meltCombo.setPromptText(Simulation.currentTimeStamp.getPriceResponse().text());
+		pricingCombo.setPromptText(Simulation.currentTimeStamp.getMeltResponse().text());
 	}
 
 	/**
-	 * extract the per-project currency and quantity symbols from the globals record.
-	 * NOTE these should perhaps be in the project record not the globals record.
+	 * extract the per-project currency and quantity symbols from the timeStamp record.
+	 * NOTE these should perhaps be in the project record not the timeStamp record.
 	 * But if a simulation involves a currency reform, it could be in the right place after all.
 	 */
 	public static void setExpressionSymbols() {
-		Global global = Global.getGlobal();
-		moneyExpressionSymbol = global.getCurrencySymbol();
-		quantityExpressionSymbol = global.getQuantitySymbol();
+		TimeStamp timeStamp= TimeStamp.getTimeStamp();
+		moneyExpressionSymbol = timeStamp.getCurrencySymbol();
+		expressionSymbol=moneyExpressionSymbol;
+		quantityExpressionSymbol = timeStamp.getQuantitySymbol();
+		
 	}
 
 	/**

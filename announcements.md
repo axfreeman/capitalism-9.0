@@ -1,5 +1,10 @@
-# Capitalism 9.0 announcements 3/3/2018 8:16:17 AM 
+# Capitalism 9.0 announcements 3/7/2018 2:01:06 AM 
 
+Data Model consolidated to prepare for user project editing.
+Benchtesting of the standard projects still to be done.
+Hence no new executable
+
+## consolidated prior announcements
 New icon-based interface, wider selection of pricing and MELT responses.
 Updated spreadsheet illustrations in Docs folder
 New executable

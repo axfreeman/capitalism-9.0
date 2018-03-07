@@ -172,7 +172,6 @@ public class TrackingControlsBox extends VBox {
 				if (comparatorToggle.getSelectedToggle() != null) {
 					comparatorState = (COMPARATOR_STATE) comparatorToggle.getSelectedToggle().getUserData();
 
-					logger.debug(comparatorToggle.getSelectedToggle().getUserData().toString());
 					switch (comparatorState) {
 					case END:
 						Simulation.setTimeStampComparatorCursor(Simulation.timeStampIDCurrent);
@@ -208,7 +207,6 @@ public class TrackingControlsBox extends VBox {
 			@Override public void changed(ObservableValue<? extends Toggle> ov, Toggle old_toggle, Toggle new_toggle) {
 				if (magnitudeToggle.getSelectedToggle() != null) {
 					String selected = magnitudeToggle.getSelectedToggle().getUserData().toString();
-					logger.debug(magnitudeToggle.getSelectedToggle().getUserData().toString());
 					switch (selected) {
 					case "VALUES":
 						TabbedTableViewer.setDisplayAttribute(Stock.ValueExpression.VALUE);

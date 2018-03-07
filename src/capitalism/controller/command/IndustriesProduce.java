@@ -25,7 +25,6 @@ import org.apache.logging.log4j.Logger;
 
 import capitalism.controller.Simulation;
 import capitalism.model.Commodity;
-import capitalism.model.Global;
 import capitalism.model.Industry;
 import capitalism.model.Stock;
 import capitalism.model.Commodity.ORIGIN;
@@ -47,8 +46,7 @@ public class IndustriesProduce extends Simulation implements Command {
 	public void execute() {
 		Reporter.report(logger, 0, "INDUSTRY PRODUCTION");
 		advanceOneStep(ActionStates.C_P_IndustriesProduce.text(), ActionStates.C_P_Produce.text());
-		Global global = Global.getGlobal();
-		double melt = global.getMelt();
+		double melt = Simulation.currentTimeStamp.getMelt();
 
 		// Initialise the accounting for how much of this commodity is used up and how much is created in production in the current period
 		// Then we can calculate how much surplus of it resulted from production in this period.

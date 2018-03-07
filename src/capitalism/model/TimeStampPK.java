@@ -50,11 +50,6 @@ public class TimeStampPK implements Serializable {
 		return true;
 	}
 
-	@Override
-	public String toString() {
-		return "demo.TimeStampPK[ timeStamp=" + timeStampID + ", project=" + projectFK + " ]";
-	}
-
 	/**
 	 * @return the timeStampID
 	 */

@@ -27,7 +27,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import capitalism.model.Commodity;
-import capitalism.model.Global;
 import capitalism.model.Industry;
 import capitalism.model.Project;
 import capitalism.model.SocialClass;
@@ -63,9 +62,13 @@ public class Simulation extends Parameters{
 	
 	public static int timeStampDisplayCursor; 				// determines which timeStamp is displayed
 	private static int timeStampComparatorCursor; 			// the timeStamp with which the displayed data is to be compared
+	
+	// top copy of the timestamp record
+	
+	public static TimeStamp currentTimeStamp;
 
 	/**
-	 * A copy of the melt, for convenience and speed. MUST be updated by global.setMelt(). That way it will always synchronise.
+	 * A copy of the melt, for convenience and speed. MUST be updated by timeStamp.setMelt(). That way it will always synchronise.
 	 * TODO under demelopvent
 	 */
 	public static double melt;	
@@ -79,8 +82,6 @@ public class Simulation extends Parameters{
 	 */
 	public static void startup() {
 		Reporter.report(logger, 0, "INITIALISE DATA FROM USER-DEFINED PROJECTS");
-
-		TimeStamp timeStampCurrentRecord;
 
 		timeStampIDCurrent = 1;
 		timeStampDisplayCursor = 1;
@@ -105,44 +106,42 @@ public class Simulation extends Parameters{
 
 			// fetch this project's current timeStamp record (which must exist in the database or we flag an error but try to correct it)
 
-			timeStampCurrentRecord = TimeStamp.timeStampSingle(timeStampIDCurrent);
-			if (timeStampCurrentRecord == null) {
-				Reporter.report(logger, 1, " There is no initial timeStamp record for project %d, will create a record and carry on from there",
+			currentTimeStamp = TimeStamp.getTimeStamp(timeStampIDCurrent);
+			if (currentTimeStamp == null) {
+				Reporter.report(logger, 1, " There is no initial timeStamp record for project %d. Please check the data",
 						p.getDescription());
-				try {
-					TimeStamp.getEntityManager().getTransaction().begin();
-					TimeStamp newStamp = new TimeStamp(1, p.getProjectID(), 1, "", 1, "Start");
-					TimeStamp.getEntityManager().persist(newStamp);
-					TimeStamp.getEntityManager().getTransaction().commit();
-				} catch (PersistenceException e) {
-					Dialogues.alert(logger, String.format("Could not create the initial timeStamp record for project %d", p.getDescription()));
-				}
+				return;
 			}
-			if (timeStampCurrentRecord.getTimeStampID() != 1) {
+			if (currentTimeStamp .getTimeStampID() != 1) {
 				Reporter.report(logger, 1,
-						" The initial timeStamp record for project %d should have an ID of 1 but instead has  %d. We will try to carry on with the new ID",
-						p.getDescription(), timeStampCurrentRecord);
+						" The initial timeStamp record for project %d should have an ID of 1 but instead has  %d. Please check the Data",
+						p.getDescription(), currentTimeStamp.getTimeStampID());
+				return;
 			}
 
-			calculateStockAggregates();
-			setCapitals();
-			checkInvariants();
-
-			// Set the initial comparators for every project, industry, class, use value and stock .
+			// Set the initial comparators for every timeStamp, project, industry, class, use value and stock .
 			// Since the comparator cursor and the cursor are already 1, this amounts to setting it to 1
-			setComparators(1);
 
 			// little tweak to handle currency symbols encoded in UTF8
 
-			Global global = Global.getGlobal(p.getProjectID(), 1);
-			logger.debug("Character Symbol for Project {} is {}", global.getCurrencySymbol());
-			String utfjava = StringStuff.convertFromUTF8(global.getCurrencySymbol());
+			logger.debug("Character Symbol for Project {} is {}", currentTimeStamp .getCurrencySymbol());
+			String utfjava = StringStuff.convertFromUTF8(currentTimeStamp.getCurrencySymbol());
 			logger.debug("Character symbol after conversion is {}", utfjava);
-			global.setCurrencySymbol(utfjava);
+			currentTimeStamp.setCurrencySymbol(utfjava);
+			setComparators(1);
+
+			// NOTE these calls depend on the side effect of setting currentTimeStamp to be the timeStamp of this project
+			// but since this is internal to the class, I think it is acceptable.
+			
+			calculateStockAggregates();
+			setCapitals();
+			checkInvariants();
 		}
 
 		// There will normally be more than one project. Choose the first.
 		projectCurrent = 1;
+		// set the top copy of the timeStamp to be that of the current project
+		currentTimeStamp=TimeStamp.getTimeStamp(1, 1);
 	}
 
 	/**
@@ -192,11 +191,15 @@ public class Simulation extends Parameters{
 		timeStampDisplayCursor = timeStampIDCurrent + 1;
 		logger.debug("Move One Step in project {} by creating a new timeStamp {} called {}", projectCurrent, timeStampIDCurrent, description);
 
-		TimeStamp newTimeStamp = new TimeStamp(timeStampIDCurrent + 1, projectCurrent, periodCurrent, superState, timeStampIDCurrent, description);
-
+		TimeStamp oldTimeStamp=TimeStamp.getTimeStamp(timeStampIDCurrent);
+		currentTimeStamp = new TimeStamp(oldTimeStamp);
+		currentTimeStamp.setTimeStampID(timeStampIDCurrent+1);
+		currentTimeStamp.setSuperState(superState);
+		currentTimeStamp.setDescription(description);
+		
 		try {
 			TimeStamp.getEntityManager().getTransaction().begin();
-			TimeStamp.getEntityManager().persist(newTimeStamp);
+			TimeStamp.getEntityManager().persist(currentTimeStamp);
 			TimeStamp.getEntityManager().getTransaction().commit();
 		} catch (PersistenceException p) {
 			logger.error("Could not advance to timeStampIDCurrent " + timeStampIDCurrent + " because of " + p.getMessage());
@@ -218,7 +221,6 @@ public class Simulation extends Parameters{
 		Stock.getEntityManager().getTransaction().begin();
 		Industry.getEntityManager().getTransaction().begin();
 		SocialClass.getEntityManager().getTransaction().begin();
-		Global.getEntityManager().getTransaction().begin();
 
 		// Use values
 
@@ -264,20 +266,12 @@ public class Simulation extends Parameters{
 			SocialClass.getEntityManager().persist(newSocialClass);
 		}
 
-		// Globals
-
-		logger.debug("Persisting a new globals record with timeStamp {} ", timeStampIDCurrent + 1);
-		Global newGlobal = new Global(Global.getGlobal());
-		newGlobal.setTimeStamp(timeStampIDCurrent + 1);
-		Global.getEntityManager().persist(newGlobal);
-
 		setComparators(timeStampIDCurrent + 1);
 
 		SocialClass.getEntityManager().getTransaction().commit();
 		Industry.getEntityManager().getTransaction().commit();
 		Stock.getEntityManager().getTransaction().commit();
 		Commodity.getEntityManager().getTransaction().commit();
-		Global.getEntityManager().getTransaction().commit();
 
 		timeStampIDCurrent++;
 
@@ -337,39 +331,38 @@ public class Simulation extends Parameters{
 	 * this helper method simply checks consistency
 	 */
 
-	public static void checkGlobalConsistency() {
-		double globalTotalValue = 0.0;
-		double globalTotalPrice = 0.0;
-		Global global = Global.getGlobal();
+	public static void checkConsistency() {
+		double totalValue = 0.0;
+		double totalPrice = 0.0;
 		
 		//TODO this is somewhat hamfisted. Need queries to do this stuff.
 		if (Parameters.isFullPricing()) {
 			for (Commodity u : Commodity.commoditiesAll()) {
 				Reporter.report(logger, 2, "Commodity [%s] Total value is %.0f, and total price is %.0f", u.commodityName(), u.totalValue(), u.totalPrice());
-				globalTotalValue += u.totalValue();
-				globalTotalPrice += u.totalPrice();
+				totalValue += u.totalValue();
+				totalPrice += u.totalPrice();
 			}
 		} else {
 			for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION.PRODUCTIVE_INPUT)) {
 				Reporter.report(logger, 2, "Commodity [%s] Total value is %.0f, and total price is %.0f", u.commodityName(), u.totalValue(), u.totalPrice());
-				globalTotalValue += u.totalValue();
-				globalTotalPrice += u.totalPrice();
+				totalValue += u.totalValue();
+				totalPrice += u.totalPrice();
 
 			}
 			for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION.CONSUMER_GOOD)) {
 				Reporter.report(logger, 2, "Commodity [%s] Total value is %.0f, and total price is %.0f", u.commodityName(), u.totalValue(), u.totalPrice());
-				globalTotalValue += u.totalValue();
-				globalTotalPrice += u.totalPrice();
+				totalValue += u.totalValue();
+				totalPrice += u.totalPrice();
 			}
 		}
-		Reporter.report(logger, 1, "Global total value is %.0f, and total price is %.0f", globalTotalValue, globalTotalPrice);
+		Reporter.report(logger, 1, "Total value is %.0f, and Total price is %.0f", totalValue, totalPrice);
 
-		logger.debug("Recorded global total value is {}, and total value calculated from commodities is {}", global.totalValue(), globalTotalValue);
-		logger.debug("Recorded global total price is {}, and total price calculated from commodities is {}", global.totalPrice(), globalTotalPrice);
+		logger.debug("Recorded total value is {}, and calculated total value is {}", Simulation.currentTimeStamp.totalValue(), totalValue);
+		logger.debug("Recorded total price is {}, and calculated total price is {}", Simulation.currentTimeStamp.totalPrice(), totalPrice);
 
-		if (!MathStuff.equals(globalTotalValue, global.totalValue()))
+		if (!MathStuff.equals(totalValue, Simulation.currentTimeStamp.totalValue()))
 			Dialogues.alert(logger, "The total value of stocks is out of sync");
-		if (!MathStuff.equals(globalTotalPrice, global.totalPrice()))
+		if (!MathStuff.equals(totalPrice, Simulation.currentTimeStamp.totalPrice()))
 			Dialogues.alert(logger, "The total price of stocks is out of sync");
 	}
 
@@ -379,15 +372,14 @@ public class Simulation extends Parameters{
 	 * Called at startup and thereafter afterAccumulate (i.e. at the very end of the whole industry and start of the next)
 	 */
 	protected static void setCapitals() {
-		Global global = Global.getGlobal();
 		for (Industry c : Industry.industriesAll()) {
 			double initialCapital = c.currentCapital();
 			Reporter.report(logger, 3, "The initial capital of the industry[%s] is now $%.0f (intrinsic %.0f)", c.getName(), initialCapital,
-					initialCapital / global.getMelt());
+					initialCapital / Simulation.currentTimeStamp.getMelt());
 			c.setInitialCapital(initialCapital);
 		}
-		Reporter.report(logger, 2, "Total initial capital is now $%.0f (intrinsic %.0f)", global.initialCapital(),
-				global.initialCapital() / global.getMelt());
+		Reporter.report(logger, 2, "Total initial capital is now $%.0f (intrinsic %.0f)", Simulation.currentTimeStamp.initialCapital(),
+				Simulation.currentTimeStamp.initialCapital() / Simulation.currentTimeStamp.getMelt());
 		Reporter.report(logger, 2, "The profit of the previous period has been erased from the record; it was stored during the price calculation");
 		// Erase the public record of the profit of the previous period
 		for (Industry c : Industry.industriesAll()) {
@@ -459,13 +451,14 @@ public class Simulation extends Parameters{
 		Project.getEntityManager().getTransaction().commit();
 
 		// retrieve the selected project record, and copy its various cursors and into the simulation cursors
-		Simulation.timeStampIDCurrent = newProject.getTimeStamp();
+		Simulation.timeStampIDCurrent = newProject.getTimeStampID();
 		Simulation.timeStampDisplayCursor = newProject.getTimeStampDisplayCursor();
 		Simulation.setTimeStampComparatorCursor(newProject.getTimeStampComparatorCursor());
 		Simulation.setPeriodCurrent(newProject.getPeriod());
 		actionButtonsBox.setActionStateFromLabel(newProject.getButtonState());
 		Simulation.projectCurrent = newProjectID;
 		DisplayControlsBox.setParameterComboPrompts();
+		currentTimeStamp=TimeStamp.getTimeStamp(newProjectID, timeStampIDCurrent);
 		Reporter.report(logger, 0, "SWITCHED TO PROJECT %s (%s)", newProjectID, newProject.getDescription());
 		// ViewManager.getTabbedTableViewer().buildTables();
 	}
@@ -484,8 +477,7 @@ public class Simulation extends Parameters{
 			Commodity.setComparators(timeStampID);
 			Industry.setComparators(timeStampID);
 			SocialClass.setComparators(timeStampID);
-			Global.setComparators(timeStampID);
-
+			TimeStamp.setComparators(timeStampID);
 		} catch (Exception e) {
 			Dialogues.alert(logger, "Database fubar. Sorry, please contact developer");
 		}
@@ -525,8 +517,6 @@ public class Simulation extends Parameters{
 		Simulation.periodCurrent = periodCurrent;
 	}
 
-
-
 	/**
 	 * @return the projectCurrent
 	 */
@@ -547,5 +537,4 @@ public class Simulation extends Parameters{
 	public static int getTimeStampDisplayCursor() {
 		return timeStampDisplayCursor;
 	}
-
 }
