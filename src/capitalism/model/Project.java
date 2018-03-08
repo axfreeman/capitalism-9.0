@@ -40,10 +40,6 @@ import javafx.collections.ObservableList;
 @Entity
 @Table(name = "projects")
 
-@NamedQueries({
-		@NamedQuery(name = "Project.findAll", query = "SELECT v FROM Project v"),
-		@NamedQuery(name = "Project.findOne", query = "SELECT p from Project p where p.projectID= :project")
-})
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name="Project")
 public class Project implements Serializable {
@@ -59,13 +55,13 @@ public class Project implements Serializable {
 	
 	private static EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DB_PROJECT");
 	private static EntityManager entityManager;
-	private static TypedQuery<Project> projectByPrimaryKeyQuery;
-	private static TypedQuery<Project> projectAllQuery;
+	private static TypedQuery<Project> primaryQuery;
+	private static TypedQuery<Project> allQuery;
 
 	static {
 		entityManager = entityManagerFactory.createEntityManager();
-		projectAllQuery = entityManager.createNamedQuery("Project.findAll", Project.class);
-		projectByPrimaryKeyQuery = entityManager.createNamedQuery("Project.findOne", Project.class);
+		allQuery = entityManager.createQuery("SELECT v FROM Project v", Project.class);
+		primaryQuery = entityManager.createQuery("SELECT p from Project p where p.projectID= :project", Project.class);
 	}
 
 
@@ -104,9 +100,9 @@ public class Project implements Serializable {
 	 *            the projectID of a single project
 	 * @return the project record containing this project
 	 */
-	public static Project projectSingle(int projectID) {
-		projectByPrimaryKeyQuery.setParameter("project", projectID);
-		return projectByPrimaryKeyQuery.getSingleResult();
+	public static Project get(int projectID) {
+		primaryQuery.setParameter("project", projectID);
+		return primaryQuery.getSingleResult();
 	}
 
 	/**
@@ -115,7 +111,7 @@ public class Project implements Serializable {
 	 * @return a list of all projects
 	 */
 	public static List<Project> projectsAll() {
-		return projectAllQuery.getResultList();
+		return allQuery.getResultList();
 	}
 
 
@@ -131,7 +127,7 @@ public class Project implements Serializable {
 	 * @return the timeStamp last created by this project, null if the project does not exist
 	 */
 	public static int timeStampOfProject(int projectID) {
-		Project project = projectSingle(projectID);
+		Project project = get(projectID);
 		if (project == null) {
 			return 0;
 		} else {
@@ -147,13 +143,53 @@ public class Project implements Serializable {
 	 * @return the timeStamp last created by this project, null if the project does not exist
 	 */
 	public static int timeStampCursorOfProject(int projectID) {
-		Project project = projectSingle(projectID);
+		Project project = get(projectID);
 		if (project == null) {
 			return 0;
 		} else {
 			return project.getTimeStampDisplayCursor();
 		}
 	}
+	
+	/**
+	 * set the timeStamp of a given project.
+	 * 
+	 * @param projectID
+	 *            the projectID of a single project
+	 * @param timeStampID
+	 *            the timeStampID to be set for this project - normally, the timeStamp when the user switches a simulation
+	 * @return 0 if fail, the timeStamp otherwise
+	 */
+	public static int setTimeStam(int projectID, int timeStampID) {
+		Project project = Project.get(projectID);
+		if (project == null) {
+			return 0;
+		} else {
+			project.setTimeStamp(timeStampID);
+			return timeStampID;
+		}
+	}
+
+	/**
+	 * set the timeStampDisplayCursor of a given project.
+	 * 
+	 * @param projectID
+	 *            the projectID of a single project
+	 * @param timeStampCursor
+	 *            the timeStampDisplayCursor to be set for this project - normally, the timeStampDisplayCursor when the user switches a simulation
+	 * @return 0 if fail, the timeStampDisplayCursor otherwise
+	 */
+	public static int setTimeStampCursor(int projectID, int timeStampCursor) {
+		Project project = Project.get(projectID);
+		if (project == null) {
+			return 0;
+		} else {
+			project.setTimeStampDisplayCursor(timeStampCursor);
+			return timeStampCursor;
+		}
+	}
+
+
 
 	/**
 	 * an observable list of all projects
@@ -162,7 +198,7 @@ public class Project implements Serializable {
 	 */
 	public static ObservableList<Project> observableProjects() {
 		ObservableList<Project> output = FXCollections.observableArrayList();
-		List<Project> projects = Project.projectAllQuery.getResultList();
+		List<Project> projects = Project.allQuery.getResultList();
 		for (Project g : projects) {
 			output.add(g);
 		}

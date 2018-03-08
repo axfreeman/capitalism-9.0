@@ -186,7 +186,7 @@ public class Demand implements Command {
 
 		Reporter.report(logger, 1, "Compute revenues");
 		// Now we know how much labour power is going to be consumed, we can set the revenue of the sellers of labour power
-		for (SocialClass sc : SocialClass.socialClassesAll()) {
+		for (SocialClass sc : SocialClass.all()) {
 			double wageRevenue = sc.getSalesPrice();
 			double existingRevenue = sc.getRevenue();
 			Reporter.report(logger, 2, "The revenue of the social class [%s] from the previous period is $%.0f. Its wages will be $%.0f, giving a total of $%.0f",
@@ -218,7 +218,7 @@ public class Demand implements Command {
 	 */
 	public void computeSocialClassDemand() {
 		Reporter.report(logger, 1, "Compute demand from social classes");
-		for (SocialClass sc:SocialClass.socialClassesAll()) {
+		for (SocialClass sc:SocialClass.all()) {
 			Reporter.report(logger, 2, "Calculating demand from the social Class [%s] whose revenue is $%.0f", 
 					sc.getSocialClassName(),sc.getRevenue());
 			for (Stock s:sc.consumptionStocks()) {

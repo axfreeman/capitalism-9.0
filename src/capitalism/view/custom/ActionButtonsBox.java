@@ -94,7 +94,7 @@ public class ActionButtonsBox extends VBox {
 			onePeriod.execute();
 			lastAction = ActionStates.lastSuperState();
 			enableButtons();
-			ViewManager.refreshTimeStampTable();
+			ViewManager.refreshTimeStampView();
 			ViewManager.refreshDisplay();
 		});
 
@@ -137,7 +137,7 @@ public class ActionButtonsBox extends VBox {
 			actionState.getCommand().execute();
 			lastAction = actionState;
 			enableButtons();
-			ViewManager.refreshTimeStampTable();
+			ViewManager.refreshTimeStampView();
 			ViewManager.refreshDisplay();
 
 		});

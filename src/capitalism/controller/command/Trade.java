@@ -83,7 +83,7 @@ public class Trade implements Command {
 						// TODO at this point we only accept the first offer
 						// eventually we need to allow multiple sellers of Labour Power
 						// but this should be part of a general reform to allow multiple sellers of every commodity
-						for (SocialClass sc : SocialClass.socialClassesAll()) {
+						for (SocialClass sc : SocialClass.all()) {
 							Stock salesStock = sc.getSalesStock();
 							if (salesStock != null) {
 								sellerMoneyStock = sc.getMoneyStock();
@@ -131,7 +131,7 @@ public class Trade implements Command {
 	 */
 	private void socialClassesTrade() {
 		Reporter.report(logger, 1, "Social Classes will now try to purchase the stocks they need");
-		for (SocialClass buyer : SocialClass.socialClassesAll()) {
+		for (SocialClass buyer : SocialClass.all()) {
 			String buyerName = buyer.getSocialClassName();
 			for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION.CONSUMER_GOOD)) {
 				List<Industry> sellers = u.industries();

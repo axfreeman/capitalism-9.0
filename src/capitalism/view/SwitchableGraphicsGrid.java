@@ -84,7 +84,7 @@ public class SwitchableGraphicsGrid extends AnchorPane {
 	 * @param floatFormatString
 	 *            a format string that determines how the timeStamp is displayed
 	 * @param timeStamp
-	 *            the persistent TimeStamp that is used to get the numeric values
+	 *            the persistent TimeStamp that is used to get the numeric values	
 	 */
 	public void populate(String floatFormatString, TimeStamp timeStamp) {
 		setGridCell(0, 0, timeStamp, TimeStamp.GLOBAL_SELECTOR.INITIALCAPITAL);

@@ -16,21 +16,21 @@ public class TimeStampPK implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	@XmlElement @Basic(optional = false) @Column(name = "timeStampID") protected int timeStampID;
-	@XmlElement @Basic(optional = false) @Column(name = "projectFK") protected int projectFK;
+	@XmlElement @Basic(optional = false) @Column(name = "projectFK") protected int projectID;
 
 	protected TimeStampPK() {
 	}
 
 	public TimeStampPK(int timeStampID, int projectFK) {
 		this.timeStampID = timeStampID;
-		this.projectFK = projectFK;
+		this.projectID = projectFK;
 	}
 
 	@Override
 	public int hashCode() {
 		int hash = 0;
 		hash += (int) timeStampID;
-		hash += (int) projectFK;
+		hash += (int) projectID;
 		return hash;
 	}
 
@@ -44,7 +44,7 @@ public class TimeStampPK implements Serializable {
 		if (this.timeStampID != other.timeStampID) {
 			return false;
 		}
-		if (this.projectFK != other.projectFK) {
+		if (this.projectID != other.projectID) {
 			return false;
 		}
 		return true;

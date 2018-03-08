@@ -20,8 +20,6 @@
 
 package capitalism.view;
 
-import java.io.File;
-import java.io.IOException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,7 +27,6 @@ import capitalism.Capitalism;
 import capitalism.controller.Simulation;
 import capitalism.model.Project;
 import capitalism.model.TimeStamp;
-import capitalism.utils.Dialogues;
 import capitalism.utils.Reporter;
 import capitalism.view.custom.ActionButtonsBox;
 import capitalism.view.custom.ActionStates;
@@ -65,7 +62,7 @@ import javafx.stage.Stage;
  * it allows for a clean, functional programming style where most if not all references are to the ViewManager class
  * and not to the single instance of it.
  * 
- * The same principles are applied to the custom controls. 
+ * The same principles are applied to the custom controls.
  * 
  * These principles are NOT however applied to the data model, where multiple instances of every record are created
  * all the time. For this same reason they don't apply to the display classes in {@code capitalism.view.tables} which
@@ -83,7 +80,7 @@ public class ViewManager {
 	final public static String deltaSymbol = "± ";
 
 	// display parameters that can change as the simulation proceeds
-	
+
 	private static String largeFormat = "%1$,.0f";	// Formats the display of large floating point numbers
 	private static String smallFormat = "%1$.2f";   // Formats the display of small floating point numbers
 
@@ -95,7 +92,7 @@ public class ViewManager {
 	private static HBox manePane;
 	private static VBox bigEverything;
 	private static AnchorPane anchorPane;
-	private static TimeStampView tree;
+	private static TimeStampView timeStampViewer;
 	private static SwitchableGraphicsGrid switchableGrid;
 	private static TabbedTableViewer tabbedTableViewer;
 	private static DisplayControlsBox displayControlsBox;
@@ -107,15 +104,15 @@ public class ViewManager {
 		logger.debug(" Screen top is " + Double.toString(screenBounds.getMaxY()));
 		logger.debug(" Screen left is " + Double.toString(screenBounds.getMinX()));
 		logger.debug(" Screen bottom is " + Double.toString(screenBounds.getMinY()));
-		
+
 		// construct the root window, a simple container with almost no functionality
 		// TODO do we really need it?
-		
+
 		rootLayout.setPrefHeight(800);
 		rootLayout.setPrefWidth(1300);
-		
-		// display the root layout. Later (in startup) it will hold an anchorPane where most of the business is conducted. 
-		
+
+		// display the root layout. Later (in startup) it will hold an anchorPane where most of the business is conducted.
+
 		Scene scene = new Scene(rootLayout);
 		String css = getClass().getResource("/SimulationTheme.css").toExternalForm();
 		scene.getStylesheets().add(css);
@@ -123,10 +120,10 @@ public class ViewManager {
 		primaryStage.setY(0);
 		primaryStage.show();
 		primaryStage.setTitle("Capitalism");
-		
-		// now, and only now, create the logger window. We had to wait until the application launched but 
+
+		// now, and only now, create the logger window. We had to wait until the application launched but
 		// we have to do it now because otherwise, we would crash the logging reports that occur during Simulation.startup()
-		
+
 		Reporter.createLogWindow();
 	}
 
@@ -142,7 +139,7 @@ public class ViewManager {
 		addCustomControls();
 
 		// the timestamp table is populated here, and also when the project changes
-		refreshTimeStampTable();
+		refreshTimeStampView();
 
 		// the display is refreshed every time it changes, starting here
 		refreshDisplay();
@@ -231,48 +228,19 @@ public class ViewManager {
 		Capitalism.dataHandler.restart();// fetch all the data
 		Simulation.startup();// pre-process all the data
 		actionButtonsBox.setActionStateFromLabel("Accumulate");
-		refreshTimeStampTable();
+		refreshTimeStampView();
 		refreshDisplay();
 		// capitalism.showMainWindow();// Set up the display (NOTE: this calls setMainApp and hence all the display initialization methods)
 	}
 
-	/**
-	 * Ask the user where to store data and then dump the database into it as a set of CSV files
-	 */
-	public static void dataDump() {
-		File saveDirectory = Dialogues.directoryChooser("Location to save data");
-		Capitalism.dataHandler.saveDataBase(saveDirectory);
-		// TODO think systematically about what can go wrong, and trap it
-		// think of all the possible problems and catch them.
-		// a programme error may mean that the location is not a directory
-		// the user may not have permission to write there
-		// one or more of the files may already exist
-	}
-
-	/**
-	 * Ask the user where to load data from and then restore the database from it
-	 */
-	public static void dataLoad() {
-		File saveDirectory = Dialogues.directoryChooser("Location of the new data");
-		try {
-			Capitalism.dataHandler.loadDatabase(saveDirectory.getCanonicalPath());
-		} catch (IOException e) {
-			// TODO handle this better
-			e.printStackTrace();
-		}
-		// TODO think systematically about what can go wrong, and trap it
-		// the files may not be there
-		// the user may not have saved the current state of the directory
-
-	}
-
+	
 	/**
 	 * populate the number fields in the summary grid from the value of the TimeStamp persistent entity
 	 * defined by the displayCursor
 	 * 
 	 */
 	private static void populateSummaryGrid() {
-		TimeStamp timeStamp = TimeStamp.getTimeStamp(Simulation.timeStampDisplayCursor);
+		TimeStamp timeStamp = TimeStamp.get(Simulation.timeStampDisplayCursor);
 		switchableGrid.populate(smallFormat, timeStamp);
 	}
 
@@ -331,7 +299,7 @@ public class ViewManager {
 			DisplayControlsBox.setExpressionSymbols();
 
 			// the timeStamp has been reset in DataManager. Our responsibility is to display the consequences of the change
-			refreshTimeStampTable();
+			refreshTimeStampView();
 
 			// rebuild all the tables, because the number of columnns might have changed
 			tabbedTableViewer.buildTables();
@@ -345,19 +313,20 @@ public class ViewManager {
 	 * builds the main treeView which displays the results of the simulation
 	 */
 
-	public static void refreshTimeStampTable() {
-		int periods = Simulation.periodCurrent;
-		if (tree != null) {// we've already created one tree, so now we have to delete it and start over
-			trackingControlsBox.getChildren().remove(tree);
+	public static void refreshTimeStampView() {
+		logger.debug("Refreshing the timeStamp treeview for project {} at period {} and timeStamp {}",
+				Simulation.getProjectCurrent(), Simulation.getPeriodCurrent(), Simulation.timeStampIDCurrent);
+		int periods = Simulation.getPeriodCurrent();
+		if (timeStampViewer != null) {// we've already created one tree, so now we have to delete it and start over
+			trackingControlsBox.getChildren().remove(timeStampViewer);
 		}
-		tree = new TimeStampView();
-		tree.setShowRoot(false);
+		timeStampViewer = new TimeStampView();
+		timeStampViewer.setShowRoot(false);
 
-		// public TimeStamp(int timeStampID, int projectFK, int period, String superState, int COMPARATORTIMESTAMPID, String description)
 		// the root, which is not displayed, contains an observed timeStamp with ID = -1, which is not persisted (hence the ID causes no conflicts)
 
 		TimeStampViewItem treeRoot = new TimeStampViewItem(new TimeStamp(-1, 1, 0, "", -1, "Start"));
-		tree.setRoot(treeRoot);
+		timeStampViewer.setRoot(treeRoot);
 
 		// create a node for each current period, containing an observed timeStamp with:
 		// ID=1 at the start of the simulation
@@ -395,8 +364,14 @@ public class ViewManager {
 					// these are taken from the timeStamp table, not the actionState table. Thus, we only add the states that have been reached in the
 					// simulation
 
-					for (TimeStamp childStamp : TimeStamp.timeStampsBySuperState(thisPeriod, a.text())) {
-						logger.debug("Processing the timestamp called {}", childStamp.getDescription());
+					// diagnostics -switch off unless there are problems with the treeview
+					for (TimeStamp t : TimeStamp.allInProject()) {
+						logger.debug("TimeStamp described as {} has timeStampID {}, project {}, period {} and superState {}",
+								t.getDescription(), t.getTimeStampID(), t.getProjectFK(), t.getPeriod(), t.getSuperState());
+					}
+
+					for (TimeStamp childStamp : TimeStamp.superStateChildren(thisPeriod, a.text())) {
+						logger.debug("Processing the timestamp called {} in period {}", childStamp.getDescription(), thisPeriod);
 						TimeStampViewItem childState = new TimeStampViewItem(childStamp);
 
 						// set the ID for the superstate of which this is a part, so that if the user opts to view it,
@@ -408,16 +383,7 @@ public class ViewManager {
 				}
 			}
 		}
-		trackingControlsBox.getChildren().add(1, tree);
-	}
-
-	public static int getLastPeriod(int project) {
-		int p = 0;
-		for (TimeStamp t : TimeStamp.timeStampsAll()) {
-			if (t.getPeriod() > p)
-				p = t.getPeriod();
-		}
-		return p;
+		trackingControlsBox.getChildren().add(1, timeStampViewer);
 	}
 
 	/**
@@ -459,7 +425,8 @@ public class ViewManager {
 	}
 
 	/**
-	 * @param primaryStage the primaryStage to set
+	 * @param primaryStage
+	 *            the primaryStage to set
 	 */
 	public static void setPrimaryStage(Stage primaryStage) {
 		ViewManager.primaryStage = primaryStage;
@@ -473,7 +440,8 @@ public class ViewManager {
 	}
 
 	/**
-	 * @param largeFormat the largeFormat to set
+	 * @param largeFormat
+	 *            the largeFormat to set
 	 */
 	public static void setLargeFormat(String largeFormat) {
 		ViewManager.largeFormat = largeFormat;
@@ -487,7 +455,8 @@ public class ViewManager {
 	}
 
 	/**
-	 * @param smallFormat the smallFormat to set
+	 * @param smallFormat
+	 *            the smallFormat to set
 	 */
 	public static void setSmallFormat(String smallFormat) {
 		ViewManager.smallFormat = smallFormat;

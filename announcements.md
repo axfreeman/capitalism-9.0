@@ -1,8 +1,8 @@
-# Capitalism 9.0 announcements 3/7/2018 2:01:06 AM 
+# Capitalism 9.0 announcements 3/8/2018 12:54:01 AM 
 
-Data Model consolidated to prepare for user project editing.
-Benchtesting of the standard projects still to be done.
-Hence no new executable
+User can save to XML;editing and loading under development.
+Hence no new executable.
+New javadocs
 
 ## consolidated prior announcements
 New icon-based interface, wider selection of pricing and MELT responses.

@@ -95,6 +95,7 @@ public class Industry implements Serializable {
 	private static TypedQuery<Industry> industriesAllQuery;
 	private static TypedQuery<Industry> industriesByCommodityQuery;
 	private static TypedQuery<Industry> industryInitialCapitalQuery;
+	private static TypedQuery<Industry> allQuery;
 
 	static {
 		entityManager = entityManagerFactory.createEntityManager();
@@ -102,6 +103,7 @@ public class Industry implements Serializable {
 		industriesAllQuery = entityManager.createNamedQuery("All", Industry.class);
 		industryInitialCapitalQuery = entityManager.createNamedQuery("InitialCapital", Industry.class);
 		industriesByCommodityQuery = entityManager.createNamedQuery("CommodityName", Industry.class);
+		allQuery=entityManager.createQuery("Select i from Industry i",Industry.class);
 	}
 
 	/**
@@ -643,6 +645,16 @@ public class Industry implements Serializable {
 	}
 
 	/**
+	 * A list of all industries for all projects and all timeStamps
+	 * Largely for diagnostic purposes
+	 * @return a list of all industries for all projects and all timeStamps.
+	 */
+	public static List<Industry> all(){
+		return allQuery.getResultList();
+	}
+	
+	
+	/**
 	 * a list of industries, for the current project and timeStamp
 	 * 
 	 * @return a list of industriesfor the current project at the latest timeStamp that has been persisted.
@@ -661,7 +673,7 @@ public class Industry implements Serializable {
 	 * @return a list of industries for the current project at the specified timeStamp (which should, in general, be different from the currentTimeStamp)
 	 */
 
-	public static List<Industry> industriesAll(int timeStamp) {
+	public static List<Industry> all(int timeStamp) {
 		industriesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
 		return industriesAllQuery.getResultList();
 	}
@@ -707,7 +719,7 @@ public class Industry implements Serializable {
 	 */
 
 	public static void setComparators(int timeStampID) {
-		for (Industry c : industriesAll(timeStampID)) {
+		for (Industry c : all(timeStampID)) {
 			c.setPreviousComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), c.getName()));
 			c.setStartComparator(industryByPrimaryKey(Simulation.projectCurrent, 1, c.getName()));
 			c.setEndComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, c.getName()));

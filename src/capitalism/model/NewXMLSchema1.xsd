@@ -1,5 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+   <xsd:complexType name="timeStamp">
+      <xsd:sequence>
+         <xsd:element name="pk" type="timeStampPK" minOccurs="0"/>
+         <xsd:element name="description" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="superState" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="period" type="xsd:int"/>
+         <xsd:element name="comparatorTimeStampID" type="xsd:int"/>
+         <xsd:element name="rateOfExploitation" type="xsd:double"/>
+         <xsd:element name="melt" type="xsd:double"/>
+         <xsd:element name="populationGrowthRate" type="xsd:double"/>
+         <xsd:element name="investmentRatio" type="xsd:double"/>
+         <xsd:element name="labourSupplyResponse" type="labour_RESPONSE" minOccurs="0"/>
+         <xsd:element name="priceResponse" type="price_RESPONSE" minOccurs="0"/>
+         <xsd:element name="meltResponse" type="melt_RESPONSE" minOccurs="0"/>
+         <xsd:element name="currencySymbol" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="quantitySymbol" type="xsd:string" minOccurs="0"/>
+      </xsd:sequence>
+   </xsd:complexType>
    <xsd:complexType name="commodity">
       <xsd:sequence>
          <xsd:element name="pk" type="commodityPK" minOccurs="0"/>
@@ -17,34 +35,30 @@
          <xsd:element name="displayOrder" type="xsd:int"/>
       </xsd:sequence>
    </xsd:complexType>
-   <xsd:complexType name="globalPK"/>
-   <xsd:complexType name="project">
+   <xsd:complexType name="industryPK">
       <xsd:sequence>
-         <xsd:element name="buttonState" type="xsd:string" minOccurs="0"/>
-         <xsd:element name="description" type="xsd:string" minOccurs="0"/>
-         <xsd:element name="period" type="xsd:int"/>
-         <xsd:element name="projectID" type="xsd:int"/>
+         <xsd:element name="project" type="xsd:int"/>
          <xsd:element name="timeStamp" type="xsd:int"/>
-         <xsd:element name="timeStampComparatorCursor" type="xsd:int"/>
-         <xsd:element name="timeStampDisplayCursor" type="xsd:int"/>
+         <xsd:element name="name" type="xsd:string" minOccurs="0"/>
       </xsd:sequence>
    </xsd:complexType>
-   <xsd:complexType name="global">
+   <xsd:complexType name="stockPK">
       <xsd:sequence>
-         <xsd:element name="comparator" type="global" minOccurs="0"/>
-         <xsd:element name="currencySymbol" type="xsd:string" minOccurs="0"/>
-         <xsd:element name="customComparator" type="global" minOccurs="0"/>
-         <xsd:element name="endComparator" type="global" minOccurs="0"/>
-         <xsd:element name="investmentRatio" type="xsd:double"/>
-         <xsd:element name="labourSupplyResponse" type="labour_RESPONSE" minOccurs="0"/>
-         <xsd:element name="melt" type="xsd:double"/>
-         <xsd:element name="meltResponse" type="melt_RESPONSE" minOccurs="0"/>
-         <xsd:element name="populationGrowthRate" type="xsd:double"/>
-         <xsd:element name="previousComparator" type="global" minOccurs="0"/>
-         <xsd:element name="priceResponse" type="price_RESPONSE" minOccurs="0"/>
-         <xsd:element name="quantitySymbol" type="xsd:string" minOccurs="0"/>
-         <xsd:element name="rateOfExploitation" type="xsd:double"/>
-         <xsd:element name="startComparator" type="global" minOccurs="0"/>
+         <xsd:element name="project" type="xsd:int"/>
+         <xsd:element name="timeStamp" type="xsd:int"/>
+         <xsd:element name="owner" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="commodity" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="stockType" type="xsd:string" minOccurs="0"/>
+      </xsd:sequence>
+   </xsd:complexType>
+   <xsd:complexType name="project">
+      <xsd:sequence>
+         <xsd:element name="description" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="timeStamp" type="xsd:int"/>
+         <xsd:element name="timeStampDisplayCursor" type="xsd:int"/>
+         <xsd:element name="timeStampComparatorCursor" type="xsd:int"/>
+         <xsd:element name="period" type="xsd:int"/>
+         <xsd:element name="buttonState" type="xsd:string" minOccurs="0"/>
       </xsd:sequence>
    </xsd:complexType>
    <xsd:complexType name="industry">
@@ -59,7 +73,20 @@
          <xsd:element name="productiveCapital" type="xsd:double"/>
       </xsd:sequence>
    </xsd:complexType>
-   <xsd:complexType name="timeStampPK"/>
+   <xsd:complexType name="socialClass">
+      <xsd:sequence>
+         <xsd:element name="pk" type="socialClassPK" minOccurs="0"/>
+         <xsd:element name="size" type="xsd:double"/>
+         <xsd:element name="participationRatio" type="xsd:double"/>
+         <xsd:element name="revenue" type="xsd:double"/>
+      </xsd:sequence>
+   </xsd:complexType>
+   <xsd:complexType name="timeStampPK">
+      <xsd:sequence>
+         <xsd:element name="timeStampID" type="xsd:int"/>
+         <xsd:element name="projectID" type="xsd:int"/>
+      </xsd:sequence>
+   </xsd:complexType>
    <xsd:complexType name="commodityPK">
       <xsd:sequence>
          <xsd:element name="project" type="xsd:int"/>
@@ -67,59 +94,70 @@
          <xsd:element name="name" type="xsd:string" minOccurs="0"/>
       </xsd:sequence>
    </xsd:complexType>
-   <xsd:complexType name="timeStamp">
+   <xsd:complexType name="oneProject">
       <xsd:sequence>
-         <xsd:element name="comparatorTimeStampID" type="xsd:int"/>
-         <xsd:element name="description" type="xsd:string" minOccurs="0"/>
-         <xsd:element name="period" type="xsd:int"/>
-         <xsd:element name="superState" type="xsd:string" minOccurs="0"/>
-      </xsd:sequence>
-   </xsd:complexType>
-   <xsd:complexType name="industryPK">
-      <xsd:sequence>
-         <xsd:element name="project" type="xsd:int"/>
-         <xsd:element name="timeStamp" type="xsd:int"/>
-         <xsd:element name="name" type="xsd:string" minOccurs="0"/>
-      </xsd:sequence>
-   </xsd:complexType>
-   <xsd:complexType name="stockPK"/>
-   <xsd:complexType name="socialClass">
-      <xsd:sequence>
-         <xsd:element name="customComparator" type="socialClass" minOccurs="0"/>
-         <xsd:element name="endComparator" type="socialClass" minOccurs="0"/>
-         <xsd:element name="participationRatio" type="xsd:double"/>
-         <xsd:element name="previousComparator" type="socialClass" minOccurs="0"/>
-         <xsd:element name="revenue" type="xsd:double"/>
-         <xsd:element name="size" type="xsd:double"/>
-         <xsd:element name="startComparator" type="socialClass" minOccurs="0"/>
-         <xsd:element name="timeStamp" type="xsd:int"/>
+         <xsd:element name="Commodities" minOccurs="0">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="commodity" type="commodity" minOccurs="0" maxOccurs="unbounded" nillable="true"/>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         <xsd:element name="Industries" minOccurs="0">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="industry" type="industry" minOccurs="0" maxOccurs="unbounded" nillable="true"/>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         <xsd:element name="SocialClasses" minOccurs="0">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="socialClass" type="socialClass" minOccurs="0" maxOccurs="unbounded" nillable="true"/>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         <xsd:element name="Stocks" minOccurs="0">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="stock" type="stock" minOccurs="0" maxOccurs="unbounded" nillable="true"/>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         <xsd:element name="TimeStamp" type="timeStamp" minOccurs="0"/>
+         <xsd:element name="Project" type="project" minOccurs="0"/>
       </xsd:sequence>
    </xsd:complexType>
    <xsd:complexType name="stock">
       <xsd:sequence>
-         <xsd:element name="commodityName" type="xsd:string" minOccurs="0"/>
-         <xsd:element name="consumptionCoefficient" type="xsd:double"/>
-         <xsd:element name="customComparator" type="stock" minOccurs="0"/>
-         <xsd:element name="endComparator" type="stock" minOccurs="0"/>
-         <xsd:element name="expansionDemand" type="xsd:double"/>
-         <xsd:element name="previousComparator" type="stock" minOccurs="0"/>
-         <xsd:element name="price" type="xsd:double"/>
-         <xsd:element name="productionCoefficient" type="xsd:double"/>
+         <xsd:element name="pk" type="stockPK" minOccurs="0"/>
+         <xsd:element name="ownerType" type="ownertype" minOccurs="0"/>
          <xsd:element name="quantity" type="xsd:double"/>
-         <xsd:element name="replenishmentDemand" type="xsd:double"/>
-         <xsd:element name="startComparator" type="stock" minOccurs="0"/>
-         <xsd:element name="stockType" type="xsd:string" minOccurs="0"/>
-         <xsd:element name="stockUsedUp" type="xsd:double"/>
-         <xsd:element name="timeStamp" type="xsd:int"/>
          <xsd:element name="value" type="xsd:double"/>
+         <xsd:element name="price" type="xsd:double"/>
+         <xsd:element name="replenishmentDemand" type="xsd:double"/>
+         <xsd:element name="expansionDemand" type="xsd:double"/>
       </xsd:sequence>
    </xsd:complexType>
-   <xsd:complexType name="socialClassPK"/>
+   <xsd:complexType name="socialClassPK">
+      <xsd:sequence>
+         <xsd:element name="project" type="xsd:int"/>
+         <xsd:element name="timeStamp" type="xsd:int"/>
+         <xsd:element name="socialClassName" type="xsd:string" minOccurs="0"/>
+      </xsd:sequence>
+   </xsd:complexType>
+   <xsd:element name="Industry" type="industry"/>
    <xsd:element name="commodity" type="commodity"/>
-   <xsd:element name="industryPK" type="industryPK"/>
-   <xsd:element name="global" type="global"/>
-   <xsd:element name="industry" type="industry"/>
+   <xsd:element name="Project" type="project"/>
+   <xsd:element name="SocialClass" type="socialClass"/>
+   <xsd:element name="StockPK" type="stockPK"/>
+   <xsd:element name="IndustryPK" type="industryPK"/>
+   <xsd:element name="TimeStampPK" type="timeStampPK"/>
+   <xsd:element name="SavedProject" type="oneProject"/>
    <xsd:element name="commodityPK" type="commodityPK"/>
+   <xsd:element name="Stock" type="stock"/>
+   <xsd:element name="TimeStamp" type="timeStamp"/>
+   <xsd:element name="SocialClassPK" type="socialClassPK"/>
    <xsd:simpleType name="labour_RESPONSE">
       <xsd:restriction base="xsd:string">
          <xsd:enumeration value="FIXED"/>
@@ -130,6 +168,12 @@
       <xsd:restriction base="xsd:string">
          <xsd:enumeration value="VALUE_DRIVEN"/>
          <xsd:enumeration value="PRICE_DRIVEN"/>
+      </xsd:restriction>
+   </xsd:simpleType>
+   <xsd:simpleType name="ownertype">
+      <xsd:restriction base="xsd:string">
+         <xsd:enumeration value="CLASS"/>
+         <xsd:enumeration value="INDUSTRY"/>
       </xsd:restriction>
    </xsd:simpleType>
    <xsd:simpleType name="origin">

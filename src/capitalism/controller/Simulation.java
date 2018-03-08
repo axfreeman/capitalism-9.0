@@ -21,7 +21,6 @@
 package capitalism.controller;
 
 import java.util.List;
-import javax.persistence.PersistenceException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,7 +40,6 @@ import capitalism.view.custom.ActionStates;
 import capitalism.view.custom.DisplayControlsBox;
 
 public class Simulation extends Parameters{
-
 	private static final Logger logger = LogManager.getLogger(Simulation.class);
 
 	// Application-wide persistent project that defines a simulation. All other persistent entities are confined to records defined by it.
@@ -54,7 +52,7 @@ public class Simulation extends Parameters{
 
 	// Application-wide variable saying what is the latest period in the current simulation
 
-	public static int periodCurrent;
+	private static int periodCurrent;
 
 	// Application-wide cursors. By changing these, the user views entities from earlier timestamps and compares them with 
 	// those from the current timeStamp. These cursors are independent of timeStampIDCurrent and operations that involve 
@@ -106,7 +104,7 @@ public class Simulation extends Parameters{
 
 			// fetch this project's current timeStamp record (which must exist in the database or we flag an error but try to correct it)
 
-			currentTimeStamp = TimeStamp.getTimeStamp(timeStampIDCurrent);
+			currentTimeStamp = TimeStamp.get(timeStampIDCurrent);
 			if (currentTimeStamp == null) {
 				Reporter.report(logger, 1, " There is no initial timeStamp record for project %d. Please check the data",
 						p.getDescription());
@@ -141,7 +139,7 @@ public class Simulation extends Parameters{
 		// There will normally be more than one project. Choose the first.
 		projectCurrent = 1;
 		// set the top copy of the timeStamp to be that of the current project
-		currentTimeStamp=TimeStamp.getTimeStamp(1, 1);
+		currentTimeStamp=TimeStamp.get(1, 1);
 	}
 
 	/**
@@ -189,90 +187,91 @@ public class Simulation extends Parameters{
 
 		timeStampComparatorCursor = timeStampIDCurrent;
 		timeStampDisplayCursor = timeStampIDCurrent + 1;
-		logger.debug("Move One Step in project {} by creating a new timeStamp {} called {}", projectCurrent, timeStampIDCurrent, description);
+		logger.debug("Move One Step in project {} at period {} by creating a new timeStamp {} called {}", 
+				projectCurrent, periodCurrent, timeStampIDCurrent+1, description);
 
-		TimeStamp oldTimeStamp=TimeStamp.getTimeStamp(timeStampIDCurrent);
+
+		// persist a new version of all simulation entities, with the same project, and the new timeStamp...
+		TimeStamp.getEntityManager().getTransaction().begin();
+		Project.getEntityManager().getTransaction().begin();
+
+		// Create a new timeStamp that moves on by one from the present timeStamp, but has the same project and period
+		// set its description and superState from the parameters in the call to advanceOneStep
+		TimeStamp oldTimeStamp=TimeStamp.get(timeStampIDCurrent);
 		currentTimeStamp = new TimeStamp(oldTimeStamp);
 		currentTimeStamp.setTimeStampID(timeStampIDCurrent+1);
 		currentTimeStamp.setSuperState(superState);
 		currentTimeStamp.setDescription(description);
-		
-		try {
-			TimeStamp.getEntityManager().getTransaction().begin();
-			TimeStamp.getEntityManager().persist(currentTimeStamp);
-			TimeStamp.getEntityManager().getTransaction().commit();
-		} catch (PersistenceException p) {
-			logger.error("Could not advance to timeStampIDCurrent " + timeStampIDCurrent + " because of " + p.getMessage());
-			logger.error("Probably, this time stamp already exists. Try re-initialising the database");
-			return;
-		}
+		currentTimeStamp.setPeriod(periodCurrent);
+		TimeStamp.getEntityManager().persist(currentTimeStamp);
 
-		// record the present timeStamp and cursor in the current project persistent record
+		// record the present timeStamp and cursor in the current project persistent record and save it.
 		// do not create a new project record - modify the existing one.
+		Project.setTimeStam(projectCurrent, timeStampIDCurrent+1);
+		Project.setTimeStampCursor(projectCurrent, timeStampDisplayCursor);		
 
-		Project.getEntityManager().getTransaction().begin();
-		TimeStamp.setTimeStampOfProject(projectCurrent, timeStampIDCurrent + 1);
-		TimeStamp.setTimeStampCursorOfProject(projectCurrent, timeStampDisplayCursor);
+		TimeStamp.getEntityManager().getTransaction().commit();
 		Project.getEntityManager().getTransaction().commit();
 
-		// persist a new version of all simulation entities, with the same project, and the new timeStamp...
-
+		
 		Commodity.getEntityManager().getTransaction().begin();
 		Stock.getEntityManager().getTransaction().begin();
 		Industry.getEntityManager().getTransaction().begin();
 		SocialClass.getEntityManager().getTransaction().begin();
 
-		// Use values
-
-		logger.debug(" Persisting a new set of use values with timeStamp {}", timeStampIDCurrent + 1);
-		Commodity comodity;
+		// Commodities
+		logger.debug(" Persisting a new set of commodities with timeStamp {} and period {}", timeStampIDCurrent+1,periodCurrent);
+		Commodity commodity;
 		for (Commodity u : Commodity.commoditiesAll()) {
-			comodity = new Commodity(u);
-			comodity.setTimeStamp(timeStampIDCurrent + 1);
-			Commodity.getEntityManager().persist(comodity);
+			commodity = new Commodity(u);
+			commodity.setTimeStamp(timeStampIDCurrent+1);
+			Commodity.getEntityManager().persist(commodity);
 		}
 
 		// Stocks
-
-		logger.debug(" Persisting a new set of stocks with timeStamp {} ", timeStampIDCurrent + 1);
+		logger.debug(" Persisting a new set of stocks with timeStamp {} ", timeStampIDCurrent+1);
 		Stock newStock;
 		for (Stock s : Stock.all()) {
-			logger.debug("Persisting {}", s.primaryKeyAsString());
 			newStock = new Stock(s);
-			newStock.setTimeStamp(timeStampIDCurrent + 1);
+			newStock.setTimeStamp(timeStampIDCurrent+1);
 			Stock.getEntityManager().persist(newStock);
 		}
 
 		// industries
-
-		logger.debug("Persisting a new set of industries with timeStamp {} ", timeStampIDCurrent + 1);
+		logger.debug("Persisting a new set of industries with timeStamp {} ", timeStampIDCurrent+1);
 		Industry newIndustry;
 		for (Industry c : Industry.industriesAll()) {
-			logger.debug("Persisting an industry whose use value is " + c.getName());
+			logger.debug("Persisting an industry that produces commodity" + c.getName());
 			newIndustry = new Industry(c);
-			newIndustry.setTimeStamp(timeStampIDCurrent + 1);
+			newIndustry.setTimeStamp(timeStampIDCurrent+1);
 			Industry.getEntityManager().persist(newIndustry);
 		}
 
 		// Social Classes
-
-		logger.debug("Persisting a new set of social classes with timeStamp {}", timeStampIDCurrent + 1);
+		logger.debug("Persisting a new set of social classes with timeStamp {}", timeStampIDCurrent+1);
 		SocialClass newSocialClass;
-		for (SocialClass sc : SocialClass.socialClassesAll()) {
+		for (SocialClass sc : SocialClass.all()) {
 			logger.debug("  Persisting a social class whose name is " + sc.getSocialClassName());
 			newSocialClass = new SocialClass();
 			newSocialClass.copy(sc);
-			newSocialClass.setTimeStamp(timeStampIDCurrent + 1);
+			newSocialClass.setTimeStamp(timeStampIDCurrent+1);
 			SocialClass.getEntityManager().persist(newSocialClass);
 		}
 
-		setComparators(timeStampIDCurrent + 1);
+		setComparators(timeStampIDCurrent+1);
 
+		// now commit all the modified records
 		SocialClass.getEntityManager().getTransaction().commit();
 		Industry.getEntityManager().getTransaction().commit();
 		Stock.getEntityManager().getTransaction().commit();
 		Commodity.getEntityManager().getTransaction().commit();
 
+// some diagnostics - switch off if not needed for debug
+//		for (Industry i:Industry.all()) {
+//			logger.debug("Industry {} has project {} and timeStamp {}",i.getName(),i.getProject(),i.getTimeStamp());
+//		}
+
+		// we can only advance the timeStampID now, because the old ID was used to persist all the other records 
 		timeStampIDCurrent++;
 
 		logger.debug("Done Persisting: exit AdvanceOneStep");
@@ -435,10 +434,10 @@ public class Simulation extends Parameters{
 			logger.debug("The user switched to project {} which  is already current. No action was taken", newProjectID);
 			return;
 		}
-		Project newProject = Project.projectSingle(newProjectID);
+		Project newProject = Project.get(newProjectID);
 		
 		// record the current timeStamp, timeStampDisplayCursor and buttonState in the current project record, and persist it to the database
-		Project thisProject = Project.projectSingle(Simulation.projectCurrent);
+		Project thisProject = Project.get(Simulation.projectCurrent);
 
 		Project.getEntityManager().getTransaction().begin();
 
@@ -458,7 +457,7 @@ public class Simulation extends Parameters{
 		actionButtonsBox.setActionStateFromLabel(newProject.getButtonState());
 		Simulation.projectCurrent = newProjectID;
 		DisplayControlsBox.setParameterComboPrompts();
-		currentTimeStamp=TimeStamp.getTimeStamp(newProjectID, timeStampIDCurrent);
+		currentTimeStamp=TimeStamp.get(newProjectID, timeStampIDCurrent);
 		Reporter.report(logger, 0, "SWITCHED TO PROJECT %s (%s)", newProjectID, newProject.getDescription());
 		// ViewManager.getTabbedTableViewer().buildTables();
 	}

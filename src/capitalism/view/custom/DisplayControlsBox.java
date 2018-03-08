@@ -137,7 +137,7 @@ public class DisplayControlsBox extends HBox {
 
 	private void buildCombos() {
 		ObservableList<Project> projects = Project.observableProjects();
-		Project currentProject = Project.projectSingle(Simulation.projectCurrent);
+		Project currentProject = Project.get(Simulation.projectCurrent);
 		String currentProjectDescription = currentProject.getDescription();
 		projectCombo = new ProjectCombo(projects, currentProjectDescription);
 		labourSupplyCombo = new ComboBox<String>(Simulation.LABOUR_RESPONSE.options());
@@ -185,7 +185,7 @@ public class DisplayControlsBox extends HBox {
 	 * But if a simulation involves a currency reform, it could be in the right place after all.
 	 */
 	public static void setExpressionSymbols() {
-		TimeStamp timeStamp= TimeStamp.getTimeStamp();
+		TimeStamp timeStamp= TimeStamp.get();
 		moneyExpressionSymbol = timeStamp.getCurrencySymbol();
 		expressionSymbol=moneyExpressionSymbol;
 		quantityExpressionSymbol = timeStamp.getQuantitySymbol();

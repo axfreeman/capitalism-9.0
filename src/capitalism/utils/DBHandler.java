@@ -55,13 +55,35 @@ public class DBHandler {
 	}
 
 	/**
-	 * load a new database from a specified location
+	 * Ask the user where to load data from and then restore the database from it.
+	 * Under development
+	 */
+	public static void dataLoad() {
+		File saveDirectory = Dialogues.directoryChooser("Location of the new data");
+		try {
+			Capitalism.dataHandler.loadCSVDatabase(saveDirectory.getCanonicalPath());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Ask the user where to store data and then dump the database into it as a set of CSV files
+	 * Under Development
+	 */
+	public static void dataDump() {
+		File saveDirectory = Dialogues.directoryChooser("Location to save data");
+		Capitalism.dataHandler.saveCSVDataBase(saveDirectory);
+	}
+
+	/**
+	 * load a new database in csv format from a specified location
 	 * 
 	 * @param dataFileDirectory
 	 *            the full path to the directory in which the data files are located. If in NIX format (with '\' instead of '/') this is converted to Windows
 	 *            format.
 	 */
-	public void loadDatabase(String dataFileDirectory) {
+	public void loadCSVDatabase(String dataFileDirectory) {
 		dataFileDirectory = dataFileDirectory.replace('\\', '/');
 		try {
 			conn.close();
@@ -176,7 +198,7 @@ public class DBHandler {
 	 * @param saveDirectory
 	 *            the directory in which to save the files
 	 */
-	public void saveDataBase(File saveDirectory) {
+	public void saveCSVDataBase(File saveDirectory) {
 		String[] standardFiles = { "timeStamps", "projects", "globals", "commodities", "stocks", "socialClasses", "industries" };
 
 		String baseDirectoryURL;

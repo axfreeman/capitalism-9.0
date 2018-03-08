@@ -728,7 +728,7 @@ public class Commodity implements Serializable {
 	 *            the timeStamp of the commodities returned
 	 * @return a list of all commodities at the given timeStamp and the current project
 	 */
-	public static List<Commodity> commoditiesAll(int timeStamp) {
+	public static List<Commodity> all(int timeStamp) {
 		commoditiesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
 		return commoditiesAllQuery.getResultList();
 	}
