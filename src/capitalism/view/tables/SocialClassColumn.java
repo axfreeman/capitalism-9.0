@@ -42,26 +42,26 @@ public class SocialClassColumn extends TableColumn<SocialClass, String> {
 	 * bean
 	 * that is chosen by the {@code selector} enum. Use the enum to set the header text and graphic, and prepare the column header so its graphic is switchable.
 	 * 
-	 * @param selector
+	 * @param sOCIALCLASS_ATTRIBUTE
 	 *            an enum specifying which field to display
 	 * @param alignedLeft
 	 *            true if the data in this column should be displayed aligned to the left (typically text fields such as commodity names or owner names)
 	 */
-	public SocialClassColumn(SocialClass.Selector selector, boolean alignedLeft) {
-		super(selector.text());
+	public SocialClassColumn(SocialClass.SOCIALCLASS_ATTRIBUTE sOCIALCLASS_ATTRIBUTE, boolean alignedLeft) {
+		super(sOCIALCLASS_ATTRIBUTE.text());
 		setCellFactory(new Callback<TableColumn<SocialClass, String>, TableCell<SocialClass, String>>() {
 			@Override public TableCell<SocialClass, String> call(TableColumn<SocialClass, String> col) {
-				return new SocialClassTableCell(selector);
+				return new SocialClassTableCell(sOCIALCLASS_ATTRIBUTE);
 			}
 		});
-		setCellValueFactory(cellData -> cellData.getValue().wrappedString(selector, TabbedTableViewer.displayAttribute));
+		setCellValueFactory(cellData -> cellData.getValue().wrappedString(sOCIALCLASS_ATTRIBUTE, TabbedTableViewer.displayAttribute));
 
 		// tailor the visual appearance of the column header
 
 		setPrefWidth(75.0);
 		if (!alignedLeft)
 			getStyleClass().add("table-column-right");
-		TableUtilities.addGraphicToColummnHeader(this, selector.imageName(), selector.tooltip());
+		TableUtilities.addGraphicToColummnHeader(this, sOCIALCLASS_ATTRIBUTE.imageName(), sOCIALCLASS_ATTRIBUTE.tooltip());
 	}
 
 	/**
@@ -74,7 +74,7 @@ public class SocialClassColumn extends TableColumn<SocialClass, String> {
 	 */
 
 	public SocialClassColumn(Commodity u) {
-		String consumptionStockName=u.commodityName();
+		String consumptionStockName=u.name();
 		setCellFactory(new Callback<TableColumn<SocialClass, String>, TableCell<SocialClass, String>>() {
 			@Override public TableCell<SocialClass, String> call(TableColumn<SocialClass, String> col) {
 				return new SocialClassTableStockCell(consumptionStockName);
@@ -87,7 +87,7 @@ public class SocialClassColumn extends TableColumn<SocialClass, String> {
 		setText(consumptionStockName);
 		setPrefWidth(75.0);
 		getStyleClass().add("table-column-right");
-		Commodity stockCommodity = Commodity.commodityByPrimaryKey(Simulation.timeStampIDCurrent, consumptionStockName);
+		Commodity stockCommodity = Commodity.singleCurrentProject(Simulation.timeStampIDCurrent, consumptionStockName);
 		TableUtilities.addGraphicToColummnHeader(this, stockCommodity.getImageName(), u.getToolTip());
 	}
 }

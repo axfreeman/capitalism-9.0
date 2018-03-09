@@ -34,6 +34,7 @@ import capitalism.view.command.GraphicsCommand;
 import capitalism.view.command.LoadCommand;
 import capitalism.view.command.OpenLogWindow;
 import capitalism.view.command.RestartCommand;
+import capitalism.view.command.ShowEditorCommand;
 import capitalism.view.command.DumpCommand;
 import capitalism.view.command.ValueExpressionCommand;
 import javafx.beans.value.ChangeListener;
@@ -60,17 +61,18 @@ public class DisplayControlsBox extends HBox {
 	final Logger logger = LogManager.getLogger("DisplayControlsBar");
 	public static ContentDisplay graphicsState = ContentDisplay.TEXT_ONLY; // Whether to display graphics, text, or both
 
-	public static enum DISPLAY_AS_EXPRESSION {
+	public static enum EXPRESSION_DISPLAY {
 		MONEY, TIME;
 	}
 
-	public static DISPLAY_AS_EXPRESSION expressionDisplay = DISPLAY_AS_EXPRESSION.MONEY;
+	public static EXPRESSION_DISPLAY expressionDisplay = EXPRESSION_DISPLAY.MONEY;
 
 	public static String moneyExpressionSymbol = "$";
 	public static String quantityExpressionSymbol = "#";
 	public static String expressionSymbol = moneyExpressionSymbol;
 	public static boolean displayHints = false;
-
+	public static boolean editorWindowOpen=false;
+	
 	private static ImageButton colourHintsButton = new ImageButton("hinton.png", "hintoff.png", new ColourHintsCommand(), 
 			"No colour hints",	"Show colour hints");
 	private static ImageButton restartButton = new ImageButton("restart.png", null, new RestartCommand(), 
@@ -87,6 +89,8 @@ public class DisplayControlsBox extends HBox {
 			"", "Load data from your computer");
 	private static ImageButton dataDumpButton = new ImageButton("savebw.png", null, new DumpCommand(), 
 			"", "Save the database to your computer");
+	private static ImageButton createProjectButton =new ImageButton("edit.png",null, new ShowEditorCommand(),
+			"Create a new project","Create a new project (under development)");
 
 	private static ArrayList<ImageButton> imageButtons=new ArrayList<ImageButton>();
 
@@ -119,7 +123,7 @@ public class DisplayControlsBox extends HBox {
 		labourResponseImage.setFitHeight(15);
 		pricingResponseImage.setFitWidth(15);
 		pricingResponseImage.setFitHeight(15);
-		getChildren().addAll(projectCombo, labourResponseImage, labourSupplyCombo, pricingResponseImage, pricingCombo, meltResponseImage, meltCombo, spacer,
+		getChildren().addAll(createProjectButton, projectCombo, labourResponseImage, labourSupplyCombo, pricingResponseImage, pricingCombo, meltResponseImage, meltCombo, spacer,
 				buttonBar);
 	}
 
@@ -137,7 +141,7 @@ public class DisplayControlsBox extends HBox {
 
 	private void buildCombos() {
 		ObservableList<Project> projects = Project.observableProjects();
-		Project currentProject = Project.get(Simulation.projectCurrent);
+		Project currentProject = Project.get(Simulation.projectIDCurrent);
 		String currentProjectDescription = currentProject.getDescription();
 		projectCombo = new ProjectCombo(projects, currentProjectDescription);
 		labourSupplyCombo = new ComboBox<String>(Simulation.LABOUR_RESPONSE.options());
@@ -168,6 +172,11 @@ public class DisplayControlsBox extends HBox {
 		});
 	}
 	
+	public static void rePopulateProjectCombo() {
+		ObservableList<Project> projects = Project.observableProjects();
+		projectCombo.setItems(projects);
+	}
+	
 	/**
 	 * When we switch projects, its timeStamp record will have new parameters. 
 	 * The parameter combos therefore have to be reset
@@ -185,7 +194,7 @@ public class DisplayControlsBox extends HBox {
 	 * But if a simulation involves a currency reform, it could be in the right place after all.
 	 */
 	public static void setExpressionSymbols() {
-		TimeStamp timeStamp= TimeStamp.get();
+		TimeStamp timeStamp= TimeStamp.singleCurrent();
 		moneyExpressionSymbol = timeStamp.getCurrencySymbol();
 		expressionSymbol=moneyExpressionSymbol;
 		quantityExpressionSymbol = timeStamp.getQuantitySymbol();
@@ -221,4 +230,19 @@ public class DisplayControlsBox extends HBox {
 	public static ContentDisplay getGraphicsState() {
 		return graphicsState;
 	}
+
+	/**
+	 * @return the editorIsOpen
+	 */
+	public static boolean editorIsOpen() {
+		return editorWindowOpen;
+	}
+
+	/**
+	 * @param editorIsOpen the editorIsOpen to set
+	 */
+	public static void setEditorOpen(boolean editorIsOpen) {
+		DisplayControlsBox.editorWindowOpen = editorIsOpen;
+	}
+
 }

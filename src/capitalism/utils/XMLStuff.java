@@ -76,14 +76,14 @@ public class XMLStuff {
 			commodityContext = JAXBContext.newInstance(Commodity.class);
 			Marshaller commodityMarshaller = commodityContext.createMarshaller();
 			commodityMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			for (Commodity commodity : Commodity.all(timeStamp)) {
+			for (Commodity commodity : Commodity.allCurrentProject(timeStamp)) {
 				commodityMarshaller.marshal(commodity, output);
 				commodityMarshaller.marshal(commodity, System.out);
 			}
 			industryContext = JAXBContext.newInstance(Industry.class);
 			Marshaller industryMarshaller = industryContext.createMarshaller();
 			industryMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			for (Industry industry : Industry.all(timeStamp)) {
+			for (Industry industry : Industry.currentProjectWithTimeStamp(timeStamp)) {
 				industryMarshaller.marshal(industry, output);
 				industryMarshaller.marshal(industry, System.out);
 			}

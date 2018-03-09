@@ -52,7 +52,7 @@ public class IndustriesProduce extends Simulation implements Command {
 		// Then we can calculate how much surplus of it resulted from production in this period.
 		// NOTE it doesn't seem as if we can do this with a query without starting a transaction.
 		
-		for (Commodity u : Commodity.commoditiesByOrigin(ORIGIN.INDUSTRIALLY_PRODUCED)) {
+		for (Commodity u : Commodity.currentByOrigin(ORIGIN.INDUSTRIALLY_PRODUCED)) {
 			u.setStockUsedUp(0);
 			u.setStockProduced(0);
 		}
@@ -66,20 +66,20 @@ public class IndustriesProduce extends Simulation implements Command {
 		// equal to their price at this time except stocks of type labour power, which contribute their magnitude, multiplied by their complexity, divided by the MELT
 		// (TODO incorporate labour complexity)
 		
-		for (Industry industry : Industry.industriesAll()) {
-			String commodityType = industry.getName();
-			Stock salesStock = industry.getSalesStock();
-			Commodity commodity = industry.getCommodity();
+		for (Industry industry : Industry.currentProjectAndTimeStamp()) {
+			String commodityType = industry.name();
+			Stock salesStock = industry.salesStock();
+			Commodity commodity = industry.productName();
 			double output = industry.getOutput();
 			double intrinsicValueAdded = 0;
 			Reporter.report(logger, 1, " Industry [%s] is producing %.0f. units of its output; the melt is %.4f", commodityType, output, melt);
 
-			for (Stock s : Stock.productiveByIndustry(timeStampIDCurrent, commodityType)) {
+			for (Stock s : Stock.allProductiveInIndustry(timeStampIDCurrent, commodityType)) {
 
 				// a little consistency check ...
 				if (!s.getStockType().equals("Productive")) {
 					Dialogues.alert(logger,
-							String.format("The stock of type [%s] called [%s] is wrongly designated as an input ", s.getStockType(), s.getCommodityName()));
+							String.format("The stock of type [%s] called [%s] is wrongly designated as an input ", s.getStockType(), s.name()));
 				}
 				// .. end of little consistency check
 
@@ -88,19 +88,19 @@ public class IndustriesProduce extends Simulation implements Command {
 				if (s.getCommodity().getOrigin() == ORIGIN.SOCIALlY_PRODUCED) {
 					intrinsicValueAdded += stockUsedUp;
 					Reporter.report(logger, 2, "Labour Power has added intrinsic value %.0f (monetary expression $%.0f) to commodity [%s]", 
-							intrinsicValueAdded, stockUsedUp*melt,industry.getName());
+							intrinsicValueAdded, stockUsedUp*melt,industry.name());
 				} else {
 					double intrinsicStockUsedUp = stockUsedUp * commodity.getUnitPrice()/melt;
 					Reporter.report(logger, 2, "Stock [%s] has transferred intrinsic value %.0f (monetary expression $%.0f) to commodity [%s] ",
-							s.getCommodityName(), intrinsicStockUsedUp, intrinsicStockUsedUp * melt, industry.getName());
+							s.name(), intrinsicStockUsedUp, intrinsicStockUsedUp * melt, industry.name());
 					intrinsicValueAdded += intrinsicStockUsedUp;
 				}
 
 				// the stock is reduced by what was used up, and account of this is registered with its use value
 				Commodity u = s.getCommodity();
 				if (stockUsedUp>0) {
-				Reporter.report(logger, 2, "%.0f units of [%s] were used up in producing the output [%s]", stockUsedUp, u.commodityName(),
-						industry.getName());
+				Reporter.report(logger, 2, "%.0f units of [%s] were used up in producing the output [%s]", stockUsedUp, u.name(),
+						industry.name());
 				double stockOfCommoditySoFarUsedUp = u.getStockUsedUp();
 				u.setStockUsedUp(MathStuff.round(stockOfCommoditySoFarUsedUp + stockUsedUp)); //TODO eliminate this and compute commodity stock usage from stocks themselves
 				s.modifyBy(-stockUsedUp);
@@ -111,20 +111,20 @@ public class IndustriesProduce extends Simulation implements Command {
 			// to set the value of the output, we now use an overloaded version of modifyBy which only sets the value
 			double extraSalesQuantity = output;
 			salesStock.modifyBy(extraSalesQuantity, intrinsicValueAdded*melt);
-			industry.getCommodity().setStockProduced(industry.getCommodity().getStockProduced() + extraSalesQuantity);
+			industry.productName().setStockProduced(industry.productName().getStockProduced() + extraSalesQuantity);
 			Reporter.report(logger, 2,
 					"Sales stock of [%s] is now %.0f, intrinsic value is %.0f (Monetary Expression $%.0f) and price is %.0f (Monetary Expression $%.0f)",
-					industry.getName(), salesStock.getQuantity(), salesStock.getValue()*melt, salesStock.getValue(), 
+					industry.name(), salesStock.getQuantity(), salesStock.getValue()*melt, salesStock.getValue(), 
 					salesStock.getPrice()*melt, salesStock.getPrice());
 		}
 
 		// now (and only now) we can calculate the surplus (if any) of each of the use values
-		for (Commodity u : Commodity.commoditiesByOrigin(ORIGIN.INDUSTRIALLY_PRODUCED)) {
+		for (Commodity u : Commodity.currentByOrigin(ORIGIN.INDUSTRIALLY_PRODUCED)) {
 			u.setSurplusProduct(u.getStockProduced() - u.getStockUsedUp());
 		}
 		
 		// persist the profit that has been made, so that the user can see it
-		for (Industry c:Industry.industriesAll()) {
+		for (Industry c:Industry.currentProjectAndTimeStamp()) {
 			c.persistProfit();
 		}
 	}

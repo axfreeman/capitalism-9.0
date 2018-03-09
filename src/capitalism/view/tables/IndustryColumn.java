@@ -41,26 +41,26 @@ public class IndustryColumn extends TableColumn<Industry, String> {
 	 * Produces a column to be displayed in a Industry table({@code TableView<Industry,String>}), whose value is a fixed field in a {@code Industry} bean
 	 * that is chosen by the {@code selector} enum. Use the enum to set the header text and graphic, and prepare the column header so its graphic is switchable.
 	 * 
-	 * @param selector
+	 * @param iNDUSTRY_ATTRIBUTE
 	 *            an enum specifying which field to display
 	 * @param alignedLeft
 	 *            true if the field data is to be displayed aligned left (typically text strings such as the names of commodities or owners)
 	 */
-	public IndustryColumn(Industry.Selector selector, boolean alignedLeft) {
-		super(selector.text());
+	public IndustryColumn(Industry.INDUSTRY_ATTRIBUTE iNDUSTRY_ATTRIBUTE, boolean alignedLeft) {
+		super(iNDUSTRY_ATTRIBUTE.text());
 		setCellFactory(new Callback<TableColumn<Industry, String>, TableCell<Industry, String>>() {
 			@Override public TableCell<Industry, String> call(TableColumn<Industry, String> col) {
-				return new IndustryTableCell(selector);
+				return new IndustryTableCell(iNDUSTRY_ATTRIBUTE);
 			}
 		});
-		setCellValueFactory(cellData -> cellData.getValue().wrappedString(selector, TabbedTableViewer.displayAttribute));
+		setCellValueFactory(cellData -> cellData.getValue().wrappedString(iNDUSTRY_ATTRIBUTE, TabbedTableViewer.displayAttribute));
 
 		// tailor the visual appearance of the column header
 
 		setPrefWidth(75.0);
 		if (!alignedLeft)
 			getStyleClass().add("table-column-right");
-		TableUtilities.addGraphicToColummnHeader(this, selector.imageName(), selector.tooltip());
+		TableUtilities.addGraphicToColummnHeader(this, iNDUSTRY_ATTRIBUTE.imageName(), iNDUSTRY_ATTRIBUTE.tooltip());
 	}
 
 	/**
@@ -74,7 +74,7 @@ public class IndustryColumn extends TableColumn<Industry, String> {
 	 */
 
 	public IndustryColumn(Commodity commodity) {
-		String productiveStockName=commodity.commodityName();
+		String productiveStockName=commodity.name();
 		setCellFactory(new Callback<TableColumn<Industry, String>, TableCell<Industry, String>>() {
 			@Override public TableCell<Industry, String> call(TableColumn<Industry, String> col) {
 				return new IndustryTableStockCell(productiveStockName);
@@ -87,7 +87,7 @@ public class IndustryColumn extends TableColumn<Industry, String> {
 
 		setPrefWidth(75.0);
 		getStyleClass().add("table-column-right");
-		Commodity stockCommodity = Commodity.commodityByPrimaryKey(Simulation.timeStampIDCurrent, productiveStockName);
+		Commodity stockCommodity = Commodity.singleCurrentProject(Simulation.timeStampIDCurrent, productiveStockName);
 		TableUtilities.addGraphicToColummnHeader(this, stockCommodity.getImageName(), commodity.getToolTip());
 	}
 }

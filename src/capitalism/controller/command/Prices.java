@@ -66,7 +66,7 @@ public class Prices implements Command {
 		computeAbsolutePrices();
 
 		// recalculate the values and prices of each stock on the basis of the new unit values and prices
-		for (Stock s : Stock.all(Simulation.timeStampIDCurrent)) {
+		for (Stock s : Stock.allCurrentProject(Simulation.timeStampIDCurrent)) {
 			s.reCalculateStockTotalValuesAndPrices();
 		}
 	}
@@ -89,11 +89,11 @@ public class Prices implements Command {
 			Reporter.report(logger, 2, "Average Profit Rate is currently recorded as %.4f", Simulation.currentTimeStamp.profitRate());
 
 			// we can only set the profit rate for the sector as a whole, which means we work from the per-commodity profit rates
-			for (Commodity u : Commodity.commoditiesByOrigin(Commodity.ORIGIN.INDUSTRIALLY_PRODUCED)) {
+			for (Commodity u : Commodity.currentByOrigin(Commodity.ORIGIN.INDUSTRIALLY_PRODUCED)) {
 				Reporter.report(logger, 2, "Setting profit-equalizing price for commodity [%s] in which profit rate is %.4f",
-						u.commodityName(), u.profitRate());
+						u.name(), u.profitRate());
 				for (Industry c : u.industries()) {
-					Reporter.report(logger, 3, "Note: industry %s produces this commodity", c.getName());
+					Reporter.report(logger, 3, "Note: industry %s produces this commodity", c.name());
 				}
 				double profitRate = Simulation.currentTimeStamp.profitRate();
 				double profit = u.profit();
@@ -154,7 +154,7 @@ public class Prices implements Command {
 			Commodity u = s.getCommodity();
 			double price = u.getUnitPrice();
 			Reporter.report(logger, 3, "Wage earners just consumed %.0f of [%s] which would add $%.0f to the price of their labour power at the new prices",
-					s.getStockUsedUp(), u.commodityName(), s.getStockUsedUp() * price);
+					s.getStockUsedUp(), u.name(), s.getStockUsedUp() * price);
 			totalWage += s.getStockUsedUp() * price;
 		}
 

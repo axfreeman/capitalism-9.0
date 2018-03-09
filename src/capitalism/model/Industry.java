@@ -29,8 +29,6 @@ import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
 import javax.persistence.Persistence;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -44,7 +42,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import capitalism.controller.Simulation;
-import capitalism.model.Stock.ValueExpression;
+import capitalism.model.Stock.VALUE_EXPRESSION;
 import capitalism.utils.Dialogues;
 import capitalism.utils.MathStuff;
 import capitalism.utils.Reporter;
@@ -58,13 +56,6 @@ import javafx.collections.ObservableList;
 
 @Entity
 @Table(name = "industries")
-@NamedQueries({
-		@NamedQuery(name = "All", query = "Select c from Industry c where c.pk.project = :project and c.pk.timeStamp = :timeStamp"),
-		@NamedQuery(name = "Primary", query = "Select c from Industry c where c.pk.project= :project and c.pk.timeStamp = :timeStamp and c.pk.name= :industryName"),
-		@NamedQuery(name = "InitialCapital", query = "Select sum(c.initialCapital) from Industry c where c.pk.project=:project and c.pk.timeStamp=:timeStamp"),
-		@NamedQuery(name = "CommodityName", query = "Select c from Industry c where c.pk.project=:project and c.pk.timeStamp=:timeStamp and c.commodityName=:commodityName")
-})
-
 @Embeddable
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name="Industry")
@@ -91,25 +82,29 @@ public class Industry implements Serializable {
 	// Data Management
 	private static EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DB_INDUSTRIES");
 	private static EntityManager entityManager;
-	private static TypedQuery<Industry> industriesPrimaryQuery;
-	private static TypedQuery<Industry> industriesAllQuery;
-	private static TypedQuery<Industry> industriesByCommodityQuery;
-	private static TypedQuery<Industry> industryInitialCapitalQuery;
+	private static TypedQuery<Industry> primaryQuery;
+	private static TypedQuery<Industry> allWithProjectAndTimeStampQuery;
+	private static TypedQuery<Industry> withProjectTimeStampAndCommodityNameQuery;
+	private static TypedQuery<Industry> initialCapitalQuery;
 	private static TypedQuery<Industry> allQuery;
 
 	static {
 		entityManager = entityManagerFactory.createEntityManager();
-		industriesPrimaryQuery = entityManager.createNamedQuery("Primary", Industry.class);
-		industriesAllQuery = entityManager.createNamedQuery("All", Industry.class);
-		industryInitialCapitalQuery = entityManager.createNamedQuery("InitialCapital", Industry.class);
-		industriesByCommodityQuery = entityManager.createNamedQuery("CommodityName", Industry.class);
+		primaryQuery = entityManager.createQuery(
+				"Select c from Industry c where c.pk.projectID= :project and c.pk.timeStampID = :timeStamp and c.pk.name= :industryName", Industry.class);
+		allWithProjectAndTimeStampQuery = entityManager.createQuery(
+				"Select c from Industry c where c.pk.projectID = :project and c.pk.timeStampID = :timeStamp", Industry.class);
+		initialCapitalQuery = entityManager.createQuery(
+				"Select sum(c.initialCapital) from Industry c where c.pk.projectID=:project and c.pk.timeStampID=:timeStamp", Industry.class);
+		withProjectTimeStampAndCommodityNameQuery = entityManager.createQuery(
+				"Select c from Industry c where c.pk.projectID=:project and c.pk.timeStampID=:timeStamp and c.commodityName=:commodityName", Industry.class);
 		allQuery=entityManager.createQuery("Select i from Industry i",Industry.class);
 	}
 
 	/**
 	 * Readable constants to refer to the methods which provide information about the persistent members of the class
 	 */
-	public enum Selector {
+	public enum INDUSTRY_ATTRIBUTE {
 		// @formatter:off
 		INDUSTRYNAME("Industry",null,TabbedTableViewer.HEADER_TOOL_TIPS.INDUSTRY.text()), 
 		COMMODITYNAME("Product",null,TabbedTableViewer.HEADER_TOOL_TIPS.COMMODITY.text()),
@@ -130,7 +125,7 @@ public class Industry implements Serializable {
 		String imageName;
 		String toolTip;
 
-		Selector(String text, String imageName, String tooltip) {
+		INDUSTRY_ATTRIBUTE(String text, String imageName, String tooltip) {
 			this.text = text;
 			this.imageName = imageName;
 			this.toolTip = tooltip;
@@ -168,7 +163,7 @@ public class Industry implements Serializable {
 	 * @return this industry's Output Type (production or consumer goods)
 	 */
 	public OUTPUTTYPE outputType() {
-		Commodity u = getCommodity();
+		Commodity u = productName();
 		switch (u.getFunction()) {
 		case PRODUCTIVE_INPUT:
 			return OUTPUTTYPE.PRODUCTIONGOODS;
@@ -207,9 +202,9 @@ public class Industry implements Serializable {
 	 */
 	public Industry(Industry template) {
 		this.pk = new IndustryPK();
-		pk.name = template.getName();
-		pk.timeStamp = template.getTimeStamp();
-		pk.project = template.getProject();
+		pk.name = template.name();
+		pk.timeStampID = template.getTimeStamp();
+		pk.projectID = template.getProject();
 		commodityName = template.commodityName;
 		output = template.output;
 		proposedOutput = template.proposedOutput;
@@ -226,9 +221,9 @@ public class Industry implements Serializable {
 	 * @return an ObservableList of industries
 	 */
 	public static ObservableList<Industry> industriesObservable() {
-		Industry.industriesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampDisplayCursor);
+		Industry.allWithProjectAndTimeStampQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", Simulation.timeStampDisplayCursor);
 		ObservableList<Industry> result = FXCollections.observableArrayList();
-		for (Industry c : Industry.industriesAllQuery.getResultList()) {
+		for (Industry c : Industry.allWithProjectAndTimeStampQuery.getResultList()) {
 			result.add(c);
 		}
 		return result;
@@ -240,15 +235,15 @@ public class Industry implements Serializable {
 	 * We don't mind the hardwiring because we don't really intend this code to be re-usable, it's not hard to modify, and it results in compact
 	 * and readable usage code (see (@link {@link TabbedTableViewer#makeIndustriesCapitalAccountsTable()})
 	 * 
-	 * @param selector
+	 * @param iNDUSTRY_ATTRIBUTE
 	 *            chooses which member to evaluate
-	 * @param valueExpression
+	 * @param vALUE_EXPRESSION
 	 *            selects the value DisplayAsExpression where relevant (QUANTITY, VALUE, PRICE)
 	 * @return a String representation of the members, formatted according to the relevant format string
 	 */
 
-	public ReadOnlyStringWrapper wrappedString(Selector selector, Stock.ValueExpression valueExpression) {
-		switch (selector) {
+	public ReadOnlyStringWrapper wrappedString(INDUSTRY_ATTRIBUTE iNDUSTRY_ATTRIBUTE, Stock.VALUE_EXPRESSION vALUE_EXPRESSION) {
+		switch (iNDUSTRY_ATTRIBUTE) {
 		case INDUSTRYNAME:
 			return new ReadOnlyStringWrapper(pk.name);
 		case COMMODITYNAME:
@@ -264,11 +259,11 @@ public class Industry implements Serializable {
 		case GROWTHRATE:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), growthRate));
 		case MONEYSTOCK:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), moneyAttribute(valueExpression)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), moneyAttribute(vALUE_EXPRESSION)));
 		case SALESSTOCK:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), salesAttribute(valueExpression)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), salesAttribute(vALUE_EXPRESSION)));
 		case PRODUCTIVESTOCKS:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), productiveStocksAttribute(valueExpression)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), productiveStocksAttribute(vALUE_EXPRESSION)));
 		case PROFIT:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.PROFIT)));
 		case PROFITRATE:
@@ -287,16 +282,16 @@ public class Industry implements Serializable {
 	 * We don't mind the hardwiring because we don't really intend this code to be re-usable, it's not hard to modify, and it results in compact
 	 * and readable usage code (see (@link {@link TabbedTableViewer#makeIndustriesCapitalAccountsTable()})
 	 * 
-	 * @param selector
+	 * @param iNDUSTRY_ATTRIBUTE
 	 *            chooses which member to evaluate
-	 * @param valueExpression
+	 * @param vALUE_EXPRESSION
 	 *            selects the display attribute where relevant (QUANTITY, VALUE, PRICE)
 	 * @return whether this member has changed or not. False if selector is unavailable here
 	 */
 
-	public boolean changed(Selector selector, Stock.ValueExpression valueExpression) {
+	public boolean changed(INDUSTRY_ATTRIBUTE iNDUSTRY_ATTRIBUTE, Stock.VALUE_EXPRESSION vALUE_EXPRESSION) {
 		chooseComparison();
-		switch (selector) {
+		switch (iNDUSTRY_ATTRIBUTE) {
 		case INDUSTRYNAME:
 			return false;
 		case PROPOSEDOUTPUT:
@@ -314,12 +309,12 @@ public class Industry implements Serializable {
 		case PROFIT:
 			return profit() != comparator.profit();// no need to access expressionOf() because the result will be the same
 		case MONEYSTOCK:
-			return moneyAttribute(valueExpression) != comparator.moneyAttribute(valueExpression);//TODO using the attribute() method is superfluous I think throughout.
+			return moneyAttribute(vALUE_EXPRESSION) != comparator.moneyAttribute(vALUE_EXPRESSION);//TODO using the attribute() method is superfluous I think throughout.
 		case SALESSTOCK:
-			return salesAttribute(valueExpression) != comparator.salesAttribute(valueExpression);
+			return salesAttribute(vALUE_EXPRESSION) != comparator.salesAttribute(vALUE_EXPRESSION);
 		case PRODUCTIVESTOCKS:
-			double p1 = productiveStocksAttribute(valueExpression);
-			double p2 = comparator.productiveStocksAttribute(valueExpression);
+			double p1 = productiveStocksAttribute(vALUE_EXPRESSION);
+			double p2 = comparator.productiveStocksAttribute(vALUE_EXPRESSION);
 			return !MathStuff.equals(p1, p2);
 		case CURRENTCAPITAL:
 			return currentCapital() != comparator.currentCapital();// no need to access expressionOf() because the result will be the same
@@ -331,23 +326,23 @@ public class Industry implements Serializable {
 	/**
 	 * If the selected field has changed, return the difference between the current value and the former value
 	 * 
-	 * @param selector
+	 * @param iNDUSTRY_ATTRIBUTE
 	 *            chooses which field to evaluate
 	 * 
 	 * @param item
 	 *            the original item - returned as the result if there is no change
 	 * 
-	 * @param valueExpression
+	 * @param vALUE_EXPRESSION
 	 *            selects the display attribute where relevant (QUANTITY, VALUE, PRICE)
 	 * 
 	 * @return the original item if nothing has changed, otherwise the change, as an appropriately formatted string
 	 */
 
-	public String showDelta(String item, Selector selector, Stock.ValueExpression valueExpression) {
+	public String showDelta(String item, INDUSTRY_ATTRIBUTE iNDUSTRY_ATTRIBUTE, Stock.VALUE_EXPRESSION vALUE_EXPRESSION) {
 		chooseComparison();
-		if (!changed(selector, valueExpression))
+		if (!changed(iNDUSTRY_ATTRIBUTE, vALUE_EXPRESSION))
 			return item;
-		switch (selector) {
+		switch (iNDUSTRY_ATTRIBUTE) {
 		case INDUSTRYNAME:
 			return item;
 		case PROPOSEDOUTPUT:
@@ -365,12 +360,12 @@ public class Industry implements Serializable {
 		case PROFIT:
 			return String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.PROFIT)- comparator.expressionOf(ATTRIBUTE.PROFIT));
 		case MONEYSTOCK:
-			return String.format(ViewManager.getLargeFormat(), moneyAttribute(valueExpression) - comparator.moneyAttribute(valueExpression));
+			return String.format(ViewManager.getLargeFormat(), moneyAttribute(vALUE_EXPRESSION) - comparator.moneyAttribute(vALUE_EXPRESSION));
 		case SALESSTOCK:
-			return String.format(ViewManager.getLargeFormat(), salesAttribute(valueExpression) - comparator.salesAttribute(valueExpression));
+			return String.format(ViewManager.getLargeFormat(), salesAttribute(vALUE_EXPRESSION) - comparator.salesAttribute(vALUE_EXPRESSION));
 		case PRODUCTIVESTOCKS:
-			double p1 = productiveStocksAttribute(valueExpression);
-			double p2 = comparator.productiveStocksAttribute(valueExpression);
+			double p1 = productiveStocksAttribute(vALUE_EXPRESSION);
+			double p2 = comparator.productiveStocksAttribute(vALUE_EXPRESSION);
 			return String.format(ViewManager.getLargeFormat(), (p1 - p2));
 		case CURRENTCAPITAL:
 			return String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.CURRENTCAPITAL)- comparator.expressionOf(ATTRIBUTE.CURRENTCAPITAL));
@@ -390,7 +385,7 @@ public class Industry implements Serializable {
 
 	public ReadOnlyStringWrapper wrappedString(String productiveStockName) {
 		try {
-			Stock namedStock = Stock.productiveNamedSingle(pk.timeStamp, pk.name, productiveStockName);
+			Stock namedStock = Stock.singleProductive(pk.timeStampID, pk.name, productiveStockName);
 			String result = String.format(ViewManager.getLargeFormat(), namedStock.get(TabbedTableViewer.displayAttribute));
 			return new ReadOnlyStringWrapper(result);
 		} catch (Exception e) {
@@ -406,37 +401,37 @@ public class Industry implements Serializable {
 	 *            an attribute from the enum class Stock.ValueExpression: selects one of QUANTITY, VALUE or PRICE. If QUANTITY, NaN is returned
 	 * @return the total of the selected attribute owned by this industry
 	 */
-	public Double productiveStocksAttribute(Stock.ValueExpression a) {
-		if (a == Stock.ValueExpression.QUANTITY) {
+	public Double productiveStocksAttribute(Stock.VALUE_EXPRESSION a) {
+		if (a == Stock.VALUE_EXPRESSION.QUANTITY) {
 			return Double.NaN;
 		}
 		double total = 0;
-		for (Stock s : Stock.productiveByIndustry(pk.timeStamp, pk.name)) {
+		for (Stock s : Stock.allProductiveInIndustry(pk.timeStampID, pk.name)) {
 			total += s.get(a);
 		}
 		return total;
 	}
 
 	/**
-	 * generic selector which returns a numerical attribute of the sales stock depending on the {@link Stock.ValueExpression}
+	 * generic selector which returns a numerical attribute of the sales stock depending on the {@link Stock.VALUE_EXPRESSION}
 	 * 
 	 * @param a
 	 *            (QUANTITY, VALUE OR PRICE) selects whether to return the quantity, the value or the price of this stock
 	 * @return the quantity of money if a=QUANTITY, etc.
 	 */
-	public double salesAttribute(Stock.ValueExpression a) {
-		return getSalesStock().get(a);
+	public double salesAttribute(Stock.VALUE_EXPRESSION a) {
+		return salesStock().get(a);
 	}
 
 	/**
-	 * generic selector which returns a numerical attribute of the money stock depending on the {@link Stock.ValueExpression}
+	 * generic selector which returns a numerical attribute of the money stock depending on the {@link Stock.VALUE_EXPRESSION}
 	 * 
 	 * @param a
 	 *            (QUANTITY, VALUE OR PRICE) selects whether to return the quantity, the value or the price of this stock
 	 * @return the quantity of money if a=QUANTITY, etc.
 	 */
-	public double moneyAttribute(Stock.ValueExpression a) {
-		return getMoneyStock().get(a);
+	public double moneyAttribute(Stock.VALUE_EXPRESSION a) {
+		return moneyStock().get(a);
 	}
 
 	
@@ -470,7 +465,7 @@ public class Industry implements Serializable {
 		default:
 			return Double.NaN;
 		}
-		if (DisplayControlsBox.expressionDisplay == DisplayControlsBox.DISPLAY_AS_EXPRESSION.MONEY) {
+		if (DisplayControlsBox.expressionDisplay == DisplayControlsBox.EXPRESSION_DISPLAY.MONEY) {
 			return expression;
 		} else {
 			return (expression==0)?0:expression / melt;
@@ -600,8 +595,8 @@ public class Industry implements Serializable {
 	 * 
 	 * @return the Commodity that this industry produces
 	 */
-	public Commodity getCommodity() {
-		return Commodity.commodityByPrimaryKey(pk.project, pk.timeStamp, commodityName);
+	public Commodity productName() {
+		return Commodity.single(pk.projectID, pk.timeStampID, commodityName);
 	}
 
 	/**
@@ -609,8 +604,8 @@ public class Industry implements Serializable {
 	 * 
 	 * @return the money stock that is owned by this social class.
 	 */
-	public Stock getMoneyStock() {
-		return Stock.stockMoneyByOwnerSingle(pk.timeStamp, pk.name);
+	public Stock moneyStock() {
+		return Stock.moneyByOwner(pk.timeStampID, pk.name);
 	}
 
 	/**
@@ -618,27 +613,26 @@ public class Industry implements Serializable {
 	 * 
 	 * @return the sales stock owned by this industry
 	 */
-	public Stock getSalesStock() {
-
-		return Stock.stockByPrimaryKey(Simulation.projectCurrent, pk.timeStamp, pk.name, commodityName,
+	public Stock salesStock() {
+		return Stock.single(Simulation.projectIDCurrent, pk.timeStampID, pk.name, commodityName,
 				Stock.STOCKTYPE.SALES.text());
 	}
 
 	/**
 	 * the industry that produces a given commodity, for the current project and a given timeStamp. This is also the primary key of the Industry entity
 	 * 
-	 * @param project
+	 * @param projectID
 	 *            the project
-	 * @param timeStamp
+	 * @param timeStampID
 	 *            the timeStamp
-	 * @param commodityName
+	 * @param industryName
 	 *            the name of the commodity that is produced by this industry
 	 * @return the industrythat produces {@code name}, or null if this does not exist
 	 */
-	public static Industry industryByPrimaryKey(int project, int timeStamp, String commodityName) {
-		industriesPrimaryQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("industryName", commodityName);
+	public static Industry single(int projectID, int timeStampID, String industryName) {
+		primaryQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID).setParameter("industryName", industryName);
 		try {
-			return industriesPrimaryQuery.getSingleResult();
+			return primaryQuery.getSingleResult();
 		} catch (javax.persistence.NoResultException n) {
 			return null;// getSingleResult does not return null if it fails; instead, it throws a fit
 		}
@@ -657,42 +651,41 @@ public class Industry implements Serializable {
 	/**
 	 * a list of industries, for the current project and timeStamp
 	 * 
-	 * @return a list of industriesfor the current project at the latest timeStamp that has been persisted.
+	 * @return a list of industriesfor the current project at the current timeStamp.
 	 */
-	public static List<Industry> industriesAll() {
-		industriesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
-		return industriesAllQuery.getResultList();
+	public static List<Industry> currentProjectAndTimeStamp() {
+		allWithProjectAndTimeStampQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
+		return allWithProjectAndTimeStampQuery.getResultList();
 	}
 
 	/**
 	 * a list of industries, for the current project and the given timeStamp
 	 * 
-	 * @param timeStamp
+	 * @param timeStampID
 	 *            the given timeStamp
 	 *            *
 	 * @return a list of industries for the current project at the specified timeStamp (which should, in general, be different from the currentTimeStamp)
 	 */
 
-	public static List<Industry> all(int timeStamp) {
-		industriesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
-		return industriesAllQuery.getResultList();
+	public static List<Industry> currentProjectWithTimeStamp(int timeStampID) {
+		allWithProjectAndTimeStampQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStampID);
+		return allWithProjectAndTimeStampQuery.getResultList();
 	}
 
 	/**
-	 * a list of industries, for the current project and the given timeStamp, that produce a given use value
-	 * 
+	 * A list of industries, for the current project and the given timeStamp, that produce a given commodity
 	 * 
 	 * @param commodityName
-	 *            the name of the use value that these industries produce
-	 * @param timeStamp
+	 *            the name of the commodity that these industries produce
+	 * @param timeStampID
 	 *            the given timeStamp
 	 * @return a list of industries which produce the given use value at the given timeStamp.
 	 */
 
-	public static List<Industry> industriesByCommodityName(int timeStamp, String commodityName) {
-		industriesByCommodityQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp)
+	public static List<Industry> currentProjectAndTimeStampWithCommodityName(int timeStampID, String commodityName) {
+		withProjectTimeStampAndCommodityNameQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStampID)
 				.setParameter("commodityName", commodityName);
-		return industriesByCommodityQuery.getResultList();
+		return withProjectTimeStampAndCommodityNameQuery.getResultList();
 	}
 
 	/**
@@ -705,8 +698,8 @@ public class Industry implements Serializable {
 	 */
 
 	public static double industriesInitialCapital(int timeStamp) {
-		industryInitialCapitalQuery.setParameter("timeStamp", timeStamp).setParameter("project", Simulation.projectCurrent);
-		Object o = industryInitialCapitalQuery.getSingleResult();
+		initialCapitalQuery.setParameter("timeStamp", timeStamp).setParameter("project", Simulation.projectIDCurrent);
+		Object o = initialCapitalQuery.getSingleResult();
 		double result = (double) o;
 		return result;
 	}
@@ -719,11 +712,11 @@ public class Industry implements Serializable {
 	 */
 
 	public static void setComparators(int timeStampID) {
-		for (Industry c : all(timeStampID)) {
-			c.setPreviousComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), c.getName()));
-			c.setStartComparator(industryByPrimaryKey(Simulation.projectCurrent, 1, c.getName()));
-			c.setEndComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, c.getName()));
-			c.setCustomComparator(industryByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, c.getName()));
+		for (Industry c : currentProjectWithTimeStamp(timeStampID)) {
+			c.setPreviousComparator(single(Simulation.projectIDCurrent, Simulation.getTimeStampComparatorCursor(), c.name()));
+			c.setStartComparator(single(Simulation.projectIDCurrent, 1, c.name()));
+			c.setEndComparator(single(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, c.name()));
+			c.setCustomComparator(single(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, c.name()));
 		}
 	}
 
@@ -733,7 +726,7 @@ public class Industry implements Serializable {
 	 * @return the quantity of money owned by this industry.
 	 */
 	public double getMoneyQuantity() {
-		Stock s = getMoneyStock();
+		Stock s = moneyStock();
 		return s == null ? Float.NaN : s.getQuantity();
 	}
 
@@ -742,8 +735,8 @@ public class Industry implements Serializable {
 	 * 
 	 * @return the quantity of money owned by this industry.
 	 */
-	public double getMoneyValue() {
-		Stock s = getMoneyStock();
+	public double moneyValue() {
+		Stock s = moneyStock();
 		return s == null ? Float.NaN : s.getValue();
 	}
 
@@ -752,8 +745,8 @@ public class Industry implements Serializable {
 	 * 
 	 * @return the price of money owned by this industry.
 	 */
-	public double getMoneyPrice() {
-		Stock s = getMoneyStock();
+	public double moneyPrice() {
+		Stock s = moneyStock();
 		return s == null ? Float.NaN : s.getPrice();
 	}
 
@@ -762,8 +755,8 @@ public class Industry implements Serializable {
 	 * 
 	 * @return the quantity of sales stock owned by this industry
 	 */
-	public double getSalesQuantity() {
-		Stock s = getSalesStock();
+	public double salesQuantity() {
+		Stock s = salesStock();
 		return s == null ? Float.NaN : s.getQuantity();
 	}
 
@@ -772,8 +765,8 @@ public class Industry implements Serializable {
 	 * 
 	 * @return the value of the sales stock owned by this industry
 	 */
-	public double getSalesValue() {
-		Stock s = getSalesStock();
+	public double salesValue() {
+		Stock s = salesStock();
 		return s == null ? Float.NaN : s.getValue();
 	}
 
@@ -782,8 +775,8 @@ public class Industry implements Serializable {
 	 * 
 	 * @return the quantity of sales stock owned by this industry
 	 */
-	public double getSalesPrice() {
-		Stock s = getSalesStock();
+	public double salesPrice() {
+		Stock s = salesStock();
 		return s == null ? Float.NaN : s.getPrice();
 	}
 
@@ -794,7 +787,7 @@ public class Industry implements Serializable {
 	 *            the quantity of the stock of consumption goods
 	 */
 	public void setSalesQuantity(double quantity) {
-		Stock s = getSalesStock();
+		Stock s = salesStock();
 		if (s != null) {
 			s.setQuantity(quantity);
 		} else {
@@ -809,7 +802,7 @@ public class Industry implements Serializable {
 	 *            the quantity of the stock of consumption goods
 	 */
 	public void setMoneyQuantity(double quantity) {
-		Stock s = getMoneyStock();
+		Stock s = moneyStock();
 		if (s != null) {
 			s.setQuantity(quantity);
 		} else {
@@ -823,7 +816,7 @@ public class Industry implements Serializable {
 	 * @return a list of the productive stocks owned (managed) by this industry
 	 */
 	public List<Stock> productiveStocks() {
-		return Stock.productiveByIndustry(pk.timeStamp, pk.name);
+		return Stock.allProductiveInIndustry(pk.timeStampID, pk.name);
 	}
 
 	/**
@@ -834,7 +827,7 @@ public class Industry implements Serializable {
 	 *            the name of the stock
 	 */
 	public Stock productiveStock(String name) {
-		return Stock.productiveNamedSingle(pk.timeStamp, pk.name, name);
+		return Stock.singleProductive(pk.timeStampID, pk.name, name);
 	}
 
 	/**
@@ -845,18 +838,18 @@ public class Industry implements Serializable {
 	}
 
 	public Integer getProject() {
-		return pk.project;
+		return pk.projectID;
 	}
 
 	public int getTimeStamp() {
-		return pk.timeStamp;
+		return pk.timeStampID;
 	}
 
 	public void setTimeStamp(int timeStamp) {
-		pk.timeStamp = timeStamp;
+		pk.timeStampID = timeStamp;
 	}
 
-	public String getName() {
+	public String name() {
 		return pk.name;
 	}
 
@@ -943,8 +936,8 @@ public class Industry implements Serializable {
 
 	public ArrayList<String> industryContentsAsArrayList() {
 		ArrayList<String> contents = new ArrayList<>();
-		contents.add(Integer.toString(pk.timeStamp));
-		contents.add(Integer.toString(pk.project));
+		contents.add(Integer.toString(pk.timeStampID));
+		contents.add(Integer.toString(pk.projectID));
 		contents.add((pk.name));
 		for (Stock s : productiveStocks()) {
 			contents.add(String.format("%.2f", s.getQuantity()));
@@ -952,9 +945,9 @@ public class Industry implements Serializable {
 			contents.add(String.format("%.2f", s.getValue()));
 		}
 		contents.add(String.format("%.2f", getMoneyQuantity()));
-		contents.add(String.format("%.2f", getSalesQuantity()));
-		contents.add(String.format("%.2f", getSalesPrice()));
-		contents.add(String.format("%.2f", getSalesValue()));
+		contents.add(String.format("%.2f", salesQuantity()));
+		contents.add(String.format("%.2f", salesPrice()));
+		contents.add(String.format("%.2f", salesValue()));
 		contents.add(String.format("%.2f", output));
 		contents.add(String.format("%.2f", proposedOutput));
 		return contents;
@@ -970,7 +963,7 @@ public class Industry implements Serializable {
 	 * 
 	 */
 	public double currentCapital() {
-		return getMoneyPrice() + getSalesPrice() + productiveStocksAttribute(ValueExpression.PRICE);
+		return moneyPrice() + salesPrice() + productiveStocksAttribute(VALUE_EXPRESSION.PRICE);
 	}
 
 	/**
@@ -1071,9 +1064,9 @@ public class Industry implements Serializable {
 	 */
 
 	public void allocateInvestmentFunds(double costOfExpansion) {
-		Stock recipientMoneyStock = getMoneyStock();
-		SocialClass donor = SocialClass.socialClassByName("Capitalists");
-		Stock donorMoneyStock = donor.getMoneyStock();
+		Stock recipientMoneyStock = moneyStock();
+		SocialClass donor = SocialClass.currentWithName("Capitalists");
+		Stock donorMoneyStock = donor.moneyStock();
 		donorMoneyStock.transferStock(recipientMoneyStock, costOfExpansion);
 		donor.setRevenue(donor.getRevenue() - costOfExpansion);
 	}
@@ -1163,6 +1156,15 @@ public class Industry implements Serializable {
 	 */
 	public void setProductiveCapital(double productiveCapital) {
 		this.productiveCapital = productiveCapital;
+	}
+
+	/**
+	 * Set the projectID of this industry
+	 * @param projectID the project to set
+	 * 
+	 */
+	public void setProjectID(int projectID) {
+		pk.projectID=projectID;
 	}
 
 }

@@ -59,7 +59,7 @@ public class SwitchableGraphicsGrid extends AnchorPane {
 		setEffect(dropShadow);
 	}
 
-	public void setGridCell(int col, int row, TimeStamp timeStamp, TimeStamp.GLOBAL_SELECTOR selector) {
+	public void setGridCell(int col, int row, TimeStamp timeStamp, TimeStamp.TIMESTAMP_ATTRIBUTE selector) {
 		Glabel glabel = new Glabel();
 		glabel.setDescription(selector.text());
 		gridPane.add(glabel, row, col);
@@ -87,13 +87,13 @@ public class SwitchableGraphicsGrid extends AnchorPane {
 	 *            the persistent TimeStamp that is used to get the numeric values	
 	 */
 	public void populate(String floatFormatString, TimeStamp timeStamp) {
-		setGridCell(0, 0, timeStamp, TimeStamp.GLOBAL_SELECTOR.INITIALCAPITAL);
-		setGridCell(0, 1, timeStamp, TimeStamp.GLOBAL_SELECTOR.CURRENTCAPITAL);
-		setGridCell(0, 2, timeStamp, TimeStamp.GLOBAL_SELECTOR.PROFIT);
-		setGridCell(0, 3, timeStamp, TimeStamp.GLOBAL_SELECTOR.PROFITRATE);
-		setGridCell(1, 0, timeStamp, TimeStamp.GLOBAL_SELECTOR.TOTALVALUE);
-		setGridCell(1, 1, timeStamp, TimeStamp.GLOBAL_SELECTOR.TOTALPRICE);
-		setGridCell(1, 2, timeStamp, TimeStamp.GLOBAL_SELECTOR.MELT);
-		setGridCell(1, 3, timeStamp, TimeStamp.GLOBAL_SELECTOR.POPULATION_GROWTH_RATE);
+		setGridCell(0, 0, timeStamp, TimeStamp.TIMESTAMP_ATTRIBUTE.INITIALCAPITAL);
+		setGridCell(0, 1, timeStamp, TimeStamp.TIMESTAMP_ATTRIBUTE.CURRENTCAPITAL);
+		setGridCell(0, 2, timeStamp, TimeStamp.TIMESTAMP_ATTRIBUTE.PROFIT);
+		setGridCell(0, 3, timeStamp, TimeStamp.TIMESTAMP_ATTRIBUTE.PROFITRATE);
+		setGridCell(1, 0, timeStamp, TimeStamp.TIMESTAMP_ATTRIBUTE.TOTALVALUE);
+		setGridCell(1, 1, timeStamp, TimeStamp.TIMESTAMP_ATTRIBUTE.TOTALPRICE);
+		setGridCell(1, 2, timeStamp, TimeStamp.TIMESTAMP_ATTRIBUTE.MELT);
+		setGridCell(1, 3, timeStamp, TimeStamp.TIMESTAMP_ATTRIBUTE.POPULATION_GROWTH_RATE);
 	}
 }

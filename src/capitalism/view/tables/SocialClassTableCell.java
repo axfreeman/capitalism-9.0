@@ -33,10 +33,10 @@ import javafx.scene.paint.Color;
 public class SocialClassTableCell extends TableCell<SocialClass, String> {
 	static final Logger logger = LogManager.getLogger("SocialClassTableCell");
 	
-	SocialClass.Selector selector;
+	SocialClass.SOCIALCLASS_ATTRIBUTE sOCIALCLASS_ATTRIBUTE;
 	
-	public SocialClassTableCell(SocialClass.Selector selector){
-		this.selector=selector;
+	public SocialClassTableCell(SocialClass.SOCIALCLASS_ATTRIBUTE sOCIALCLASS_ATTRIBUTE){
+		this.sOCIALCLASS_ATTRIBUTE=sOCIALCLASS_ATTRIBUTE;
 	}
 	
 	@Override
@@ -53,7 +53,7 @@ public class SocialClassTableCell extends TableCell<SocialClass, String> {
 		
 		String deltaModifier="";
 		
-		if (socialClass.changed(selector,TabbedTableViewer.displayAttribute)) {
+		if (socialClass.changed(sOCIALCLASS_ATTRIBUTE,TabbedTableViewer.displayAttribute)) {
 			setTextFill(Color.RED);
 			deltaModifier=(TrackingControlsBox.displayDeltas?ViewManager.deltaSymbol:"");
 		}
@@ -62,11 +62,11 @@ public class SocialClassTableCell extends TableCell<SocialClass, String> {
 		String quantityModifier=deltaModifier;
 		
 		if(TrackingControlsBox.displayDeltas) {
-			item=socialClass.showDelta(item, selector,TabbedTableViewer.displayAttribute);
+			item=socialClass.showDelta(item, sOCIALCLASS_ATTRIBUTE,TabbedTableViewer.displayAttribute);
 		}
 
-		setTextFill(socialClass.changed(selector,TabbedTableViewer.displayAttribute) ? Color.RED : Color.BLACK);
-			switch (selector) {
+		setTextFill(socialClass.changed(sOCIALCLASS_ATTRIBUTE,TabbedTableViewer.displayAttribute) ? Color.RED : Color.BLACK);
+			switch (sOCIALCLASS_ATTRIBUTE) {
 			case MONEY:
 			case CONSUMPTIONSTOCKS:
 			case SALES:

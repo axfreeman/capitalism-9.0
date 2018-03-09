@@ -1,6 +1,7 @@
 # Capitalism 9.0 announcements 3/8/2018 12:54:01 AM 
 
-User can save to XML;editing and loading under development.
+User can save to XML
+User can open an edit window, but this has no functionality as yet
 Hence no new executable.
 New javadocs
 

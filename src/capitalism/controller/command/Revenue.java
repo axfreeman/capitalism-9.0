@@ -66,20 +66,20 @@ public class Revenue extends Simulation implements Command {
 	}
 
 	private void allocateProfits() {
-		SocialClass capitalists = SocialClass.socialClassByName("Capitalists");
+		SocialClass capitalists = SocialClass.currentWithName("Capitalists");
 		double capitalistRevenue = 0.0;
-		Stock recipient = capitalists.getMoneyStock();
-		for (Industry c : Industry.industriesAll()) {
+		Stock recipient = capitalists.moneyStock();
+		for (Industry c : Industry.currentProjectAndTimeStamp()) {
 			double profit = c.profit();
 
 			// transfer all profits to the capitalist class. In the Accumulate phase, part of this revenue
 			// will be put back into the industries to invest
 
-			Stock donor = c.getMoneyStock();
+			Stock donor = c.moneyStock();
 			recipient.modifyBy(profit);
 			donor.modifyBy(-profit);
 			Reporter.report(logger, 1, "Capitalist class has received $%.0f from industry [%s]",
-					profit, c.getName());
+					profit, c.name());
 
 			// Note: revenue is in effect a memo item, not a stock.
 			// its use is to determine what classes consume.

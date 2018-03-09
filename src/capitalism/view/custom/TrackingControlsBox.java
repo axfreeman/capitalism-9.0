@@ -209,13 +209,13 @@ public class TrackingControlsBox extends VBox {
 					String selected = magnitudeToggle.getSelectedToggle().getUserData().toString();
 					switch (selected) {
 					case "VALUES":
-						TabbedTableViewer.setDisplayAttribute(Stock.ValueExpression.VALUE);
+						TabbedTableViewer.setDisplayAttribute(Stock.VALUE_EXPRESSION.VALUE);
 						break;
 					case "PRICES":
-						TabbedTableViewer.setDisplayAttribute(Stock.ValueExpression.PRICE);
+						TabbedTableViewer.setDisplayAttribute(Stock.VALUE_EXPRESSION.PRICE);
 						break;
 					case "QUANTITIES":
-						TabbedTableViewer.setDisplayAttribute(Stock.ValueExpression.QUANTITY);
+						TabbedTableViewer.setDisplayAttribute(Stock.VALUE_EXPRESSION.QUANTITY);
 						break;
 					default:
 						logger.error("Unknown radio button {} selected ", selected);

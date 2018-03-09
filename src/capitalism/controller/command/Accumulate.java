@@ -78,13 +78,13 @@ public class Accumulate implements Command {
 	private void allocateToProductionIndustries() {
 		Reporter.report(logger, 1, "Allocating investment to the production goods industries");
 
-		for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION.PRODUCTIVE_INPUT)) {
+		for (Commodity u : Commodity.currentByFunction(Commodity.FUNCTION.PRODUCTIVE_INPUT)) {
 
 			// Exclude socially-produced commodities
 			if (u.getOrigin() == Commodity.ORIGIN.SOCIALlY_PRODUCED)
 				continue;
 
-			Reporter.report(logger, 2, "Processing commodity %s", u.commodityName());
+			Reporter.report(logger, 2, "Processing commodity %s", u.name());
 			for (Industry industry : u.industries()) {
 				// simply grant the industry's proposed growth rate
 				industry.expand(industry.getGrowthRate());
@@ -110,13 +110,13 @@ public class Accumulate implements Command {
 		double costs = 0;
 		Reporter.report(logger, 1, "Allocating investment to the consumption goods industries");
 		
-		for (Commodity u : Commodity.commoditiesByFunction(Commodity.FUNCTION.CONSUMER_GOOD)) {
+		for (Commodity u : Commodity.currentByFunction(Commodity.FUNCTION.CONSUMER_GOOD)) {
 
 			// Exclude socially-produced commodities
 			if (u.getOrigin() == Commodity.ORIGIN.SOCIALlY_PRODUCED)
 				continue;
 			
-			Reporter.report(logger, 2, "Processing commodity %s", u.commodityName());
+			Reporter.report(logger, 2, "Processing commodity %s", u.name());
 			for (Industry industry : u.industries()) {
 				industry.expand(industry.computeGrowthRate());
 			}

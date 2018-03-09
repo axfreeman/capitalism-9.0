@@ -240,7 +240,7 @@ public class ViewManager {
 	 * 
 	 */
 	private static void populateSummaryGrid() {
-		TimeStamp timeStamp = TimeStamp.get(Simulation.timeStampDisplayCursor);
+		TimeStamp timeStamp = TimeStamp.singleInCurrentProject(Simulation.timeStampDisplayCursor);
 		switchableGrid.populate(smallFormat, timeStamp);
 	}
 
@@ -255,8 +255,8 @@ public class ViewManager {
 	 * @return the requested expression of the value magnitude - unchanged if expressionDisplay is TIME but divided by MELT if expressionDisplay is MONEY
 	 */
 
-	public static double valueExpression(double intrinsicValueExpression, DisplayControlsBox.DISPLAY_AS_EXPRESSION valuesExpressionDisplay) {
-		if (valuesExpressionDisplay == DisplayControlsBox.DISPLAY_AS_EXPRESSION.MONEY) {
+	public static double valueExpression(double intrinsicValueExpression, DisplayControlsBox.EXPRESSION_DISPLAY valuesExpressionDisplay) {
+		if (valuesExpressionDisplay == DisplayControlsBox.EXPRESSION_DISPLAY.MONEY) {
 			return intrinsicValueExpression;
 		} else {
 			double melt = Simulation.currentTimeStamp.getMelt();
@@ -291,7 +291,7 @@ public class ViewManager {
 	 */
 	public void switchProject(Project newValue) {
 		logger.debug("entered switchProject");
-		if (newValue.getProjectID() != Simulation.projectCurrent) {
+		if (newValue.getProjectID() != Simulation.projectIDCurrent) {
 			logger.debug("Requested switch to project with ID {} and description {} ", newValue.getProjectID(), newValue.getDescription());
 			Simulation.switchProjects(newValue.getProjectID(), actionButtonsBox);
 
@@ -315,7 +315,7 @@ public class ViewManager {
 
 	public static void refreshTimeStampView() {
 		logger.debug("Refreshing the timeStamp treeview for project {} at period {} and timeStamp {}",
-				Simulation.getProjectCurrent(), Simulation.getPeriodCurrent(), Simulation.timeStampIDCurrent);
+				Simulation.getProjectIDCurrent(), Simulation.getPeriodCurrent(), Simulation.timeStampIDCurrent);
 		int periods = Simulation.getPeriodCurrent();
 		if (timeStampViewer != null) {// we've already created one tree, so now we have to delete it and start over
 			trackingControlsBox.getChildren().remove(timeStampViewer);
@@ -335,7 +335,7 @@ public class ViewManager {
 
 		for (int period = 1; period < periods + 1; period++) {
 			TimeStampViewItem periodRoot = new TimeStampViewItem(
-					new TimeStamp(1, Simulation.projectCurrent, period, "", -1, String.format("Period %d", period)));
+					new TimeStamp(1, Simulation.projectIDCurrent, period, "", -1, String.format("Period %d", period)));
 			treeRoot.getChildren().add(periodRoot);
 			if (period < periods) {
 				logger.debug(" The view of period {} will be closed up because it is not the current period", period);
@@ -356,7 +356,7 @@ public class ViewManager {
 				if (a.superAction == null) { // it's not a baby
 
 					TimeStampViewItem superStateRoot = new TimeStampViewItem(
-							new TimeStamp(-1, Simulation.projectCurrent, periodItem.getValue().getPeriod(), a.text(), -1, a.text()));
+							new TimeStamp(-1, Simulation.projectIDCurrent, periodItem.getValue().getPeriod(), a.text(), -1, a.text()));
 					periodItem.getChildren().add(superStateRoot);
 					logger.debug("Adding the superstate action called {} in period {}", a.text(), thisPeriod);
 
@@ -365,9 +365,9 @@ public class ViewManager {
 					// simulation
 
 					// diagnostics -switch off unless there are problems with the treeview
-					for (TimeStamp t : TimeStamp.allInProject()) {
+					for (TimeStamp t : TimeStamp.allInCurrentProject()) {
 						logger.debug("TimeStamp described as {} has timeStampID {}, project {}, period {} and superState {}",
-								t.getDescription(), t.getTimeStampID(), t.getProjectFK(), t.getPeriod(), t.getSuperState());
+								t.getDescription(), t.getTimeStampID(), t.getProjectID(), t.getPeriod(), t.getSuperState());
 					}
 
 					for (TimeStamp childStamp : TimeStamp.superStateChildren(thisPeriod, a.text())) {
@@ -394,7 +394,7 @@ public class ViewManager {
 	 * should be self-sufficient but I could not quite get this to work, because of a glitch in javafx.
 	 */
 	public static void refreshDisplay() {
-		int currentProject = Simulation.projectCurrent;
+		int currentProject = Simulation.projectIDCurrent;
 		TrackingControlsBox.getProjectCursorLabel().setText("Project " + currentProject);
 		TrackingControlsBox.getTimeStampCursorLabel().setText("Time " + Simulation.timeStampDisplayCursor);
 

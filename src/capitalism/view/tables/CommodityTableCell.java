@@ -32,10 +32,10 @@ import javafx.scene.paint.Color;
 public class CommodityTableCell extends TableCell<Commodity, String> {
 	static final Logger logger = LogManager.getLogger("CommodityTableCell");
 
-	Commodity.SELECTOR selector;
+	Commodity.COMMODITY_ATTRIBUTE commodity_attribute;
 
-	public CommodityTableCell(Commodity.SELECTOR selector) {
-		this.selector = selector;
+	public CommodityTableCell(Commodity.COMMODITY_ATTRIBUTE commodity_attribute) {
+		this.commodity_attribute = commodity_attribute;
 	}
 
 	@Override protected void updateItem(String item, boolean empty) {
@@ -55,7 +55,7 @@ public class CommodityTableCell extends TableCell<Commodity, String> {
 		}
 		String deltaModifier="";
 		
-		if (commodity.changed(selector)) {
+		if (commodity.changed(commodity_attribute)) {
 			setTextFill(Color.RED);
 			deltaModifier=(TrackingControlsBox.displayDeltas?ViewManager.deltaSymbol:"");
 		}
@@ -64,9 +64,9 @@ public class CommodityTableCell extends TableCell<Commodity, String> {
 		String quantityModifier=deltaModifier;
 		
 		if(TrackingControlsBox.displayDeltas) {
-			item=commodity.showDelta(item, selector);
+			item=commodity.showDelta(item, commodity_attribute);
 		}
-		switch (selector) {
+		switch (commodity_attribute) {
 		case ALLOCATIONSHARE:
 		case REPLENISHMENT_DEMAND:
 		case TOTALSUPPLY:

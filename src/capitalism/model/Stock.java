@@ -50,32 +50,13 @@ import javafx.collections.ObservableList;
 @Entity
 @Table(name = "stocks")
 @NamedQueries({
-		// select a single stock by all elements of its primary key
-		@NamedQuery(name = "Primary", query = "SELECT s FROM Stock s WHERE s.pk.project=:project and s.pk.timeStamp =:timeStamp and s.pk.owner =:owner and s.pk.commodity= :commodity and s.pk.stockType=:stockType"),
-
-		// select all stocks with the given project and timeStamp
-		@NamedQuery(name = "All", query = "SELECT s FROM Stock s where s.pk.project= :project and s.pk.timeStamp = :timeStamp"),
-
-		// select all stocks with the given project, timeStamp and stockType
-		@NamedQuery(name = "StockType", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp=:timeStamp and s.pk.stockType=:stockType"),
-
-		// select all stocks with the given project, timeStamp, owner and stockType
-		@NamedQuery(name = "Owner.StockType", query = "SELECT s FROM Stock s "
-				+ "where s.pk.project= :project and s.pk.timeStamp = :timeStamp and s.pk.owner= :owner and s.pk.stockType=:stockType"),
-
-		// select all stocks of a given project, timeStamp and commodity
-		@NamedQuery(name = "Commodity", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp = :timeStamp and s.pk.commodity= :commodity"),
-
-		// select all stocks of a given project, timeStamp, commodity and stocktype
-		@NamedQuery(name = "Commodity.StockType", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp = :timeStamp and s.pk.stockType=:stockType and s.pk.commodity= :commodity"),
-
 		// select all stocks of a given project and timestamp, whose stockType is one of two specified types (used with Productive and Cnsumption to yield
 		// sources of demand)
-		@NamedQuery(name = "Demand", query = "SELECT s FROM Stock s where s.pk.project = :project and s.pk.timeStamp=:timeStamp "
+		@NamedQuery(name = "Demand", query = "SELECT s FROM Stock s where s.pk.projectID = :project and s.pk.timeStampID=:timeStamp "
 				+ "and (s.pk.stockType = :stockType1 or s.pk.stockType=:stockType2)")
 })
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlRootElement(name="Stock")
+@XmlRootElement(name = "Stock")
 public class Stock implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = LogManager.getLogger(Stock.class);
@@ -99,8 +80,8 @@ public class Stock implements Serializable {
 	@Column(name = "consumptionCoefficient") private double consumptionCoefficient;
 
 	// how much of this was used up in production or reproduction
-	@Column (name = "stockUsedUp") private double stockUsedUp; 
-	
+	@Column(name = "stockUsedUp") private double stockUsedUp;
+
 	// Comparators
 	@Transient private Stock comparator;
 	@Transient private Stock previousComparator;
@@ -111,29 +92,42 @@ public class Stock implements Serializable {
 	// Data Management
 	private static EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DB_STOCKS");
 	private static EntityManager entityManager;
-	private static TypedQuery<Stock> stockByPrimaryKeyQuery;
-	private static TypedQuery<Stock> stocksAllQuery;
-	private static TypedQuery<Stock> stocksByCommodityQuery;
-	private static TypedQuery<Stock> stocksByCommodityAndTypeQuery;
-	private static TypedQuery<Stock> stocksByOwnerAndTypeQuery;
-	private static TypedQuery<Stock> stocksByOneOfTwoStockTypesQuery;
-	public static TypedQuery<Stock> stocksByStockTypeQuery;
+	private static TypedQuery<Stock> primaryQuery;
+	private static TypedQuery<Stock> allQuery;
+	private static TypedQuery<Stock> ofCommodityQuery;
+	private static TypedQuery<Stock> ofCommodityAndTypeQuery;
+	private static TypedQuery<Stock> withOwnerAndTypeQuery;
+	private static TypedQuery<Stock> sourcesOfDemandQuery;
+	public static TypedQuery<Stock> withStockTypeQuery;
 
 	static {
 		entityManager = entityManagerFactory.createEntityManager();
-		stockByPrimaryKeyQuery = entityManager.createNamedQuery("Primary", Stock.class);
-		stocksAllQuery = entityManager.createNamedQuery("All", Stock.class);
-		stocksByStockTypeQuery = entityManager.createNamedQuery("StockType", Stock.class);
-		stocksByOwnerAndTypeQuery = entityManager.createNamedQuery("Owner.StockType", Stock.class);
-		stocksByCommodityQuery = entityManager.createNamedQuery("Commodity", Stock.class);
-		stocksByCommodityAndTypeQuery = entityManager.createNamedQuery("Commodity.StockType", Stock.class);
-		stocksByOneOfTwoStockTypesQuery = entityManager.createNamedQuery("Demand", Stock.class);
+		primaryQuery = entityManager.createQuery(
+				"SELECT s FROM Stock s WHERE s.pk.projectID=:project and s.pk.timeStampID =:timeStamp and s.pk.owner =:owner and s.pk.commodity= :commodity and s.pk.stockType=:stockType",
+				Stock.class);
+		allQuery = entityManager.createQuery(
+				"SELECT s FROM Stock s where s.pk.projectID= :project and s.pk.timeStampID = :timeStamp", Stock.class);
+		withStockTypeQuery = entityManager.createQuery(
+				"SELECT s FROM Stock s where s.pk.projectID = :project and s.pk.timeStampID=:timeStamp and s.pk.stockType=:stockType",
+				Stock.class);
+		withOwnerAndTypeQuery = entityManager.createQuery(
+				"SELECT s FROM Stock s where s.pk.projectID= :project and s.pk.timeStampID = :timeStamp and s.pk.owner= :owner and s.pk.stockType=:stockType",
+				Stock.class);
+		ofCommodityQuery = entityManager.createQuery(
+				"SELECT s FROM Stock s where s.pk.projectID = :project and s.pk.timeStampID = :timeStamp and s.pk.commodity= :commodity",
+				Stock.class);
+		ofCommodityAndTypeQuery = entityManager.createQuery(
+				"SELECT s FROM Stock s where s.pk.projectID = :project and s.pk.timeStampID = :timeStamp and s.pk.stockType=:stockType and s.pk.commodity= :commodity",
+				Stock.class);
+		sourcesOfDemandQuery = entityManager.createQuery(
+				"SELECT s FROM Stock s where s.pk.projectID = :project and s.pk.timeStampID =:timeStamp and (s.pk.stockType = :stockType1 or s.pk.stockType=:stockType2)",
+				Stock.class);
 	}
 
 	/**
 	 * Readable constants to refer to the methods which provide information about the persistent members of the class
 	 */
-	public enum Selector {
+	public enum STOCK_ATTRIBUTE {
 		// @formatter:off
 		OWNER("Owner",null,null), 
 		OWNERTYPE("Owner Type",null,null), 
@@ -151,7 +145,7 @@ public class Stock implements Serializable {
 		String imageName;
 		String toolTip;
 
-		Selector(String text, String imageName, String toolTip) {
+		STOCK_ATTRIBUTE(String text, String imageName, String toolTip) {
 			this.text = text;
 			this.imageName = imageName;
 			this.toolTip = toolTip;
@@ -176,14 +170,16 @@ public class Stock implements Serializable {
 	 * NOTE: here is a bug in H2 which prevents an enum type being used in a primary key;
 	 * in consequence, the type of the persistent field 'stockType' is, confusingly, String and not StockType.
 	 * For code transparency, this enum provides the text that is used in SQL queries, via its 'text' method
-	 * See for example {@link Stock#productiveNamedSingle(int, String, String) stockProductiveByNameSingle}
+	 * See for example {@link Stock#singleProductive(int, String, String) stockProductiveByNameSingle}
 	 */
 	public static enum STOCKTYPE {
 		PRODUCTIVE("Productive"), CONSUMPTION("Consumption"), SALES("Sales"), MONEY("Money");
 		private String text;
+
 		STOCKTYPE(String text) {
 			this.text = text;
 		}
+
 		public String text() {
 			return text;
 		}
@@ -196,9 +192,11 @@ public class Stock implements Serializable {
 	public enum OWNERTYPE {
 		CLASS("Social Class"), INDUSTRY("Industry");
 		private String text;
+
 		OWNERTYPE(String text) {
 			this.text = text;
 		}
+
 		public String text() {
 			return text;
 		}
@@ -235,7 +233,7 @@ public class Stock implements Serializable {
 	 * @author afree
 	 *
 	 */
-	public enum ValueExpression {
+	public enum VALUE_EXPRESSION {
 		QUANTITY, VALUE, PRICE
 	}
 
@@ -252,7 +250,7 @@ public class Stock implements Serializable {
 	 * @return the Commodity entity of this Stock
 	 */
 	public Commodity getCommodity() {
-		return Commodity.commodityByPrimaryKey(pk.timeStamp, pk.commodity);
+		return Commodity.singleCurrentProject(pk.timeStampID, pk.commodity);
 	}
 
 	/**
@@ -264,9 +262,9 @@ public class Stock implements Serializable {
 	 *            the stock from which to copy
 	 */
 	public Stock(Stock template) {
-		this.pk=new StockPK();
-		pk.timeStamp = template.pk.timeStamp;
-		pk.project = template.pk.project;
+		this.pk = new StockPK();
+		pk.timeStampID = template.pk.timeStampID;
+		pk.projectID = template.pk.projectID;
 		pk.owner = template.pk.owner;
 		pk.commodity = template.pk.commodity;
 		pk.stockType = template.pk.stockType;
@@ -278,17 +276,17 @@ public class Stock implements Serializable {
 		quantity = template.quantity;
 		replenishmentDemand = template.replenishmentDemand;
 		expansionDemand = template.expansionDemand;
-		stockUsedUp=template.stockUsedUp;
+		stockUsedUp = template.stockUsedUp;
 	}
 
 	/**
-	 * generic selector which returns a numerical attribute depending on the {@link ValueExpression}
+	 * generic selector which returns a numerical attribute depending on the {@link VALUE_EXPRESSION}
 	 * 
 	 * @param a
 	 *            (QUANTITY, VALUE OR PRICE) selects whether to return the quantity, the value or the price of this stock
 	 * @return the quantity if a=QUANTITY, etc.
 	 */
-	public double get(ValueExpression a) {
+	public double get(VALUE_EXPRESSION a) {
 		switch (a) {
 		case QUANTITY:
 			return quantity;
@@ -307,14 +305,13 @@ public class Stock implements Serializable {
 	 * We don't mind the hardwiring because we don't really intend this code to be re-usable, it's not hard to modify, and it results in compact
 	 * and readable usage code (@see for example TabbedTableViewer#makeProductiveStocksViewTable})
 	 * 
-	 * @param selector
+	 * @param attribute
 	 *            chooses which member to evaluate
 	 * @return a String representation of the members, formatted according to the relevant format string
 	 */
-
-	public ReadOnlyStringWrapper wrappedString(Selector selector) {
+	public ReadOnlyStringWrapper wrappedString(STOCK_ATTRIBUTE attribute) {
 		chooseComparison();
-		switch (selector) {
+		switch (attribute) {
 		case OWNER:
 			return new ReadOnlyStringWrapper(pk.owner);
 		case OWNERTYPE:
@@ -343,13 +340,13 @@ public class Stock implements Serializable {
 	}
 
 	/**
-	 * generic selector which returns a boolean depending on the {@link ValueExpression}
+	 * generic selector which returns a boolean depending on the {@link VALUE_EXPRESSION}
 	 * 
 	 * @param a
 	 *            (QUANTITY, VALUE OR PRICE) selects whether to inspect the quantity, the value or the price of this stock
 	 * @return true if the selected attribute is different from the corresponding attribute of the comparator stock.
 	 */
-	public boolean changed(ValueExpression a) {
+	public boolean changed(VALUE_EXPRESSION a) {
 		chooseComparison();
 		switch (a) {
 		case QUANTITY:
@@ -370,14 +367,13 @@ public class Stock implements Serializable {
 	 * We don't mind the hardwiring because we don't really intend this code to be re-usable, it's not hard to modify, and it results in compact
 	 * and readable usage code for example (@see TabbedTableViewer#makeSalesStocksViewTable})
 	 * 
-	 * @param selector
+	 * @param attribute
 	 *            chooses which member to evaluate
 	 * @return whether this member has changed or not. False if selector is unavailable here
 	 */
-
-	public boolean changed(Selector selector) {
+	public boolean changed(STOCK_ATTRIBUTE attribute) {
 		chooseComparison();
-		switch (selector) {
+		switch (attribute) {
 		case OWNER:
 		case COMMODITY:
 		case STOCKTYPE:
@@ -410,7 +406,7 @@ public class Stock implements Serializable {
 	 * 
 	 * @return the original item if nothing has changed, otherwise the change, as an appropriately formatted string
 	 */
-	public String showDelta(String item, ValueExpression valueExpression) {
+	public String showDelta(String item, VALUE_EXPRESSION valueExpression) {
 		chooseComparison();
 		if (!changed(valueExpression))
 			return item;
@@ -429,7 +425,6 @@ public class Stock implements Serializable {
 	/**
 	 * chooses the comparator depending on the state set in the {@code ViewManager.comparatorToggle} radio buttons
 	 */
-
 	private void chooseComparison() {
 		switch (TrackingControlsBox.getComparatorState()) {
 		case CUSTOM:
@@ -445,7 +440,7 @@ public class Stock implements Serializable {
 			comparator = startComparator;
 		}
 	}
-	
+
 	/**
 	 * an observable list of stocks of a particular stock type, for display by ViewManager, at the current project and timeStampDisplayCursor.
 	 * timeStampDisplayCursor, which
@@ -456,11 +451,11 @@ public class Stock implements Serializable {
 	 * 
 	 * @return an observableList of stocks
 	 */
-	public static ObservableList<Stock> stocksByStockTypeObservable(String stockType) {
-		Stock.stocksByStockTypeQuery.setParameter("project", Simulation.projectCurrent).setParameter("stockType", stockType).setParameter("timeStamp",
+	public static ObservableList<Stock> ofStockTypeObservable(String stockType) {
+		Stock.withStockTypeQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("stockType", stockType).setParameter("timeStamp",
 				Simulation.timeStampDisplayCursor);
 		ObservableList<Stock> result = FXCollections.observableArrayList();
-		for (Stock s : Stock.stocksByStockTypeQuery.getResultList()) {
+		for (Stock s : Stock.withStockTypeQuery.getResultList()) {
 			result.add(s);
 		}
 		return result;
@@ -538,8 +533,6 @@ public class Stock implements Serializable {
 		}
 	}
 
-
-
 	/**
 	 * Helper function transfers quantityTransferred from this Stock to toStock. Also transfers the value of the stock and the price. Carries out checks and
 	 * throws an exception if conditions are violated
@@ -557,8 +550,9 @@ public class Stock implements Serializable {
 
 		// a little consistency check
 
-		if (!pk.commodity.equals(to.getCommodityName())) {
-			Dialogues.alert(logger,"The simulation tried to transfer stock between commodities of different types.This is a programme error. Please contact the developer");
+		if (!pk.commodity.equals(to.name())) {
+			Dialogues.alert(logger,
+					"The simulation tried to transfer stock between commodities of different types.This is a programme error. Please contact the developer");
 		}
 
 		double unitValue = commodity.getUnitValue();
@@ -575,11 +569,11 @@ public class Stock implements Serializable {
 		if (toQuantity != 0) {
 			if (!MathStuff.equals(toPrice / toQuantity, unitPrice)) {
 				Dialogues.alert(logger, "The unit price of the [%s] is %.2f and the unit price of its use value is  %.2f",
-						to.getCommodityName(), toPrice / toQuantity, unitPrice);
+						to.name(), toPrice / toQuantity, unitPrice);
 			}
 			if (!MathStuff.equals(toValue / toQuantity, unitValue)) {
 				Dialogues.alert(logger, "The unit price of the stock [%s] is %.2f and the unit price of its use value is  %.2f",
-						to.getCommodityName(), toPrice / toQuantity, unitPrice);
+						to.name(), toPrice / toQuantity, unitPrice);
 			}
 		}
 		if (fromQuantity != 0) {
@@ -593,14 +587,14 @@ public class Stock implements Serializable {
 			}
 		}
 		logger.debug(String.format("   Transfer %.2f from [%s] in [%s] to [%s] in [%s]",
-				quantityTransferred, pk.commodity, pk.owner, to.getCommodityName(), to.getOwner()));
-		logger.debug(String.format("   Recipient [%s] size is: %.2f", to.getCommodityName(), to.getQuantity()));
+				quantityTransferred, pk.commodity, pk.owner, to.name(), to.getOwner()));
+		logger.debug(String.format("   Recipient [%s] size is: %.2f", to.name(), to.getQuantity()));
 		logger.debug(String.format("   Donor [%s] size is: %.2f ", pk.commodity, quantity));
 
 		to.modifyBy(quantityTransferred);
 		modifyBy(-quantityTransferred);
 
-		logger.debug(String.format("   Recipient [%s] size is now: %.2f ", to.getCommodityName(), to.getQuantity()));
+		logger.debug(String.format("   Recipient [%s] size is now: %.2f ", to.name(), to.getQuantity()));
 		logger.debug(String.format("   Donor [%s] size is now: %.2f ", pk.commodity, quantity));
 	}
 
@@ -610,25 +604,24 @@ public class Stock implements Serializable {
 	 * @param timeStampID
 	 *            the timeStampID of the Stock entities whose comparators will be set
 	 */
-
 	public static void setComparators(int timeStampID) {
-		for (Stock s : all(timeStampID)) {
-			s.setPreviousComparator(stockByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), s.getOwner(),
-					s.getCommodityName(), s.getStockType()));
-			s.setStartComparator(stockByPrimaryKey(Simulation.projectCurrent, 1, s.getOwner(), s.getCommodityName(), s.getStockType()));
+		for (Stock s : allCurrentProject(timeStampID)) {
+			s.setPreviousComparator(single(Simulation.projectIDCurrent, Simulation.getTimeStampComparatorCursor(), s.getOwner(),
+					s.name(), s.getStockType()));
+			s.setStartComparator(single(Simulation.projectIDCurrent, 1, s.getOwner(), s.name(), s.getStockType()));
 			s.setEndComparator(
-					stockByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, s.getOwner(), s.getCommodityName(), s.getStockType()));
+					single(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, s.getOwner(), s.name(), s.getStockType()));
 			s.setCustomComparator(
-					stockByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, s.getOwner(), s.getCommodityName(), s.getStockType()));
+					single(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, s.getOwner(), s.name(), s.getStockType()));
 		}
 	}
 
 	/**
 	 * get the single stock with the primary key given by all the parameters
 	 * 
-	 * @param project
+	 * @param projectID
 	 *            the given project
-	 * @param timeStamp
+	 * @param timeStampID
 	 *            the given timeStamp
 	 * @param industry
 	 *            the name of the owning industry, as a String
@@ -638,11 +631,11 @@ public class Stock implements Serializable {
 	 *            the type of this stock (money, productive, sales, consumption) as a String
 	 * @return the single stock defined by this primary key, null if it does not exist
 	 */
-	public static Stock stockByPrimaryKey(int project, int timeStamp, String industry, String commodity, String stockType) {
-		stockByPrimaryKeyQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("owner", industry)
+	public static Stock single(int projectID, int timeStampID, String industry, String commodity, String stockType) {
+		primaryQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID).setParameter("owner", industry)
 				.setParameter("commodity", commodity).setParameter("stockType", stockType);
 		try {
-			return stockByPrimaryKeyQuery.getSingleResult();
+			return primaryQuery.getSingleResult();
 		} catch (NoResultException r) {
 			return null;
 		}
@@ -651,18 +644,18 @@ public class Stock implements Serializable {
 	/**
 	 * the money stock of a Industry defined by the name of the industry and the use value it produces, for the current project and a given timeStamp
 	 * 
-	 * @param timeStamp
+	 * @param timeStampID
 	 *            the given timeStammp
 	 * @param industry
 	 *            the Industry to which the stock belongs
 	 * 
 	 * @return the single stock of money owned by the industry
 	 */
-	public static Stock stockMoneyByOwnerSingle(int timeStamp, String industry) {
-		stockByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp).setParameter("owner", industry)
+	public static Stock moneyByOwner(int timeStampID, String industry) {
+		primaryQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStampID).setParameter("owner", industry)
 				.setParameter("stockType", Stock.STOCKTYPE.MONEY.text()).setParameter("commodity", "Money");
 		try {
-			return stockByPrimaryKeyQuery.getSingleResult();
+			return primaryQuery.getSingleResult();
 		} catch (javax.persistence.NoResultException e) {
 			return null;// because this query throws a fit if it doesn't find anything
 		}
@@ -671,14 +664,14 @@ public class Stock implements Serializable {
 	/**
 	 * a list of all stocks at the current project and a given timeStamp
 	 * 
-	 * @param timeStamp
+	 * @param timeStampID
 	 *            the given timeStamp
 	 * 
 	 * @return a list of stocks at the current project and the given timeStamp
 	 */
-	public static List<Stock> all(int timeStamp) {
-		stocksAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
-		return stocksAllQuery.getResultList();
+	public static List<Stock> allCurrentProject(int timeStampID) {
+		allQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStampID);
+		return allQuery.getResultList();
 	}
 
 	/**
@@ -686,24 +679,24 @@ public class Stock implements Serializable {
 	 * 
 	 * @return a list of stocks at the current project and timeStamp
 	 */
-	public static List<Stock> all() {
-		stocksAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
-		return stocksAllQuery.getResultList();
+	public static List<Stock> allCurrent() {
+		allQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
+		return allQuery.getResultList();
 	}
 
 	/**
 	 * a list of all stocks for the given commodity at the current project and a given timestamp.
 	 * 
-	 * @param timeStamp
+	 * @param timeStampID
 	 *            the given timeStamp
 	 * @param commodityName
 	 *            the commodity name of the stocks
 	 * @return a list of stocks for the given commodity at the currently selected time and for the currently selected project
 	 */
-	public static List<Stock> comoditiesCalled(int timeStamp, String commodityName) {
-		stocksByCommodityQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp).setParameter("commodity",
+	public static List<Stock> comoditiesCalled(int timeStampID, String commodityName) {
+		ofCommodityQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStampID).setParameter("commodity",
 				commodityName);
-		return stocksByCommodityQuery.getResultList();
+		return ofCommodityQuery.getResultList();
 	}
 
 	/**
@@ -712,31 +705,31 @@ public class Stock implements Serializable {
 	 * @return a list of all stocks that constitute sources of demand
 	 */
 	public static List<Stock> sourcesOfDemand() {
-		stocksByOneOfTwoStockTypesQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
-		stocksByOneOfTwoStockTypesQuery.setParameter("stockType1", Stock.STOCKTYPE.PRODUCTIVE.text()).setParameter("stockType2",
+		sourcesOfDemandQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
+		sourcesOfDemandQuery.setParameter("stockType1", Stock.STOCKTYPE.PRODUCTIVE.text()).setParameter("stockType2",
 				Stock.STOCKTYPE.CONSUMPTION.text());
-		return stocksByOneOfTwoStockTypesQuery.getResultList();
+		return sourcesOfDemandQuery.getResultList();
 	}
 
 	/**
 	 * a list of all the productive stocks that are managed by a given industry, at the current project and a given timeStamp
 	 *
-	 * @param timeStamp
+	 * @param timeStampID
 	 *            the given timeStamp
 	 * @param industry
 	 *            the industry that manages these productive stocks
 	 * @return a list of the productive stocks managed by this industry
 	 */
-	public static List<Stock> productiveByIndustry(int timeStamp, String industry) {
-		stocksByOwnerAndTypeQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
-		stocksByOwnerAndTypeQuery.setParameter("owner", industry).setParameter("stockType", Stock.STOCKTYPE.PRODUCTIVE.text());
-		return stocksByOwnerAndTypeQuery.getResultList();
+	public static List<Stock> allProductiveInIndustry(int timeStampID, String industry) {
+		withOwnerAndTypeQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStampID);
+		withOwnerAndTypeQuery.setParameter("owner", industry).setParameter("stockType", Stock.STOCKTYPE.PRODUCTIVE.text());
+		return withOwnerAndTypeQuery.getResultList();
 	}
 
 	/**
 	 * the single productive stock of a industry defined by the name of the industry, the use value it produces, for the current project and a given timeStamp
 	 * 
-	 * @param timeStamp
+	 * @param timeStampID
 	 *            the given timeStamp
 	 * @param industry
 	 *            the industry to which the stock belongs
@@ -744,11 +737,11 @@ public class Stock implements Serializable {
 	 *            the commodity of the stock
 	 * @return the single productive stock, with the given commodity, of the named industry
 	 */
-	public static Stock productiveNamedSingle(int timeStamp, String industry, String commodity) {
-		stockByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp)
+	public static Stock singleProductive(int timeStampID, String industry, String commodity) {
+		primaryQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStampID)
 				.setParameter("owner", industry).setParameter("stockType", Stock.STOCKTYPE.PRODUCTIVE.text()).setParameter("commodity", commodity);
 		try {
-			return stockByPrimaryKeyQuery.getSingleResult();
+			return primaryQuery.getSingleResult();
 		} catch (javax.persistence.NoResultException e) {
 			return null;// because this query throws a fit if it doesn't find anything
 		}
@@ -764,9 +757,9 @@ public class Stock implements Serializable {
 	 * @return a list of the consumption stocks owned by this social class
 	 */
 	public static List<Stock> consumedByClass(int timeStamp, String socialClass) {
-		stocksByOwnerAndTypeQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
-		stocksByOwnerAndTypeQuery.setParameter("owner", socialClass).setParameter("stockType", Stock.STOCKTYPE.CONSUMPTION.text());
-		return stocksByOwnerAndTypeQuery.getResultList();
+		withOwnerAndTypeQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStamp);
+		withOwnerAndTypeQuery.setParameter("owner", socialClass).setParameter("stockType", Stock.STOCKTYPE.CONSUMPTION.text());
+		return withOwnerAndTypeQuery.getResultList();
 	}
 
 	/**
@@ -781,11 +774,11 @@ public class Stock implements Serializable {
 	 * @return the single consumption stocks of the given commodity that is owned by this social class
 	 */
 	public static Stock consumptionByCommodityAndClassSingle(int timeStamp, String socialClass, String commodity) {
-		stockByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
-		stockByPrimaryKeyQuery.setParameter("owner", socialClass).setParameter("stockType", Stock.STOCKTYPE.CONSUMPTION.text()).setParameter("commodity",
+		primaryQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStamp);
+		primaryQuery.setParameter("owner", socialClass).setParameter("stockType", Stock.STOCKTYPE.CONSUMPTION.text()).setParameter("commodity",
 				commodity);
 		try {
-			return stockByPrimaryKeyQuery.getSingleResult();
+			return primaryQuery.getSingleResult();
 		} catch (javax.persistence.NoResultException e) {
 			return null;// because this query throws a fit if it doesn't find anything
 		}
@@ -805,9 +798,9 @@ public class Stock implements Serializable {
 	 *         Note: there can be more than one seller of the same use value
 	 */
 	public static List<Stock> salesByCommodity(int timeStamp, String commodity) {
-		stocksByCommodityAndTypeQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp).setParameter("commodity", commodity);
-		stocksByCommodityAndTypeQuery.setParameter("stockType", Stock.STOCKTYPE.SALES.text());
-		return stocksByCommodityAndTypeQuery.getResultList();
+		ofCommodityAndTypeQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStamp).setParameter("commodity", commodity);
+		ofCommodityAndTypeQuery.setParameter("stockType", Stock.STOCKTYPE.SALES.text());
+		return ofCommodityAndTypeQuery.getResultList();
 	}
 
 	/**
@@ -817,21 +810,11 @@ public class Stock implements Serializable {
 		return entityManager;
 	}
 
-	// named query getters
-
-	/**
-	 * @return the socialClassByPrimaryKeyQuery
-	 */
-	public static TypedQuery<Stock> getStockByPrimaryKeyQuery() {
-		return stockByPrimaryKeyQuery;
-	}
-
 	/**
 	 * Part of primitive typology of use values
 	 * 
 	 * @return the use value type of this stock
 	 */
-
 	public Commodity.FUNCTION functionType() {
 		return getCommodity().getFunction();
 	}
@@ -870,60 +853,122 @@ public class Stock implements Serializable {
 		return getCommodity().getUnitValue();
 	}
 
+	/**
+	 * 
+	 * @return the production coefficient
+	 */
+	
 	public double getProductionCoefficient() {
 		return this.productionCoefficient;
 	}
 
+	/**
+	 * set the production coefficient
+	 * @param productionCoefficient the coefficient to set
+	 */
 	public void setProductionCoefficient(double productionCoefficient) {
 		this.productionCoefficient = productionCoefficient;
 	}
 
+	/**
+	 * 
+	 * @return the consumption Coefficient
+	 */
 	public double getConsumptionCoefficient() {
 		return consumptionCoefficient;
 	}
 
+	/**
+	 * Set the consumption coefficient
+	 * @param consumptionCoefficient the coefficient to set
+	 */
 	public void setConsumptionCoefficient(double consumptionCoefficient) {
 		this.consumptionCoefficient = consumptionCoefficient;
 	}
 
+	/**
+	 * 
+	 * @return the quantity of this stock
+	 */
+	
 	public double getQuantity() {
 		return this.quantity;
 	}
-
+	
+	/**
+	 * Set the quantity of this stock
+	 * @param quantity the quantity to set
+	 */
 	public void setQuantity(double quantity) {
 		this.quantity = quantity;
 	}
 
+	/**
+	 * 
+	 * @return replenishmentDemand
+	 */
 	public double getReplenishmentDemand() {
 		return replenishmentDemand;
 	}
 
+	/**
+	 * Set the replenishment Demand (the quantity of this productive stock required to continue producing at 
+	 * the same output level)
+	 * @param quantityDemanded the quantity demanded for production to continue at the same level 
+	 */
 	public void setReplenishmentDemand(double quantityDemanded) {
 		this.replenishmentDemand = MathStuff.round(quantityDemanded);
 	}
+	
+	/**
+	 * Get the stock Type (productive, consumption, sales or money)
+	 * @return the stockType
+	 */
 
 	public String getStockType() {
 		return pk.stockType;
 	}
 
+	/**
+	 * Set the stockType (productive, consumption, sales or money)
+	 * @param stockType the stockType to set
+	 */
+	
 	public void setStockType(String stockType) {
 		this.pk.stockType = stockType;
 	}
 
-	public String getCommodityName() {
+	/**
+	 * The name of this stock (which is the commodity that it consists of)
+	 * @return the name of the commodity that this stock consists of
+	 */
+	public String name() {
 		return pk.commodity;
 	}
 
+	/**
+	 * Set the name of this stock (which is the commodity that it consists of)
+	 * @param commodityName the commodityName to set
+	 */
 	public void setCommodityName(String commodityName) {
 		pk.commodity = commodityName;
 	}
 
+	/**
+	 * Get the owner of this stock, which may be an Industry or a Social Class
+	 * @return the name of the owner of this stock
+	 */
 	public String getOwner() {
 		return pk.owner;
 	}
 
-	public void setTimeStamp(int timeStamp) {
-		pk.timeStamp = timeStamp;
+/**
+ * Set the timeStampID of this stock
+ * @param timeStampID the timeStampID to set
+ */
+	
+	public void setTimeStamp(int timeStampID) {
+		pk.timeStampID = timeStampID;
 	}
 
 	/**
@@ -956,12 +1001,21 @@ public class Stock implements Serializable {
 		this.price = price;
 	}
 
-	public Integer getProject() {
-		return pk.project;
+	/**
+	 * 
+	 * @return the projectID of this stock
+	 */
+	public Integer getProjectID() {
+		return pk.projectID;
 	}
 
-	public int getTimeStamp() {
-		return pk.timeStamp;
+	/**
+	 * 
+	 * @return the timeStampID of this stock
+	 */
+	
+	public int getTimeStampID() {
+		return pk.timeStampID;
 	}
 
 	/**
@@ -1057,10 +1111,22 @@ public class Stock implements Serializable {
 	}
 
 	/**
-	 * @param stockUsedUp the stockUsedUp to set
+	 * @param stockUsedUp
+	 *            the stockUsedUp to set
 	 */
 	public void setStockUsedUp(double stockUsedUp) {
 		this.stockUsedUp = stockUsedUp;
+	}
+
+	/**
+	 * Set the projectID of this stock
+	 * 
+	 * @param projectID
+	 *            the projectID to set
+	 * 
+	 */
+	public void setProjectID(int projectID) {
+		pk.projectID = projectID;
 	}
 
 }

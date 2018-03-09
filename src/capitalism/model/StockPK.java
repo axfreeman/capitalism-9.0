@@ -37,8 +37,8 @@ public class StockPK implements Serializable {
 	// default serial project id, required for serializable classes.
 	private static final long serialVersionUID = 1L;
 
-	@XmlElement @Column(name = "project") protected int project;
-	@XmlElement @Column(name = "timeStamp") protected int timeStamp;
+	@XmlElement @Column(name = "project") protected int projectID;
+	@XmlElement @Column(name = "timeStamp") protected int timeStampID;
 	@XmlElement @Column(name = "owner") protected String owner;
 	@XmlElement @Column(name = "commodity") protected String commodity;
 
@@ -62,15 +62,15 @@ public class StockPK implements Serializable {
 			return false;
 		}
 		StockPK castOther = (StockPK) other;
-		return (this.project == castOther.project) && (this.timeStamp == castOther.timeStamp) && this.owner.equals(castOther.owner)
+		return (this.projectID == castOther.projectID) && (this.timeStampID == castOther.timeStampID) && this.owner.equals(castOther.owner)
 				&& this.commodity.equals(castOther.commodity);
 	}
 
 	public int hashCode() {
 		final int prime = 31;
 		int hash = 17;
-		hash = hash * prime + this.project;
-		hash = hash * prime + this.timeStamp;
+		hash = hash * prime + this.projectID;
+		hash = hash * prime + this.timeStampID;
 		hash = hash * prime + this.owner.hashCode();
 		hash = hash * prime + this.commodity.hashCode();
 

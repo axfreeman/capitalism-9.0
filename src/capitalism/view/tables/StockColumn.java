@@ -38,24 +38,24 @@ public class StockColumn extends TableColumn<Stock,String>{
 	 * Produces a column to be displayed in a Stock table({@code TableView<Stock,String>}), whose value is a fixed field in a {@code Stock} bean
 	 * that is chosen by the {@code selector} enum. Use the enum to set the header text and graphic, and prepare the column header so its graphic is switchable.
 	 * 
-	 * @param selector
+	 * @param sTOCK_ATTRIBUTE
 	 * an enum specifying which field to display
 	 * @param leftAlign true if the text in the field should be left aligned (right align is the default)
 	 * 
 	 */
-	public StockColumn(Stock.Selector selector,boolean leftAlign) {
-		super(selector.text());
+	public StockColumn(Stock.STOCK_ATTRIBUTE sTOCK_ATTRIBUTE,boolean leftAlign) {
+		super(sTOCK_ATTRIBUTE.text());
 		setCellFactory(new Callback<TableColumn<Stock, String>, TableCell<Stock, String>>() {
 			@Override public TableCell<Stock, String> call(TableColumn<Stock, String> col) {
-				return new StockTableCell(selector);
+				return new StockTableCell(sTOCK_ATTRIBUTE);
 			}
 		});
-		setCellValueFactory(cellData -> cellData.getValue().wrappedString(selector));
+		setCellValueFactory(cellData -> cellData.getValue().wrappedString(sTOCK_ATTRIBUTE));
 
 		// tailor the visual appearance of the column header
 
 		setPrefWidth(75.0);
 		if(!leftAlign) getStyleClass().add("table-column-right");
-		TableUtilities.addGraphicToColummnHeader(this, selector.imageName(),selector.tooltip());
+		TableUtilities.addGraphicToColummnHeader(this, sTOCK_ATTRIBUTE.imageName(),sTOCK_ATTRIBUTE.tooltip());
 	}
 }

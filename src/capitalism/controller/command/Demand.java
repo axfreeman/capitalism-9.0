@@ -91,7 +91,7 @@ public class Demand implements Command {
 
 		// First, set demand to zero for all stocks
 
-		for (Stock s : Stock.all()) {
+		for (Stock s : Stock.allCurrent()) {
 			s.setReplenishmentDemand(0);
 		}
 
@@ -99,10 +99,10 @@ public class Demand implements Command {
 		// NOTE: social class demand for consumption goods is calculated separately
 		// in SocialClass.registerDemand() which is called immediately after this
 
-		for (Industry c : Industry.industriesAll()) {
+		for (Industry c : Industry.currentProjectAndTimeStamp()) {
 			double totalCost = 0;
 			Reporter.report(logger, 2, "Estimating demand from industry %s at output level %.0f", 
-					c.getName(),c.getOutput());
+					c.name(),c.getOutput());
 			double moneyAvailable = c.getMoneyQuantity();
 
 			// at this stage, constrainedOutput has been set in the Accumulate phase of the past period using plausible private plans for expansion.
@@ -118,7 +118,7 @@ public class Demand implements Command {
 			
 			Reporter.report(logger, 3, "Total cost of an output of %.0f is $%.0f and $%.0f is available.",
 					output, totalCost, moneyAvailable);
-			double anticipatedMoneyFromSales=c.getSalesPrice();
+			double anticipatedMoneyFromSales=c.salesPrice();
 			double resources=moneyAvailable+anticipatedMoneyFromSales;
 			
 			// check for monetary constraints
@@ -139,7 +139,7 @@ public class Demand implements Command {
 				
 				resources = moneyAvailable+anticipatedMoneyFromSales;
 				if (revisedTotalCost < resources + MathStuff.epsilon) {
-					Dialogues.alert(logger, "Industry %s is unable to finance its expected level of output", c.getName());
+					Dialogues.alert(logger, "Industry %s is unable to finance its expected level of output", c.name());
 				}else {
 					Reporter.report(logger, 2, "Output has been reduced to %.0f", output);
 				}
@@ -187,10 +187,10 @@ public class Demand implements Command {
 		Reporter.report(logger, 1, "Compute revenues");
 		// Now we know how much labour power is going to be consumed, we can set the revenue of the sellers of labour power
 		for (SocialClass sc : SocialClass.all()) {
-			double wageRevenue = sc.getSalesPrice();
+			double wageRevenue = sc.salesPrice();
 			double existingRevenue = sc.getRevenue();
 			Reporter.report(logger, 2, "The revenue of the social class [%s] from the previous period is $%.0f. Its wages will be $%.0f, giving a total of $%.0f",
-					sc.getSocialClassName(), existingRevenue, wageRevenue, wageRevenue + existingRevenue);
+					sc.name(), existingRevenue, wageRevenue, wageRevenue + existingRevenue);
 			sc.setRevenue(wageRevenue + existingRevenue);
 		}
 	}
@@ -220,11 +220,11 @@ public class Demand implements Command {
 		Reporter.report(logger, 1, "Compute demand from social classes");
 		for (SocialClass sc:SocialClass.all()) {
 			Reporter.report(logger, 2, "Calculating demand from the social Class [%s] whose revenue is $%.0f", 
-					sc.getSocialClassName(),sc.getRevenue());
+					sc.name(),sc.getRevenue());
 			for (Stock s:sc.consumptionStocks()) {
 				double demand = sc.getRevenue()*s.getConsumptionCoefficient();
 				Reporter.report(logger, 3, "This class's demand for the commodity [%s] is %.0f%% of its revenue, which is $%.0f", 
-						s.getCommodityName(), s.getConsumptionCoefficient()*100,demand);
+						s.name(), s.getConsumptionCoefficient()*100,demand);
 				s.setReplenishmentDemand(demand);
 			}
 		}

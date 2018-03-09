@@ -79,8 +79,6 @@ public class Dialogues {
 		alert.setContentText(String.format(formatString, args)+"\nConsult debug.log for details");
 
 		alert.showAndWait();
-		@SuppressWarnings("unused") double debugHalt = 0;
-
 	}
 
 	public static void info(String header, String message) {

@@ -39,24 +39,24 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name="IndustryPK")
 public class IndustryPK implements Serializable {
 	static final long serialVersionUID = 001L;
-	@XmlElement @Basic(optional = false) @Column(name = "project") protected int project;
-	@XmlElement @Basic(optional = false) @Column(name = "timeStamp") protected int timeStamp;
+	@XmlElement @Basic(optional = false) @Column(name = "project") protected int projectID;
+	@XmlElement @Basic(optional = false) @Column(name = "timeStamp") protected int timeStampID;
 	@XmlElement @Basic(optional = false) @Column(name = "industryName") protected String name;
 
 	public IndustryPK() {
 	}
 
-	public IndustryPK(int project, int timeStamp, String industryName) {
-		this.project = project;
-		this.timeStamp = timeStamp;
-		this.name = industryName;
+	public IndustryPK(int project, int timeStamp, String name) {
+		this.projectID = project;
+		this.timeStampID = timeStamp;
+		this.name = name;
 	}
 	
 	@Override
 	public int hashCode() {
 		int hash = 0;
-		hash += (int) project;
-		hash += timeStamp;
+		hash += (int) projectID;
+		hash += timeStampID;
 		hash += (name != null ? name.hashCode() : 0);
 		return hash;
 	}
@@ -68,10 +68,10 @@ public class IndustryPK implements Serializable {
 			return false;
 		}
 		IndustryPK other = (IndustryPK) object;
-		if (this.project != other.project) {
+		if (this.projectID != other.projectID) {
 			return false;
 		}
-		if (this.timeStamp != other.timeStamp) {
+		if (this.timeStampID != other.timeStampID) {
 			return false;
 		}
 		if ((this.name == null && other.name != null)
@@ -83,7 +83,7 @@ public class IndustryPK implements Serializable {
 
 	@Override
 	public String toString() {
-		return "demo.IndustriesPK[ project=" + project + ", timeStamp=" + timeStamp + ", industryName=" + name + " ]";
+		return "demo.IndustriesPK[ project=" + projectID + ", timeStamp=" + timeStampID + ", industryName=" + name + " ]";
 	}
 
 }

@@ -37,25 +37,25 @@ public class CommodityColumn extends TableColumn<Commodity, String> {
 	 * Produces a column to be displayed in a Commodity table({@code TableView<Commodity,String>}), whose value is a fixed field in a {@code Commodity} bean
 	 * that is chosen by the {@code selector} enum. Use the enum to set the header text and graphic, and prepare the column header so its graphic is switchable.
 	 * 
-	 * @param selector
+	 * @param commodity_attribute
 	 *            an enum specifying which field to display
 	 * 
 	 * @param alignedLeft
 	 *            true of the data is to be displayed aligned to the left in the column
 	 * 
 	 */
-	public CommodityColumn(Commodity.SELECTOR selector, boolean alignedLeft) {
-		super(selector.text());
+	public CommodityColumn(Commodity.COMMODITY_ATTRIBUTE commodity_attribute, boolean alignedLeft) {
+		super(commodity_attribute.text());
 		setCellFactory(new Callback<TableColumn<Commodity, String>, TableCell<Commodity, String>>() {
 			@Override public TableCell<Commodity, String> call(TableColumn<Commodity, String> col) {
-				return new CommodityTableCell(selector);
+				return new CommodityTableCell(commodity_attribute);
 			}
 		});
-		setCellValueFactory(cellData -> cellData.getValue().wrappedString(selector));
+		setCellValueFactory(cellData -> cellData.getValue().wrappedString(commodity_attribute));
 
 		// tailor the visual appearance of the column header
 		if (!alignedLeft)
 			getStyleClass().add("table-column-right");
-		TableUtilities.addGraphicToColummnHeader(this, selector.imageName(), selector.tooltip());
+		TableUtilities.addGraphicToColummnHeader(this, commodity_attribute.imageName(), commodity_attribute.tooltip());
 	}
 }

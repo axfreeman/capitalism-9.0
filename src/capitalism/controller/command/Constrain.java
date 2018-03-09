@@ -81,7 +81,7 @@ public class Constrain extends Simulation implements Command {
 		Reporter.report(logger, 1, "Constraining demand for stocks, on the basis of constraints on output levels");
 
 		for (Stock s : stockList) {
-			String commodityType = s.getCommodityName();
+			String commodityType = s.name();
 			Commodity u = s.getCommodity();
 			double allocationShare = u.getAllocationShare();
 			double newQuantityDemanded = s.getReplenishmentDemand() * allocationShare;
@@ -100,12 +100,12 @@ public class Constrain extends Simulation implements Command {
 	 */
 
 	public void constrainOutput() {
-		List<Industry> industries = Industry.industriesAll();
+		List<Industry> industries = Industry.currentProjectAndTimeStamp();
 		for (Industry c : industries) {
 			double desiredOutputLevel = c.getOutput();
 			Reporter.report(logger, 1, "Estimating supply-constrained output for industry [%s] with unconstrained output %.0f",
-					c.getName(), desiredOutputLevel);
-			List<Stock> managedStocks = Stock.productiveByIndustry(timeStampIDCurrent, c.getName());
+					c.name(), desiredOutputLevel);
+			List<Stock> managedStocks = Stock.allProductiveInIndustry(timeStampIDCurrent, c.name());
 			for (Stock s : managedStocks) {
 				double existingQuantity = s.getQuantity();
 				double quantityDemanded = s.getReplenishmentDemand();
@@ -115,16 +115,16 @@ public class Constrain extends Simulation implements Command {
 					double possibleOutput = quantityAvailable / coefficient;
 					if (possibleOutput < desiredOutputLevel-MathStuff.epsilon) {
 						Reporter.report(logger, 2, "Constraining output to %.0f because stock [%s] has a supply of %.0f ",
-								possibleOutput, s.getCommodityName(), quantityDemanded);
+								possibleOutput, s.name(), quantityDemanded);
 						desiredOutputLevel = possibleOutput;
 					} else {
 						Reporter.report(logger, 2, "Output was not constrained by the stock of [%s] which can supply %.0f allowing for output of %.0f",
-								s.getCommodityName(), quantityAvailable, possibleOutput);
+								s.name(), quantityAvailable, possibleOutput);
 					}
 				}
 			}
 			Reporter.report(logger, 2, "Output of [%s] has been set to %.0f; unconstrained output was %.0f",
-					c.getName(), desiredOutputLevel, c.getOutput());
+					c.name(), desiredOutputLevel, c.getOutput());
 			c.setOutput(desiredOutputLevel);
 		}
 	}
@@ -135,12 +135,12 @@ public class Constrain extends Simulation implements Command {
 	 */
 	public void calculateAllocationShare() {
 		Reporter.report(logger, 1, "Computing the proportion of demand that can be satisfied by supply, for each commodity type");
-		for (Commodity u : Commodity.commoditiesAll()) {
+		for (Commodity u : Commodity.allCurrent()) {
 			double totalDemand = u.replenishmentDemand();
 			double totalSupply = u.totalSupply();
 			double allocationShare = totalSupply / totalDemand;
 			allocationShare = (allocationShare > 1 ? 1 : allocationShare);
-			Reporter.report(logger, 2, "Allocation share for commodity [%s] is %.4f", u.commodityName(), allocationShare);
+			Reporter.report(logger, 2, "Allocation share for commodity [%s] is %.4f", u.name(), allocationShare);
 			u.setAllocationShare(allocationShare);
 		}
 	}

@@ -48,12 +48,6 @@ import javafx.collections.ObservableList;
  */
 @Entity
 @Table(name = "commodities")
-@NamedQueries({
-		@NamedQuery(name = "Primary", query = "SELECT u FROM Commodity u where u.pk.project= :project AND u.pk.timeStamp= :timeStamp and u.pk.name=:name"),
-		@NamedQuery(name = "All", query = "SELECT u FROM Commodity u where u.pk.project= :project and u.pk.timeStamp = :timeStamp"),
-		@NamedQuery(name = "Origin", query = "SELECT u FROM Commodity u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.origin=:origin"),
-		@NamedQuery(name = "Function", query = "SELECT u FROM Commodity u where u.pk.project= :project and u.pk.timeStamp = :timeStamp and u.function=:function order by u.displayOrder")
-})
 @Embeddable
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement
@@ -87,19 +81,23 @@ public class Commodity implements Serializable {
 	// Data Management fields
 	private static EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DB_COMMODITIES");
 	private static EntityManager entityManager;
-	private static TypedQuery<Commodity> commodityByPrimaryKeyQuery;
-	private static TypedQuery<Commodity> commoditiesAllQuery;
-	private static TypedQuery<Commodity> commoditiesByOriginQuery;
-	private static TypedQuery<Commodity> commoditiesByFunctionQuery;
+	private static TypedQuery<Commodity> primaryQuery;
+	private static TypedQuery<Commodity> withProjectAndTimeStampQuery;
+	private static TypedQuery<Commodity> withOriginQuery;
+	private static TypedQuery<Commodity> withFunctionQuery;
 
 	// initialise the entitManagers and queries statically once only, hopefully to reduce expensive requests for connections and query-building
 	// TODO test with the EclipseLink profiler
 	static {
 		entityManager = entityManagerFactory.createEntityManager();
-		commodityByPrimaryKeyQuery = entityManager.createNamedQuery("Primary", Commodity.class);
-		commoditiesAllQuery = entityManager.createNamedQuery("All", Commodity.class);
-		commoditiesByOriginQuery = entityManager.createNamedQuery("Origin", Commodity.class);
-		commoditiesByFunctionQuery = entityManager.createNamedQuery("Function", Commodity.class);
+		primaryQuery = entityManager.createQuery(
+				"SELECT u FROM Commodity u where u.pk.projectID= :project AND u.pk.timeStampID= :timeStamp and u.pk.name=:name", Commodity.class);
+		withProjectAndTimeStampQuery = entityManager.createQuery(
+				"SELECT u FROM Commodity u where u.pk.projectID= :project and u.pk.timeStampID = :timeStamp", Commodity.class);
+		withOriginQuery = entityManager.createQuery(
+				"SELECT u FROM Commodity u where u.pk.projectID= :project and u.pk.timeStampID = :timeStamp and u.origin=:origin", Commodity.class);
+		withFunctionQuery = entityManager.createQuery(
+				"SELECT u FROM Commodity u where u.pk.projectID= :project and u.pk.timeStampID = :timeStamp and u.function=:function order by u.displayOrder", Commodity.class);
 	}
 
 	// Enums
@@ -131,7 +129,6 @@ public class Commodity implements Serializable {
 		ORIGIN(String text) {
 			this.text = text;
 		}
-
 		public String text() {
 			return text;
 		}
@@ -140,7 +137,7 @@ public class Commodity implements Serializable {
 	/**
 	 * Readable constants to refer to the methods which provide information about the persistent members of the class
 	 */
-	public enum SELECTOR {
+	public enum COMMODITY_ATTRIBUTE {
 		// @formatter:off
 		NAME("Commodity",null,TabbedTableViewer.HEADER_TOOL_TIPS.COMMODITY.text()), 
 		PRODUCERTYPE("Producer Type",null,"Whether this commodity was produced by an industry or by a social classes. "), 
@@ -166,7 +163,7 @@ public class Commodity implements Serializable {
 		String imageName;
 		String toolTip;
 
-		SELECTOR(String text, String imageName, String toolTip) {
+		COMMODITY_ATTRIBUTE(String text, String imageName, String toolTip) {
 			this.text = text;
 			this.imageName = imageName;
 			this.toolTip = toolTip;
@@ -191,7 +188,7 @@ public class Commodity implements Serializable {
 	 * It's really only for display purposes and not any other
 	 */
 
-	private enum ATTRIBUTE {
+	private enum VALUE_PROPERTY {
 		VALUE, PRICE, UNIT_VALUE, UNIT_PRICE, INITIAL_CAPITAL, INITIAL_PRODUCTIVE_CAPITAL, CURRENT_CAPITAL, PROFIT;
 	}
 
@@ -207,9 +204,9 @@ public class Commodity implements Serializable {
 	 */
 	public Commodity(Commodity template) {
 		this.pk = new CommodityPK();
-		this.pk.timeStamp = template.pk.timeStamp;
+		this.pk.timeStampID = template.pk.timeStampID;
 		this.pk.name = template.pk.name;
-		this.pk.project = template.pk.project;
+		this.pk.projectID = template.pk.projectID;
 		this.origin = template.origin;
 		this.turnoverTime = template.turnoverTime;
 		this.unitValue = template.unitValue;
@@ -229,12 +226,11 @@ public class Commodity implements Serializable {
 	 * 
 	 * @return a list of Observable Commodities for the current project and timeStamp
 	 */
-
 	public static ObservableList<Commodity> commoditiesObservable() {
-		Commodity.commoditiesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp",
+		Commodity.withProjectAndTimeStampQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp",
 				Simulation.timeStampDisplayCursor);
 		ObservableList<Commodity> result = FXCollections.observableArrayList();
-		for (Commodity u : Commodity.commoditiesAllQuery.getResultList()) {
+		for (Commodity u : Commodity.withProjectAndTimeStampQuery.getResultList()) {
 			result.add(u);
 		}
 		return result;
@@ -246,25 +242,24 @@ public class Commodity implements Serializable {
 	 * We don't mind the hardwiring because we don't really intend this code to be re-usable, it's not hard to modify, and it results in compact
 	 * and readable usage code (see (@link TabbedTableViewer#populateCommoditiesViewTable})
 	 * 
-	 * @param SELECTOR
+	 * @param attributeSelector
 	 *            chooses which member to evaluate
 	 * @return a String representation of the members, formatted according to the relevant format string
 	 */
-
-	public ReadOnlyStringWrapper wrappedString(SELECTOR SELECTOR) {
-		switch (SELECTOR) {
+	public ReadOnlyStringWrapper wrappedString(COMMODITY_ATTRIBUTE attributeSelector) {
+		switch (attributeSelector) {
 		case NAME:
 			return new ReadOnlyStringWrapper(pk.name);
 		case PRODUCERTYPE:
 			return new ReadOnlyStringWrapper(origin.text());
 		case UNITPRICE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallFormat(), expressionOf(ATTRIBUTE.UNIT_PRICE)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallFormat(), expressionOf(VALUE_PROPERTY.UNIT_PRICE)));
 		case UNITVALUE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallFormat(), expressionOf(ATTRIBUTE.UNIT_VALUE)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallFormat(), expressionOf(VALUE_PROPERTY.UNIT_VALUE)));
 		case TOTALVALUE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.VALUE)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(VALUE_PROPERTY.VALUE)));
 		case TOTALPRICE:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.PRICE)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(VALUE_PROPERTY.PRICE)));
 		case TOTALQUANTITY:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), totalQuantity()));
 		case TOTALSUPPLY:
@@ -282,13 +277,13 @@ public class Commodity implements Serializable {
 		case FUNCTION_TYPE:
 			return new ReadOnlyStringWrapper(function.text);
 		case INITIALCAPITAL:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.INITIAL_CAPITAL)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(VALUE_PROPERTY.INITIAL_CAPITAL)));
 		case INITIALPRODUCTIVECAPITAL:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.INITIAL_PRODUCTIVE_CAPITAL)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(VALUE_PROPERTY.INITIAL_PRODUCTIVE_CAPITAL)));
 		case CURRENTCAPITAL:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.CURRENT_CAPITAL)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(VALUE_PROPERTY.CURRENT_CAPITAL)));
 		case PROFIT:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.PROFIT)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(VALUE_PROPERTY.PROFIT)));
 		case PROFITRATE:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.getSmallFormat(), profitRate()));
 		default:
@@ -303,14 +298,13 @@ public class Commodity implements Serializable {
 	 * We don't mind the hardwiring because we don't really intend this code to be re-usable, it's not hard to modify, and it results in compact
 	 * and readable usage code (see (@link TabbedTableViewer#populateCommoditiesViewTable})
 	 * 
-	 * @param sELECTOR
+	 * @param attributeSelector
 	 *            chooses which member to evaluate
 	 * @return whether this member has changed or not. False if selector is unavailable here
 	 */
-
-	public boolean changed(SELECTOR sELECTOR) {
+	public boolean changed(COMMODITY_ATTRIBUTE attributeSelector) {
 		chooseComparison();
-		switch (sELECTOR) {
+		switch (attributeSelector) {
 		case NAME:
 			return false;
 		case PRODUCERTYPE:
@@ -320,9 +314,9 @@ public class Commodity implements Serializable {
 		case UNITVALUE:
 			return unitValue != comparator.getUnitValue();// no need to convert to intrinsic/extrinsic. The result will be the same
 		case TOTALVALUE:
-			return expressionOf(ATTRIBUTE.VALUE) != expressionOf(ATTRIBUTE.VALUE);
+			return expressionOf(VALUE_PROPERTY.VALUE) != expressionOf(VALUE_PROPERTY.VALUE);
 		case TOTALPRICE:
-			return expressionOf(ATTRIBUTE.PRICE) != expressionOf(ATTRIBUTE.PRICE);
+			return expressionOf(VALUE_PROPERTY.PRICE) != expressionOf(VALUE_PROPERTY.PRICE);
 		case TOTALQUANTITY:
 			return totalQuantity() != comparator.totalQuantity();
 		case TOTALSUPPLY:
@@ -351,7 +345,7 @@ public class Commodity implements Serializable {
 	/**
 	 * If the selected field has changed, return the difference between the current value and the former value
 	 * 
-	 * @param selector
+	 * @param attributeSelector
 	 *            chooses which field to evaluate
 	 * 
 	 * @param item
@@ -359,23 +353,22 @@ public class Commodity implements Serializable {
 	 * 
 	 * @return the original item if nothing has changed, otherwise the change, as an appropriately formatted string
 	 */
-
-	public String showDelta(String item, SELECTOR selector) {
+	public String showDelta(String item, COMMODITY_ATTRIBUTE attributeSelector) {
 		chooseComparison();
-		if (!changed(selector))
+		if (!changed(attributeSelector))
 			return item;
-		switch (selector) {
+		switch (attributeSelector) {
 		case NAME:
 		case PRODUCERTYPE:
 			return item;
 		case UNITPRICE:
-			return String.format(ViewManager.getSmallFormat(), (expressionOf(ATTRIBUTE.UNIT_PRICE) - comparator.expressionOf(ATTRIBUTE.UNIT_PRICE)));
+			return String.format(ViewManager.getSmallFormat(), (expressionOf(VALUE_PROPERTY.UNIT_PRICE) - comparator.expressionOf(VALUE_PROPERTY.UNIT_PRICE)));
 		case UNITVALUE:
-			return String.format(ViewManager.getSmallFormat(), (expressionOf(ATTRIBUTE.UNIT_VALUE) - comparator.expressionOf(ATTRIBUTE.UNIT_VALUE)));
+			return String.format(ViewManager.getSmallFormat(), (expressionOf(VALUE_PROPERTY.UNIT_VALUE) - comparator.expressionOf(VALUE_PROPERTY.UNIT_VALUE)));
 		case TOTALVALUE:
-			return String.format(ViewManager.getLargeFormat(), (expressionOf(ATTRIBUTE.VALUE) - comparator.expressionOf(ATTRIBUTE.VALUE)));
+			return String.format(ViewManager.getLargeFormat(), (expressionOf(VALUE_PROPERTY.VALUE) - comparator.expressionOf(VALUE_PROPERTY.VALUE)));
 		case TOTALPRICE:
-			return String.format(ViewManager.getLargeFormat(), (expressionOf(ATTRIBUTE.PRICE) - comparator.expressionOf(ATTRIBUTE.PRICE)));
+			return String.format(ViewManager.getLargeFormat(), (expressionOf(VALUE_PROPERTY.PRICE) - comparator.expressionOf(VALUE_PROPERTY.PRICE)));
 		case TOTALQUANTITY:
 			return String.format(ViewManager.getLargeFormat(), (totalQuantity() - comparator.totalQuantity()));
 		case TOTALSUPPLY:
@@ -389,13 +382,13 @@ public class Commodity implements Serializable {
 		case ALLOCATIONSHARE:
 			return String.format(ViewManager.getSmallFormat(), (allocationShare - comparator.allocationShare));
 		case PROFIT:
-			return String.format(ViewManager.getLargeFormat(), ((expressionOf(ATTRIBUTE.PROFIT) - comparator.expressionOf(ATTRIBUTE.PROFIT))));
+			return String.format(ViewManager.getLargeFormat(), ((expressionOf(VALUE_PROPERTY.PROFIT) - comparator.expressionOf(VALUE_PROPERTY.PROFIT))));
 		case INITIALCAPITAL:
 			return String.format(ViewManager.getLargeFormat(),
-					((expressionOf(ATTRIBUTE.INITIAL_CAPITAL) - comparator.expressionOf(ATTRIBUTE.INITIAL_CAPITAL))));
+					((expressionOf(VALUE_PROPERTY.INITIAL_CAPITAL) - comparator.expressionOf(VALUE_PROPERTY.INITIAL_CAPITAL))));
 		case CURRENTCAPITAL:
 			return String.format(ViewManager.getLargeFormat(),
-					((expressionOf(ATTRIBUTE.CURRENT_CAPITAL) - comparator.expressionOf(ATTRIBUTE.CURRENT_CAPITAL))));
+					((expressionOf(VALUE_PROPERTY.CURRENT_CAPITAL) - comparator.expressionOf(VALUE_PROPERTY.CURRENT_CAPITAL))));
 		case PROFITRATE:
 			return String.format(ViewManager.getLargeFormat(), (profitRate() - comparator.profitRate()));
 		default:
@@ -406,7 +399,6 @@ public class Commodity implements Serializable {
 	/**
 	 * chooses the comparator depending on the state set in the {@code ViewManager.comparatorToggle} radio buttons
 	 */
-
 	private void chooseComparison() {
 		switch (TrackingControlsBox.getComparatorState()) {
 		case CUSTOM:
@@ -433,7 +425,7 @@ public class Commodity implements Serializable {
 	 * @return the value property, either as an intrinsic or a monetary magnitude depending on
 	 *         {@link DisplayControlsBox#expressionDisplay} and {@link DisplayControlsBox#expressionDisplay}
 	 */
-	public double expressionOf(ATTRIBUTE valueProperty) {
+	public double expressionOf(VALUE_PROPERTY valueProperty) {
 		double melt = Simulation.currentTimeStamp.getMelt();
 		double expression;
 		switch (valueProperty) {
@@ -464,7 +456,7 @@ public class Commodity implements Serializable {
 		default:
 			return Double.NaN;
 		}
-		if (DisplayControlsBox.expressionDisplay == DisplayControlsBox.DISPLAY_AS_EXPRESSION.MONEY) {
+		if (DisplayControlsBox.expressionDisplay == DisplayControlsBox.EXPRESSION_DISPLAY.MONEY) {
 			return expression;
 		} else {
 			return (expression==0)?0:expression / melt;
@@ -479,12 +471,11 @@ public class Commodity implements Serializable {
 	 * @param validate
 	 *            report if the result differs from what is already there.
 	 */
-
 	public void calculateAggregates(boolean validate) {
 		double quantity = 0;
 		double value = 0;
 		double price = 0;
-		for (Stock s : Stock.comoditiesCalled(this.pk.timeStamp, pk.name)) {
+		for (Stock s : Stock.comoditiesCalled(this.pk.timeStampID, pk.name)) {
 			quantity += s.getQuantity();
 			value += s.getValue();
 			price += s.getPrice();
@@ -533,7 +524,7 @@ public class Commodity implements Serializable {
 
 	public double totalValue() {
 		double totalValue = 0;
-		for (Stock s : Stock.comoditiesCalled(pk.timeStamp, pk.name)) {
+		for (Stock s : Stock.comoditiesCalled(pk.timeStampID, pk.name)) {
 			totalValue += s.getValue();
 		}
 		return totalValue;
@@ -545,7 +536,7 @@ public class Commodity implements Serializable {
 
 	public double totalPrice() {
 		double totalPrice = 0;
-		for (Stock s : Stock.comoditiesCalled(pk.timeStamp, pk.name)) {
+		for (Stock s : Stock.comoditiesCalled(pk.timeStampID, pk.name)) {
 			totalPrice += s.getPrice();
 		}
 		return totalPrice;
@@ -557,7 +548,7 @@ public class Commodity implements Serializable {
 
 	public double totalQuantity() {
 		double totalQuantity = 0;
-		for (Stock s : Stock.comoditiesCalled(pk.timeStamp, pk.name)) {
+		for (Stock s : Stock.comoditiesCalled(pk.timeStampID, pk.name)) {
 			totalQuantity += s.getQuantity();
 		}
 		return totalQuantity;
@@ -615,7 +606,7 @@ public class Commodity implements Serializable {
 	 */
 	public double totalSupply() {
 		double supply = 0.0;
-		for (Stock s : Stock.salesByCommodity(pk.timeStamp, pk.name)) {
+		for (Stock s : Stock.salesByCommodity(pk.timeStampID, pk.name)) {
 			supply += s.getQuantity();
 		}
 		return supply;
@@ -629,7 +620,7 @@ public class Commodity implements Serializable {
 
 	public double replenishmentDemand() {
 		double demand = 0.0;
-		for (Stock s : Stock.comoditiesCalled(pk.timeStamp, pk.name)) {
+		for (Stock s : Stock.comoditiesCalled(pk.timeStampID, pk.name)) {
 			demand += s.getReplenishmentDemand();
 		}
 		return demand;
@@ -643,7 +634,7 @@ public class Commodity implements Serializable {
 
 	public double expansionDemand() {
 		double demand = 0.0;
-		for (Stock s : Stock.comoditiesCalled(pk.timeStamp, pk.name)) {
+		for (Stock s : Stock.comoditiesCalled(pk.timeStampID, pk.name)) {
 			demand += s.getExpansionDemand();
 		}
 		return demand;
@@ -667,7 +658,7 @@ public class Commodity implements Serializable {
 	 * @return a list of industries that produce this commodity
 	 */
 	public List<Industry> industries() {
-		return Industry.industriesByCommodityName(pk.timeStamp, pk.name);
+		return Industry.currentProjectAndTimeStampWithCommodityName(pk.timeStampID, pk.name);
 	}
 
 	/**
@@ -681,10 +672,10 @@ public class Commodity implements Serializable {
 	 *            the given commodity name
 	 * @return the singlecommodity given by this primary key, null if it does not exist
 	 */
-	public static Commodity commodityByPrimaryKey(int project, int timeStamp, String name) {
-		commodityByPrimaryKeyQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("name", name);
+	public static Commodity single(int project, int timeStamp, String name) {
+		primaryQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("name", name);
 		try {
-			return commodityByPrimaryKeyQuery.getSingleResult();
+			return primaryQuery.getSingleResult();
 		} catch (NoResultException r) {
 			return null;
 		}
@@ -693,18 +684,18 @@ public class Commodity implements Serializable {
 	/**
 	 * retrieve a Commodity by its name for the current project and a given timestamp
 	 * 
-	 * @param timeStamp
+	 * @param timeStampID
 	 *            the given timeStamp
 	 * 
 	 * @param name
 	 *            the name of the commodity
 	 * @return the commodity called name, unless it doesn't exist, in which case null
 	 */
-	public static Commodity commodityByPrimaryKey(int timeStamp, String name) {
-		commodityByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp).setParameter("name",
+	public static Commodity singleCurrentProject(int timeStampID, String name) {
+		primaryQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStampID).setParameter("name",
 				name);
 		try {
-			return commodityByPrimaryKeyQuery.getSingleResult();
+			return primaryQuery.getSingleResult();
 		} catch (NoResultException r) {
 			return null;
 		}
@@ -716,21 +707,21 @@ public class Commodity implements Serializable {
 	 * 
 	 * @return a list of all commodities at the current timeStamp and the current project
 	 */
-	public static List<Commodity> commoditiesAll() {
-		commoditiesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
-		return commoditiesAllQuery.getResultList();
+	public static List<Commodity> allCurrent() {
+		withProjectAndTimeStampQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
+		return withProjectAndTimeStampQuery.getResultList();
 	}
 
 	/**
 	 * a list of all commodities at the current project and the given timeStamp
 	 * 
-	 * @param timeStamp
+	 * @param timeStampID
 	 *            the timeStamp of the commodities returned
 	 * @return a list of all commodities at the given timeStamp and the current project
 	 */
-	public static List<Commodity> all(int timeStamp) {
-		commoditiesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStamp);
-		return commoditiesAllQuery.getResultList();
+	public static List<Commodity> allCurrentProject(int timeStampID) {
+		withProjectAndTimeStampQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStampID);
+		return withProjectAndTimeStampQuery.getResultList();
 	}
 
 	/**
@@ -741,24 +732,24 @@ public class Commodity implements Serializable {
 	 * @return a list of industries of the specified origin type, at the latest timeStamp that has been persisted.
 	 * 
 	 */
-	public static List<Commodity> commoditiesByOrigin(Commodity.ORIGIN origin) {
-		commoditiesByOriginQuery.setParameter("project", Simulation.projectCurrent);
-		commoditiesByOriginQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent);
-		commoditiesByOriginQuery.setParameter("origin", origin);
-		return commoditiesByOriginQuery.getResultList();
+	public static List<Commodity> currentByOrigin(Commodity.ORIGIN origin) {
+		withOriginQuery.setParameter("project", Simulation.projectIDCurrent);
+		withOriginQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent);
+		withOriginQuery.setParameter("origin", origin);
+		return withOriginQuery.getResultList();
 	}
 
 	/**
-	 * a list of all use values of the given function at the current timeStamp and project
+	 * a list of all commodities of the given function at the current timeStamp and project
 	 * 
 	 * @param function
 	 *            the function type of the use value (PRODUCTIVE INPUT, CONSUMER GOOD, MONEY)
 	 * @return a list all use values with the given function at the current timeStamp and project
 	 */
-	public static List<Commodity> commoditiesByFunction(Commodity.FUNCTION function) {
-		commoditiesByFunctionQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent).setParameter("project", Simulation.projectCurrent);
-		commoditiesByFunctionQuery.setParameter("function", function);
-		return commoditiesByFunctionQuery.getResultList();
+	public static List<Commodity> currentByFunction(Commodity.FUNCTION function) {
+		withFunctionQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent).setParameter("project", Simulation.projectIDCurrent);
+		withFunctionQuery.setParameter("function", function);
+		return withFunctionQuery.getResultList();
 	}
 
 	/**
@@ -768,11 +759,11 @@ public class Commodity implements Serializable {
 	 * @return the single use value of origin type SOCIALLY_PRODUCED, which will be labour poweer
 	 */
 	public static Commodity labourPower() {
-		commoditiesByOriginQuery.setParameter("project", Simulation.projectCurrent);
-		commoditiesByOriginQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent);
-		commoditiesByOriginQuery.setParameter("origin", Commodity.ORIGIN.SOCIALlY_PRODUCED);
+		withOriginQuery.setParameter("project", Simulation.projectIDCurrent);
+		withOriginQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent);
+		withOriginQuery.setParameter("origin", Commodity.ORIGIN.SOCIALlY_PRODUCED);
 		try {
-			return commoditiesByOriginQuery.getSingleResult();
+			return withOriginQuery.getSingleResult();
 		} catch (NoResultException r) {
 			return null;
 		}
@@ -785,12 +776,12 @@ public class Commodity implements Serializable {
 	 *            the timeStamp of the commodities
 	 */
 	public static void setComparators(int timeStampID) {
-		commoditiesAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStampID);
-		for (Commodity u : Commodity.commoditiesAllQuery.getResultList()) {
-			u.setPreviousComparator(commodityByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), u.commodityName()));
-			u.setStartComparator(commodityByPrimaryKey(Simulation.projectCurrent, 1, u.commodityName()));
-			u.setEndComparator(commodityByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, u.commodityName()));
-			u.setCustomComparator(commodityByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, u.commodityName()));
+		withProjectAndTimeStampQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStampID);
+		for (Commodity u : Commodity.withProjectAndTimeStampQuery.getResultList()) {
+			u.setPreviousComparator(single(Simulation.projectIDCurrent, Simulation.getTimeStampComparatorCursor(), u.name()));
+			u.setStartComparator(single(Simulation.projectIDCurrent, 1, u.name()));
+			u.setEndComparator(single(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, u.name()));
+			u.setCustomComparator(single(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, u.name()));
 		}
 	}
 
@@ -798,54 +789,94 @@ public class Commodity implements Serializable {
 	 * 
 	 * @return the function of this commodity, as given by the {@code FUNCTION_TYPE} enum
 	 */
-
 	public FUNCTION getFunction() {
 		return function;
 	}
 
-	public String commodityName() {
+	/**
+	 * Get the name of this commodity
+	 * @return the name of this commodity
+	 */
+	public String name() {
 		return pk.name;
 	}
 
-	public int getTimeStamp() {
-		return pk.timeStamp;
-	}
-
-	public int getProject() {
-		return pk.project;
+	/**
+	 * Get the timeStampID of this commodity
+	 * @return the timeStampID of this commodity
+	 */
+	public int getTimeStampID() {
+		return pk.timeStampID;
 	}
 
 	/**
-	 * @return the entityManager
+	 * Get the projectID of this commodity
+	 * @return the projectID of this commodity
+	 */
+	public int getProjectID() {
+		return pk.projectID;
+	}
+
+	/**
+	 * @return the entityManager for the Commodity class
 	 */
 	public static EntityManager getEntityManager() {
 		return Commodity.entityManager;
 	}
 
+	/**
+	 * Get the turnover time of this commodity
+	 * @return the turnover time of this commodity
+	 */
 	public double getTurnoverTime() {
 		return this.turnoverTime;
 	}
 
+	/**
+	 * Set the turnover time of this commodity
+	 * @param turnoverTime the turnover time to set
+	 */
 	public void setTurnoverTime(double turnoverTime) {
 		this.turnoverTime = turnoverTime;
 	}
-
+	
+	/**
+	 * Get the unit price of this commodity
+	 * @return the unit price of this commodity
+	 */
 	public double getUnitPrice() {
 		return this.unitPrice;
 	}
 
+	/**
+	 * Set the unit price of this commodity
+	 * @param unitPrice the unit price to set
+	 */
 	public void setUnitPrice(double unitPrice) {
 		this.unitPrice = MathStuff.round(unitPrice);
 	}
+
+	/**
+	 * Get the unit value of this commodity
+	 * @return the unit value of this commodity
+	 */
 
 	public double getUnitValue() {
 		return this.unitValue;
 	}
 
+	/**
+	 * Set the unit value of this commodity
+	 * @param unitValue the unit value to set
+	 */
 	public void setUnitValue(double unitValue) {
 		this.unitValue = MathStuff.round(unitValue);
 	}
 
+	/**
+	 * Get the origin of this commodity (social or industrial)
+	 * @return the origin of this commodity
+	 */
 	public ORIGIN getOrigin() {
 		return this.origin;
 	}
@@ -854,16 +885,30 @@ public class Commodity implements Serializable {
 		this.origin = origin;
 	}
 
+	/**
+	 * Get the allocation share of this commodity (the proportion of demand that can be satisfied)
+	 * @return the allocationShare of this commodity
+	 */
 	public double getAllocationShare() {
 		return allocationShare;
 	}
+
+	/**
+	 * Set the allocation share of this commodity (the proportion of demand that can be satisfied)
+	 * @param allocationShare the allocationShare to set
+	 */
 
 	public void setAllocationShare(double allocationShare) {
 		this.allocationShare = allocationShare;
 	}
 
-	public void setTimeStamp(int timeStamp) {
-		pk.timeStamp = timeStamp;
+	/**
+	 * Set the timeStampID of this commodity
+	 * @param timeStampID the ID to set
+	 */
+	
+	public void setTimeStampID(int timeStampID) {
+		pk.timeStampID = timeStampID;
 	}
 
 	/**
@@ -991,5 +1036,14 @@ public class Commodity implements Serializable {
 	 */
 	public void setToolTip(String toolTip) {
 		this.toolTip = toolTip;
+	}
+	
+	/**
+	 * Set the projectID of this commodity
+	 * @param projectID the projectID to set
+	 * 
+	 */
+	public void setProjectID(int projectID) {
+		pk.projectID=projectID;
 	}
 }

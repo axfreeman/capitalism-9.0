@@ -29,6 +29,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import capitalism.utils.Reporter;
+import capitalism.view.custom.DisplayControlsBox;
 
 /**
  * Wrapper class for a project that will be saved in an XML file on the user's device.
@@ -55,11 +56,11 @@ public class OneProject {
 	 *            the timeStampID of the persistent entitities to be dumped to an XML file
 	 */
 	public void setLists(int projectID, int timeStampID) {
-		commodity = Commodity.all(timeStampID);
-		industry = Industry.all(timeStampID);
-		socialClass = SocialClass.all(timeStampID);
-		stock = Stock.all(timeStampID);
-		timeStamp = TimeStamp.get(timeStampID);
+		commodity = Commodity.allCurrentProject(timeStampID);
+		industry = Industry.currentProjectWithTimeStamp(timeStampID);
+		socialClass = SocialClass.currentProjectWithTimeStamp(timeStampID);
+		stock = Stock.allCurrentProject(timeStampID);
+		timeStamp = TimeStamp.singleInCurrentProject(timeStampID);
 		project = Project.get(projectID);
 	}
 
@@ -71,8 +72,42 @@ public class OneProject {
 				maxProjectID = p.getProjectID();
 		}
 		Reporter.report(logger, 1, "Adding a new project with project number %d", maxProjectID + 1);
+		Commodity.getEntityManager().getTransaction().begin();
+		Industry.getEntityManager().getTransaction().begin();
+		SocialClass.getEntityManager().getTransaction().begin();
+		Stock.getEntityManager().getTransaction().begin();
+		Project.getEntityManager().getTransaction().begin();
+		TimeStamp.getEntityManager().getTransaction().begin();
 		for (Commodity c : commodity) {
-			logger.debug("Adding commodity called {}", c.commodityName());
+			logger.debug("Adding commodity called {}", c.name());
+			c.setProjectID(maxProjectID+1);
+			Commodity.getEntityManager().persist(c);
 		}
+		for (Industry i: industry) {
+			logger.debug("Adding industry called {}", i.name());
+			i.setProjectID(maxProjectID+1);
+			Industry.getEntityManager().persist(i);
+		}
+		for (SocialClass sc : socialClass) {
+			logger.debug("Adding socialClass called {}", sc.name());
+			sc.setProjectID(maxProjectID+1);
+			SocialClass.getEntityManager().persist(sc);
+		}
+		for (Stock s : stock) {
+			logger.debug("Adding stock called {}", s.name());
+			s.setProjectID(maxProjectID+1);
+			Stock.getEntityManager().persist(s);
+		}
+		timeStamp.setProjectID(maxProjectID+1);
+		TimeStamp.getEntityManager().persist(timeStamp);
+		project.setProjectID(maxProjectID+1);
+		Project.getEntityManager().persist(project);
+		Commodity.getEntityManager().getTransaction().commit();
+		Industry.getEntityManager().getTransaction().commit();
+		SocialClass.getEntityManager().getTransaction().commit();
+		Stock.getEntityManager().getTransaction().commit();
+		Project.getEntityManager().getTransaction().commit();
+		TimeStamp.getEntityManager().getTransaction().commit();
+		DisplayControlsBox.rePopulateProjectCombo();
 	}
 }

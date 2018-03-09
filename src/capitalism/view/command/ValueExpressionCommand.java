@@ -7,12 +7,12 @@ import capitalism.view.custom.ImageButton;
 public class ValueExpressionCommand implements DisplayCommand {
 
 	@Override public void execute(ImageButton caller) {
-		if (DisplayControlsBox.expressionDisplay == DisplayControlsBox.DISPLAY_AS_EXPRESSION.MONEY) {
-			DisplayControlsBox.expressionDisplay = DisplayControlsBox.DISPLAY_AS_EXPRESSION.TIME;
+		if (DisplayControlsBox.expressionDisplay == DisplayControlsBox.EXPRESSION_DISPLAY.MONEY) {
+			DisplayControlsBox.expressionDisplay = DisplayControlsBox.EXPRESSION_DISPLAY.TIME;
 			DisplayControlsBox.expressionSymbol = DisplayControlsBox.quantityExpressionSymbol;
 			caller.setOffState();
 		} else {
-			DisplayControlsBox.expressionDisplay = DisplayControlsBox.DISPLAY_AS_EXPRESSION.MONEY;
+			DisplayControlsBox.expressionDisplay = DisplayControlsBox.EXPRESSION_DISPLAY.MONEY;
 			DisplayControlsBox.expressionSymbol = DisplayControlsBox.moneyExpressionSymbol;
 			caller.setOnState();
 		}

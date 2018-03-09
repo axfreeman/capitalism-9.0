@@ -33,10 +33,10 @@ import javafx.scene.paint.Color;
 public class IndustryTableCell extends TableCell<Industry, String> {
 	static final Logger logger = LogManager.getLogger("CircuitTableCell");
 
-	Industry.Selector selector;
+	Industry.INDUSTRY_ATTRIBUTE iNDUSTRY_ATTRIBUTE;
 
-	public IndustryTableCell(Industry.Selector selector) {
-		this.selector = selector;
+	public IndustryTableCell(Industry.INDUSTRY_ATTRIBUTE iNDUSTRY_ATTRIBUTE) {
+		this.iNDUSTRY_ATTRIBUTE = iNDUSTRY_ATTRIBUTE;
 	}
 
 	@Override protected void updateItem(String item, boolean empty) {
@@ -53,7 +53,7 @@ public class IndustryTableCell extends TableCell<Industry, String> {
 		
 		String deltaModifier="";
 		
-		if (industry.changed(selector,TabbedTableViewer.displayAttribute)) {
+		if (industry.changed(iNDUSTRY_ATTRIBUTE,TabbedTableViewer.displayAttribute)) {
 			setTextFill(Color.RED);
 			deltaModifier=(TrackingControlsBox.displayDeltas?ViewManager.deltaSymbol:"");
 		}
@@ -62,10 +62,10 @@ public class IndustryTableCell extends TableCell<Industry, String> {
 		String quantityModifier=deltaModifier;
 		
 		if(TrackingControlsBox.displayDeltas) {
-			item=industry.showDelta(item, selector,TabbedTableViewer.displayAttribute);
+			item=industry.showDelta(item, iNDUSTRY_ATTRIBUTE,TabbedTableViewer.displayAttribute);
 		}
 
-		switch (selector) {
+		switch (iNDUSTRY_ATTRIBUTE) {
 		case OUTPUT:
 		case PROPOSEDOUTPUT:
 		case PROFITRATE:

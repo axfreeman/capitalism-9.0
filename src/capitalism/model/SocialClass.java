@@ -31,7 +31,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import capitalism.controller.Simulation;
-import capitalism.model.Stock.ValueExpression;
+import capitalism.model.Stock.VALUE_EXPRESSION;
 import capitalism.utils.Dialogues;
 import capitalism.utils.Reporter;
 import capitalism.view.TabbedTableViewer;
@@ -47,14 +47,9 @@ import javafx.collections.ObservableList;
  */
 @Entity
 @Table(name = "socialclasses")
-@NamedQueries({
-		@NamedQuery(name = "All", query = "SELECT c FROM SocialClass c where c.pk.project= :project and c.pk.timeStamp = :timeStamp "),
-		@NamedQuery(name = "Primary", query = "SELECT c FROM SocialClass c where c.pk.project= :project and c.pk.timeStamp = :timeStamp and c.pk.socialClassName =:socialClassName"),
-})
-
 @Embeddable
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlRootElement(name="SocialClass")
+@XmlRootElement(name = "SocialClass")
 public class SocialClass implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = LogManager.getLogger(SocialClass.class);
@@ -64,9 +59,9 @@ public class SocialClass implements Serializable {
 
 	// The proportion of the population of this class that supplies labour power
 	// Not yet used, but intended for 'mixed' classes (eg small producers, pension-holders)
-	
+
 	@XmlElement @Column(name = "ParticipationRatio") protected double participationRatio;
-	
+
 	// the money that this class will spend in the current period
 	@XmlElement @Column(name = "Revenue") protected double revenue;
 
@@ -80,16 +75,39 @@ public class SocialClass implements Serializable {
 	// Data Management
 	private static EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DB_SOCIALCLASSES");
 	private static EntityManager entityManager;
-	private static TypedQuery<SocialClass> socialClassByPrimaryKeyQuery;
-	private static TypedQuery<SocialClass> socialClassAllQuery;
+	private static TypedQuery<SocialClass> primaryQuery;
+	private static TypedQuery<SocialClass> allQuery;
 
 	static {
 		entityManager = entityManagerFactory.createEntityManager();
-		socialClassByPrimaryKeyQuery = entityManager.createNamedQuery("Primary", SocialClass.class);
-		socialClassAllQuery = entityManager.createNamedQuery("All", SocialClass.class);
+		primaryQuery = entityManager.createQuery(
+				"SELECT c FROM SocialClass c where c.pk.projectID= :project and c.pk.timeStampID = :timeStamp and c.pk.name=:socialClassName",
+				SocialClass.class);
+		allQuery = entityManager.createQuery(
+				"SELECT c FROM SocialClass c where c.pk.projectID= :project and c.pk.timeStampID = :timeStamp ", SocialClass.class);
 	}
-	
-	public enum Selector {
+
+	/**
+	 * set the comparators for the socialClass entity at the current project and the given timeStamp
+	 * 
+	 * @param timeStampID
+	 *            the timeStamp which selects the entity
+	 */
+	public static void setComparators(int timeStampID) {
+		allQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStampID);
+		for (SocialClass sc : allQuery.getResultList()) {
+			sc.setPreviousComparator(
+					singleWithProjectTimeStampAndName(Simulation.projectIDCurrent, Simulation.getTimeStampComparatorCursor(), sc.name()));
+			sc.setStartComparator(singleWithProjectTimeStampAndName(Simulation.projectIDCurrent, 1, sc.name()));
+			sc.setEndComparator(singleWithProjectTimeStampAndName(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, sc.name()));
+			sc.setCustomComparator(singleWithProjectTimeStampAndName(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, sc.name()));
+		}
+	}
+
+	/**
+	 * Readable constants to refer to the methods which provide information about the persistent members of the class
+	 */
+	public enum SOCIALCLASS_ATTRIBUTE {
 		// @formatter:off
 		SOCIALCLASSNAME("Social Class",null,TabbedTableViewer.HEADER_TOOL_TIPS.SOCIALCLASS.text()), 
 		SIZE("Population","population.png","The number of people in this social class"), 
@@ -106,7 +124,7 @@ public class SocialClass implements Serializable {
 		String imageName;
 		String toolTip;
 
-		Selector(String text, String imageName, String toolTip) {
+		SOCIALCLASS_ATTRIBUTE(String text, String imageName, String toolTip) {
 			this.text = text;
 			this.imageName = imageName;
 			this.toolTip = toolTip;
@@ -140,14 +158,14 @@ public class SocialClass implements Serializable {
 	 *            the socialClass bean to copy - usually from the previous timeStamp
 	 */
 	public void copy(SocialClass template) {
-		this.pk.timeStamp = template.pk.timeStamp;
-		this.pk.project = template.pk.project;
-		this.pk.socialClassName = template.pk.socialClassName;
+		this.pk.timeStampID = template.pk.timeStampID;
+		this.pk.projectID = template.pk.projectID;
+		this.pk.name = template.pk.name;
 		this.size = template.size;
 		this.participationRatio = template.participationRatio;
 		this.revenue = template.revenue;
 	}
-	
+
 	/**
 	 * an observable list of type SocialClass for display by ViewManager, at the current project and timeStampDisplayCursor. timeStampDisplayCursor, which
 	 * may diverge from timeStamp, identifies the row that the user last clicked on.
@@ -155,9 +173,9 @@ public class SocialClass implements Serializable {
 	 * @return an ObservableList of SocialClasses
 	 */
 	public static ObservableList<SocialClass> socialClassesObservable() {
-		SocialClass.socialClassAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampDisplayCursor);
+		SocialClass.allQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", Simulation.timeStampDisplayCursor);
 		ObservableList<SocialClass> result = FXCollections.observableArrayList();
-		for (SocialClass s : SocialClass.socialClassAllQuery.getResultList()) {
+		for (SocialClass s : SocialClass.allQuery.getResultList()) {
 			result.add(s);
 		}
 		return result;
@@ -166,17 +184,16 @@ public class SocialClass implements Serializable {
 	/**
 	 * provides a wrapped version of the selected member which the display will recognise, as a ReadOnlyStringWrapper.
 	 * 
-	 * @param selector
+	 * @param attribute
 	 *            chooses which member to evaluate
 	 * @param valueExpression
 	 *            selects the display attribute where relevant (QUANTITY, VALUE, PRICE)
 	 * @return a String representation of the members, formatted according to the relevant format string
 	 */
-
-	public ReadOnlyStringWrapper wrappedString(Selector selector, Stock.ValueExpression valueExpression) {
-		switch (selector) {
+	public ReadOnlyStringWrapper wrappedString(SOCIALCLASS_ATTRIBUTE attribute, VALUE_EXPRESSION valueExpression) {
+		switch (attribute) {
 		case SOCIALCLASSNAME:
-			return new ReadOnlyStringWrapper(pk.socialClassName);
+			return new ReadOnlyStringWrapper(pk.name);
 		case SIZE:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), size));
 		case CONSUMPTIONSTOCKS:
@@ -186,7 +203,7 @@ public class SocialClass implements Serializable {
 		case SALES:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), salesAttribute(valueExpression)));
 		case QUANTITYDEMANDED:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), consumptionQuantityDemanded()));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), necessitiesQuantityDemanded()));
 		case REVENUE:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), revenue));
 		case TOTAL:
@@ -200,16 +217,15 @@ public class SocialClass implements Serializable {
 	 * informs the display whether the selected member of this entity has changed, compared with the 'comparator' Commodity which normally
 	 * comes from a different timeStamp.
 	 * 
-	 * @param selector
+	 * @param attribute
 	 *            chooses which member to evaluate
 	 * @param valueExpression
 	 *            selects the display attribute where relevant (QUANTITY, VALUE, PRICE)
 	 * @return whether this member has changed or not. False if selector is unavailable here
 	 */
-
-	public boolean changed(Selector selector, Stock.ValueExpression valueExpression) {
+	public boolean changed(SOCIALCLASS_ATTRIBUTE attribute, VALUE_EXPRESSION valueExpression) {
 		chooseComparison();
-		switch (selector) {
+		switch (attribute) {
 		case SOCIALCLASSNAME:
 			return false;
 		case SIZE:
@@ -219,7 +235,7 @@ public class SocialClass implements Serializable {
 		case MONEY:
 			return moneyAttribute(valueExpression) != comparator.moneyAttribute(valueExpression);
 		case QUANTITYDEMANDED:
-			return consumptionQuantityDemanded() != comparator.consumptionQuantityDemanded();
+			return necessitiesQuantityDemanded() != comparator.necessitiesQuantityDemanded();
 		case REVENUE:
 			return revenue != comparator.revenue;
 		case SALES:
@@ -234,46 +250,44 @@ public class SocialClass implements Serializable {
 	/**
 	 * If the selected field has changed, return the difference between the current value and the former value
 	 * 
-	 * @param selector
+	 * @param attribute
 	 *            chooses which member to evaluate
-	 * @param displayAttribute
+	 * @param valueExpression
 	 *            selects the display attribute where relevant (QUANTITY, VALUE, PRICE)
 	 * @param item
 	 *            the item which the calling method (normally a TableCell) proposes to display
 	 * @return the item if unchanged, otherwise the difference between the item and its former magnitude
 	 */
-
-	public String showDelta(String item, Selector selector, ValueExpression displayAttribute) {
+	public String showDelta(String item, SOCIALCLASS_ATTRIBUTE attribute, VALUE_EXPRESSION valueExpression) {
 		chooseComparison();
-		if (!changed(selector, displayAttribute))
+		if (!changed(attribute, valueExpression))
 			return item;
-		switch (selector) {
+		switch (attribute) {
 		case SOCIALCLASSNAME:
 			return item;
 		case SIZE:
 			return String.format(ViewManager.getLargeFormat(), size - comparator.size);
 		case CONSUMPTIONSTOCKS:
 			return String.format(ViewManager.getLargeFormat(),
-					consumptionAttribute(displayAttribute) - comparator.consumptionAttribute(displayAttribute));
+					consumptionAttribute(valueExpression) - comparator.consumptionAttribute(valueExpression));
 		case MONEY:
-			return String.format(ViewManager.getLargeFormat(), moneyAttribute(displayAttribute) - comparator.moneyAttribute(displayAttribute));
+			return String.format(ViewManager.getLargeFormat(), moneyAttribute(valueExpression) - comparator.moneyAttribute(valueExpression));
 		case QUANTITYDEMANDED:
-			return String.format(ViewManager.getLargeFormat(), consumptionQuantityDemanded() - comparator.consumptionQuantityDemanded());
+			return String.format(ViewManager.getLargeFormat(), necessitiesQuantityDemanded() - comparator.necessitiesQuantityDemanded());
 		case REVENUE:
 			return String.format(ViewManager.getLargeFormat(), revenue - comparator.revenue);
 		case SALES:
-			return String.format(ViewManager.getLargeFormat(), salesAttribute(displayAttribute) - comparator.salesAttribute(displayAttribute));
+			return String.format(ViewManager.getLargeFormat(), salesAttribute(valueExpression) - comparator.salesAttribute(valueExpression));
 		case TOTAL:
-			return String.format(ViewManager.getLargeFormat(), totalAttribute(displayAttribute) - comparator.totalAttribute(displayAttribute));
+			return String.format(ViewManager.getLargeFormat(), totalAttribute(valueExpression) - comparator.totalAttribute(valueExpression));
 		default:
 			return item;
 		}
 	}
-	
+
 	/**
 	 * chooses the comparator depending on the state set in the {@code ViewManager.comparatorToggle} radio buttons
 	 */
-
 	private void chooseComparison() {
 		switch (TrackingControlsBox.getComparatorState()) {
 		case CUSTOM:
@@ -298,17 +312,15 @@ public class SocialClass implements Serializable {
 	 * 
 	 * @return the magnitude of the named Stock, expressed as defined by {@code displayAttribute}, null if this does not exist
 	 */
-
 	public ReadOnlyStringWrapper wrappedString(String consumptionStockName) {
 		try {
-			Stock namedStock = Stock.consumptionByCommodityAndClassSingle(pk.timeStamp, pk.socialClassName, consumptionStockName);
+			Stock namedStock = Stock.consumptionByCommodityAndClassSingle(pk.timeStampID, pk.name, consumptionStockName);
 			String result = String.format(ViewManager.getLargeFormat(), namedStock.get(TabbedTableViewer.displayAttribute));
 			return new ReadOnlyStringWrapper(result);
 		} catch (Exception e) {
 			return null;
 		}
 	}
-	
 
 	/**
 	 * regenerate the labour power of this class
@@ -318,19 +330,18 @@ public class SocialClass implements Serializable {
 	 * whereas another will sell no labour power and will only receive property revenue
 	 * (TODO this is as yet underdeveloped because we have to develop the different types of property-based revenue such as land etc)
 	 */
-
 	public void regenerate() {
-		Reporter.report(logger, 1, "Reproducing the sales stock of the class [%s]", pk.socialClassName);
+		Reporter.report(logger, 1, "Reproducing the sales stock of the class [%s]", pk.name);
 
-		Stock salesStock = getSalesStock();
+		Stock salesStock = salesStock();
 		if (salesStock != null) {
 			double existingLabourPower = salesStock.getQuantity();
-			Commodity commodity = Commodity.commodityByPrimaryKey(pk.timeStamp, salesStock.getCommodityName());
+			Commodity commodity = Commodity.singleCurrentProject(pk.timeStampID, salesStock.name());
 			double turnoverTime = commodity.getTurnoverTime();
 			double newLabourPower = size * participationRatio / turnoverTime;
 			double extraLabourPower = newLabourPower - existingLabourPower;
 			if (extraLabourPower > 0) {
-				Reporter.report(logger, 2, "The sales stock of the class [%s] was %.0f and is now %.0f", pk.socialClassName, existingLabourPower,
+				Reporter.report(logger, 2, "The sales stock of the class [%s] was %.0f and is now %.0f", pk.name, existingLabourPower,
 						newLabourPower);
 				salesStock.modifyBy(extraLabourPower);
 			}
@@ -341,28 +352,27 @@ public class SocialClass implements Serializable {
 	 * Account for the consumption of this social class.
 	 * At present, very simple: eat it all up.
 	 */
-
 	public void consume() {
-		Reporter.report(logger, 1, "Replenishing the class [%s]", pk.socialClassName);
+		Reporter.report(logger, 1, "Replenishing the class [%s]", pk.name);
 		for (Stock s : consumptionStocks()) {
 			double quantityConsumed = s.getQuantity();
 			s.modifyBy(-quantityConsumed);
-			s.setStockUsedUp(s.getStockUsedUp()+quantityConsumed);
-			Commodity commodity=s.getCommodity();
-			double stockUsedUp= commodity.getStockUsedUp()+quantityConsumed;
-			commodity.setStockUsedUp(stockUsedUp);//TODO eliminate and replace by query based on stocks
+			s.setStockUsedUp(s.getStockUsedUp() + quantityConsumed);
+			Commodity commodity = s.getCommodity();
+			double stockUsedUp = commodity.getStockUsedUp() + quantityConsumed;
+			commodity.setStockUsedUp(stockUsedUp);// TODO eliminate and replace by query based on stocks
 			Reporter.report(logger, 2, "Consumption stock of class [%s] reduced to %.0f from %.0f; used up stock now comes to %.0f",
-					pk.socialClassName, s.getQuantity(), quantityConsumed, stockUsedUp);
+					pk.name, s.getQuantity(), quantityConsumed, stockUsedUp);
 		}
 	}
-	
+
 	/**
 	 * get the Stock of money owned by this class. If this stock does not exist (which is an error) return null.
 	 * 
 	 * @return the money stock that is owned by this social class.
 	 */
-	public Stock getMoneyStock() {
-		return Stock.stockMoneyByOwnerSingle(pk.timeStamp, pk.socialClassName);
+	public Stock moneyStock() {
+		return Stock.moneyByOwner(pk.timeStampID, pk.name);
 	}
 
 	/**
@@ -371,10 +381,10 @@ public class SocialClass implements Serializable {
 	 * 
 	 * @return the sales stock that is owned by this social class.
 	 */
-	public Stock getSalesStock() {
+	public Stock salesStock() {
 		// TODO we can't assume there is only one type of labour power
 		// also we should allow for theories in which social classes sell other things
-		return Stock.stockByPrimaryKey(Simulation.projectCurrent, pk.timeStamp, pk.socialClassName, "Labour Power", Stock.STOCKTYPE.SALES.text());
+		return Stock.single(Simulation.projectIDCurrent, pk.timeStampID, pk.name, "Labour Power", Stock.STOCKTYPE.SALES.text());
 	}
 
 	/**
@@ -383,7 +393,7 @@ public class SocialClass implements Serializable {
 	 * @return a list of the consumption stocks owned by this social class
 	 */
 	public List<Stock> consumptionStocks() {
-		return Stock.consumedByClass(pk.timeStamp,pk.socialClassName);
+		return Stock.consumedByClass(pk.timeStampID, pk.name);
 	}
 
 	/**
@@ -392,12 +402,11 @@ public class SocialClass implements Serializable {
 	 * 
 	 * @return a Single Consumption Stock called either "COnsumption" or "Necessities" if one of these exists, null otherwise
 	 */
-
-	public Stock getConsumptionStock() {
-		for (Stock s : Stock.consumedByClass(Simulation.timeStampIDCurrent, pk.socialClassName)) {
-			if (s.getCommodityName().equals("Consumption"))
+	public Stock getNecessitiesStock() {
+		for (Stock s : Stock.consumedByClass(Simulation.timeStampIDCurrent, pk.name)) {
+			if (s.name().equals("Consumption"))
 				return s;
-			if (s.getCommodityName().equals("Necessities"))
+			if (s.name().equals("Necessities"))
 				return s;
 		}
 		return null;
@@ -410,20 +419,17 @@ public class SocialClass implements Serializable {
 	 *            the name of the prescribed consumer good
 	 * @return the Stock of the consumer good named commodity that this class owns
 	 */
-
-	public Stock getConsumptionStock(String commodityName) {
-		return Stock.consumptionByCommodityAndClassSingle(pk.timeStamp, pk.socialClassName, commodityName);
+	public Stock getNecessitiesStock(String commodityName) {
+		return Stock.consumptionByCommodityAndClassSingle(pk.timeStampID, pk.name, commodityName);
 	}
-
-	// METHODS THAT RETRIEVE ATTRIBUTES OF STOCKS
 
 	/**
 	 * get the quantity of the Stock of money owned by this class. Return 0 if the stock cannot be found
 	 * 
 	 * @return the quantity of money owned by this social class.
 	 */
-	public double getMoneyQuantity() {
-		Stock s = getMoneyStock();
+	public double moneyQuantity() {
+		Stock s = moneyStock();
 		return s == null ? 0 : s.getQuantity();
 	}
 
@@ -432,8 +438,8 @@ public class SocialClass implements Serializable {
 	 * 
 	 * @return the quantity of money owned by this social class.
 	 */
-	public double getMoneyValue() {
-		Stock s = getMoneyStock();
+	public double moneyValue() {
+		Stock s = moneyStock();
 		return s == null ? 0 : s.getValue();
 	}
 
@@ -442,8 +448,8 @@ public class SocialClass implements Serializable {
 	 * 
 	 * @return the price of money owned by this social class.
 	 */
-	public double getMoneyPrice() {
-		Stock s = getMoneyStock();
+	public double moneyPrice() {
+		Stock s = moneyStock();
 		return s == null ? 0 : s.getPrice();
 	}
 
@@ -452,8 +458,8 @@ public class SocialClass implements Serializable {
 	 * 
 	 * @return the quantity of sales stock owned by this social class
 	 */
-	public double getSalesQuantity() {
-		Stock s = getSalesStock();
+	public double salesQuantity() {
+		Stock s = salesStock();
 		return s == null ? 0 : s.getQuantity();
 	}
 
@@ -462,8 +468,8 @@ public class SocialClass implements Serializable {
 	 * 
 	 * @return the value of the sales stock owned by this social class
 	 */
-	public double getSalesValue() {
-		Stock s = getSalesStock();
+	public double salesValue() {
+		Stock s = salesStock();
 		return s == null ? 0 : s.getValue();
 	}
 
@@ -472,8 +478,8 @@ public class SocialClass implements Serializable {
 	 * 
 	 * @return the quantity of sales stock owned by this social class
 	 */
-	public double getSalesPrice() {
-		Stock s = getSalesStock();
+	public double salesPrice() {
+		Stock s = salesStock();
 		return s == null ? 0 : s.getPrice();
 	}
 
@@ -483,9 +489,9 @@ public class SocialClass implements Serializable {
 	 * 
 	 * @return the quantity demanded of the consumption goods owned by this social class
 	 */
-	public double consumptionQuantityDemanded() {
+	public double necessitiesQuantityDemanded() {
 
-		Stock s = getConsumptionStock();
+		Stock s = getNecessitiesStock();
 		return s == null ? Float.NaN : s.getReplenishmentDemand();
 	}
 
@@ -496,52 +502,32 @@ public class SocialClass implements Serializable {
 	 *            the quantity of the stock of consumption goods
 	 * 
 	 */
-	public void setConsumptionQuantityDemanded(double quantityDemanded) {
-		Stock s = getConsumptionStock();
+	public void setNecessitiesQuantityDemanded(double quantityDemanded) {
+		Stock s = getNecessitiesStock();
 		if (s != null) {
 			s.setReplenishmentDemand(quantityDemanded);
 		} else {
 			logger.error("ERROR: Social class {} attempted to set the quantity demanded of its consumption stock, but it does not have one",
-					pk.socialClassName);
+					pk.name);
 		}
 	}
-
-	/**
-	 * set the comparators for the socialClass entity at the current project and the given timeStamp
-	 * 
-	 * @param timeStampID
-	 *            the timeStamp which selects the entity
-	 */
-
-	public static void setComparators(int timeStampID) {
-		socialClassAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStampID);
-		for (SocialClass sc : socialClassAllQuery.getResultList()) {
-			sc.setPreviousComparator(
-					socialClassByPrimaryKey(Simulation.projectCurrent, Simulation.getTimeStampComparatorCursor(), sc.getSocialClassName()));
-			sc.setStartComparator(socialClassByPrimaryKey(Simulation.projectCurrent, 1, sc.getSocialClassName()));
-			sc.setEndComparator(socialClassByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, sc.getSocialClassName()));
-			sc.setCustomComparator(socialClassByPrimaryKey(Simulation.projectCurrent, Simulation.timeStampIDCurrent, sc.getSocialClassName()));
-		}
-	}
-	
-	// Queries
 
 	/**
 	 * Get a single social class defined by its primary key, including a timeStamp that may differ from the current timeStamp
 	 * 
 	 * @param socialClassName
 	 *            the name of the social Class in the primary key
-	 * @param project
+	 * @param projectID
 	 *            the project in the primary key
-	 * @param timeStamp
+	 * @param timeStampID
 	 *            the timeStamp in the primary key
 	 * @return the single social class with the name socialClassName, for the given project and timeStamp
 	 */
 
-	public static SocialClass socialClassByPrimaryKey(int project, int timeStamp, String socialClassName) {
-		socialClassByPrimaryKeyQuery.setParameter("project", project).setParameter("timeStamp", timeStamp).setParameter("socialClassName", socialClassName);
+	public static SocialClass singleWithProjectTimeStampAndName(int projectID, int timeStampID, String socialClassName) {
+		primaryQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID).setParameter("socialClassName", socialClassName);
 		try {
-			return socialClassByPrimaryKeyQuery.getSingleResult();
+			return primaryQuery.getSingleResult();
 		} catch (javax.persistence.NoResultException e) {
 			return null;// because this query throws a fit if it doesn't find anything
 		}
@@ -552,25 +538,24 @@ public class SocialClass implements Serializable {
 	 * 
 	 * @return a list of all social classes for the current project and timeStamp
 	 */
-
 	public static List<SocialClass> all() {
-		socialClassAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
-		return socialClassAllQuery.getResultList();
+		allQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
+		return allQuery.getResultList();
 	}
 
 	/**
 	 * a list of social classes, for the current project and a given timeStamp
 	 * 
-	 * @param timeStampID the timeStampID of the socialClasses to be returned
+	 * @param timeStampID
+	 *            the timeStampID of the socialClasses to be returned
 	 * @return a list of all social classes for the current project and the given timeStamp
 	 * 
 	 */
-	public static List<SocialClass> all(int timeStampID) {
-		socialClassAllQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", timeStampID);
-		return socialClassAllQuery.getResultList();
+	public static List<SocialClass> currentProjectWithTimeStamp(int timeStampID) {
+		allQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStampID);
+		return allQuery.getResultList();
 	}
 
-	
 	/**
 	 * a named social class for the current project and a given timeStamp.
 	 * 
@@ -578,18 +563,15 @@ public class SocialClass implements Serializable {
 	 *            the name of the social Class
 	 * @return the single social class with the name socialClassName, for the given project and timeStamp
 	 */
-
-	public static SocialClass socialClassByName(String socialClassName) {
-		socialClassByPrimaryKeyQuery.setParameter("project", Simulation.projectCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent)
+	public static SocialClass currentWithName(String socialClassName) {
+		primaryQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent)
 				.setParameter("socialClassName", socialClassName);
 		try {
-			return socialClassByPrimaryKeyQuery.getSingleResult();
+			return primaryQuery.getSingleResult();
 		} catch (NoResultException r) {
 			return null;
 		}
 	}
-	
-	
 
 	/**
 	 * @return the entityManager
@@ -598,33 +580,71 @@ public class SocialClass implements Serializable {
 		return entityManager;
 	}
 
-	public Integer getProject() {
-		return pk.project;
+	/**
+	 * 
+	 * @return the projectID of this SocialClass entity
+	 */
+
+	public Integer getProjectID() {
+		return pk.projectID;
 	}
 
-	public int getTimeStamp() {
-		return pk.timeStamp;
+	
+	/**
+	 * 
+	 * @return the timeStampID of this SocialClass entity
+	 */
+	public int getTimeStampID() {
+		return pk.timeStampID;
 	}
 
-	public void setTimeStamp(int timeStamp) {
-		pk.timeStamp = timeStamp;
+	/**
+	 * Set the timeStampID of this SocialClass entity
+	 * 
+	 * @param timeStampID the timeStamp to set
+	 */
+
+	public void setTimeStamp(int timeStampID) {
+		pk.timeStampID = timeStampID;
 	}
 
+	/**
+	 * Set the projectID of this social class
+	 * 
+	 * @param projectID
+	 *            the projectID to set
+	 */
+	public void setProjectID(int projectID) {
+		pk.projectID = projectID;
+	}
+	
+	/**
+	 * Get the name of this SocialClass entity
+	 * 
+	 * @return the name of this SocialClass entity
+	 */
 
-	public String getSocialClassName() {
-		return pk.socialClassName;
+	public String name() {
+		return pk.name;
 	}
 
+	/**
+	 * 
+	 * @return the size of this SocialClass entity
+	 */
 	public double getSize() {
 		return size;
 	}
 
+	/**
+	 * Set the size of this SocialClass entity
+	 * 
+	 * @param size
+	 *            the size to set
+	 */
+
 	public void setSize(double size) {
 		this.size = size;
-	}
-
-	public boolean changedSize() {
-		return size != comparator.getSize();
 	}
 
 	/**
@@ -653,37 +673,37 @@ public class SocialClass implements Serializable {
 	}
 
 	/**
-	 * generic selector which returns a numerical attribute of the sales stock depending on the {@link Stock.ValueExpression}
+	 * generic selector which returns a numerical attribute of the sales stock depending on the {@link Stock.VALUE_EXPRESSION}
 	 * 
 	 * @param a
 	 *            (QUANTITY, VALUE OR PRICE) selects whether to return the quantity, the value or the price of this stock
 	 * @return the quantity of sales stock if a=QUANTITY, etc. If there is no sales Stock return zero.
 	 */
-	public double salesAttribute(Stock.ValueExpression a) {
-		Stock salesStock = getSalesStock();
+	public double salesAttribute(Stock.VALUE_EXPRESSION a) {
+		Stock salesStock = salesStock();
 		return salesStock == null ? 0 : salesStock.get(a);
 	}
 
 	/**
-	 * generic selector which returns a numerical attribute of the consumption stock depending on the {@link Stock.ValueExpression}
+	 * generic selector which returns a numerical attribute of the consumption stock depending on the {@link Stock.VALUE_EXPRESSION}
 	 * 
 	 * @param a
 	 *            (QUANTITY, VALUE OR PRICE) selects whether to return the quantity, the value or the price of this stock
 	 * @return the quantity of consumption goods if a=QUANTITY, etc.
 	 */
-	public double consumptionAttribute(Stock.ValueExpression a) {
-		return getConsumptionStock().get(a);
+	public double consumptionAttribute(Stock.VALUE_EXPRESSION a) {
+		return getNecessitiesStock().get(a);
 	}
 
 	/**
-	 * generic selector which returns a numerical attribute of the money stock depending on the {@link Stock.ValueExpression}
+	 * generic selector which returns a numerical attribute of the money stock depending on the {@link Stock.VALUE_EXPRESSION}
 	 * 
 	 * @param a
 	 *            (QUANTITY, VALUE OR PRICE) selects whether to return the quantity, the value or the price of this stock
 	 * @return the quantity of money if a=QUANTITY, etc.
 	 */
-	public double moneyAttribute(Stock.ValueExpression a) {
-		return getMoneyStock().get(a);
+	public double moneyAttribute(Stock.VALUE_EXPRESSION a) {
+		return moneyStock().get(a);
 	}
 
 	/**
@@ -693,12 +713,11 @@ public class SocialClass implements Serializable {
 	 *            one of Stock.ValueExpression.QUANTITY,Stock.ValueExpression.VALUE,Stock.ValueExpression.PRICE
 	 * @return the total value if a=VALUE, the total price if a=PRICE and NaN if a=QUANTITY
 	 */
-
-	public double totalAttribute(Stock.ValueExpression a) {
-		if (a == Stock.ValueExpression.QUANTITY) {
+	public double totalAttribute(Stock.VALUE_EXPRESSION a) {
+		if (a == Stock.VALUE_EXPRESSION.QUANTITY) {
 			return Double.NaN;
 		}
-		return getMoneyStock().get(a) + salesAttribute(a) + getConsumptionStock().get(a);
+		return moneyStock().get(a) + salesAttribute(a) + getNecessitiesStock().get(a);
 	}
 
 	/**
@@ -783,4 +802,5 @@ public class SocialClass implements Serializable {
 	public void setEndComparator(SocialClass endComparator) {
 		this.endComparator = endComparator;
 	}
+
 }

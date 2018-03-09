@@ -31,7 +31,7 @@ public class DumpCommand implements DisplayCommand{
 
 	@Override public void execute(ImageButton caller) {
 		logger.debug("User saved the current project");
-		XMLStuff.makeXMLList(Simulation.projectCurrent, 1);
+		XMLStuff.makeXMLList(Simulation.projectIDCurrent, 1);
 	}
 
 }

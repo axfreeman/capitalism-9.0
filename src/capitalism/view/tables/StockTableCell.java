@@ -10,9 +10,9 @@ import javafx.scene.paint.Color;
 public class StockTableCell extends TableCell<Stock, String> {
 	static final Logger logger = LogManager.getLogger("StockTableCell");
 	
-	Stock.Selector selector;
-	public StockTableCell(Stock.Selector selector){
-		this.selector=selector;
+	Stock.STOCK_ATTRIBUTE sTOCK_ATTRIBUTE;
+	public StockTableCell(Stock.STOCK_ATTRIBUTE sTOCK_ATTRIBUTE){
+		this.sTOCK_ATTRIBUTE=sTOCK_ATTRIBUTE;
 	}
 	
 	@Override
@@ -28,6 +28,6 @@ public class StockTableCell extends TableCell<Stock, String> {
 			return;
 		}
 		setText(item);
-		setTextFill(stock.changed(selector) ? Color.RED : Color.BLACK);
+		setTextFill(stock.changed(sTOCK_ATTRIBUTE) ? Color.RED : Color.BLACK);
 	}
 }
