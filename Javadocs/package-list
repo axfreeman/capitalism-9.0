@@ -6,4 +6,5 @@ capitalism.utils
 capitalism.view
 capitalism.view.command
 capitalism.view.custom
+capitalism.view.editor
 capitalism.view.tables

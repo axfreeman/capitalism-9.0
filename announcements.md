@@ -1,9 +1,13 @@
-# Capitalism 9.0 announcements 3/8/2018 12:54:01 AM 
+# Capitalism 9.0 announcements 3/10/2018 9:11:27 AM 
 
 User can save to XML
-User can open an edit window, but this has no functionality as yet
-Hence no new executable.
-New javadocs
+User can open an edit window, display and edit existing commodities, industries, classes.
+Cannot edit their stocks
+Cannot save
+Can only input the existing project 1
+But it's possible to see the kind of functionality that will be developed
+Hence new executable.
+New javadocs.
 
 ## consolidated prior announcements
 New icon-based interface, wider selection of pricing and MELT responses.

@@ -45,7 +45,7 @@ public class EditorManager {
 	                DisplayControlsBox.setEditorOpen(false);
 	            }
 	        });
-	   editorScene= new Scene(editor, 1000, 800);
+	   editorScene= new Scene(editor, 1000, 500);
 		editorStage.setScene(editorScene);
 		editorStage.showAndWait();
 		

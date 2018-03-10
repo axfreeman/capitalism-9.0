@@ -100,7 +100,7 @@ public class Constrain extends Simulation implements Command {
 	 */
 
 	public void constrainOutput() {
-		List<Industry> industries = Industry.currentProjectAndTimeStamp();
+		List<Industry> industries = Industry.allCurrent();
 		for (Industry c : industries) {
 			double desiredOutputLevel = c.getOutput();
 			Reporter.report(logger, 1, "Estimating supply-constrained output for industry [%s] with unconstrained output %.0f",

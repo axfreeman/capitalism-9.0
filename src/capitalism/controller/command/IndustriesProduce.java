@@ -66,10 +66,10 @@ public class IndustriesProduce extends Simulation implements Command {
 		// equal to their price at this time except stocks of type labour power, which contribute their magnitude, multiplied by their complexity, divided by the MELT
 		// (TODO incorporate labour complexity)
 		
-		for (Industry industry : Industry.currentProjectAndTimeStamp()) {
+		for (Industry industry : Industry.allCurrent()) {
 			String commodityType = industry.name();
 			Stock salesStock = industry.salesStock();
-			Commodity commodity = industry.productName();
+			Commodity commodity = industry.commodity();
 			double output = industry.getOutput();
 			double intrinsicValueAdded = 0;
 			Reporter.report(logger, 1, " Industry [%s] is producing %.0f. units of its output; the melt is %.4f", commodityType, output, melt);
@@ -111,7 +111,7 @@ public class IndustriesProduce extends Simulation implements Command {
 			// to set the value of the output, we now use an overloaded version of modifyBy which only sets the value
 			double extraSalesQuantity = output;
 			salesStock.modifyBy(extraSalesQuantity, intrinsicValueAdded*melt);
-			industry.productName().setStockProduced(industry.productName().getStockProduced() + extraSalesQuantity);
+			industry.commodity().setStockProduced(industry.commodity().getStockProduced() + extraSalesQuantity);
 			Reporter.report(logger, 2,
 					"Sales stock of [%s] is now %.0f, intrinsic value is %.0f (Monetary Expression $%.0f) and price is %.0f (Monetary Expression $%.0f)",
 					industry.name(), salesStock.getQuantity(), salesStock.getValue()*melt, salesStock.getValue(), 
@@ -124,7 +124,7 @@ public class IndustriesProduce extends Simulation implements Command {
 		}
 		
 		// persist the profit that has been made, so that the user can see it
-		for (Industry c:Industry.currentProjectAndTimeStamp()) {
+		for (Industry c:Industry.allCurrent()) {
 			c.persistProfit();
 		}
 	}

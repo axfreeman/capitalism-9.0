@@ -113,7 +113,7 @@ public class Commodity implements Serializable {
 			this.text = text;
 		}
 
-		public String getText() {
+		public String text() {
 			return text;
 		}
 	};

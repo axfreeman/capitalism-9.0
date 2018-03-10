@@ -69,7 +69,7 @@ public class Revenue extends Simulation implements Command {
 		SocialClass capitalists = SocialClass.currentWithName("Capitalists");
 		double capitalistRevenue = 0.0;
 		Stock recipient = capitalists.moneyStock();
-		for (Industry c : Industry.currentProjectAndTimeStamp()) {
+		for (Industry c : Industry.allCurrent()) {
 			double profit = c.profit();
 
 			// transfer all profits to the capitalist class. In the Accumulate phase, part of this revenue

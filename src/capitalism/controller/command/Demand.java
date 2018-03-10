@@ -99,7 +99,7 @@ public class Demand implements Command {
 		// NOTE: social class demand for consumption goods is calculated separately
 		// in SocialClass.registerDemand() which is called immediately after this
 
-		for (Industry c : Industry.currentProjectAndTimeStamp()) {
+		for (Industry c : Industry.allCurrent()) {
 			double totalCost = 0;
 			Reporter.report(logger, 2, "Estimating demand from industry %s at output level %.0f", 
 					c.name(),c.getOutput());
@@ -186,7 +186,7 @@ public class Demand implements Command {
 
 		Reporter.report(logger, 1, "Compute revenues");
 		// Now we know how much labour power is going to be consumed, we can set the revenue of the sellers of labour power
-		for (SocialClass sc : SocialClass.all()) {
+		for (SocialClass sc : SocialClass.allCurrent()) {
 			double wageRevenue = sc.salesPrice();
 			double existingRevenue = sc.getRevenue();
 			Reporter.report(logger, 2, "The revenue of the social class [%s] from the previous period is $%.0f. Its wages will be $%.0f, giving a total of $%.0f",
@@ -218,7 +218,7 @@ public class Demand implements Command {
 	 */
 	public void computeSocialClassDemand() {
 		Reporter.report(logger, 1, "Compute demand from social classes");
-		for (SocialClass sc:SocialClass.all()) {
+		for (SocialClass sc:SocialClass.allCurrent()) {
 			Reporter.report(logger, 2, "Calculating demand from the social Class [%s] whose revenue is $%.0f", 
 					sc.name(),sc.getRevenue());
 			for (Stock s:sc.consumptionStocks()) {

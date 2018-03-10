@@ -163,7 +163,7 @@ public class Industry implements Serializable {
 	 * @return this industry's Output Type (production or consumer goods)
 	 */
 	public OUTPUTTYPE outputType() {
-		Commodity u = productName();
+		Commodity u = commodity();
 		switch (u.getFunction()) {
 		case PRODUCTIVE_INPUT:
 			return OUTPUTTYPE.PRODUCTIONGOODS;
@@ -595,7 +595,7 @@ public class Industry implements Serializable {
 	 * 
 	 * @return the Commodity that this industry produces
 	 */
-	public Commodity productName() {
+	public Commodity commodity() {
 		return Commodity.single(pk.projectID, pk.timeStampID, commodityName);
 	}
 
@@ -647,13 +647,12 @@ public class Industry implements Serializable {
 		return allQuery.getResultList();
 	}
 	
-	
 	/**
 	 * a list of industries, for the current project and timeStamp
 	 * 
 	 * @return a list of industriesfor the current project at the current timeStamp.
 	 */
-	public static List<Industry> currentProjectAndTimeStamp() {
+	public static List<Industry> allCurrent() {
 		allWithProjectAndTimeStampQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
 		return allWithProjectAndTimeStampQuery.getResultList();
 	}
@@ -1167,4 +1166,17 @@ public class Industry implements Serializable {
 		pk.projectID=projectID;
 	}
 
+	/**
+	 * @return the commodityName
+	 */
+	public String getCommodityName() {
+		return commodityName;
+	}
+
+	/**
+	 * @param commodityName the commodityName to set
+	 */
+	public void setCommodityName(String commodityName) {
+		this.commodityName = commodityName;
+	}
 }

@@ -538,7 +538,7 @@ public class SocialClass implements Serializable {
 	 * 
 	 * @return a list of all social classes for the current project and timeStamp
 	 */
-	public static List<SocialClass> all() {
+	public static List<SocialClass> allCurrent() {
 		allQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
 		return allQuery.getResultList();
 	}

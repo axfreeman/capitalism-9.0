@@ -240,7 +240,7 @@ public class Simulation extends Parameters{
 		// industries
 		logger.debug("Persisting a new set of industries with timeStamp {} ", timeStampIDCurrent+1);
 		Industry newIndustry;
-		for (Industry c : Industry.currentProjectAndTimeStamp()) {
+		for (Industry c : Industry.allCurrent()) {
 			logger.debug("Persisting an industry that produces commodity" + c.name());
 			newIndustry = new Industry(c);
 			newIndustry.setTimeStamp(timeStampIDCurrent+1);
@@ -250,7 +250,7 @@ public class Simulation extends Parameters{
 		// Social Classes
 		logger.debug("Persisting a new set of social classes with timeStamp {}", timeStampIDCurrent+1);
 		SocialClass newSocialClass;
-		for (SocialClass sc : SocialClass.all()) {
+		for (SocialClass sc : SocialClass.allCurrent()) {
 			logger.debug("  Persisting a social class whose name is " + sc.name());
 			newSocialClass = new SocialClass();
 			newSocialClass.copy(sc);
@@ -371,7 +371,7 @@ public class Simulation extends Parameters{
 	 * Called at startup and thereafter afterAccumulate (i.e. at the very end of the whole industry and start of the next)
 	 */
 	protected static void setCapitals() {
-		for (Industry c : Industry.currentProjectAndTimeStamp()) {
+		for (Industry c : Industry.allCurrent()) {
 			double initialCapital = c.currentCapital();
 			Reporter.report(logger, 3, "The initial capital of the industry[%s] is now $%.0f (intrinsic %.0f)", c.name(), initialCapital,
 					initialCapital / Simulation.currentTimeStamp.getMelt());
@@ -381,7 +381,7 @@ public class Simulation extends Parameters{
 				Simulation.currentTimeStamp.initialCapital() / Simulation.currentTimeStamp.getMelt());
 		Reporter.report(logger, 2, "The profit of the previous period has been erased from the record; it was stored during the price calculation");
 		// Erase the public record of the profit of the previous period
-		for (Industry c : Industry.currentProjectAndTimeStamp()) {
+		for (Industry c : Industry.allCurrent()) {
 			c.persistProfit();
 		}
 	}
@@ -393,7 +393,7 @@ public class Simulation extends Parameters{
 	
 	protected static void setInitialProductiveCapitals() {
 		
-		for (Industry c:Industry.currentProjectAndTimeStamp()) {
+		for (Industry c:Industry.allCurrent()) {
 			double productiveCapital=0.0;
 			for (Stock s:c.productiveStocks()) {
 				productiveCapital+=s.getPrice();
