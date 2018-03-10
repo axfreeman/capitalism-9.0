@@ -41,10 +41,10 @@ import javafx.collections.ObservableList;
 @Table(name = "projects")
 
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlRootElement(name="Project")
+@XmlRootElement(name = "Project")
 public class Project implements Serializable {
 	private static final long serialVersionUID = 1L;
-
+	//NOTE: projectID 0 is reserved for the editor
 	@Id @EmbeddedId @Column(unique = true, nullable = false) private int projectID;
 	@XmlElement @Column(name = "description") private String description;
 	@XmlElement @Column(name = "currentTimeStamp") private int timeStamp;
@@ -52,7 +52,7 @@ public class Project implements Serializable {
 	@XmlElement @Column(name = "currentTimeStampComparatorCursor") private int timeStampComparatorCursor;
 	@XmlElement @Column(name = "period") private int period;
 	@XmlElement @Column(name = "buttonState") private String buttonState;
-	
+
 	private static EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DB_PROJECT");
 	private static EntityManager entityManager;
 	private static TypedQuery<Project> primaryQuery;
@@ -64,12 +64,11 @@ public class Project implements Serializable {
 		primaryQuery = entityManager.createQuery("SELECT p from Project p where p.projectID= :project", Project.class);
 	}
 
-
 	public Project() {
 	}
 
 	public static enum PRICEDYNAMICS {
-		SIMPLE("Simple"), EQUALISE("Equalise"),DYNAMIC("Dynamic");
+		SIMPLE("Simple"), EQUALISE("Equalise"), DYNAMIC("Dynamic");
 		String text;
 
 		private PRICEDYNAMICS(String text) {
@@ -80,7 +79,7 @@ public class Project implements Serializable {
 			return text;
 		}
 	}
-	
+
 	/**
 	 * To be used in startup: set button state to the end of the non-existent last state of the previous period
 	 * Added because of a completely mysterious fault on 28 January when suddenly, the default project constructor
@@ -92,7 +91,7 @@ public class Project implements Serializable {
 		this.buttonState = ActionStates.lastSuperState().text();
 
 	}
-	
+
 	/**
 	 * Get a single project identified by the primary key {@code projectID},
 	 * 
@@ -113,7 +112,6 @@ public class Project implements Serializable {
 	public static List<Project> projectsAll() {
 		return allQuery.getResultList();
 	}
-
 
 	public static EntityManager getEntityManager() {
 		return entityManager;
@@ -150,7 +148,7 @@ public class Project implements Serializable {
 			return project.getTimeStampDisplayCursor();
 		}
 	}
-	
+
 	/**
 	 * set the timeStamp of a given project.
 	 * 
@@ -189,8 +187,6 @@ public class Project implements Serializable {
 		}
 	}
 
-
-
 	/**
 	 * an observable list of all projects
 	 * 
@@ -200,11 +196,13 @@ public class Project implements Serializable {
 		ObservableList<Project> output = FXCollections.observableArrayList();
 		List<Project> projects = Project.allQuery.getResultList();
 		for (Project g : projects) {
-			output.add(g);
+			// ProjectID <1 reserved for editor and storage
+			if (g.getProjectID() > 0)
+				output.add(g);
 		}
 		return output;
 	}
-	
+
 	public int getProjectID() {
 		return this.projectID;
 	}
@@ -294,10 +292,11 @@ public class Project implements Serializable {
 	}
 
 	/**
-	 * @param period the period to set
+	 * @param period
+	 *            the period to set
 	 */
 	public void setPeriod(int period) {
 		this.period = period;
 	}
-	
+
 }

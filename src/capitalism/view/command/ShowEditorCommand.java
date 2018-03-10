@@ -3,9 +3,9 @@ package capitalism.view.command;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import capitalism.editor.EditorManager;
 import capitalism.view.custom.DisplayControlsBox;
 import capitalism.view.custom.ImageButton;
-import capitalism.view.editor.EditorManager;
 import javafx.stage.Stage;
 
 public class ShowEditorCommand implements DisplayCommand {
@@ -17,6 +17,5 @@ public class ShowEditorCommand implements DisplayCommand {
 		if(DisplayControlsBox.editorIsOpen())
 			return;
 		editorManager = new EditorManager();
-		EditorManager.startUp();
 	}
 }

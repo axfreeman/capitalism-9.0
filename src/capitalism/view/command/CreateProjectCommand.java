@@ -3,9 +3,9 @@ package capitalism.view.command;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import capitalism.editor.EditorManager;
 import capitalism.utils.Reporter;
 import capitalism.view.custom.ImageButton;
-import capitalism.view.editor.EditorManager;
 import javafx.stage.Stage;
 
 public class CreateProjectCommand implements DisplayCommand {

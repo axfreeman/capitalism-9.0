@@ -17,7 +17,7 @@
 *   You should have received a copy of the GNU General Public License
 *   along with Capsim.  If not, see <http://www.gnu.org/licenses/>.
 */
-package capitalism.view.editor;
+package capitalism.editor;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,8 +51,4 @@ public class EditorManager {
 		
   
 	}
-	public static void startUp() {
-
-	}
-
 }

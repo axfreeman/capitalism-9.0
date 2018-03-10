@@ -1,8 +1,27 @@
-package capitalism.view.editor;
+/*
+ *  Copyright (C) Alan Freeman 2017-2019
+ *  
+ *  This file is part of the Capitalism Simulation, abbreviated to CapSim
+ *  in the remainder of this project
+ *
+ *  Capsim is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either project 3 of the License, or
+ *  (at your option) any later project.
+*
+*   Capsim is distributed in the hope that it will be useful,
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*   GNU General Public License for more details.
+*
+*   You should have received a copy of the GNU General Public License
+*   along with Capsim.  If not, see <http://www.gnu.org/licenses/>.
+*/
+package capitalism.editor;
 
-import capitalism.view.editor.EditableCommodity.EC_ATTRIBUTE;
-import capitalism.view.editor.EditableIndustry.EI_ATTRIBUTE;
-import capitalism.view.editor.EditableSocialClass.ESC_ATTRIBUTE;
+import capitalism.editor.EditableCommodity.EC_ATTRIBUTE;
+import capitalism.editor.EditableIndustry.EI_ATTRIBUTE;
+import capitalism.editor.EditableSocialClass.ESC_ATTRIBUTE;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Tab;
@@ -69,30 +88,44 @@ public class Editor extends VBox {
 	private void makeCommodityTable() {
 		commodityTable.setEditable(true);
 		commodityTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-		commodityTable.getColumns().add(EditableCommodity.makeStringColumn("Commodity", "name", EC_ATTRIBUTE.NAME));
-		commodityTable.getColumns().add(EditableCommodity.makeStringColumn("Function", "function", EC_ATTRIBUTE.FUNCTION));
-		commodityTable.getColumns().add(EditableCommodity.makeStringColumn("Origin", "origin", EC_ATTRIBUTE.ORIGIN));
-		commodityTable.getColumns().add(EditableCommodity.makeDoubleColumn("Unit value", "unitValue", EC_ATTRIBUTE.UNIT_VALUE));
-		commodityTable.getColumns().add(EditableCommodity.makeDoubleColumn("Unit price", "unitPrice", EC_ATTRIBUTE.UNIT_PRICE));
-		commodityTable.getColumns().add(EditableCommodity.makeDoubleColumn("Turnover Time", "turnoverTime", EC_ATTRIBUTE.TURNOVER));
+		commodityTable.getColumns().add(EditableCommodity.makeStringColumn(EC_ATTRIBUTE.NAME));
+		commodityTable.getColumns().add(EditableCommodity.makeStringColumn(EC_ATTRIBUTE.FUNCTION));
+		commodityTable.getColumns().add(EditableCommodity.makeStringColumn(EC_ATTRIBUTE.ORIGIN));
+		commodityTable.getColumns().add(EditableCommodity.makeDoubleColumn(EC_ATTRIBUTE.UNIT_VALUE));
+		commodityTable.getColumns().add(EditableCommodity.makeDoubleColumn(EC_ATTRIBUTE.UNIT_PRICE));
+		commodityTable.getColumns().add(EditableCommodity.makeDoubleColumn(EC_ATTRIBUTE.TURNOVER));
 		commodityTable.setItems(commodityData);
 	}
 	
 	private void makeIndustryTable() {
 		industryTable.setEditable(true);
 		industryTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-		industryTable.getColumns().add(EditableIndustry.makeStringColumn("Industry", "name", EI_ATTRIBUTE.NAME));
-		industryTable.getColumns().add(EditableIndustry.makeDoubleColumn("Output", "output", EI_ATTRIBUTE.OUTPUT));
-		industryTable.getColumns().add(EditableIndustry.makeStringColumn("Commodity Produced", "commodityName", EI_ATTRIBUTE.COMMODITY_NAME));
+		industryTable.getColumns().add(EditableIndustry.makeStringColumn(EI_ATTRIBUTE.NAME));
+		industryTable.getColumns().add(EditableIndustry.makeStringColumn(EI_ATTRIBUTE.COMMODITY_NAME));
+		industryTable.getColumns().add(EditableIndustry.makeDoubleColumn(EI_ATTRIBUTE.OUTPUT));
+		industryTable.getColumns().add(EditableIndustry.makeStringColumn(EI_ATTRIBUTE.SALES));
+		industryTable.getColumns().add(EditableIndustry.makeStringColumn(EI_ATTRIBUTE.MONEY));
 		industryTable.setItems(industryData);
+	}
+
+	public static void addIndustryStockColumns() {
+		for (EditableCommodity commodity:commodityData) {
+			// TODO bit of a developer leak here: need to make sure the
+			// data exists. May be Better to drive from the data table than just
+			// assume that just because there is a commodity, the data has been supplied.
+			if (commodity.getFunction().equals("Productive Inputs"))
+			industryTable.getColumns().add(EditableIndustry.makeStockColumn(commodity.getName()));
+		}
 	}
 	
 	private void makeSocialClassTable() {
 		socialClassTable.setEditable(true);
 		socialClassTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-		socialClassTable.getColumns().add(EditableSocialClass.makeStringColumn("Social Class", "name", ESC_ATTRIBUTE.NAME));
-		socialClassTable.getColumns().add(EditableSocialClass.makeDoubleColumn("Participation Ratio", "participationRatio", ESC_ATTRIBUTE.PR));
-		socialClassTable.getColumns().add(EditableSocialClass.makeDoubleColumn("Revenue", "revenue", ESC_ATTRIBUTE.PR));
+		socialClassTable.getColumns().add(EditableSocialClass.makeStringColumn(ESC_ATTRIBUTE.NAME));
+		socialClassTable.getColumns().add(EditableSocialClass.makeDoubleColumn(ESC_ATTRIBUTE.PR));
+		socialClassTable.getColumns().add(EditableSocialClass.makeDoubleColumn(ESC_ATTRIBUTE.PR));
+		socialClassTable.getColumns().add(EditableSocialClass.makeDoubleColumn(ESC_ATTRIBUTE.SALES));
+		socialClassTable.getColumns().add(EditableSocialClass.makeDoubleColumn(ESC_ATTRIBUTE.MONEY));
 			socialClassTable.setItems(socialClassData);
 		
 	}
@@ -129,4 +162,17 @@ public class Editor extends VBox {
 		socialClassTable.setItems(Editor.socialClassData);
 	}
 
+	/**
+	 * @return the industryData
+	 */
+	public static ObservableList<EditableIndustry> getIndustryData() {
+		return industryData;
+	}
+
+	/**
+	 * @return the socialClassData
+	 */
+	public static ObservableList<EditableSocialClass> getSocialClassData() {
+		return socialClassData;
+	}
 }
