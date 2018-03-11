@@ -60,8 +60,14 @@ public class EditableCommodity {
 		origin=new SimpleStringProperty();
 		function  = new SimpleStringProperty();
 	}
-
-	public static ObservableList<EditableCommodity> editableCommodities(int timeStampID, int projectID) {
+	
+	/**
+	 * Create an observable list of EditableCommodity entities (normally for display in the Commodities Table) from the
+	 * project identified by the current projectID and timeStamp.
+	 * 
+	 * @return an observableList of EditableCommodity entities identified by the current projectID and timeStampID
+	 */
+	public static ObservableList<EditableCommodity> editableCommodities() {
 		ObservableList<EditableCommodity> result = FXCollections.observableArrayList();
 		for (Commodity c : Commodity.allCurrent()) {
 			EditableCommodity oneRecord = new EditableCommodity();

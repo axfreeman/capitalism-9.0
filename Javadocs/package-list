@@ -1,10 +1,10 @@
 capitalism
 capitalism.controller
 capitalism.controller.command
+capitalism.editor
 capitalism.model
 capitalism.utils
 capitalism.view
 capitalism.view.command
 capitalism.view.custom
-capitalism.editor
 capitalism.view.tables

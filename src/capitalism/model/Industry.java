@@ -237,12 +237,12 @@ public class Industry implements Serializable {
 	 * 
 	 * @param iNDUSTRY_ATTRIBUTE
 	 *            chooses which member to evaluate
-	 * @param vALUE_EXPRESSION
+	 * @param valueExpression
 	 *            selects the value DisplayAsExpression where relevant (QUANTITY, VALUE, PRICE)
 	 * @return a String representation of the members, formatted according to the relevant format string
 	 */
 
-	public ReadOnlyStringWrapper wrappedString(INDUSTRY_ATTRIBUTE iNDUSTRY_ATTRIBUTE, Stock.VALUE_EXPRESSION vALUE_EXPRESSION) {
+	public ReadOnlyStringWrapper wrappedString(INDUSTRY_ATTRIBUTE iNDUSTRY_ATTRIBUTE, Stock.VALUE_EXPRESSION valueExpression) {
 		switch (iNDUSTRY_ATTRIBUTE) {
 		case INDUSTRYNAME:
 			return new ReadOnlyStringWrapper(pk.name);
@@ -259,11 +259,11 @@ public class Industry implements Serializable {
 		case GROWTHRATE:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), growthRate));
 		case MONEYSTOCK:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), moneyAttribute(vALUE_EXPRESSION)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), moneyAttribute(valueExpression)));
 		case SALESSTOCK:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), salesAttribute(vALUE_EXPRESSION)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), salesAttribute(valueExpression)));
 		case PRODUCTIVESTOCKS:
-			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), productiveStocksAttribute(vALUE_EXPRESSION)));
+			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), productiveStocksAttribute(valueExpression)));
 		case PROFIT:
 			return new ReadOnlyStringWrapper(String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.PROFIT)));
 		case PROFITRATE:

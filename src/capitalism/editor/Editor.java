@@ -22,6 +22,7 @@ package capitalism.editor;
 import capitalism.editor.EditableCommodity.EC_ATTRIBUTE;
 import capitalism.editor.EditableIndustry.EI_ATTRIBUTE;
 import capitalism.editor.EditableSocialClass.ESC_ATTRIBUTE;
+import capitalism.editor.EditorManager.EditorControlBar;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Tab;
@@ -40,13 +41,13 @@ public class Editor extends VBox {
 
 	private static ObservableList<EditableCommodity> commodityData = FXCollections.observableArrayList();
 	private static TableView<EditableCommodity> commodityTable = new TableView<EditableCommodity>();
-	private static ObservableList<EditableIndustry> industryData= FXCollections.observableArrayList();
-	private static TableView<EditableIndustry> industryTable = new TableView<EditableIndustry>();	
+	private static ObservableList<EditableIndustry> industryData = FXCollections.observableArrayList();
+	private static TableView<EditableIndustry> industryTable = new TableView<EditableIndustry>();
 	private static ObservableList<EditableSocialClass> socialClassData = FXCollections.observableArrayList();
 	private static TableView<EditableSocialClass> socialClassTable = new TableView<EditableSocialClass>();
 
 	public Editor() {
-		
+
 		makeCommodityTable();
 		makeIndustryTable();
 		makeSocialClassTable();
@@ -62,13 +63,13 @@ public class Editor extends VBox {
 		industryBox.setPrefHeight(300);
 		industryBox.setPrefWidth(7600);
 		industryBox.getChildren().add(industryTable);
-		
+
 		// box for the social class table
 		VBox socialClassBox = new VBox();
 		socialClassBox.setPrefHeight(300);
 		socialClassBox.setPrefWidth(7600);
 		socialClassBox.getChildren().add(socialClassTable);
-		
+
 		// the tabbed pane
 		TabPane tabPane = new TabPane();
 		tabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
@@ -84,7 +85,7 @@ public class Editor extends VBox {
 	}
 
 	// TODO get the header and field names from the attributes
-	
+
 	private void makeCommodityTable() {
 		commodityTable.setEditable(true);
 		commodityTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
@@ -96,39 +97,48 @@ public class Editor extends VBox {
 		commodityTable.getColumns().add(EditableCommodity.makeDoubleColumn(EC_ATTRIBUTE.TURNOVER));
 		commodityTable.setItems(commodityData);
 	}
-	
+
 	private void makeIndustryTable() {
 		industryTable.setEditable(true);
 		industryTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 		industryTable.getColumns().add(EditableIndustry.makeStringColumn(EI_ATTRIBUTE.NAME));
 		industryTable.getColumns().add(EditableIndustry.makeStringColumn(EI_ATTRIBUTE.COMMODITY_NAME));
 		industryTable.getColumns().add(EditableIndustry.makeDoubleColumn(EI_ATTRIBUTE.OUTPUT));
-		industryTable.getColumns().add(EditableIndustry.makeStringColumn(EI_ATTRIBUTE.SALES));
-		industryTable.getColumns().add(EditableIndustry.makeStringColumn(EI_ATTRIBUTE.MONEY));
+		industryTable.getColumns().add(EditableIndustry.makeDoubleColumn(EI_ATTRIBUTE.SALES));
+		industryTable.getColumns().add(EditableIndustry.makeDoubleColumn(EI_ATTRIBUTE.MONEY));
 		industryTable.setItems(industryData);
 	}
 
 	public static void addIndustryStockColumns() {
-		for (EditableCommodity commodity:commodityData) {
+		for (EditableCommodity commodity : commodityData) {
 			// TODO bit of a developer leak here: need to make sure the
 			// data exists. May be Better to drive from the data table than just
 			// assume that just because there is a commodity, the data has been supplied.
 			if (commodity.getFunction().equals("Productive Inputs"))
-			industryTable.getColumns().add(EditableIndustry.makeStockColumn(commodity.getName()));
+				industryTable.getColumns().add(EditableIndustry.makeStockColumn(commodity.getName()));
 		}
 	}
-	
+
 	private void makeSocialClassTable() {
 		socialClassTable.setEditable(true);
 		socialClassTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 		socialClassTable.getColumns().add(EditableSocialClass.makeStringColumn(ESC_ATTRIBUTE.NAME));
 		socialClassTable.getColumns().add(EditableSocialClass.makeDoubleColumn(ESC_ATTRIBUTE.PR));
-		socialClassTable.getColumns().add(EditableSocialClass.makeDoubleColumn(ESC_ATTRIBUTE.PR));
+		socialClassTable.getColumns().add(EditableSocialClass.makeDoubleColumn(ESC_ATTRIBUTE.REVENUE));
 		socialClassTable.getColumns().add(EditableSocialClass.makeDoubleColumn(ESC_ATTRIBUTE.SALES));
 		socialClassTable.getColumns().add(EditableSocialClass.makeDoubleColumn(ESC_ATTRIBUTE.MONEY));
-			socialClassTable.setItems(socialClassData);
-		
+		socialClassTable.setItems(socialClassData);
 	}
+	
+	public static void addSocialClassStockColumns() {
+		for (EditableCommodity commodity : commodityData) {
+			// TODO bit of a developer leak here: need to make sure the
+			// data exists. May be Better to drive from the data table than just
+			// assume that just because there is a commodity, the data has been supplied.
+			if (commodity.getFunction().equals("Consumer Goods"))
+				socialClassTable.getColumns().add(EditableSocialClass.makeStockColumn(commodity.getName()));
+		}
+	}	
 
 	/**
 	 * @return the data
@@ -145,6 +155,7 @@ public class Editor extends VBox {
 		Editor.commodityData = data;
 		commodityTable.setItems(Editor.commodityData);
 	}
+
 	/**
 	 * @param data
 	 *            the data to set
@@ -153,6 +164,7 @@ public class Editor extends VBox {
 		Editor.industryData = data;
 		industryTable.setItems(Editor.industryData);
 	}
+
 	/**
 	 * @param data
 	 *            the data to set

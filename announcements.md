@@ -1,18 +1,13 @@
 # Capitalism 9.0 announcements 3/10/2018 9:11:27 AM 
 
-User can save to XML
-User can open an edit window, display and edit existing commodities, industries, classes.
-Cannot edit their stocks
-Cannot save
-Can only input the existing project 1
-But it's possible to see the kind of functionality that will be developed
-Hence new executable.
-New javadocs.
+Editor window basic functionality now working, in the sense that the user can view and edit the data from the current simulation, but cannot yet save it.
+Before introducing a save facility, however, proper validation has to be introduced.
+See 'Todo.MD' in the docs folder for details
+New javadocs and executable.
+Pause now for design of editor and validation features.
+This is therefore a watershed version.
 
 ## consolidated prior announcements
-New icon-based interface, wider selection of pricing and MELT responses.
-Updated spreadsheet illustrations in Docs folder
-New executable
 
 The following benchmark projects now available and tested:
 1. Simple Reproduction (basic introduction: the simplest possible example of a working economy)

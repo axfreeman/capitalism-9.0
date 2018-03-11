@@ -97,10 +97,10 @@ public class SocialClass implements Serializable {
 		allQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStampID);
 		for (SocialClass sc : allQuery.getResultList()) {
 			sc.setPreviousComparator(
-					singleWithProjectTimeStampAndName(Simulation.projectIDCurrent, Simulation.getTimeStampComparatorCursor(), sc.name()));
-			sc.setStartComparator(singleWithProjectTimeStampAndName(Simulation.projectIDCurrent, 1, sc.name()));
-			sc.setEndComparator(singleWithProjectTimeStampAndName(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, sc.name()));
-			sc.setCustomComparator(singleWithProjectTimeStampAndName(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, sc.name()));
+					single(Simulation.projectIDCurrent, Simulation.getTimeStampComparatorCursor(), sc.name()));
+			sc.setStartComparator(single(Simulation.projectIDCurrent, 1, sc.name()));
+			sc.setEndComparator(single(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, sc.name()));
+			sc.setCustomComparator(single(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, sc.name()));
 		}
 	}
 
@@ -484,7 +484,7 @@ public class SocialClass implements Serializable {
 	}
 
 	/**
-	 * return the quantity demanded of the Stock of consumption good owned by this social class.
+	 * return the quantity demanded of the Stock of necessities owned by this social class.
 	 * Return NaN if the stock cannot be found (which is an error)
 	 * 
 	 * @return the quantity demanded of the consumption goods owned by this social class
@@ -524,7 +524,7 @@ public class SocialClass implements Serializable {
 	 * @return the single social class with the name socialClassName, for the given project and timeStamp
 	 */
 
-	public static SocialClass singleWithProjectTimeStampAndName(int projectID, int timeStampID, String socialClassName) {
+	public static SocialClass single(int projectID, int timeStampID, String socialClassName) {
 		primaryQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID).setParameter("socialClassName", socialClassName);
 		try {
 			return primaryQuery.getSingleResult();
