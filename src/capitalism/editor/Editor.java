@@ -19,6 +19,9 @@
 */
 package capitalism.editor;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import capitalism.editor.EditableCommodity.EC_ATTRIBUTE;
 import capitalism.editor.EditableIndustry.EI_ATTRIBUTE;
 import capitalism.editor.EditableSocialClass.ESC_ATTRIBUTE;
@@ -36,18 +39,27 @@ import javafx.scene.layout.VBox;
  */
 
 public class Editor extends VBox {
+	private static final Logger logger = LogManager.getLogger("Editor");
 
 	private static EditorControlBar ecb = new EditorControlBar();
 
-	private static ObservableList<EditableCommodity> commodityData = FXCollections.observableArrayList();
+	private static ObservableList<EditableCommodity> commodityData=null;
 	private static TableView<EditableCommodity> commodityTable = new TableView<EditableCommodity>();
-	private static ObservableList<EditableIndustry> industryData = FXCollections.observableArrayList();
+	private static ObservableList<EditableIndustry> industryData = null;
 	private static TableView<EditableIndustry> industryTable = new TableView<EditableIndustry>();
-	private static ObservableList<EditableSocialClass> socialClassData = FXCollections.observableArrayList();
+	private static ObservableList<EditableSocialClass> socialClassData = null;
 	private static TableView<EditableSocialClass> socialClassTable = new TableView<EditableSocialClass>();
 
 	public Editor() {
 
+		// start from scratch every time
+		commodityData= FXCollections.observableArrayList();
+		industryData= FXCollections.observableArrayList();
+		socialClassData=  FXCollections.observableArrayList();
+		commodityTable.getColumns().clear();
+		industryTable.getColumns().clear();
+		socialClassTable.getColumns().clear();
+		
 		makeCommodityTable();
 		makeIndustryTable();
 		makeSocialClassTable();
@@ -83,8 +95,6 @@ public class Editor extends VBox {
 		tabPane.getTabs().addAll(commodityTab, industryTab, socialClassTab);
 		getChildren().addAll(ecb, tabPane);
 	}
-
-	// TODO get the header and field names from the attributes
 
 	private void makeCommodityTable() {
 		commodityTable.setEditable(true);
@@ -132,6 +142,7 @@ public class Editor extends VBox {
 	
 	public static void addSocialClassStockColumns() {
 		for (EditableCommodity commodity : commodityData) {
+			logger.debug("Adding columns for consumption goods: trying {}",commodity.getName());
 			// TODO bit of a developer leak here: need to make sure the
 			// data exists. May be Better to drive from the data table than just
 			// assume that just because there is a commodity, the data has been supplied.
@@ -139,6 +150,13 @@ public class Editor extends VBox {
 				socialClassTable.getColumns().add(EditableSocialClass.makeStockColumn(commodity.getName()));
 		}
 	}	
+	
+	public static void refresh() {
+		//TODO check empirically if this is really neeed because these are observables
+		//so in principle refresh should be automatic
+		industryTable.refresh();
+		socialClassTable.refresh();
+	}
 
 	/**
 	 * @return the data

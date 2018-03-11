@@ -11,8 +11,9 @@
  DROP table if exists stocks;
  CREATE TABLE stocks ( project int default 1 not null, timeStamp VARCHAR (10) DEFAULT '1' not null, OWNER varchar(45) not NULL, OWNERTYPE ENUM('CLASS','INDUSTRY') DEFAULT NULL, 
  commodity varchar(45) not NULL, stockType varchar(45) DEFAULT NULL, quantity double DEFAULT 0, value double DEFAULT 0, PRICE double DEFAULT 0, 
- productionCoefficient double DEFAULT 0, consumptionCoefficient double DEFAULT 0, stockUsedUp double DEFAULT 0,
- replenishmentDemand double DEFAULT 0, expansionDemand double DEFAULT 0, primary key (project, timeStamp, owner, commodity, stocktype) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ productionCoefficient double DEFAULT 0, productionQuantity double default 0, consumptionCoefficient double DEFAULT 0, consumptionQuantity double default 0,
+ stockUsedUp double DEFAULT 0,replenishmentDemand double DEFAULT 0, expansionDemand double DEFAULT 0, 
+ primary key (project, timeStamp, owner, commodity, stocktype) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
  
  DROP table if exists commodities;
  CREATE TABLE commodities ( project int default 1 not null, timeStamp VARCHAR (10) DEFAULT '1' not null, name varchar(45) not NULL,
@@ -58,6 +59,7 @@
  
  update projects set currentTimeStampCursor =1 where ProjectID=1;
 
- insert into stocks (PROJECT, TIMESTAMP, OWNER, OWNERTYPE, COMMODITY, STOCKTYPE, QUANTITY, PRODUCTIONCOEFFICIENT, CONSUMPTIONCOEFFICIENT) 
- select PROJECT, TIMESTAMP, OWNER, OWNERTYPE, COMMODITY, STOCKTYPE, QUANTITY, PRODUCTIONCOEFFICIENT,CONSUMPTIONCOEFFICIENT from CSVREAD('~/Documents/Capsim/data/stocks.csv');
+ insert into stocks (PROJECT, TIMESTAMP, OWNER, OWNERTYPE, COMMODITY, STOCKTYPE, QUANTITY, PRODUCTIONCOEFFICIENT, PRODUCTIONQUANTITY, CONSUMPTIONCOEFFICIENT, CONSUMPTIONQUANTITY) 
+ select PROJECT, TIMESTAMP, OWNER, OWNERTYPE, COMMODITY, STOCKTYPE, QUANTITY, PRODUCTIONCOEFFICIENT, PRODUCTIONQUANTITY, CONSUMPTIONCOEFFICIENT, CONSUMPTIONQUANTITY
+ from CSVREAD('~/Documents/Capsim/data/stocks.csv');
  

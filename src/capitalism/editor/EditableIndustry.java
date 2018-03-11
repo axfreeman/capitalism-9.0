@@ -95,10 +95,10 @@ public class EditableIndustry {
 			output.set(d);
 			break;
 		case SALES:
-			sales.getQuantityProperty().set(d);
+			sales.getActualQuantityProperty().set(d);
 			break;
 		case MONEY:
-			money.getQuantityProperty().set(d);
+			money.getActualQuantityProperty().set(d);
 			break;
 		default:
 		}
@@ -109,9 +109,9 @@ public class EditableIndustry {
 		case OUTPUT:
 			return getOutput();
 		case SALES:
-			return sales.getQuantity();
+			return sales.getActualQuantity();
 		case MONEY:
-			return money.getQuantity();
+			return money.getActualQuantity();
 		default:
 			return Double.NaN;
 		}
@@ -138,7 +138,7 @@ public class EditableIndustry {
 
 	public void addProductiveStock(String commodityName) {
 		EditableStock stock = new EditableStock();
-		logger.debug("Adding the editable productive Stock {} to the industry  {}", commodityName, name);
+		logger.debug("Adding the editable productive Stock {} to the industry  {}", commodityName, name.get());
 		productiveStocks.put(commodityName, stock);
 	}
 
@@ -209,9 +209,9 @@ public class EditableIndustry {
 		case OUTPUT:
 			return output.asObject();
 		case SALES:
-			return sales.getQuantityProperty().asObject();
+			return sales.getActualQuantityProperty().asObject();
 		case MONEY:
-			return money.getQuantityProperty().asObject();
+			return money.getActualQuantityProperty().asObject();
 		default:
 			return new SimpleDoubleProperty(Double.NaN).asObject();
 		}
@@ -230,12 +230,20 @@ public class EditableIndustry {
 
 	private ObservableValue<Double> stockDoubleProperty(String commodityName) {
 		EditableStock stock = productiveStocks.get(commodityName);
-		return stock.getQuantityProperty().asObject();
+		if (EditorManager.displayActuals()) {
+			return stock.getActualQuantityProperty().asObject();
+		} else {
+			return stock.getDesiredQuantityProperty().asObject();
+		}
 	}
 
 	private void setStockDouble(String commodityName, Double newValue) {
 		EditableStock stock = productiveStocks.get(commodityName);
-		stock.setQuantity(newValue);
+		if (EditorManager.displayActuals()) {
+			stock.setActualQuantity(newValue);
+		} else {
+			stock.setDesiredQuantity(newValue);
+		}
 	}
 
 	private static class EditableIndustryStringCell extends TableCell<EditableIndustry, String> {
@@ -357,27 +365,32 @@ public class EditableIndustry {
 
 		private String getString() {
 			String value = getItem() == null ? "" : getItem().toString();
-			logger.debug("getString {}", value);
 			return value;
 		}
 	}
 
 	public void loadStocksFromSimulation() {
-		Industry persistentIndustry=Industry.single(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, name.get());
-		Stock moneyStock = persistentIndustry.moneyStock(); 
-				//Stock.moneyByOwner(Simulation.timeStampIDCurrent, name.get()); 
-		money.setQuantity(moneyStock.getQuantity());
+		Industry persistentIndustry = Industry.single(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, name.get());
+		Stock moneyStock = persistentIndustry.moneyStock();
+
+		// A simple dodge: for money and sales stocks, the desired and actual quantity are the same
+		money.setActualQuantity(moneyStock.getQuantity());
+		money.setDesiredQuantity(moneyStock.getQuantity());
 		Stock salesStock = persistentIndustry.salesStock();
-		sales.setQuantity(salesStock.getQuantity());
-		for (Stock productiveStock:persistentIndustry.productiveStocks()) {
-			logger.debug("Loading the productiveStock called {} belonging to the industry called {}", productiveStock.name(),name.get());
-			EditableStock s=productiveStocks.get(productiveStock.name());
-			s.setQuantity(productiveStock.getQuantity());
+		sales.setActualQuantity(salesStock.getQuantity());
+		sales.setDesiredQuantity(moneyStock.getQuantity());
+		for (Stock productiveStock : persistentIndustry.productiveStocks()) {
+			logger.debug("Loading the productiveStock called {} belonging to the industry called {}", productiveStock.name(), name.get());
+			logger.debug("Actual quantity is {} and desired quantity is {}", productiveStock.getQuantity(), productiveStock.getProductionQuantity());
+			EditableStock s = productiveStocks.get(productiveStock.name());
+			s.setActualQuantity(productiveStock.getQuantity());
+			s.setDesiredQuantity(productiveStock.getProductionQuantity());
+			logger.debug("Actual quantity set to {} and desired quantity set to{}", s.getActualQuantity(), s.getdesiredQuantity());
 		}
 	}
-	
+
 	public static void loadAllStocksFromSimulation() {
-		for (EditableIndustry industry:Editor.getIndustryData()) {
+		for (EditableIndustry industry : Editor.getIndustryData()) {
 			industry.loadStocksFromSimulation();
 		}
 	}

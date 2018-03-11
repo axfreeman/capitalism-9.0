@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import capitalism.controller.Simulation;
 import capitalism.model.SocialClass;
 import capitalism.model.Stock;
+import capitalism.utils.Dialogues;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -44,7 +45,7 @@ import javafx.util.Callback;
 
 public class EditableSocialClass {
 	private static final Logger logger = LogManager.getLogger("EditableSocialClass");
-	
+
 	private StringProperty name;
 	private DoubleProperty participationRatio;
 	private DoubleProperty revenue;
@@ -53,7 +54,7 @@ public class EditableSocialClass {
 	private HashMap<String, EditableStock> consumptionStocks;
 
 	enum ESC_ATTRIBUTE {
-		NAME("Class Name"), PR("Participation Ratio"), REVENUE("Revenue"), MONEY("Money"), SALES("Sales Inventory"),CONSUMPTION("Consumer Goods");
+		NAME("Class Name"), PR("Participation Ratio"), REVENUE("Revenue"), MONEY("Money"), SALES("Sales Inventory"), CONSUMPTION("Consumer Goods");
 		protected String text;
 
 		private ESC_ATTRIBUTE(String text) {
@@ -68,7 +69,6 @@ public class EditableSocialClass {
 		money = new EditableStock();
 		sales = new EditableStock();
 		consumptionStocks = new HashMap<String, EditableStock>();
-
 	}
 
 	/**
@@ -99,10 +99,10 @@ public class EditableSocialClass {
 			revenue.set(d);
 			break;
 		case MONEY:
-			money.getQuantityProperty().set(d);
+			money.getActualQuantityProperty().set(d);
 			break;
 		case SALES:
-			sales.getQuantityProperty().set(d);
+			sales.getActualQuantityProperty().set(d);
 			break;
 		default:
 		}
@@ -115,9 +115,9 @@ public class EditableSocialClass {
 		case REVENUE:
 			return participationRatio.get();
 		case MONEY:
-			return money.getQuantityProperty().get();
+			return money.getActualQuantityProperty().get();
 		case SALES:
-			return sales.getQuantityProperty().get();
+			return sales.getActualQuantityProperty().get();
 		default:
 			return Double.NaN;
 		}
@@ -146,7 +146,7 @@ public class EditableSocialClass {
 		EditableStock stock = new EditableStock();
 		consumptionStocks.put(commodityName, stock);
 	}
-	
+
 	public static TableColumn<EditableSocialClass, Double> makeStockColumn(String commodityName) {
 		TableColumn<EditableSocialClass, Double> col = new TableColumn<EditableSocialClass, Double>(commodityName);
 
@@ -216,9 +216,9 @@ public class EditableSocialClass {
 		case REVENUE:
 			return revenue.asObject();
 		case SALES:
-			return sales.getQuantityProperty().asObject();
+			return sales.getActualQuantityProperty().asObject();
 		case MONEY:
-			return money.getQuantityProperty().asObject();
+			return money.getActualQuantityProperty().asObject();
 		default:
 			return new SimpleDoubleProperty(Double.NaN).asObject();
 		}
@@ -235,13 +235,22 @@ public class EditableSocialClass {
 
 	private ObservableValue<Double> stockDoubleProperty(String commodityName) {
 		EditableStock stock = consumptionStocks.get(commodityName);
-		return stock.getQuantityProperty().asObject();
+		if (EditorManager.displayActuals()) {
+			return stock.getActualQuantityProperty().asObject();
+		} else {
+			return stock.getDesiredQuantityProperty().asObject();
+		}
 	}
 
 	private void setStockDouble(String commodityName, Double newValue) {
 		EditableStock stock = consumptionStocks.get(commodityName);
-		stock.setQuantity(newValue);
+		if (EditorManager.displayActuals()) {
+			stock.setActualQuantity(newValue);
+		} else {
+			stock.setDesiredQuantity(newValue);
+		}
 	}
+
 	private static class EditableSocialClassStringCell extends TableCell<EditableSocialClass, String> {
 		private TextField textField;
 
@@ -362,27 +371,35 @@ public class EditableSocialClass {
 
 		private String getString() {
 			String value = getItem() == null ? "" : getItem().toString();
-			logger.debug("getString {}", value);
 			return value;
 		}
 	}
-	
-	
+
 	public void loadStocksFromSimulation() {
-		SocialClass persistentSocialClass=SocialClass.single(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, name.get());
-		Stock moneyStock = persistentSocialClass.moneyStock(); 
-				//Stock.moneyByOwner(Simulation.timeStampIDCurrent, name.get()); 
-		money.setQuantity(moneyStock.getQuantity());
-		Stock salesStock = persistentSocialClass.salesStock();
-		sales.setQuantity(salesStock.getQuantity());
-		for (Stock consumptionStock:persistentSocialClass.consumptionStocks()) {
-			EditableStock s=consumptionStocks.get(consumptionStock.name());
-			s.setQuantity(consumptionStock.getQuantity());
+		SocialClass persistentSocialClass = SocialClass.single(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, name.get());
+		try {
+			// A simple dodge: since there is no difference between desired and actual 
+			// money and sales stocks, set both to be the same
+			Stock moneyStock = persistentSocialClass.moneyStock();
+			money.setActualQuantity(moneyStock.getQuantity());
+			money.setDesiredQuantity(moneyStock.getQuantity());
+			Stock salesStock = persistentSocialClass.salesStock();
+			sales.setActualQuantity(salesStock.getQuantity());
+			sales.setDesiredQuantity(salesStock.getQuantity());
+			for (Stock consumptionStock : persistentSocialClass.consumptionStocks()) {
+				logger.debug("Loading the consumptionStock called {} belonging to the social Class called {}", consumptionStock.name(), name.get());
+				EditableStock s = consumptionStocks.get(consumptionStock.name());
+				s.setActualQuantity(consumptionStock.getQuantity());
+				s.setDesiredQuantity(consumptionStock.getConsumptionQuantity());
+			}
+		} catch (NullPointerException e) {
+			logger.debug("Null pointer error trapped");
+			Dialogues.alert(logger, "The class called " + persistentSocialClass.name() + " is missing a stock. This is most likely a data error");
 		}
 	}
-	
+
 	public static void loadAllStocksFromSimulation() {
-		for (EditableSocialClass socialClass:Editor.getSocialClassData()) {
+		for (EditableSocialClass socialClass : Editor.getSocialClassData()) {
 			socialClass.loadStocksFromSimulation();
 		}
 	}

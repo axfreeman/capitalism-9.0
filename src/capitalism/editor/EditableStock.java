@@ -28,32 +28,60 @@ import javafx.beans.property.SimpleDoubleProperty;
  * So all we need to store is the quantity
  */
 public class EditableStock {
-	private DoubleProperty quantity;
+	private DoubleProperty actualQuantity;
+	private DoubleProperty desiredQuantity;
 
-	EditableStock(){
-		quantity=new SimpleDoubleProperty(0.0);
-	}
-	
-	/**
-	 * @return the quantity
-	 */
-	public Double getQuantity() {
-		return quantity.get();
+	EditableStock() {
+		actualQuantity = new SimpleDoubleProperty(0.0);
+		desiredQuantity = new SimpleDoubleProperty(0.0);
 	}
 
 	/**
-	 * @param quantity the quantity to set
+	 * @return the actualQuantity
 	 */
-	public void setQuantity(Double quantity) {
-		this.quantity.set(quantity);
+	public Double getActualQuantity() {
+		return actualQuantity.get();
 	}
-	
-	public DoubleProperty getQuantityProperty() {
-		return quantity;
+
+	/**
+	 * @param quantity
+	 *            the quantity to set
+	 */
+	public void setActualQuantity(Double quantity) {
+		this.actualQuantity.set(quantity);
 	}
-	
-	public void setQuantityProperty(DoubleProperty quantity) {
-		this.quantity=quantity;
+
+	public DoubleProperty getActualQuantityProperty() {
+		return actualQuantity;
 	}
-	
+
+	public void setActualQuantityProperty(DoubleProperty quantity) {
+		this.actualQuantity = quantity;
+	}
+
+	/**
+	 * @return the desiredQuantity
+	 */
+	public Double getdesiredQuantity() {
+		return desiredQuantity.get();
+	}
+
+	/**
+	 * set the desiredQuantity
+	 * 
+	 * @param quantity
+	 *            the quantity to set
+	 */
+	public void setDesiredQuantity(Double quantity) {
+		this.desiredQuantity.set(quantity);
+	}
+
+	public DoubleProperty getDesiredQuantityProperty() {
+		return desiredQuantity;
+	}
+
+	public void setdesiredQuantityProperty(DoubleProperty quantity) {
+		this.desiredQuantity = quantity;
+	}
+
 }

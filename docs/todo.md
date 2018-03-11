@@ -34,6 +34,8 @@ there should be a record for every timeStamp that is referenced by any other tab
 every timeStamp that is referenced by a project record should exist in the timestamp table
 there should be a record for every project record that is referenced by any other table in the database
 If a commodity type is productive, we should disallow stocks of it being consumption goods, and vice versa
+Every class should have a sales stock of labour power even if it doesn't produce it.
+Because during the simulation, it can start producing labour power if the participationRatio changes
 
 ###HEALTH CHECK (DURING THE SIMULATION)
 

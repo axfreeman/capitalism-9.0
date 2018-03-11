@@ -73,11 +73,20 @@ public class Stock implements Serializable {
 	// ONLY relevant if this is of stockType PRODUCTIVE_INPUT (in which case the owner will be an industry)
 
 	@Column(name = "productionCoefficient") private double productionCoefficient;
+	
+	// the amount of this stock required to produce the designated output.
+	// this is loaded at the start and used to calculate the productionCoefficient
+	// like productionCoefficient, only relevant if this is of stockType PRODUCTIVE_INPUT
+	@Column(name="productionQuantity") private double productionQuantity;
 
 	// the proportion of the revenue of a class that will be spent on this stock in one period.
 	// ONLY relevant if this is of stockType CONSUMER_GOOD (in which case the owner will be a social class)
-
 	@Column(name = "consumptionCoefficient") private double consumptionCoefficient;
+
+	// the amount of this stock required to produce the designated output.
+	// this is loaded at the start and used to calculate the consumptionCoefficient
+	// like consumptionCoefficient, only relevant if this is of stockType CONSUMER_GOOD
+	@Column(name ="consumptionQuantity") private double consumptionQuantity;
 
 	// how much of this was used up in production or reproduction
 	@Column(name = "stockUsedUp") private double stockUsedUp;
@@ -277,6 +286,8 @@ public class Stock implements Serializable {
 		replenishmentDemand = template.replenishmentDemand;
 		expansionDemand = template.expansionDemand;
 		stockUsedUp = template.stockUsedUp;
+		productionQuantity=template.productionQuantity;
+		consumptionQuantity=template.consumptionQuantity;
 	}
 
 	/**
@@ -1127,6 +1138,34 @@ public class Stock implements Serializable {
 	 */
 	public void setProjectID(int projectID) {
 		pk.projectID = projectID;
+	}
+
+	/**
+	 * @return the productionQuantity
+	 */
+	public double getProductionQuantity() {
+		return productionQuantity;
+	}
+
+	/**
+	 * @param productionQuantity the productionQuantity to set
+	 */
+	public void setProductionQuantity(double productionQuantity) {
+		this.productionQuantity = productionQuantity;
+	}
+
+	/**
+	 * @return the consumptionQuantity
+	 */
+	public double getConsumptionQuantity() {
+		return consumptionQuantity;
+	}
+
+	/**
+	 * @param consumptionQuantity the consumptionQuantity to set
+	 */
+	public void setConsumptionQuantity(double consumptionQuantity) {
+		this.consumptionQuantity = consumptionQuantity;
 	}
 
 }
