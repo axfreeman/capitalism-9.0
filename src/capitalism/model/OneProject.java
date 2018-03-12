@@ -28,7 +28,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import capitalism.controller.Simulation;
 import capitalism.utils.Reporter;
+import capitalism.view.custom.ActionStates;
 import capitalism.view.custom.DisplayControlsBox;
 
 /**
@@ -40,10 +42,10 @@ import capitalism.view.custom.DisplayControlsBox;
 public class OneProject {
 	private static final Logger logger = LogManager.getLogger(OneProject.class);
 
-	@XmlElementWrapper(name = "Commodities") List<Commodity> commodity;
-	@XmlElementWrapper(name = "Industries") List<Industry> industry;
-	@XmlElementWrapper(name = "SocialClasses") List<SocialClass> socialClass;
-	@XmlElementWrapper(name = "Stocks") List<Stock> stock;
+	@XmlElementWrapper(name = "Commodities") List<Commodity> commodities;
+	@XmlElementWrapper(name = "Industries") List<Industry> industries;
+	@XmlElementWrapper(name = "SocialClasses") List<SocialClass> socialClasses;
+	@XmlElementWrapper(name = "Stocks") List<Stock> stocks;
 	@XmlElement(name = "TimeStamp") TimeStamp timeStamp;
 	@XmlElement(name = "Project") Project project;
 
@@ -56,15 +58,19 @@ public class OneProject {
 	 *            the timeStampID of the persistent entitities to be dumped to an XML file
 	 */
 	public void setLists(int projectID, int timeStampID) {
-		commodity = Commodity.allCurrentProject(timeStampID);
-		industry = Industry.currentProjectWithTimeStamp(timeStampID);
-		socialClass = SocialClass.currentProjectWithTimeStamp(timeStampID);
-		stock = Stock.allCurrentProject(timeStampID);
-		timeStamp = TimeStamp.singleInCurrentProject(timeStampID);
+		commodities = Commodity.allCurrentProject(projectID, timeStampID);
+		industries = Industry.allWithProjectAndTimeStamp(projectID, timeStampID);
+		socialClasses = SocialClass.allInProjectAndTimeStamp(projectID, timeStampID);
+		stocks = Stock.allInProjectAndTimeStamp(projectID, timeStampID);
+		timeStamp = TimeStamp.singleInProjectAndTimeStamp(projectID,timeStampID);
 		project = Project.get(projectID);
 	}
 
-	public void loadLists() {
+	/**
+	 * Create a new project from the XML file that has just been loaded into this OneProject entity.
+	 */
+	
+	public void loadXML() {
 		// find the largest project so far. We will add the new project with a project numeber one greater than this
 		int maxProjectID = 0;
 		for (Project p : Project.projectsAll()) {
@@ -78,22 +84,22 @@ public class OneProject {
 		Stock.getEntityManager().getTransaction().begin();
 		Project.getEntityManager().getTransaction().begin();
 		TimeStamp.getEntityManager().getTransaction().begin();
-		for (Commodity c : commodity) {
+		for (Commodity c : commodities) {
 			logger.debug("Adding commodity called {}", c.name());
 			c.setProjectID(maxProjectID+1);
 			Commodity.getEntityManager().persist(c);
 		}
-		for (Industry i: industry) {
+		for (Industry i: industries) {
 			logger.debug("Adding industry called {}", i.name());
 			i.setProjectID(maxProjectID+1);
 			Industry.getEntityManager().persist(i);
 		}
-		for (SocialClass sc : socialClass) {
+		for (SocialClass sc : socialClasses) {
 			logger.debug("Adding socialClass called {}", sc.name());
 			sc.setProjectID(maxProjectID+1);
 			SocialClass.getEntityManager().persist(sc);
 		}
-		for (Stock s : stock) {
+		for (Stock s : stocks) {
 			logger.debug("Adding stock called {}", s.name());
 			s.setProjectID(maxProjectID+1);
 			Stock.getEntityManager().persist(s);
@@ -101,6 +107,9 @@ public class OneProject {
 		timeStamp.setProjectID(maxProjectID+1);
 		TimeStamp.getEntityManager().persist(timeStamp);
 		project.setProjectID(maxProjectID+1);
+		project.setButtonState(ActionStates.lastState().text());
+		logger.debug("Committing timeStamp with project ID {} and timeStampID {}", timeStamp.getProjectID(), timeStamp.getTimeStampID());
+		logger.debug("Committing project with project ID {} and timeStampID {}", project.getProjectID(), project.getTimeStampID());
 		Project.getEntityManager().persist(project);
 		Commodity.getEntityManager().getTransaction().commit();
 		Industry.getEntityManager().getTransaction().commit();
@@ -108,6 +117,8 @@ public class OneProject {
 		Stock.getEntityManager().getTransaction().commit();
 		Project.getEntityManager().getTransaction().commit();
 		TimeStamp.getEntityManager().getTransaction().commit();
+		// we loaded the persistent fields, but now we must initialise all the derived fields
+		project.initialise();
 		DisplayControlsBox.rePopulateProjectCombo();
 	}
 }

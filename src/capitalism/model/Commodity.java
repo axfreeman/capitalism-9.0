@@ -63,7 +63,8 @@ public class Commodity implements Serializable {
 	@XmlElement @Column(name = "turnoverTime") private double turnoverTime;
 	@XmlElement @Column(name = "unitValue") private double unitValue;
 	@XmlElement @Column(name = "unitPrice") private double unitPrice;
-	@XmlElement @Column(name = "surplusProduct") private double surplusProduct; // if after production there is an excess of inventory over use, it is recorded here
+	@XmlElement @Column(name = "surplusProduct") private double surplusProduct; // if after production there is an excess of inventory over use, it is recorded
+																				 // here
 	@XmlElement @Column(name = "allocationShare") private double allocationShare;// proportion of total demand that can actually be supplied
 	@XmlElement @Column(name = "stockUsedUp") private double stockUsedUp; // stock used up in production in the current period
 	@XmlElement @Column(name = "stockProduced") private double stockProduced; // stock produced in the current period
@@ -97,7 +98,8 @@ public class Commodity implements Serializable {
 		withOriginQuery = entityManager.createQuery(
 				"SELECT u FROM Commodity u where u.pk.projectID= :project and u.pk.timeStampID = :timeStamp and u.origin=:origin", Commodity.class);
 		withFunctionQuery = entityManager.createQuery(
-				"SELECT u FROM Commodity u where u.pk.projectID= :project and u.pk.timeStampID = :timeStamp and u.function=:function order by u.displayOrder", Commodity.class);
+				"SELECT u FROM Commodity u where u.pk.projectID= :project and u.pk.timeStampID = :timeStamp and u.function=:function order by u.displayOrder",
+				Commodity.class);
 	}
 
 	// Enums
@@ -116,6 +118,19 @@ public class Commodity implements Serializable {
 		public String text() {
 			return text;
 		}
+
+		public static FUNCTION function(String text) {
+			switch (text) {
+			case "Money":
+				return MONEY;
+			case "Productive Inputs":
+				return FUNCTION.PRODUCTIVE_INPUT;
+			case "Consumer Goods":
+				return CONSUMER_GOOD;
+			default:
+				return null;
+			}
+		}
 	};
 
 	/**
@@ -129,8 +144,22 @@ public class Commodity implements Serializable {
 		ORIGIN(String text) {
 			this.text = text;
 		}
+
 		public String text() {
 			return text;
+		}
+
+		public static ORIGIN origin(String text) {
+			switch (text) {
+			case "Social":
+				return SOCIALlY_PRODUCED;
+			case "Capitalist":
+				return INDUSTRIALLY_PRODUCED;
+			case "Money":
+				return MONEY;
+			default:
+				return null;
+			}
 		}
 	}
 
@@ -459,11 +488,10 @@ public class Commodity implements Serializable {
 		if (DisplayControlsBox.expressionDisplay == DisplayControlsBox.EXPRESSION_DISPLAY.MONEY) {
 			return expression;
 		} else {
-			return (expression==0)?0:expression / melt;
+			return (expression == 0) ? 0 : expression / melt;
 		}
 	}
-	
-	
+
 	/**
 	 * Calculate the total quantity, value and price of this commodity, from the stocks of it
 	 * Validate against existing total if requested
@@ -725,6 +753,20 @@ public class Commodity implements Serializable {
 	}
 
 	/**
+	 * a list of all commodities at the given project and the given timeStamp
+	 * 
+	 * @param projectID
+	 *            the project of the commodities returned
+	 * @param timeStampID
+	 *            the timeStamp of the commodities returned
+	 * @return a list of all commodities at the given projectID and timeStampID
+	 */
+	public static List<Commodity> allCurrentProject(int projectID, int timeStampID) {
+		withProjectAndTimeStampQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID);
+		return withProjectAndTimeStampQuery.getResultList();
+	}
+
+	/**
 	 * a list of all commodities of the given origin at the current timeStamp and project
 	 * 
 	 * @param origin
@@ -795,6 +837,7 @@ public class Commodity implements Serializable {
 
 	/**
 	 * Get the name of this commodity
+	 * 
 	 * @return the name of this commodity
 	 */
 	public String name() {
@@ -802,7 +845,16 @@ public class Commodity implements Serializable {
 	}
 
 	/**
+	 * Set the name of this commodity
+	 */
+
+	public void setName(String name) {
+		this.pk.name = name;
+	}
+
+	/**
 	 * Get the timeStampID of this commodity
+	 * 
 	 * @return the timeStampID of this commodity
 	 */
 	public int getTimeStampID() {
@@ -811,6 +863,7 @@ public class Commodity implements Serializable {
 
 	/**
 	 * Get the projectID of this commodity
+	 * 
 	 * @return the projectID of this commodity
 	 */
 	public int getProjectID() {
@@ -826,6 +879,7 @@ public class Commodity implements Serializable {
 
 	/**
 	 * Get the turnover time of this commodity
+	 * 
 	 * @return the turnover time of this commodity
 	 */
 	public double getTurnoverTime() {
@@ -834,14 +888,17 @@ public class Commodity implements Serializable {
 
 	/**
 	 * Set the turnover time of this commodity
-	 * @param turnoverTime the turnover time to set
+	 * 
+	 * @param turnoverTime
+	 *            the turnover time to set
 	 */
 	public void setTurnoverTime(double turnoverTime) {
 		this.turnoverTime = turnoverTime;
 	}
-	
+
 	/**
 	 * Get the unit price of this commodity
+	 * 
 	 * @return the unit price of this commodity
 	 */
 	public double getUnitPrice() {
@@ -850,7 +907,9 @@ public class Commodity implements Serializable {
 
 	/**
 	 * Set the unit price of this commodity
-	 * @param unitPrice the unit price to set
+	 * 
+	 * @param unitPrice
+	 *            the unit price to set
 	 */
 	public void setUnitPrice(double unitPrice) {
 		this.unitPrice = MathStuff.round(unitPrice);
@@ -858,6 +917,7 @@ public class Commodity implements Serializable {
 
 	/**
 	 * Get the unit value of this commodity
+	 * 
 	 * @return the unit value of this commodity
 	 */
 
@@ -867,7 +927,9 @@ public class Commodity implements Serializable {
 
 	/**
 	 * Set the unit value of this commodity
-	 * @param unitValue the unit value to set
+	 * 
+	 * @param unitValue
+	 *            the unit value to set
 	 */
 	public void setUnitValue(double unitValue) {
 		this.unitValue = MathStuff.round(unitValue);
@@ -875,6 +937,7 @@ public class Commodity implements Serializable {
 
 	/**
 	 * Get the origin of this commodity (social or industrial)
+	 * 
 	 * @return the origin of this commodity
 	 */
 	public ORIGIN getOrigin() {
@@ -887,6 +950,7 @@ public class Commodity implements Serializable {
 
 	/**
 	 * Get the allocation share of this commodity (the proportion of demand that can be satisfied)
+	 * 
 	 * @return the allocationShare of this commodity
 	 */
 	public double getAllocationShare() {
@@ -895,7 +959,9 @@ public class Commodity implements Serializable {
 
 	/**
 	 * Set the allocation share of this commodity (the proportion of demand that can be satisfied)
-	 * @param allocationShare the allocationShare to set
+	 * 
+	 * @param allocationShare
+	 *            the allocationShare to set
 	 */
 
 	public void setAllocationShare(double allocationShare) {
@@ -904,9 +970,11 @@ public class Commodity implements Serializable {
 
 	/**
 	 * Set the timeStampID of this commodity
-	 * @param timeStampID the ID to set
+	 * 
+	 * @param timeStampID
+	 *            the ID to set
 	 */
-	
+
 	public void setTimeStampID(int timeStampID) {
 		pk.timeStampID = timeStampID;
 	}
@@ -1037,13 +1105,24 @@ public class Commodity implements Serializable {
 	public void setToolTip(String toolTip) {
 		this.toolTip = toolTip;
 	}
-	
+
 	/**
 	 * Set the projectID of this commodity
-	 * @param projectID the projectID to set
+	 * 
+	 * @param projectID
+	 *            the projectID to set
 	 * 
 	 */
 	public void setProjectID(int projectID) {
-		pk.projectID=projectID;
+		pk.projectID = projectID;
 	}
+
+	/**
+	 * @param function
+	 *            the function to set
+	 */
+	public void setFunction(FUNCTION function) {
+		this.function = function;
+	}
+
 }

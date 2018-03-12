@@ -58,7 +58,7 @@ import javafx.collections.ObservableList;
 @Table(name = "industries")
 @Embeddable
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlRootElement(name="Industry")
+@XmlRootElement(name = "Industry")
 public class Industry implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = LogManager.getLogger("Industry");
@@ -98,7 +98,7 @@ public class Industry implements Serializable {
 				"Select sum(c.initialCapital) from Industry c where c.pk.projectID=:project and c.pk.timeStampID=:timeStamp", Industry.class);
 		withProjectTimeStampAndCommodityNameQuery = entityManager.createQuery(
 				"Select c from Industry c where c.pk.projectID=:project and c.pk.timeStampID=:timeStamp and c.commodityName=:commodityName", Industry.class);
-		allQuery=entityManager.createQuery("Select i from Industry i",Industry.class);
+		allQuery = entityManager.createQuery("Select i from Industry i", Industry.class);
 	}
 
 	/**
@@ -221,7 +221,8 @@ public class Industry implements Serializable {
 	 * @return an ObservableList of industries
 	 */
 	public static ObservableList<Industry> industriesObservable() {
-		Industry.allWithProjectAndTimeStampQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", Simulation.timeStampDisplayCursor);
+		Industry.allWithProjectAndTimeStampQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp",
+				Simulation.timeStampDisplayCursor);
 		ObservableList<Industry> result = FXCollections.observableArrayList();
 		for (Industry c : Industry.allWithProjectAndTimeStampQuery.getResultList()) {
 			result.add(c);
@@ -309,7 +310,8 @@ public class Industry implements Serializable {
 		case PROFIT:
 			return profit() != comparator.profit();// no need to access expressionOf() because the result will be the same
 		case MONEYSTOCK:
-			return moneyAttribute(vALUE_EXPRESSION) != comparator.moneyAttribute(vALUE_EXPRESSION);//TODO using the attribute() method is superfluous I think throughout.
+			return moneyAttribute(vALUE_EXPRESSION) != comparator.moneyAttribute(vALUE_EXPRESSION);// TODO using the attribute() method is superfluous I think
+																									// throughout.
 		case SALESSTOCK:
 			return salesAttribute(vALUE_EXPRESSION) != comparator.salesAttribute(vALUE_EXPRESSION);
 		case PRODUCTIVESTOCKS:
@@ -352,13 +354,14 @@ public class Industry implements Serializable {
 		case OUTPUT:
 			return String.format(ViewManager.getLargeFormat(), output - comparator.output);
 		case INITIALCAPITAL:
-			return String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.INITIALCAPITAL)- comparator.expressionOf(ATTRIBUTE.INITIALCAPITAL));
+			return String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.INITIALCAPITAL) - comparator.expressionOf(ATTRIBUTE.INITIALCAPITAL));
 		case INITIALPRODUCTIVECAPITAL:
-			return String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.INITIALPRODUCTIVECAPITAL)- comparator.expressionOf(ATTRIBUTE.INITIALPRODUCTIVECAPITAL));
+			return String.format(ViewManager.getLargeFormat(),
+					expressionOf(ATTRIBUTE.INITIALPRODUCTIVECAPITAL) - comparator.expressionOf(ATTRIBUTE.INITIALPRODUCTIVECAPITAL));
 		case PROFITRATE:
 			return String.format(ViewManager.getSmallFormat(), profitRate() - comparator.profitRate());
 		case PROFIT:
-			return String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.PROFIT)- comparator.expressionOf(ATTRIBUTE.PROFIT));
+			return String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.PROFIT) - comparator.expressionOf(ATTRIBUTE.PROFIT));
 		case MONEYSTOCK:
 			return String.format(ViewManager.getLargeFormat(), moneyAttribute(vALUE_EXPRESSION) - comparator.moneyAttribute(vALUE_EXPRESSION));
 		case SALESSTOCK:
@@ -368,7 +371,7 @@ public class Industry implements Serializable {
 			double p2 = comparator.productiveStocksAttribute(vALUE_EXPRESSION);
 			return String.format(ViewManager.getLargeFormat(), (p1 - p2));
 		case CURRENTCAPITAL:
-			return String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.CURRENTCAPITAL)- comparator.expressionOf(ATTRIBUTE.CURRENTCAPITAL));
+			return String.format(ViewManager.getLargeFormat(), expressionOf(ATTRIBUTE.CURRENTCAPITAL) - comparator.expressionOf(ATTRIBUTE.CURRENTCAPITAL));
 		default:
 			return item;
 		}
@@ -434,7 +437,6 @@ public class Industry implements Serializable {
 		return moneyStock().get(a);
 	}
 
-	
 	/**
 	 * generic selector which returns a numerical property of the commodity depending on the calling valueProperty.
 	 * used exclusively in displaying the magnitudes involved, though I haven't worked out how to stop it
@@ -449,7 +451,7 @@ public class Industry implements Serializable {
 		double melt = Simulation.currentTimeStamp.getMelt();
 		double expression;
 		switch (valueProperty) {
-		
+
 		case CURRENTCAPITAL:
 			expression = currentCapital();
 			break;
@@ -468,7 +470,7 @@ public class Industry implements Serializable {
 		if (DisplayControlsBox.expressionDisplay == DisplayControlsBox.EXPRESSION_DISPLAY.MONEY) {
 			return expression;
 		} else {
-			return (expression==0)?0:expression / melt;
+			return (expression == 0) ? 0 : expression / melt;
 		}
 	}
 
@@ -641,12 +643,13 @@ public class Industry implements Serializable {
 	/**
 	 * A list of all industries for all projects and all timeStamps
 	 * Largely for diagnostic purposes
+	 * 
 	 * @return a list of all industries for all projects and all timeStamps.
 	 */
-	public static List<Industry> all(){
+	public static List<Industry> all() {
 		return allQuery.getResultList();
 	}
-	
+
 	/**
 	 * a list of industries, for the current project and timeStamp
 	 * 
@@ -668,6 +671,22 @@ public class Industry implements Serializable {
 
 	public static List<Industry> currentProjectWithTimeStamp(int timeStampID) {
 		allWithProjectAndTimeStampQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStampID);
+		return allWithProjectAndTimeStampQuery.getResultList();
+	}
+
+	/**
+	 * a list of industries, for a given projectID and a given timeStampID
+	 * 
+	 * @param projectID
+	 *            the given projectID
+	 * @param timeStampID
+	 *            the given timeStamp
+	 * 
+	 * @return a list of industries for the given projectID and timeStampID
+	 */
+
+	public static List<Industry> allWithProjectAndTimeStamp(int projectID, int timeStampID) {
+		allWithProjectAndTimeStampQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID);
 		return allWithProjectAndTimeStampQuery.getResultList();
 	}
 
@@ -1159,11 +1178,13 @@ public class Industry implements Serializable {
 
 	/**
 	 * Set the projectID of this industry
-	 * @param projectID the project to set
+	 * 
+	 * @param projectID
+	 *            the project to set
 	 * 
 	 */
 	public void setProjectID(int projectID) {
-		pk.projectID=projectID;
+		pk.projectID = projectID;
 	}
 
 	/**
@@ -1174,9 +1195,14 @@ public class Industry implements Serializable {
 	}
 
 	/**
-	 * @param commodityName the commodityName to set
+	 * @param commodityName
+	 *            the commodityName to set
 	 */
 	public void setCommodityName(String commodityName) {
 		this.commodityName = commodityName;
+	}
+	
+	public void setName(String name) {
+		this.pk.name=name;
 	}
 }

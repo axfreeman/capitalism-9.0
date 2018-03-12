@@ -544,6 +544,21 @@ public class SocialClass implements Serializable {
 	}
 
 	/**
+	 * a list of social classes, for a given project and a given timeStamp
+	 * 
+	 * @param projectID
+	 *            the projectID of the socialClasses to be returned
+	 * @param timeStampID
+	 *            the timeStampID of the socialClasses to be returned
+	 * @return a list of all social classes for the given projectID and timeStampID
+	 * 
+	 */
+	public static List<SocialClass> allInProjectAndTimeStamp(int projectID, int timeStampID) {
+		allQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID);
+		return allQuery.getResultList();
+	}
+
+	/**
 	 * a list of social classes, for the current project and a given timeStamp
 	 * 
 	 * @param timeStampID
@@ -589,7 +604,6 @@ public class SocialClass implements Serializable {
 		return pk.projectID;
 	}
 
-	
 	/**
 	 * 
 	 * @return the timeStampID of this SocialClass entity
@@ -601,7 +615,8 @@ public class SocialClass implements Serializable {
 	/**
 	 * Set the timeStampID of this SocialClass entity
 	 * 
-	 * @param timeStampID the timeStamp to set
+	 * @param timeStampID
+	 *            the timeStamp to set
 	 */
 
 	public void setTimeStamp(int timeStampID) {
@@ -617,7 +632,7 @@ public class SocialClass implements Serializable {
 	public void setProjectID(int projectID) {
 		pk.projectID = projectID;
 	}
-	
+
 	/**
 	 * Get the name of this SocialClass entity
 	 * 
@@ -803,4 +818,7 @@ public class SocialClass implements Serializable {
 		this.endComparator = endComparator;
 	}
 
+	public void setName(String name) {
+		pk.name=name;
+	}
 }

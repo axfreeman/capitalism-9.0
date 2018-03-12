@@ -58,8 +58,8 @@ public class TimeStamp implements Serializable {
 	private static TypedQuery<TimeStamp> primaryQuery;
 	private static TypedQuery<TimeStamp> superStateQuery;
 	private static TypedQuery<TimeStamp> allInProjectQuery;
+	
 	// create the typed queries statically but not as named queries. This makes them easier to find and modify
-
 	static {
 		entityManager = entityManagerFactory.createEntityManager();
 		primaryQuery = entityManager.createQuery(
@@ -68,7 +68,6 @@ public class TimeStamp implements Serializable {
 		superStateQuery = entityManager.createQuery(
 				"Select t from TimeStamp t where t.pk.projectID=:project and t.period= :period and t.superState=:superState", TimeStamp.class);
 	}
-
 	
 	/**
 	 *  All list of displayable attributes of a timeStamp entity. 
@@ -453,7 +452,7 @@ public class TimeStamp implements Serializable {
 	public static EntityManager getEntityManager() {
 		return entityManager;
 	}
-
+	
 	/**
 	 * Get the timeStampID of this timeStamp
 	 * 
@@ -771,5 +770,4 @@ public class TimeStamp implements Serializable {
 	public void setProjectID(int projectID) {
 		pk.projectID = projectID;
 	}
-
 }

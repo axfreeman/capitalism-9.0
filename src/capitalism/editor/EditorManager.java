@@ -114,6 +114,7 @@ public class EditorManager {
 		EventHandler<ActionEvent> btnSaveHandler = new EventHandler<ActionEvent>() {
 			@Override public void handle(ActionEvent t) {
 				// TODO stub
+				Editor.saveToJPA();
 			}
 		};
 

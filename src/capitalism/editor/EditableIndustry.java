@@ -65,14 +65,14 @@ public class EditableIndustry {
 		name = new SimpleStringProperty();
 		output = new SimpleDoubleProperty();
 		commodityName = new SimpleStringProperty();
-		sales = new EditableStock();
-		money = new EditableStock();
 		productiveStocks = new HashMap<String, EditableStock>();
 	}
 
 	/**
 	 * Create an observable list of EditableIndustries (normally for display in the Industries Table) from the
-	 * project identified by the current projectID and timeStampID.
+	 * project identified by the current projectID and timeStampID. NOTE this is not just a wrapper. It will
+	 * be edited by the user and eventually stored back to a modified version of the persistent entities
+	 * from which it was created.
 	 * 
 	 * @return an observableList of EditableIndustries identified by the current projectID and timeStampID
 	 */
@@ -84,6 +84,8 @@ public class EditableIndustry {
 			oneRecord.setName(c.name());
 			oneRecord.setCommodityName(c.getCommodityName());
 			oneRecord.setOutput(c.getOutput());
+			oneRecord.sales= new EditableStock(c.getCommodityName());
+			oneRecord.money= new EditableStock("Money");
 			result.add(oneRecord);
 		}
 		return result;
@@ -137,7 +139,7 @@ public class EditableIndustry {
 	}
 
 	public void addProductiveStock(String commodityName) {
-		EditableStock stock = new EditableStock();
+		EditableStock stock = new EditableStock(commodityName);
 		logger.debug("Adding the editable productive Stock {} to the industry  {}", commodityName, name.get());
 		productiveStocks.put(commodityName, stock);
 	}
@@ -385,7 +387,7 @@ public class EditableIndustry {
 			EditableStock s = productiveStocks.get(productiveStock.name());
 			s.setActualQuantity(productiveStock.getQuantity());
 			s.setDesiredQuantity(productiveStock.getProductionQuantity());
-			logger.debug("Actual quantity set to {} and desired quantity set to{}", s.getActualQuantity(), s.getdesiredQuantity());
+			logger.debug("Actual quantity set to {} and desired quantity set to{}", s.getActualQuantity(), s.getDesiredQuantity());
 		}
 	}
 
@@ -431,6 +433,20 @@ public class EditableIndustry {
 	 */
 	public void setOutput(Double output) {
 		this.output.set(output);
+	}
+
+	/**
+	 * @return the productiveStocks
+	 */
+	public HashMap<String, EditableStock> getProductiveStocks() {
+		return productiveStocks;
+	}
+
+	/**
+	 * @param productiveStocks the productiveStocks to set
+	 */
+	public void setProductiveStocks(HashMap<String, EditableStock> productiveStocks) {
+		this.productiveStocks = productiveStocks;
 	}
 
 }

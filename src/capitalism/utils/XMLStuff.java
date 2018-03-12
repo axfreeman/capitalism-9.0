@@ -37,7 +37,7 @@ import capitalism.model.Industry;
 public class XMLStuff {
 	private static final Logger logger = LogManager.getLogger("XML handler");
 
-	public static void makeXMLList(int projectID, int timeStampID) {
+	public static void saveToXML(int projectID, int timeStampID) {
 		JAXBContext commoditiesContext;
 		File output;
 		try {
@@ -52,7 +52,7 @@ public class XMLStuff {
 			commoditiesMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 			OneProject oneProject = new OneProject();
 			oneProject.setLists(projectID, timeStampID);
-			commoditiesMarshaller.marshal(oneProject, System.out);
+//			commoditiesMarshaller.marshal(oneProject, System.out);
 			commoditiesMarshaller.marshal(oneProject, output);
 		} catch (JAXBException e) {
 			Dialogues.alert(logger, "Could not save the database because %s", e.getMessage());
@@ -95,9 +95,7 @@ public class XMLStuff {
 	public static void getXML() {
 		File file = null;
 		try {
-			File saveDirectory = Dialogues.directoryChooser("Location of the new data");
-			String saveDirectoryPath = saveDirectory.getCanonicalPath();
-			file = new File(saveDirectoryPath + "/Capitalism.xml");
+			file = Dialogues.fileChooser("Location of the new data");
 		} catch (Exception e) {
 			Dialogues.alert(logger, "Could not load this file because {}", e.getMessage());
 			return;
@@ -108,7 +106,7 @@ public class XMLStuff {
 			JAXBContext jaxbContext = JAXBContext.newInstance(OneProject.class);
 			jaxbUnmarshaller = jaxbContext.createUnmarshaller();
 			oneProject = (OneProject) jaxbUnmarshaller.unmarshal(file);
-			oneProject.loadLists();
+			oneProject.loadXML();
 		} catch (JAXBException e) {
 			Dialogues.alert(logger, "Could not decode this file because {}", e.getMessage());
 			return;

@@ -28,10 +28,16 @@ import javafx.beans.property.SimpleDoubleProperty;
  * So all we need to store is the quantity
  */
 public class EditableStock {
+	private String name;// Stock name cannot be edited but needs to be known hence a simple String not a StringProperty
 	private DoubleProperty actualQuantity;
 	private DoubleProperty desiredQuantity;
 
-	EditableStock() {
+	/**
+	 * Create a stock with the given commodity name.
+	 * @param name
+	 */
+	EditableStock(String name) {
+		this.name=name;
 		actualQuantity = new SimpleDoubleProperty(0.0);
 		desiredQuantity = new SimpleDoubleProperty(0.0);
 	}
@@ -62,7 +68,7 @@ public class EditableStock {
 	/**
 	 * @return the desiredQuantity
 	 */
-	public Double getdesiredQuantity() {
+	public Double getDesiredQuantity() {
 		return desiredQuantity.get();
 	}
 
@@ -82,6 +88,20 @@ public class EditableStock {
 
 	public void setdesiredQuantityProperty(DoubleProperty quantity) {
 		this.desiredQuantity = quantity;
+	}
+
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
 	}
 
 }

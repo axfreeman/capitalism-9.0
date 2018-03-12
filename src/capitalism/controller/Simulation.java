@@ -34,9 +34,7 @@ import capitalism.model.TimeStamp;
 import capitalism.utils.Dialogues;
 import capitalism.utils.MathStuff;
 import capitalism.utils.Reporter;
-import capitalism.utils.StringStuff;
 import capitalism.view.custom.ActionButtonsBox;
-import capitalism.view.custom.ActionStates;
 import capitalism.view.custom.DisplayControlsBox;
 
 public class Simulation extends Parameters {
@@ -88,58 +86,8 @@ public class Simulation extends Parameters {
 
 		// Initialise all projects at the start
 		for (Project p : Project.projectsAll()) {
-			Reporter.report(logger, 1, "Initialising project %d called '%s'", p.getProjectID(), p.getDescription());
-			projectIDCurrent = p.getProjectID();
-
-			// initialise each project record so that its cursors are 1
-
-			Project.getEntityManager().getTransaction().begin();
-			p.setTimeStamp(1);
-			p.setTimeStampDisplayCursor(1);
-			p.setTimeStampComparatorCursor(timeStampComparatorCursor);
-
-			// set all project buttonState initially to the end of the non-existent previous period
-			p.setButtonState(ActionStates.lastState().text());
-			Project.getEntityManager().getTransaction().commit();
-
-			// fetch this project's current timeStamp record (which must exist in the database or we flag an error but try to correct it)
-
-			currentTimeStamp = TimeStamp.singleInCurrentProject(timeStampIDCurrent);
-			if (currentTimeStamp == null) {
-				Reporter.report(logger, 1, " There is no initial timeStamp record for project %d. Please check the data",
-						p.getDescription());
-				return;
-			}
-			if (currentTimeStamp.getTimeStampID() != 1) {
-				Reporter.report(logger, 1,
-						" The initial timeStamp record for project %d should have an ID of 1 but instead has  %d. Please check the Data",
-						p.getDescription(), currentTimeStamp.getTimeStampID());
-				return;
-			}
-
-			// Set the initial comparators for every timeStamp, project, industry, class, use value and stock .
-			// Since the comparator cursor and the cursor are already 1, this amounts to setting it to 1
-
-			// little tweak to handle currency symbols encoded in UTF8
-
-			logger.debug("Character Symbol for Project {} is {}", currentTimeStamp.getCurrencySymbol());
-			String utfjava = StringStuff.convertFromUTF8(currentTimeStamp.getCurrencySymbol());
-			logger.debug("Character symbol after conversion is {}", utfjava);
-			currentTimeStamp.setCurrencySymbol(utfjava);
-			setComparators(1);
-
-			// NOTE these calls depend on the side effect of setting currentTimeStamp to be the timeStamp of this project
-			// but since this is internal to the class, I think it is acceptable.
-			convertMagnitudesToCoefficients();
-			calculateStockAggregates();
-			setCapitals();
-			checkInvariants();
+			p.initialise();
 		}
-
-		// There will normally be more than one project. Choose the first.
-		projectIDCurrent = 1;
-		// set the top copy of the timeStamp to be that of the current project
-		currentTimeStamp = TimeStamp.singleInProjectAndTimeStamp(1, 1);
 	}
 
 	/**
@@ -147,7 +95,7 @@ public class Simulation extends Parameters {
 	 * This is more transparent to the user and also permits higher precision, in general
 	 */
 
-	private static void convertMagnitudesToCoefficients() {
+	public static void convertMagnitudesToCoefficients() {
 		for (Industry industry : Industry.allCurrent()) {
 			for (Stock stock : Stock.allProductiveInIndustry(Simulation.timeStampIDCurrent, industry.name())) {
 				double coefficient = stock.getProductionQuantity() / industry.getOutput();
@@ -311,7 +259,7 @@ public class Simulation extends Parameters {
 	/**
 	 * tell every stock to record its value and price, based on the quantity of the stock, its unit value and its price
 	 */
-	private static void calculateStockAggregates() {
+	public static void calculateStockAggregates() {
 		Reporter.report(logger, 2, "Calculating stock values and prices from stock quantities, unit values and unit prices");
 		List<Stock> allStocks = Stock.allCurrent();
 		for (Stock s : allStocks) {
@@ -385,7 +333,7 @@ public class Simulation extends Parameters {
 	 * Initialise the currentCapital to be the same.
 	 * Called at startup and thereafter afterAccumulate (i.e. at the very end of the whole industry and start of the next)
 	 */
-	protected static void setCapitals() {
+	public static void setCapitals() {
 		for (Industry c : Industry.allCurrent()) {
 			double initialCapital = c.currentCapital();
 			Reporter.report(logger, 3, "The initial capital of the industry[%s] is now $%.0f (intrinsic %.0f)", c.name(), initialCapital,
@@ -551,4 +499,19 @@ public class Simulation extends Parameters {
 	public static int getTimeStampDisplayCursor() {
 		return timeStampDisplayCursor;
 	}
+
+	/**
+	 * @return the currentTimeStamp
+	 */
+	public static TimeStamp getCurrentTimeStamp() {
+		return currentTimeStamp;
+	}
+
+	/**
+	 * @param currentTimeStamp the currentTimeStamp to set
+	 */
+	public static void setCurrentTimeStamp(TimeStamp currentTimeStamp) {
+		Simulation.currentTimeStamp = currentTimeStamp;
+	}
+
 }

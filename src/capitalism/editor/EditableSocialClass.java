@@ -66,8 +66,6 @@ public class EditableSocialClass {
 		name = new SimpleStringProperty();
 		revenue = new SimpleDoubleProperty();
 		participationRatio = new SimpleDoubleProperty();
-		money = new EditableStock();
-		sales = new EditableStock();
 		consumptionStocks = new HashMap<String, EditableStock>();
 	}
 
@@ -85,6 +83,8 @@ public class EditableSocialClass {
 			oneRecord.setName(c.name());
 			oneRecord.setParticipationRatio(c.getparticipationRatio());
 			oneRecord.setRevenue(c.getRevenue());
+			oneRecord.sales= new EditableStock("Labour Power");
+			oneRecord.money= new EditableStock("Money");
 			result.add(oneRecord);
 		}
 		return result;
@@ -143,7 +143,7 @@ public class EditableSocialClass {
 	}
 
 	public void addConsumptionStock(String commodityName) {
-		EditableStock stock = new EditableStock();
+		EditableStock stock = new EditableStock(commodityName);
 		consumptionStocks.put(commodityName, stock);
 	}
 
@@ -441,4 +441,19 @@ public class EditableSocialClass {
 	public void setRevenue(double revenue) {
 		this.revenue.set(revenue);
 	}
+
+	/**
+	 * @return the consumptionStocks
+	 */
+	public HashMap<String, EditableStock> getConsumptionStocks() {
+		return consumptionStocks;
+	}
+
+	/**
+	 * @param consumptionStocks the consumptionStocks to set
+	 */
+	public void setConsumptionStocks(HashMap<String, EditableStock> consumptionStocks) {
+		this.consumptionStocks = consumptionStocks;
+	}
+
 }

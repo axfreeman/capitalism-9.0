@@ -1,13 +1,8 @@
-# Capitalism 9.0 announcements 3/11/2018 4:43:59 PM 
+# Capitalism 9.0 announcements 3/12/2018 1:04:44 PM 
 
-Editor window basic functionality now working, in the sense that the user can view and edit the data from the current simulation, but cannot yet save it.
-This extends to all the productive stocks owned by industries and all the consumption stocks owned by social classes.
-Before introducing a save facility, however, proper validation has to be introduced.
-See 'Todo.MD' in the docs folder for details
-New javadocs and executable.
-(A further executable with some functional improvements for this version)
-Pause now for design of editor and validation features.
-This is therefore a watershed version.
+User can now load, edit and save a project.
+Project can be loaded but does not yet run
+Interim version, no new executable
 
 ## consolidated prior announcements
 

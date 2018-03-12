@@ -73,11 +73,11 @@ public class Stock implements Serializable {
 	// ONLY relevant if this is of stockType PRODUCTIVE_INPUT (in which case the owner will be an industry)
 
 	@Column(name = "productionCoefficient") private double productionCoefficient;
-	
+
 	// the amount of this stock required to produce the designated output.
 	// this is loaded at the start and used to calculate the productionCoefficient
 	// like productionCoefficient, only relevant if this is of stockType PRODUCTIVE_INPUT
-	@Column(name="productionQuantity") private double productionQuantity;
+	@Column(name = "productionQuantity") private double productionQuantity;
 
 	// the proportion of the revenue of a class that will be spent on this stock in one period.
 	// ONLY relevant if this is of stockType CONSUMER_GOOD (in which case the owner will be a social class)
@@ -86,7 +86,7 @@ public class Stock implements Serializable {
 	// the amount of this stock required to produce the designated output.
 	// this is loaded at the start and used to calculate the consumptionCoefficient
 	// like consumptionCoefficient, only relevant if this is of stockType CONSUMER_GOOD
-	@Column(name ="consumptionQuantity") private double consumptionQuantity;
+	@Column(name = "consumptionQuantity") private double consumptionQuantity;
 
 	// how much of this was used up in production or reproduction
 	@Column(name = "stockUsedUp") private double stockUsedUp;
@@ -286,8 +286,8 @@ public class Stock implements Serializable {
 		replenishmentDemand = template.replenishmentDemand;
 		expansionDemand = template.expansionDemand;
 		stockUsedUp = template.stockUsedUp;
-		productionQuantity=template.productionQuantity;
-		consumptionQuantity=template.consumptionQuantity;
+		productionQuantity = template.productionQuantity;
+		consumptionQuantity = template.consumptionQuantity;
 	}
 
 	/**
@@ -673,6 +673,21 @@ public class Stock implements Serializable {
 	}
 
 	/**
+	 * a list of all stocks at the given projectID and a given timeStampID
+	 * 
+	 * @param projectID
+	 *            the given projectID
+	 * @param timeStampID
+	 *            the given timeStamp
+	 * 
+	 * @return a list of stocks at the given projectID and timeStampID
+	 */
+	public static List<Stock> allInProjectAndTimeStamp(int projectID, int timeStampID) {
+		allQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID);
+		return allQuery.getResultList();
+	}
+
+	/**
 	 * a list of all stocks at the current project and a given timeStamp
 	 * 
 	 * @param timeStampID
@@ -868,14 +883,16 @@ public class Stock implements Serializable {
 	 * 
 	 * @return the production coefficient
 	 */
-	
+
 	public double getProductionCoefficient() {
 		return this.productionCoefficient;
 	}
 
 	/**
 	 * set the production coefficient
-	 * @param productionCoefficient the coefficient to set
+	 * 
+	 * @param productionCoefficient
+	 *            the coefficient to set
 	 */
 	public void setProductionCoefficient(double productionCoefficient) {
 		this.productionCoefficient = productionCoefficient;
@@ -891,7 +908,9 @@ public class Stock implements Serializable {
 
 	/**
 	 * Set the consumption coefficient
-	 * @param consumptionCoefficient the coefficient to set
+	 * 
+	 * @param consumptionCoefficient
+	 *            the coefficient to set
 	 */
 	public void setConsumptionCoefficient(double consumptionCoefficient) {
 		this.consumptionCoefficient = consumptionCoefficient;
@@ -901,14 +920,16 @@ public class Stock implements Serializable {
 	 * 
 	 * @return the quantity of this stock
 	 */
-	
+
 	public double getQuantity() {
 		return this.quantity;
 	}
-	
+
 	/**
 	 * Set the quantity of this stock
-	 * @param quantity the quantity to set
+	 * 
+	 * @param quantity
+	 *            the quantity to set
 	 */
 	public void setQuantity(double quantity) {
 		this.quantity = quantity;
@@ -923,16 +944,19 @@ public class Stock implements Serializable {
 	}
 
 	/**
-	 * Set the replenishment Demand (the quantity of this productive stock required to continue producing at 
+	 * Set the replenishment Demand (the quantity of this productive stock required to continue producing at
 	 * the same output level)
-	 * @param quantityDemanded the quantity demanded for production to continue at the same level 
+	 * 
+	 * @param quantityDemanded
+	 *            the quantity demanded for production to continue at the same level
 	 */
 	public void setReplenishmentDemand(double quantityDemanded) {
 		this.replenishmentDemand = MathStuff.round(quantityDemanded);
 	}
-	
+
 	/**
 	 * Get the stock Type (productive, consumption, sales or money)
+	 * 
 	 * @return the stockType
 	 */
 
@@ -942,15 +966,18 @@ public class Stock implements Serializable {
 
 	/**
 	 * Set the stockType (productive, consumption, sales or money)
-	 * @param stockType the stockType to set
+	 * 
+	 * @param stockType
+	 *            the stockType to set
 	 */
-	
+
 	public void setStockType(String stockType) {
 		this.pk.stockType = stockType;
 	}
 
 	/**
 	 * The name of this stock (which is the commodity that it consists of)
+	 * 
 	 * @return the name of the commodity that this stock consists of
 	 */
 	public String name() {
@@ -959,7 +986,9 @@ public class Stock implements Serializable {
 
 	/**
 	 * Set the name of this stock (which is the commodity that it consists of)
-	 * @param commodityName the commodityName to set
+	 * 
+	 * @param commodityName
+	 *            the commodityName to set
 	 */
 	public void setCommodityName(String commodityName) {
 		pk.commodity = commodityName;
@@ -967,17 +996,20 @@ public class Stock implements Serializable {
 
 	/**
 	 * Get the owner of this stock, which may be an Industry or a Social Class
+	 * 
 	 * @return the name of the owner of this stock
 	 */
 	public String getOwner() {
 		return pk.owner;
 	}
 
-/**
- * Set the timeStampID of this stock
- * @param timeStampID the timeStampID to set
- */
-	
+	/**
+	 * Set the timeStampID of this stock
+	 * 
+	 * @param timeStampID
+	 *            the timeStampID to set
+	 */
+
 	public void setTimeStamp(int timeStampID) {
 		pk.timeStampID = timeStampID;
 	}
@@ -1024,7 +1056,7 @@ public class Stock implements Serializable {
 	 * 
 	 * @return the timeStampID of this stock
 	 */
-	
+
 	public int getTimeStampID() {
 		return pk.timeStampID;
 	}
@@ -1148,7 +1180,8 @@ public class Stock implements Serializable {
 	}
 
 	/**
-	 * @param productionQuantity the productionQuantity to set
+	 * @param productionQuantity
+	 *            the productionQuantity to set
 	 */
 	public void setProductionQuantity(double productionQuantity) {
 		this.productionQuantity = productionQuantity;
@@ -1162,10 +1195,14 @@ public class Stock implements Serializable {
 	}
 
 	/**
-	 * @param consumptionQuantity the consumptionQuantity to set
+	 * @param consumptionQuantity
+	 *            the consumptionQuantity to set
 	 */
 	public void setConsumptionQuantity(double consumptionQuantity) {
 		this.consumptionQuantity = consumptionQuantity;
 	}
 
+	public void setOwner(String owner) {
+		pk.owner=owner;
+	}
 }

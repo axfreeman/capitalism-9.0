@@ -29,6 +29,12 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import capitalism.controller.Simulation;
+import capitalism.utils.Reporter;
+import capitalism.utils.StringStuff;
 import capitalism.view.custom.ActionStates;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -44,6 +50,7 @@ import javafx.collections.ObservableList;
 @XmlRootElement(name = "Project")
 public class Project implements Serializable {
 	private static final long serialVersionUID = 1L;
+	private static final Logger logger = LogManager.getLogger("Project");
 	//NOTE: projectID 0 is reserved for the editor
 	@Id @EmbeddedId @Column(unique = true, nullable = false) private int projectID;
 	@XmlElement @Column(name = "description") private String description;
@@ -203,6 +210,58 @@ public class Project implements Serializable {
 		return output;
 	}
 
+	public void initialise() {
+		TimeStamp currentStamp;//temporary repository for the Simulation currentTimeStamp
+		Reporter.report(logger, 1, "Initialising project %d called '%s'", getProjectID(), getDescription());
+		Simulation.projectIDCurrent = getProjectID();
+
+		// initialise each project record so that its cursors are 1
+
+		Project.getEntityManager().getTransaction().begin();
+		setTimeStamp(1);
+		setTimeStampDisplayCursor(1);
+		setTimeStampComparatorCursor(timeStampComparatorCursor);
+
+		// set all project buttonState initially to the end of the non-existent previous period
+		setButtonState(ActionStates.lastState().text());
+		Project.getEntityManager().getTransaction().commit();
+
+		// fetch this project's current timeStamp record (which must exist in the database or we flag an error but try to correct it)
+
+		Simulation.setCurrentTimeStamp(TimeStamp.singleInCurrentProject(Simulation.timeStampIDCurrent));
+		currentStamp=Simulation.getCurrentTimeStamp();// work with the copy as we are only getting not setting
+		if (currentStamp == null) {
+			Reporter.report(logger, 1, " There is no initial timeStamp record for project %d. Please check the data",
+					getDescription());
+			return;
+		}
+		if (currentStamp.getTimeStampID() != 1) {
+			Reporter.report(logger, 1,
+					" The initial timeStamp record for project %d should have an ID of 1 but instead has  %d. Please check the Data",
+					getDescription(), currentStamp.getTimeStampID());
+			return;
+		}
+
+		// Set the initial comparators for every timeStamp, project, industry, class, use value and stock .
+		// Since the comparator cursor and the cursor are already 1, this amounts to setting it to 1
+
+		// little tweak to handle currency symbols encoded in UTF8
+
+		logger.debug("Character Symbol for Project {} is {}", currentStamp.getCurrencySymbol());
+		String utfjava = StringStuff.convertFromUTF8(currentStamp.getCurrencySymbol());
+		logger.debug("Character symbol after conversion is {}", utfjava);
+		currentStamp.setCurrencySymbol(utfjava);
+		Simulation.setComparators(1);
+
+		// NOTE these calls depend on the side effect of setting currentTimeStamp to be the timeStamp of this project
+		// but since this is internal to the class, I think it is acceptable.
+		Simulation.convertMagnitudesToCoefficients();
+		Simulation.calculateStockAggregates();
+		Simulation.setCapitals();
+		Simulation.checkInvariants();
+	}
+
+	
 	public int getProjectID() {
 		return this.projectID;
 	}

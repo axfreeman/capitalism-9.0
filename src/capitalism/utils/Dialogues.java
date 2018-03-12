@@ -27,6 +27,7 @@ import capitalism.view.ViewManager;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 
 public class Dialogues {
 
@@ -96,5 +97,14 @@ public class Dialogues {
 		chooser.setInitialDirectory(defaultDirectory);
 		File selectedDirectory = chooser.showDialog(ViewManager.getPrimaryStage());
 		return selectedDirectory;
+	}
+	
+	public static File fileChooser(String title) {
+		FileChooser chooser = new FileChooser();
+		chooser.setTitle(title);
+		File defaultDirectory = new File("c:/Users/afree/Documents");
+		chooser.setInitialDirectory(defaultDirectory);
+		File selectedFile= chooser.showOpenDialog(ViewManager.getPrimaryStage());
+		return selectedFile;
 	}
 }
