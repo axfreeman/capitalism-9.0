@@ -44,7 +44,7 @@ public class ClassesReproduce implements Command {
 		Simulation.advanceOneStep(ActionStates.C_P_ClassesReproduce.text(), ActionStates.C_P_Produce.text());
 
 		// NOTE: stockUsedUp has been initialised in the IndustriesProduce phase
-		for (SocialClass sc : SocialClass.allCurrent()) {
+		for (SocialClass sc : SocialClass.all(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent())) {
 			sc.consume();
 			sc.regenerate();
 		}

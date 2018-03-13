@@ -78,7 +78,7 @@ public class Accumulate implements Command {
 	private void allocateToProductionIndustries() {
 		Reporter.report(logger, 1, "Allocating investment to the production goods industries");
 
-		for (Commodity u : Commodity.currentByFunction(Commodity.FUNCTION.PRODUCTIVE_INPUT)) {
+		for (Commodity u : Commodity.currentByFunction(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent(),Commodity.FUNCTION.PRODUCTIVE_INPUT)) {
 
 			// Exclude socially-produced commodities
 			if (u.getOrigin() == Commodity.ORIGIN.SOCIALlY_PRODUCED)
@@ -110,7 +110,7 @@ public class Accumulate implements Command {
 		double costs = 0;
 		Reporter.report(logger, 1, "Allocating investment to the consumption goods industries");
 		
-		for (Commodity u : Commodity.currentByFunction(Commodity.FUNCTION.CONSUMER_GOOD)) {
+		for (Commodity u : Commodity.currentByFunction(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent(),Commodity.FUNCTION.CONSUMER_GOOD)) {
 
 			// Exclude socially-produced commodities
 			if (u.getOrigin() == Commodity.ORIGIN.SOCIALlY_PRODUCED)

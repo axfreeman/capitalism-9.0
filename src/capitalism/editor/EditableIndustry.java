@@ -79,7 +79,7 @@ public class EditableIndustry {
 
 	public static ObservableList<EditableIndustry> editableIndustries() {
 		ObservableList<EditableIndustry> result = FXCollections.observableArrayList();
-		for (Industry c : Industry.allCurrent()) {
+		for (Industry c : Industry.all(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent())) {
 			EditableIndustry oneRecord = new EditableIndustry();
 			oneRecord.setName(c.name());
 			oneRecord.setCommodityName(c.getCommodityName());
@@ -372,7 +372,7 @@ public class EditableIndustry {
 	}
 
 	public void loadStocksFromSimulation() {
-		Industry persistentIndustry = Industry.single(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, name.get());
+		Industry persistentIndustry = Industry.single(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent(), name.get());
 		Stock moneyStock = persistentIndustry.moneyStock();
 
 		// A simple dodge: for money and sales stocks, the desired and actual quantity are the same

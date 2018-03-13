@@ -34,10 +34,12 @@ public class EditableStock {
 
 	/**
 	 * Create a stock with the given commodity name.
+	 * 
 	 * @param name
+	 *            the commodity name of the editable stock to be created
 	 */
 	EditableStock(String name) {
-		this.name=name;
+		this.name = name;
 		actualQuantity = new SimpleDoubleProperty(0.0);
 		desiredQuantity = new SimpleDoubleProperty(0.0);
 	}
@@ -98,7 +100,8 @@ public class EditableStock {
 	}
 
 	/**
-	 * @param name the name to set
+	 * @param name
+	 *            the name to set
 	 */
 	public void setName(String name) {
 		this.name = name;

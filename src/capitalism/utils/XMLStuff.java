@@ -30,6 +30,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import capitalism.Capitalism;
+import capitalism.controller.Simulation;
 import capitalism.model.OneProject;
 import capitalism.model.Commodity;
 import capitalism.model.Industry;
@@ -76,14 +77,14 @@ public class XMLStuff {
 			commodityContext = JAXBContext.newInstance(Commodity.class);
 			Marshaller commodityMarshaller = commodityContext.createMarshaller();
 			commodityMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			for (Commodity commodity : Commodity.allCurrentProject(timeStamp)) {
+			for (Commodity commodity : Commodity.all(Simulation.projectIDCurrent(), timeStamp)) {
 				commodityMarshaller.marshal(commodity, output);
 				commodityMarshaller.marshal(commodity, System.out);
 			}
 			industryContext = JAXBContext.newInstance(Industry.class);
 			Marshaller industryMarshaller = industryContext.createMarshaller();
 			industryMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			for (Industry industry : Industry.currentProjectWithTimeStamp(timeStamp)) {
+			for (Industry industry : Industry.all(Simulation.projectIDCurrent(),timeStamp)) {
 				industryMarshaller.marshal(industry, output);
 				industryMarshaller.marshal(industry, System.out);
 			}

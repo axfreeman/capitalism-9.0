@@ -50,7 +50,7 @@ public class IndustryTableStockCell extends TableCell<Industry, String> {
 			logger.debug(" Null Industry");
 			return;
 		}
-		Stock theStock = Stock.singleProductive(Simulation.timeStampDisplayCursor, industry.name(), stockValueUseName);
+		Stock theStock = Stock.singleProductive(Simulation.projectIDCurrent(), Simulation.timeStampDisplayCursor(), industry.name(), stockValueUseName);
 		
 		String deltaModifier="";
 		

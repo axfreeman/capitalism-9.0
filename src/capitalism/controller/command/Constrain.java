@@ -32,7 +32,7 @@ import capitalism.utils.MathStuff;
 import capitalism.utils.Reporter;
 import capitalism.view.custom.ActionStates;
 
-public class Constrain extends Simulation implements Command {
+public class Constrain implements Command {
 	private static final Logger logger = LogManager.getLogger(Constrain.class);
 
 	public Constrain() {
@@ -48,7 +48,7 @@ public class Constrain extends Simulation implements Command {
 	public void execute() {
 		Reporter.report(logger, 0, "CONSTRAINTS");
 
-		advanceOneStep(ActionStates.M_C_Constrain.text(), ActionStates.M_C_Exchange.text());
+		Simulation.advanceOneStep(ActionStates.M_C_Constrain.text(), ActionStates.M_C_Exchange.text());
 
 		// calculate what proportion of demand can actually be satisfied
 
@@ -77,7 +77,7 @@ public class Constrain extends Simulation implements Command {
 	 */
 
 	public void allocateToStocks() {
-		List<Stock> stockList = Stock.sourcesOfDemand();
+		List<Stock> stockList = Stock.sourcesOfDemand(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent());
 		Reporter.report(logger, 1, "Constraining demand for stocks, on the basis of constraints on output levels");
 
 		for (Stock s : stockList) {
@@ -100,12 +100,12 @@ public class Constrain extends Simulation implements Command {
 	 */
 
 	public void constrainOutput() {
-		List<Industry> industries = Industry.allCurrent();
+		List<Industry> industries = Industry.all(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent());
 		for (Industry c : industries) {
 			double desiredOutputLevel = c.getOutput();
 			Reporter.report(logger, 1, "Estimating supply-constrained output for industry [%s] with unconstrained output %.0f",
 					c.name(), desiredOutputLevel);
-			List<Stock> managedStocks = Stock.allProductiveInIndustry(timeStampIDCurrent, c.name());
+			List<Stock> managedStocks = Stock.allProductiveInIndustry(Simulation.projectIDcurrent(),Simulation.timeStampIDCurrent(), c.name());
 			for (Stock s : managedStocks) {
 				double existingQuantity = s.getQuantity();
 				double quantityDemanded = s.getReplenishmentDemand();
@@ -135,7 +135,7 @@ public class Constrain extends Simulation implements Command {
 	 */
 	public void calculateAllocationShare() {
 		Reporter.report(logger, 1, "Computing the proportion of demand that can be satisfied by supply, for each commodity type");
-		for (Commodity u : Commodity.allCurrent()) {
+		for (Commodity u : Commodity.all(Simulation.projectIDcurrent(),Simulation.timeStampIDCurrent())) {
 			double totalDemand = u.replenishmentDemand();
 			double totalSupply = u.totalSupply();
 			double allocationShare = totalSupply / totalDemand;

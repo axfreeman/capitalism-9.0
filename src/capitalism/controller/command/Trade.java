@@ -58,7 +58,7 @@ public class Trade implements Command {
 	 * each productive industry purchases the stocks that it needs
 	 */
 	private void productivePurchasesTrade() {
-		List<Industry> industries = Industry.allCurrent();
+		List<Industry> industries = Industry.all(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent());
 		Reporter.report(logger, 1, "The %d industries will now try to purchase the stocks they need. ", industries.size());
 
 		for (Industry buyer : industries) {
@@ -83,7 +83,7 @@ public class Trade implements Command {
 						// TODO at this point we only accept the first offer
 						// eventually we need to allow multiple sellers of Labour Power
 						// but this should be part of a general reform to allow multiple sellers of every commodity
-						for (SocialClass sc : SocialClass.allCurrent()) {
+						for (SocialClass sc : SocialClass.all(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent())) {
 							Stock salesStock = sc.salesStock();
 							if (salesStock != null) {
 								sellerMoneyStock = sc.moneyStock();
@@ -131,9 +131,9 @@ public class Trade implements Command {
 	 */
 	private void socialClassesTrade() {
 		Reporter.report(logger, 1, "Social Classes will now try to purchase the stocks they need");
-		for (SocialClass buyer : SocialClass.allCurrent()) {
+		for (SocialClass buyer : SocialClass.all(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent())) {
 			String buyerName = buyer.name();
-			for (Commodity u : Commodity.currentByFunction(Commodity.FUNCTION.CONSUMER_GOOD)) {
+			for (Commodity u : Commodity.currentByFunction(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent(), Commodity.FUNCTION.CONSUMER_GOOD)) {
 				List<Industry> sellers = u.industries();
 
 				Industry seller=sellers.get(0);// TODO very temporary; just get the top one.

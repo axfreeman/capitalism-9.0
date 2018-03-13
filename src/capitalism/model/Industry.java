@@ -85,7 +85,6 @@ public class Industry implements Serializable {
 	private static TypedQuery<Industry> primaryQuery;
 	private static TypedQuery<Industry> allWithProjectAndTimeStampQuery;
 	private static TypedQuery<Industry> withProjectTimeStampAndCommodityNameQuery;
-	private static TypedQuery<Industry> initialCapitalQuery;
 	private static TypedQuery<Industry> allQuery;
 
 	static {
@@ -94,8 +93,6 @@ public class Industry implements Serializable {
 				"Select c from Industry c where c.pk.projectID= :project and c.pk.timeStampID = :timeStamp and c.pk.name= :industryName", Industry.class);
 		allWithProjectAndTimeStampQuery = entityManager.createQuery(
 				"Select c from Industry c where c.pk.projectID = :project and c.pk.timeStampID = :timeStamp", Industry.class);
-		initialCapitalQuery = entityManager.createQuery(
-				"Select sum(c.initialCapital) from Industry c where c.pk.projectID=:project and c.pk.timeStampID=:timeStamp", Industry.class);
 		withProjectTimeStampAndCommodityNameQuery = entityManager.createQuery(
 				"Select c from Industry c where c.pk.projectID=:project and c.pk.timeStampID=:timeStamp and c.commodityName=:commodityName", Industry.class);
 		allQuery = entityManager.createQuery("Select i from Industry i", Industry.class);
@@ -203,8 +200,8 @@ public class Industry implements Serializable {
 	public Industry(Industry template) {
 		this.pk = new IndustryPK();
 		pk.name = template.name();
-		pk.timeStampID = template.getTimeStamp();
-		pk.projectID = template.getProject();
+		pk.timeStampID = template.getTimeStampID();
+		pk.projectID = template.getProjectID();
 		commodityName = template.commodityName;
 		output = template.output;
 		proposedOutput = template.proposedOutput;
@@ -218,11 +215,14 @@ public class Industry implements Serializable {
 	 * an observable list of type Industry for display by ViewManager, at the current project and timeStampDisplayCursor. timeStampDisplayCursor, which
 	 * may diverge from timeStamp, identifies the row that the user last clicked on.
 	 * 
+	 * @param projectID
+	 *            the given projectID
+	 * @param timeStampID
+	 *            the given timeStampID
 	 * @return an ObservableList of industries
 	 */
-	public static ObservableList<Industry> industriesObservable() {
-		Industry.allWithProjectAndTimeStampQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp",
-				Simulation.timeStampDisplayCursor);
+	public static ObservableList<Industry> industriesObservable(int projectID, int timeStampID) {
+		Industry.allWithProjectAndTimeStampQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID);
 		ObservableList<Industry> result = FXCollections.observableArrayList();
 		for (Industry c : Industry.allWithProjectAndTimeStampQuery.getResultList()) {
 			result.add(c);
@@ -388,7 +388,7 @@ public class Industry implements Serializable {
 
 	public ReadOnlyStringWrapper wrappedString(String productiveStockName) {
 		try {
-			Stock namedStock = Stock.singleProductive(pk.timeStampID, pk.name, productiveStockName);
+			Stock namedStock = Stock.singleProductive(pk.projectID, pk.timeStampID, pk.name, productiveStockName);
 			String result = String.format(ViewManager.getLargeFormat(), namedStock.get(TabbedTableViewer.displayAttribute));
 			return new ReadOnlyStringWrapper(result);
 		} catch (Exception e) {
@@ -409,7 +409,7 @@ public class Industry implements Serializable {
 			return Double.NaN;
 		}
 		double total = 0;
-		for (Stock s : Stock.allProductiveInIndustry(pk.timeStampID, pk.name)) {
+		for (Stock s : Stock.allProductiveInIndustry(pk.projectID, pk.timeStampID, pk.name)) {
 			total += s.get(a);
 		}
 		return total;
@@ -448,7 +448,7 @@ public class Industry implements Serializable {
 	 *         {@link DisplayControlsBox#expressionDisplay} and {@link DisplayControlsBox#expressionDisplay}
 	 */
 	public double expressionOf(ATTRIBUTE valueProperty) {
-		double melt = Simulation.currentTimeStamp.getMelt();
+		double melt = Simulation.getTimeStampCurrent().getMelt();
 		double expression;
 		switch (valueProperty) {
 
@@ -607,7 +607,7 @@ public class Industry implements Serializable {
 	 * @return the money stock that is owned by this social class.
 	 */
 	public Stock moneyStock() {
-		return Stock.moneyByOwner(pk.timeStampID, pk.name);
+		return Stock.moneyByOwner(pk.projectID, pk.timeStampID, pk.name);
 	}
 
 	/**
@@ -616,7 +616,7 @@ public class Industry implements Serializable {
 	 * @return the sales stock owned by this industry
 	 */
 	public Stock salesStock() {
-		return Stock.single(Simulation.projectIDCurrent, pk.timeStampID, pk.name, commodityName,
+		return Stock.single(pk.projectID, pk.timeStampID, pk.name, commodityName,
 				Stock.STOCKTYPE.SALES.text());
 	}
 
@@ -651,30 +651,6 @@ public class Industry implements Serializable {
 	}
 
 	/**
-	 * a list of industries, for the current project and timeStamp
-	 * 
-	 * @return a list of industriesfor the current project at the current timeStamp.
-	 */
-	public static List<Industry> allCurrent() {
-		allWithProjectAndTimeStampQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
-		return allWithProjectAndTimeStampQuery.getResultList();
-	}
-
-	/**
-	 * a list of industries, for the current project and the given timeStamp
-	 * 
-	 * @param timeStampID
-	 *            the given timeStamp
-	 *            *
-	 * @return a list of industries for the current project at the specified timeStamp (which should, in general, be different from the currentTimeStamp)
-	 */
-
-	public static List<Industry> currentProjectWithTimeStamp(int timeStampID) {
-		allWithProjectAndTimeStampQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStampID);
-		return allWithProjectAndTimeStampQuery.getResultList();
-	}
-
-	/**
 	 * a list of industries, for a given projectID and a given timeStampID
 	 * 
 	 * @param projectID
@@ -685,41 +661,26 @@ public class Industry implements Serializable {
 	 * @return a list of industries for the given projectID and timeStampID
 	 */
 
-	public static List<Industry> allWithProjectAndTimeStamp(int projectID, int timeStampID) {
+	public static List<Industry> all(int projectID, int timeStampID) {
 		allWithProjectAndTimeStampQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID);
 		return allWithProjectAndTimeStampQuery.getResultList();
 	}
 
 	/**
-	 * A list of industries, for the current project and the given timeStamp, that produce a given commodity
-	 * 
+	 * A list of industries, for the given project and timeStamp, that produce a given commodity
+	 * @param projectID the given projectID
 	 * @param commodityName
 	 *            the name of the commodity that these industries produce
+	 *            * @param projectID the given projectID
 	 * @param timeStampID
-	 *            the given timeStamp
+	 *            the given timeStampID
 	 * @return a list of industries which produce the given use value at the given timeStamp.
 	 */
 
-	public static List<Industry> currentProjectAndTimeStampWithCommodityName(int timeStampID, String commodityName) {
-		withProjectTimeStampAndCommodityNameQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStampID)
+	public static List<Industry> withCommodityNamed(int projectID, int timeStampID, String commodityName) {
+		withProjectTimeStampAndCommodityNameQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID)
 				.setParameter("commodityName", commodityName);
 		return withProjectTimeStampAndCommodityNameQuery.getResultList();
-	}
-
-	/**
-	 * TODO get this working
-	 * 
-	 * @param timeStamp
-	 *            the timeStamp
-	 * 
-	 * @return the sum of the initial capital in all industries
-	 */
-
-	public static double industriesInitialCapital(int timeStamp) {
-		initialCapitalQuery.setParameter("timeStamp", timeStamp).setParameter("project", Simulation.projectIDCurrent);
-		Object o = initialCapitalQuery.getSingleResult();
-		double result = (double) o;
-		return result;
 	}
 
 	/**
@@ -730,11 +691,11 @@ public class Industry implements Serializable {
 	 */
 
 	public static void setComparators(int timeStampID) {
-		for (Industry c : currentProjectWithTimeStamp(timeStampID)) {
-			c.setPreviousComparator(single(Simulation.projectIDCurrent, Simulation.getTimeStampComparatorCursor(), c.name()));
-			c.setStartComparator(single(Simulation.projectIDCurrent, 1, c.name()));
-			c.setEndComparator(single(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, c.name()));
-			c.setCustomComparator(single(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, c.name()));
+		for (Industry c : Industry.all(Simulation.projectIDCurrent(), timeStampID)) {
+			c.setPreviousComparator(single(Simulation.projectIDCurrent(), Simulation.getTimeStampComparatorCursor(), c.name()));
+			c.setStartComparator(single(Simulation.projectIDCurrent(), 1, c.name()));
+			c.setEndComparator(single(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent(), c.name()));
+			c.setCustomComparator(single(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent(), c.name()));
 		}
 	}
 
@@ -834,7 +795,7 @@ public class Industry implements Serializable {
 	 * @return a list of the productive stocks owned (managed) by this industry
 	 */
 	public List<Stock> productiveStocks() {
-		return Stock.allProductiveInIndustry(pk.timeStampID, pk.name);
+		return Stock.allProductiveInIndustry(pk.projectID, pk.timeStampID, pk.name);
 	}
 
 	/**
@@ -845,7 +806,7 @@ public class Industry implements Serializable {
 	 *            the name of the stock
 	 */
 	public Stock productiveStock(String name) {
-		return Stock.singleProductive(pk.timeStampID, pk.name, name);
+		return Stock.singleProductive(pk.projectID, pk.timeStampID, pk.name, name);
 	}
 
 	/**
@@ -855,16 +816,16 @@ public class Industry implements Serializable {
 		return entityManager;
 	}
 
-	public Integer getProject() {
+	public Integer getProjectID() {
 		return pk.projectID;
 	}
 
-	public int getTimeStamp() {
+	public int getTimeStampID() {
 		return pk.timeStampID;
 	}
 
-	public void setTimeStamp(int timeStamp) {
-		pk.timeStampID = timeStamp;
+	public void setTimeStamp(int timeStampID) {
+		pk.timeStampID = timeStampID;
 	}
 
 	public String name() {
@@ -1083,7 +1044,7 @@ public class Industry implements Serializable {
 
 	public void allocateInvestmentFunds(double costOfExpansion) {
 		Stock recipientMoneyStock = moneyStock();
-		SocialClass donor = SocialClass.currentWithName("Capitalists");
+		SocialClass donor = SocialClass.withName(Simulation.projectIDcurrent(), Simulation.timeStampIDCurrent(), "Capitalists");
 		Stock donorMoneyStock = donor.moneyStock();
 		donorMoneyStock.transferStock(recipientMoneyStock, costOfExpansion);
 		donor.setRevenue(donor.getRevenue() - costOfExpansion);
@@ -1201,8 +1162,8 @@ public class Industry implements Serializable {
 	public void setCommodityName(String commodityName) {
 		this.commodityName = commodityName;
 	}
-	
+
 	public void setName(String name) {
-		this.pk.name=name;
+		this.pk.name = name;
 	}
 }

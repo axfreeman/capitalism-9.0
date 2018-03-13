@@ -87,7 +87,7 @@ public class SocialClassColumn extends TableColumn<SocialClass, String> {
 		setText(consumptionStockName);
 		setPrefWidth(75.0);
 		getStyleClass().add("table-column-right");
-		Commodity stockCommodity = Commodity.singleCurrentProject(Simulation.timeStampIDCurrent, consumptionStockName);
+		Commodity stockCommodity = Commodity.single(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent(), consumptionStockName);
 		TableUtilities.addGraphicToColummnHeader(this, stockCommodity.getImageName(), u.getToolTip());
 	}
 }

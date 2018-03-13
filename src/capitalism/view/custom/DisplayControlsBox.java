@@ -141,7 +141,7 @@ public class DisplayControlsBox extends HBox {
 
 	private void buildCombos() {
 		ObservableList<Project> projects = Project.observableProjects();
-		Project currentProject = Project.get(Simulation.projectIDCurrent);
+		Project currentProject = Project.get(Simulation.projectIDCurrent());
 		String currentProjectDescription = currentProject.getDescription();
 		projectCombo = new ProjectCombo(projects, currentProjectDescription);
 		labourSupplyCombo = new ComboBox<String>(Simulation.LABOUR_RESPONSE.options());
@@ -155,19 +155,19 @@ public class DisplayControlsBox extends HBox {
 		meltCombo.valueProperty().addListener(new ChangeListener<String>() {
 			@Override public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
 				meltCombo.setPromptText(newValue);
-				Simulation.currentTimeStamp.setMeltResponse(Simulation.MELT_RESPONSE.fromText(newValue));
+				Simulation.getTimeStampCurrent().setMeltResponse(Simulation.MELT_RESPONSE.fromText(newValue));
 			}
 		});
 		labourSupplyCombo.valueProperty().addListener(new ChangeListener<String>() {
 			@Override public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
 				labourSupplyCombo.setPromptText(newValue);
-				Simulation.currentTimeStamp.setLabourSupplyResponse(Simulation.LABOUR_RESPONSE.fromText(newValue));
+				Simulation.getTimeStampCurrent().setLabourSupplyResponse(Simulation.LABOUR_RESPONSE.fromText(newValue));
 			}
 		});
 		pricingCombo.valueProperty().addListener(new ChangeListener<String>() {
 			@Override public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
 				pricingCombo.setPromptText(newValue);
-				Simulation.currentTimeStamp.setPriceResponse(Simulation.PRICE_RESPONSE.fromText(newValue));
+				Simulation.getTimeStampCurrent().setPriceResponse(Simulation.PRICE_RESPONSE.fromText(newValue));
 			}
 		});
 	}
@@ -183,9 +183,9 @@ public class DisplayControlsBox extends HBox {
 	 */
 	
 	public static void setParameterComboPrompts() {
-		labourSupplyCombo.setPromptText(Simulation.currentTimeStamp.getLabourSupplyResponse().text());
-		meltCombo.setPromptText(Simulation.currentTimeStamp.getPriceResponse().text());
-		pricingCombo.setPromptText(Simulation.currentTimeStamp.getMeltResponse().text());
+		labourSupplyCombo.setPromptText(Simulation.getTimeStampCurrent().getLabourSupplyResponse().text());
+		meltCombo.setPromptText(Simulation.getTimeStampCurrent().getPriceResponse().text());
+		pricingCombo.setPromptText(Simulation.getTimeStampCurrent().getMeltResponse().text());
 	}
 
 	/**

@@ -51,10 +51,9 @@ import javafx.collections.ObservableList;
 public class Project implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = LogManager.getLogger("Project");
-	//NOTE: projectID 0 is reserved for the editor
 	@Id @EmbeddedId @Column(unique = true, nullable = false) private int projectID;
 	@XmlElement @Column(name = "description") private String description;
-	@XmlElement @Column(name = "currentTimeStamp") private int timeStamp;
+	@XmlElement @Column(name = "currentTimeStamp") private int timeStampID;
 	@XmlElement @Column(name = "currentTimeStampCursor") private int timeStampDisplayCursor;
 	@XmlElement @Column(name = "currentTimeStampComparatorCursor") private int timeStampComparatorCursor;
 	@XmlElement @Column(name = "period") private int period;
@@ -67,7 +66,7 @@ public class Project implements Serializable {
 
 	static {
 		entityManager = entityManagerFactory.createEntityManager();
-		allQuery = entityManager.createQuery("SELECT v FROM Project v", Project.class);
+		allQuery = entityManager.createQuery("SELECT p FROM Project p", Project.class);
 		primaryQuery = entityManager.createQuery("SELECT p from Project p where p.projectID= :project", Project.class);
 	}
 
@@ -125,38 +124,6 @@ public class Project implements Serializable {
 	}
 
 	/**
-	 * get the timeStamp of a given project.
-	 * 
-	 * @param projectID
-	 *            the projectID of a single project
-	 * @return the timeStamp last created by this project, null if the project does not exist
-	 */
-	public static int timeStampOfProject(int projectID) {
-		Project project = get(projectID);
-		if (project == null) {
-			return 0;
-		} else {
-			return project.getTimeStampID();
-		}
-	}
-
-	/**
-	 * Get the timeStampDisplayCursor of a given project.
-	 * 
-	 * @param projectID
-	 *            the projectID of a single project
-	 * @return the timeStamp last created by this project, null if the project does not exist
-	 */
-	public static int timeStampCursorOfProject(int projectID) {
-		Project project = get(projectID);
-		if (project == null) {
-			return 0;
-		} else {
-			return project.getTimeStampDisplayCursor();
-		}
-	}
-
-	/**
 	 * set the timeStamp of a given project.
 	 * 
 	 * @param projectID
@@ -165,12 +132,12 @@ public class Project implements Serializable {
 	 *            the timeStampID to be set for this project - normally, the timeStamp when the user switches a simulation
 	 * @return 0 if fail, the timeStamp otherwise
 	 */
-	public static int setTimeStam(int projectID, int timeStampID) {
+	public static int setTimeStamp(int projectID, int timeStampID) {
 		Project project = Project.get(projectID);
 		if (project == null) {
 			return 0;
 		} else {
-			project.setTimeStamp(timeStampID);
+			project.setTimeStampID(timeStampID);
 			return timeStampID;
 		}
 	}
@@ -213,12 +180,12 @@ public class Project implements Serializable {
 	public void initialise() {
 		TimeStamp currentStamp;//temporary repository for the Simulation currentTimeStamp
 		Reporter.report(logger, 1, "Initialising project %d called '%s'", getProjectID(), getDescription());
-		Simulation.projectIDCurrent = getProjectID();
+		Simulation.setProjectID(getProjectID());
 
 		// initialise each project record so that its cursors are 1
 
 		Project.getEntityManager().getTransaction().begin();
-		setTimeStamp(1);
+		setTimeStampID(1);
 		setTimeStampDisplayCursor(1);
 		setTimeStampComparatorCursor(timeStampComparatorCursor);
 
@@ -227,9 +194,9 @@ public class Project implements Serializable {
 		Project.getEntityManager().getTransaction().commit();
 
 		// fetch this project's current timeStamp record (which must exist in the database or we flag an error but try to correct it)
-
-		Simulation.setCurrentTimeStamp(TimeStamp.singleInCurrentProject(Simulation.timeStampIDCurrent));
-		currentStamp=Simulation.getCurrentTimeStamp();// work with the copy as we are only getting not setting
+		// TODO isolate this from the Simulation setting which produces confusing side-effects
+		Simulation.setTimeStampCurrent(TimeStamp.singleInCurrentProject(1));
+		currentStamp=Simulation.getTimeStampCurrent();// work with the copy as we are only getting not setting
 		if (currentStamp == null) {
 			Reporter.report(logger, 1, " There is no initial timeStamp record for project %d. Please check the data",
 					getDescription());
@@ -282,15 +249,15 @@ public class Project implements Serializable {
 	 * @return the timeStamp that this simulation has so far reached (only set when switching to a different project)
 	 */
 	public int getTimeStampID() {
-		return timeStamp;
+		return timeStampID;
 	}
 
 	/**
 	 * @param timeStamp
 	 *            the timeStamp that this simulation has so far reached (only set when switching to a different project)
 	 */
-	public void setTimeStamp(int timeStamp) {
-		this.timeStamp = timeStamp;
+	public void setTimeStampID(int timeStamp) {
+		this.timeStampID = timeStamp;
 	}
 
 	/**

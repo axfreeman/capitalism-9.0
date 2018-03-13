@@ -94,13 +94,13 @@ public class SocialClass implements Serializable {
 	 *            the timeStamp which selects the entity
 	 */
 	public static void setComparators(int timeStampID) {
-		allQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStampID);
+		allQuery.setParameter("project", Simulation.projectIDCurrent()).setParameter("timeStamp", timeStampID);
 		for (SocialClass sc : allQuery.getResultList()) {
 			sc.setPreviousComparator(
-					single(Simulation.projectIDCurrent, Simulation.getTimeStampComparatorCursor(), sc.name()));
-			sc.setStartComparator(single(Simulation.projectIDCurrent, 1, sc.name()));
-			sc.setEndComparator(single(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, sc.name()));
-			sc.setCustomComparator(single(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, sc.name()));
+					single(Simulation.projectIDCurrent(), Simulation.getTimeStampComparatorCursor(), sc.name()));
+			sc.setStartComparator(single(Simulation.projectIDCurrent(), 1, sc.name()));
+			sc.setEndComparator(single(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent(), sc.name()));
+			sc.setCustomComparator(single(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent(), sc.name()));
 		}
 	}
 
@@ -170,10 +170,15 @@ public class SocialClass implements Serializable {
 	 * an observable list of type SocialClass for display by ViewManager, at the current project and timeStampDisplayCursor. timeStampDisplayCursor, which
 	 * may diverge from timeStamp, identifies the row that the user last clicked on.
 	 * 
+	 * @param projectID
+	 *            the given projectID
+	 * 
+	 * @param timeStampID
+	 *            the given timeStampID
 	 * @return an ObservableList of SocialClasses
 	 */
-	public static ObservableList<SocialClass> socialClassesObservable() {
-		SocialClass.allQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", Simulation.timeStampDisplayCursor);
+	public static ObservableList<SocialClass> socialClassesObservable(int projectID, int timeStampID) {
+		SocialClass.allQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID);
 		ObservableList<SocialClass> result = FXCollections.observableArrayList();
 		for (SocialClass s : SocialClass.allQuery.getResultList()) {
 			result.add(s);
@@ -314,7 +319,7 @@ public class SocialClass implements Serializable {
 	 */
 	public ReadOnlyStringWrapper wrappedString(String consumptionStockName) {
 		try {
-			Stock namedStock = Stock.consumptionByCommodityAndClassSingle(pk.timeStampID, pk.name, consumptionStockName);
+			Stock namedStock = Stock.consumptionByCommodityAndClassSingle(pk.projectID, pk.timeStampID, pk.name, consumptionStockName);
 			String result = String.format(ViewManager.getLargeFormat(), namedStock.get(TabbedTableViewer.displayAttribute));
 			return new ReadOnlyStringWrapper(result);
 		} catch (Exception e) {
@@ -336,7 +341,7 @@ public class SocialClass implements Serializable {
 		Stock salesStock = salesStock();
 		if (salesStock != null) {
 			double existingLabourPower = salesStock.getQuantity();
-			Commodity commodity = Commodity.singleCurrentProject(pk.timeStampID, salesStock.name());
+			Commodity commodity = Commodity.single(pk.projectID, pk.timeStampID, salesStock.name());
 			double turnoverTime = commodity.getTurnoverTime();
 			double newLabourPower = size * participationRatio / turnoverTime;
 			double extraLabourPower = newLabourPower - existingLabourPower;
@@ -372,7 +377,7 @@ public class SocialClass implements Serializable {
 	 * @return the money stock that is owned by this social class.
 	 */
 	public Stock moneyStock() {
-		return Stock.moneyByOwner(pk.timeStampID, pk.name);
+		return Stock.moneyByOwner(pk.projectID, pk.timeStampID, pk.name);
 	}
 
 	/**
@@ -384,7 +389,7 @@ public class SocialClass implements Serializable {
 	public Stock salesStock() {
 		// TODO we can't assume there is only one type of labour power
 		// also we should allow for theories in which social classes sell other things
-		return Stock.single(Simulation.projectIDCurrent, pk.timeStampID, pk.name, "Labour Power", Stock.STOCKTYPE.SALES.text());
+		return Stock.single(pk.projectID, pk.timeStampID, pk.name, "Labour Power", Stock.STOCKTYPE.SALES.text());
 	}
 
 	/**
@@ -393,7 +398,7 @@ public class SocialClass implements Serializable {
 	 * @return a list of the consumption stocks owned by this social class
 	 */
 	public List<Stock> consumptionStocks() {
-		return Stock.consumedByClass(pk.timeStampID, pk.name);
+		return Stock.consumedByClass(pk.projectID, pk.timeStampID, pk.name);
 	}
 
 	/**
@@ -403,7 +408,7 @@ public class SocialClass implements Serializable {
 	 * @return a Single Consumption Stock called either "COnsumption" or "Necessities" if one of these exists, null otherwise
 	 */
 	public Stock getNecessitiesStock() {
-		for (Stock s : Stock.consumedByClass(Simulation.timeStampIDCurrent, pk.name)) {
+		for (Stock s : Stock.consumedByClass(pk.projectID, pk.timeStampID, pk.name)) {
 			if (s.name().equals("Consumption"))
 				return s;
 			if (s.name().equals("Necessities"))
@@ -420,7 +425,7 @@ public class SocialClass implements Serializable {
 	 * @return the Stock of the consumer good named commodity that this class owns
 	 */
 	public Stock getNecessitiesStock(String commodityName) {
-		return Stock.consumptionByCommodityAndClassSingle(pk.timeStampID, pk.name, commodityName);
+		return Stock.consumptionByCommodityAndClassSingle(pk.projectID, pk.timeStampID, pk.name, commodityName);
 	}
 
 	/**
@@ -536,50 +541,30 @@ public class SocialClass implements Serializable {
 	/**
 	 * a list of social classes, for the current project and timeStamp
 	 * 
+	 * @param projectID
+	 *            the given projectID
+	 * @param timeStampID
+	 *            the given timeStampID *
 	 * @return a list of all social classes for the current project and timeStamp
 	 */
-	public static List<SocialClass> allCurrent() {
-		allQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
-		return allQuery.getResultList();
-	}
-
-	/**
-	 * a list of social classes, for a given project and a given timeStamp
-	 * 
-	 * @param projectID
-	 *            the projectID of the socialClasses to be returned
-	 * @param timeStampID
-	 *            the timeStampID of the socialClasses to be returned
-	 * @return a list of all social classes for the given projectID and timeStampID
-	 * 
-	 */
-	public static List<SocialClass> allInProjectAndTimeStamp(int projectID, int timeStampID) {
+	public static List<SocialClass> all(int projectID, int timeStampID) {
 		allQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID);
-		return allQuery.getResultList();
-	}
-
-	/**
-	 * a list of social classes, for the current project and a given timeStamp
-	 * 
-	 * @param timeStampID
-	 *            the timeStampID of the socialClasses to be returned
-	 * @return a list of all social classes for the current project and the given timeStamp
-	 * 
-	 */
-	public static List<SocialClass> currentProjectWithTimeStamp(int timeStampID) {
-		allQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStampID);
 		return allQuery.getResultList();
 	}
 
 	/**
 	 * a named social class for the current project and a given timeStamp.
 	 * 
+	 * @param projectID
+	 *            the given projectID
+	 * @param timeStampID
+	 *            the given timeStampID
 	 * @param socialClassName
 	 *            the name of the social Class
 	 * @return the single social class with the name socialClassName, for the given project and timeStamp
 	 */
-	public static SocialClass currentWithName(String socialClassName) {
-		primaryQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent)
+	public static SocialClass withName(int projectID, int timeStampID, String socialClassName) {
+		primaryQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID)
 				.setParameter("socialClassName", socialClassName);
 		try {
 			return primaryQuery.getSingleResult();
@@ -819,6 +804,6 @@ public class SocialClass implements Serializable {
 	}
 
 	public void setName(String name) {
-		pk.name=name;
+		pk.name = name;
 	}
 }

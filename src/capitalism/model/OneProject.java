@@ -21,6 +21,8 @@ package capitalism.model;
 
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -28,7 +30,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import capitalism.controller.Simulation;
 import capitalism.utils.Reporter;
 import capitalism.view.custom.ActionStates;
 import capitalism.view.custom.DisplayControlsBox;
@@ -39,6 +40,7 @@ import capitalism.view.custom.DisplayControlsBox;
  */
 
 @XmlRootElement(name = "SavedProject")
+@XmlAccessorType(XmlAccessType.NONE)
 public class OneProject {
 	private static final Logger logger = LogManager.getLogger(OneProject.class);
 
@@ -58,10 +60,10 @@ public class OneProject {
 	 *            the timeStampID of the persistent entitities to be dumped to an XML file
 	 */
 	public void setLists(int projectID, int timeStampID) {
-		commodities = Commodity.allCurrentProject(projectID, timeStampID);
-		industries = Industry.allWithProjectAndTimeStamp(projectID, timeStampID);
-		socialClasses = SocialClass.allInProjectAndTimeStamp(projectID, timeStampID);
-		stocks = Stock.allInProjectAndTimeStamp(projectID, timeStampID);
+		commodities = Commodity.all(projectID, timeStampID);
+		industries = Industry.all(projectID, timeStampID);
+		socialClasses = SocialClass.all(projectID, timeStampID);
+		stocks = Stock.all(projectID, timeStampID);
 		timeStamp = TimeStamp.singleInProjectAndTimeStamp(projectID,timeStampID);
 		project = Project.get(projectID);
 	}
@@ -78,12 +80,23 @@ public class OneProject {
 				maxProjectID = p.getProjectID();
 		}
 		Reporter.report(logger, 1, "Adding a new project with project number %d", maxProjectID + 1);
+		Project.getEntityManager().getTransaction().begin();
+		project.setProjectID(maxProjectID+1);
+		project.setButtonState(ActionStates.lastState().text());
+		Project.getEntityManager().persist(project);
+		logger.debug("Committing project with project ID {} and timeStampID {}", project.getProjectID(), project.getTimeStampID());
+		Project.getEntityManager().getTransaction().commit();
+
+		TimeStamp.getEntityManager().getTransaction().begin();
+		timeStamp.setProjectID(maxProjectID+1);
+		TimeStamp.getEntityManager().persist(timeStamp);
+		logger.debug("Committing timeStamp with project ID {} and timeStampID {}", timeStamp.getProjectID(), timeStamp.getTimeStampID());
+		TimeStamp.getEntityManager().getTransaction().commit();
+
 		Commodity.getEntityManager().getTransaction().begin();
 		Industry.getEntityManager().getTransaction().begin();
 		SocialClass.getEntityManager().getTransaction().begin();
 		Stock.getEntityManager().getTransaction().begin();
-		Project.getEntityManager().getTransaction().begin();
-		TimeStamp.getEntityManager().getTransaction().begin();
 		for (Commodity c : commodities) {
 			logger.debug("Adding commodity called {}", c.name());
 			c.setProjectID(maxProjectID+1);
@@ -104,19 +117,11 @@ public class OneProject {
 			s.setProjectID(maxProjectID+1);
 			Stock.getEntityManager().persist(s);
 		}
-		timeStamp.setProjectID(maxProjectID+1);
-		TimeStamp.getEntityManager().persist(timeStamp);
-		project.setProjectID(maxProjectID+1);
-		project.setButtonState(ActionStates.lastState().text());
-		logger.debug("Committing timeStamp with project ID {} and timeStampID {}", timeStamp.getProjectID(), timeStamp.getTimeStampID());
-		logger.debug("Committing project with project ID {} and timeStampID {}", project.getProjectID(), project.getTimeStampID());
-		Project.getEntityManager().persist(project);
 		Commodity.getEntityManager().getTransaction().commit();
 		Industry.getEntityManager().getTransaction().commit();
 		SocialClass.getEntityManager().getTransaction().commit();
 		Stock.getEntityManager().getTransaction().commit();
-		Project.getEntityManager().getTransaction().commit();
-		TimeStamp.getEntityManager().getTransaction().commit();
+
 		// we loaded the persistent fields, but now we must initialise all the derived fields
 		project.initialise();
 		DisplayControlsBox.rePopulateProjectCombo();

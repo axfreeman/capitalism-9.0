@@ -31,13 +31,13 @@ public class Distribute extends Simulation implements Command {
 	 * 
 	 */
 	public void execute() {
-		int startTimeStamp = Simulation.timeStampIDCurrent;
+		int startTimeStamp = Simulation.timeStampIDCurrent();
 		for (ActionStates a : ActionStates.C_M_Distribute.getChildren()) {
 			a.getCommand().execute();
 		}
 
 		// since this is a super-action, the comparison should be with the state at the beginning of the whole set of actions
 		Simulation.setTimeStampComparatorCursor(startTimeStamp);
-		Simulation.setComparators(Simulation.timeStampIDCurrent);
+		Simulation.setComparators(Simulation.timeStampIDCurrent());
 	}
 }

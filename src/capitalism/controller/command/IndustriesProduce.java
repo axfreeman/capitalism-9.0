@@ -33,7 +33,7 @@ import capitalism.utils.MathStuff;
 import capitalism.utils.Reporter;
 import capitalism.view.custom.ActionStates;
 
-public class IndustriesProduce extends Simulation implements Command {
+public class IndustriesProduce implements Command {
 	private static final Logger logger = LogManager.getLogger("Industry Production");
 
 	/**
@@ -45,14 +45,14 @@ public class IndustriesProduce extends Simulation implements Command {
 	 */
 	public void execute() {
 		Reporter.report(logger, 0, "INDUSTRY PRODUCTION");
-		advanceOneStep(ActionStates.C_P_IndustriesProduce.text(), ActionStates.C_P_Produce.text());
-		double melt = Simulation.currentTimeStamp.getMelt();
+		Simulation.advanceOneStep(ActionStates.C_P_IndustriesProduce.text(), ActionStates.C_P_Produce.text());
+		double melt = Simulation.getTimeStampCurrent().getMelt();
 
 		// Initialise the accounting for how much of this commodity is used up and how much is created in production in the current period
 		// Then we can calculate how much surplus of it resulted from production in this period.
 		// NOTE it doesn't seem as if we can do this with a query without starting a transaction.
 		
-		for (Commodity u : Commodity.currentByOrigin(ORIGIN.INDUSTRIALLY_PRODUCED)) {
+		for (Commodity u : Commodity.currentByOrigin(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent(), ORIGIN.INDUSTRIALLY_PRODUCED)) {
 			u.setStockUsedUp(0);
 			u.setStockProduced(0);
 		}
@@ -66,7 +66,7 @@ public class IndustriesProduce extends Simulation implements Command {
 		// equal to their price at this time except stocks of type labour power, which contribute their magnitude, multiplied by their complexity, divided by the MELT
 		// (TODO incorporate labour complexity)
 		
-		for (Industry industry : Industry.allCurrent()) {
+		for (Industry industry : Industry.all(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent())) {
 			String commodityType = industry.name();
 			Stock salesStock = industry.salesStock();
 			Commodity commodity = industry.commodity();
@@ -74,7 +74,7 @@ public class IndustriesProduce extends Simulation implements Command {
 			double intrinsicValueAdded = 0;
 			Reporter.report(logger, 1, " Industry [%s] is producing %.0f. units of its output; the melt is %.4f", commodityType, output, melt);
 
-			for (Stock s : Stock.allProductiveInIndustry(timeStampIDCurrent, commodityType)) {
+			for (Stock s : Stock.allProductiveInIndustry(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent(), commodityType)) {
 
 				// a little consistency check ...
 				if (!s.getStockType().equals("Productive")) {
@@ -119,12 +119,12 @@ public class IndustriesProduce extends Simulation implements Command {
 		}
 
 		// now (and only now) we can calculate the surplus (if any) of each of the use values
-		for (Commodity u : Commodity.currentByOrigin(ORIGIN.INDUSTRIALLY_PRODUCED)) {
+		for (Commodity u : Commodity.currentByOrigin(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent(), ORIGIN.INDUSTRIALLY_PRODUCED)) {
 			u.setSurplusProduct(u.getStockProduced() - u.getStockUsedUp());
 		}
 		
 		// persist the profit that has been made, so that the user can see it
-		for (Industry c:Industry.allCurrent()) {
+		for (Industry c:Industry.all(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent())) {
 			c.persistProfit();
 		}
 	}

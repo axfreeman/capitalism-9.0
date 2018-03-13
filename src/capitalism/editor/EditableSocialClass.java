@@ -78,7 +78,7 @@ public class EditableSocialClass {
 
 	public static ObservableList<EditableSocialClass> editableSocialClasses() {
 		ObservableList<EditableSocialClass> result = FXCollections.observableArrayList();
-		for (SocialClass c : SocialClass.allCurrent()) {
+		for (SocialClass c : SocialClass.all(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent())) {
 			EditableSocialClass oneRecord = new EditableSocialClass();
 			oneRecord.setName(c.name());
 			oneRecord.setParticipationRatio(c.getparticipationRatio());
@@ -376,7 +376,7 @@ public class EditableSocialClass {
 	}
 
 	public void loadStocksFromSimulation() {
-		SocialClass persistentSocialClass = SocialClass.single(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, name.get());
+		SocialClass persistentSocialClass = SocialClass.single(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent(), name.get());
 		try {
 			// A simple dodge: since there is no difference between desired and actual 
 			// money and sales stocks, set both to be the same

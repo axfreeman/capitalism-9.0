@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import capitalism.controller.Simulation;
 import capitalism.model.Commodity;
 import capitalism.model.Industry;
 import capitalism.model.SocialClass;
@@ -333,7 +334,7 @@ public class TabbedTableViewer extends VBox {
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.SOCIALCLASS_ATTRIBUTE.SOCIALCLASSNAME, true));
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.SOCIALCLASS_ATTRIBUTE.SIZE, false));
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.SOCIALCLASS_ATTRIBUTE.SALES, false));
-		for (Commodity u : Commodity.currentByFunction(Commodity.FUNCTION.CONSUMER_GOOD)) {
+		for (Commodity u : Commodity.currentByFunction(Simulation.projectIDcurrent(),Simulation.timeStampIDCurrent(), Commodity.FUNCTION.CONSUMER_GOOD)) {
 			socialClassesTable.getColumns().add(new SocialClassColumn(u));
 		}
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.SOCIALCLASS_ATTRIBUTE.MONEY, false));
@@ -373,7 +374,7 @@ public class TabbedTableViewer extends VBox {
 		inputSuperColumn.setResizable(true);
 		industryProductionAccountsTable.getColumns().add(inputSuperColumn);
 		productiveInputsColumn= new IndustryColumn(Industry.INDUSTRY_ATTRIBUTE.PRODUCTIVESTOCKS, false);
-		for (Commodity u : Commodity.currentByFunction(Commodity.FUNCTION.PRODUCTIVE_INPUT)) {
+		for (Commodity u : Commodity.currentByFunction(Simulation.projectIDcurrent(),Simulation.timeStampIDCurrent(), Commodity.FUNCTION.PRODUCTIVE_INPUT)) {
 			inputSuperColumn.getColumns().add(new IndustryColumn(u));
 		}
 		inputSuperColumn.getColumns().add(productiveInputsColumn);
@@ -391,14 +392,16 @@ public class TabbedTableViewer extends VBox {
 	 * 
 	 */
 	public void repopulateTabbedTables() {
-		productiveStockTable.setItems(Stock.ofStockTypeObservable("Productive"));
-		moneyStockTable.setItems(Stock.ofStockTypeObservable("Money"));
-		salesStockTable.setItems(Stock.ofStockTypeObservable("Sales"));
-		consumptionStockTable.setItems(Stock.ofStockTypeObservable("Consumption"));
-		commoditiesTable.setItems(Commodity.commoditiesObservable());
-		industryCapitalAccountTable.setItems(Industry.industriesObservable());
-		socialClassesTable.setItems(SocialClass.socialClassesObservable());
-		industryProductionAccountsTable.setItems(Industry.industriesObservable());
+		int projectID =Simulation.projectIDCurrent();
+		int timeStampDisplayID=Simulation.timeStampDisplayCursor();
+		productiveStockTable.setItems(Stock.ofStockTypeObservable(projectID, timeStampDisplayID, "Productive"));
+		moneyStockTable.setItems(Stock.ofStockTypeObservable(projectID, timeStampDisplayID, "Money"));
+		salesStockTable.setItems(Stock.ofStockTypeObservable(projectID, timeStampDisplayID, "Sales"));
+		consumptionStockTable.setItems(Stock.ofStockTypeObservable(projectID, timeStampDisplayID, "Consumption"));
+		commoditiesTable.setItems(Commodity.commoditiesObservable(projectID,timeStampDisplayID));
+		industryCapitalAccountTable.setItems(Industry.industriesObservable(projectID,timeStampDisplayID));
+		socialClassesTable.setItems(SocialClass.socialClassesObservable(projectID,timeStampDisplayID));
+		industryProductionAccountsTable.setItems(Industry.industriesObservable(projectID,timeStampDisplayID));
 	}
 
 	/**

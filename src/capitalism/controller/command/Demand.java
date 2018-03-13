@@ -58,7 +58,7 @@ public class Demand implements Command {
 		Reporter.report(logger, 0, "DEMAND");
 
 		computeProductiveDemand();
-		registerLabourResponse(Simulation.currentTimeStamp.getLabourSupplyResponse());
+		registerLabourResponse(Simulation.getTimeStampCurrent().getLabourSupplyResponse());
 		computeSocialClassDemand();
 	}
 
@@ -91,7 +91,7 @@ public class Demand implements Command {
 
 		// First, set demand to zero for all stocks
 
-		for (Stock s : Stock.allCurrent()) {
+		for (Stock s : Stock.all(Simulation.projectIDcurrent(),Simulation.timeStampIDCurrent())) {
 			s.setReplenishmentDemand(0);
 		}
 
@@ -99,7 +99,7 @@ public class Demand implements Command {
 		// NOTE: social class demand for consumption goods is calculated separately
 		// in SocialClass.registerDemand() which is called immediately after this
 
-		for (Industry c : Industry.allCurrent()) {
+		for (Industry c : Industry.all(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent())) {
 			double totalCost = 0;
 			Reporter.report(logger, 2, "Estimating demand from industry %s at output level %.0f", 
 					c.name(),c.getOutput());
@@ -162,7 +162,7 @@ public class Demand implements Command {
 	 */
 	private void registerLabourResponse(Simulation.LABOUR_RESPONSE response) {
 		//TODO but not very soon: there may be other socially-produced commodities to worry about
-		Commodity labourPower = Commodity.labourPower();
+		Commodity labourPower = Commodity.labourPower(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent());
 		double demandForLabourPower = labourPower.replenishmentDemand();
 		double supplyOfLabourPower = labourPower.totalSupply();
 		switch (response) {
@@ -174,7 +174,7 @@ public class Demand implements Command {
 			double proportionateIncrease = demandForLabourPower / supplyOfLabourPower;
 			Reporter.report(logger, 2, "Labour Power supply is %.0f and demand is %.0f. Supply from all sellers will increase by a factor of %.4f ",
 					supplyOfLabourPower, demandForLabourPower, proportionateIncrease);
-			for (Stock s : Stock.salesByCommodity(Simulation.timeStampIDCurrent, "Labour Power")) {
+			for (Stock s : Stock.salesByCommodity(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent(), "Labour Power")) {
 				s.modifyTo(s.getQuantity() * proportionateIncrease);
 			}
 			break;
@@ -186,7 +186,7 @@ public class Demand implements Command {
 
 		Reporter.report(logger, 1, "Compute revenues");
 		// Now we know how much labour power is going to be consumed, we can set the revenue of the sellers of labour power
-		for (SocialClass sc : SocialClass.allCurrent()) {
+		for (SocialClass sc : SocialClass.all(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent())) {
 			double wageRevenue = sc.salesPrice();
 			double existingRevenue = sc.getRevenue();
 			Reporter.report(logger, 2, "The revenue of the social class [%s] from the previous period is $%.0f. Its wages will be $%.0f, giving a total of $%.0f",
@@ -218,7 +218,7 @@ public class Demand implements Command {
 	 */
 	public void computeSocialClassDemand() {
 		Reporter.report(logger, 1, "Compute demand from social classes");
-		for (SocialClass sc:SocialClass.allCurrent()) {
+		for (SocialClass sc:SocialClass.all(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent())) {
 			Reporter.report(logger, 2, "Calculating demand from the social Class [%s] whose revenue is $%.0f", 
 					sc.name(),sc.getRevenue());
 			for (Stock s:sc.consumptionStocks()) {

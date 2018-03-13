@@ -87,7 +87,7 @@ public class IndustryColumn extends TableColumn<Industry, String> {
 
 		setPrefWidth(75.0);
 		getStyleClass().add("table-column-right");
-		Commodity stockCommodity = Commodity.singleCurrentProject(Simulation.timeStampIDCurrent, productiveStockName);
+		Commodity stockCommodity = Commodity.single(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent(), productiveStockName);
 		TableUtilities.addGraphicToColummnHeader(this, stockCommodity.getImageName(), commodity.getToolTip());
 	}
 }

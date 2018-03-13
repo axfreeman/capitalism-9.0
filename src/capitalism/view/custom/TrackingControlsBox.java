@@ -174,18 +174,18 @@ public class TrackingControlsBox extends VBox {
 
 					switch (comparatorState) {
 					case END:
-						Simulation.setTimeStampComparatorCursor(Simulation.timeStampIDCurrent);
+						Simulation.setTimeStampComparatorCursor(Simulation.timeStampIDCurrent());
 						break;
 					case START:
 						Simulation.setTimeStampComparatorCursor(1);
 						break;
 					case PREVIOUS:
-						int cursor = Simulation.timeStampDisplayCursor;
+						int cursor = Simulation.timeStampDisplayCursor();
 						cursor = cursor < 2 ? 1 : cursor - 1;
 						Simulation.setTimeStampComparatorCursor(cursor);
 						break;
 					case CUSTOM:
-						Simulation.setTimeStampComparatorCursor(Simulation.timeStampDisplayCursor);
+						Simulation.setTimeStampComparatorCursor(Simulation.timeStampDisplayCursor());
 						break;
 					default:
 						logger.error("Unknown radio button {} selected ");

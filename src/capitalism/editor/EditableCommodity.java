@@ -19,6 +19,7 @@
 */
 package capitalism.editor;
 
+import capitalism.controller.Simulation;
 import capitalism.model.Commodity;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -69,7 +70,7 @@ public class EditableCommodity {
 	 */
 	public static ObservableList<EditableCommodity> editableCommodities() {
 		ObservableList<EditableCommodity> result = FXCollections.observableArrayList();
-		for (Commodity c : Commodity.allCurrent()) {
+		for (Commodity c : Commodity.all(Simulation.projectIDcurrent(),Simulation.timeStampIDCurrent())) {
 			EditableCommodity oneRecord = new EditableCommodity();
 			oneRecord.setName(c.name());
 			oneRecord.setUnitValue(c.getUnitValue());

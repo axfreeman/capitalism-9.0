@@ -31,13 +31,13 @@ public class Exchange implements Command {
 	 * combines all the children of this superstate in one button press
 	 */
 	public void execute() {
-		int startTimeStamp = Simulation.timeStampIDCurrent;
+		int startTimeStamp = Simulation.timeStampIDCurrent();
 		for (ActionStates a : ActionStates.M_C_Exchange.getChildren()) {
 			a.getCommand().execute();
 		}
 
 		// since this is a super-action, the comparison should be with the state at the beginning of the whole set of actions
 		Simulation.setTimeStampComparatorCursor(startTimeStamp);
-		Simulation.setComparators(Simulation.timeStampIDCurrent);
+		Simulation.setComparators(Simulation.timeStampIDCurrent());
 	}
 }

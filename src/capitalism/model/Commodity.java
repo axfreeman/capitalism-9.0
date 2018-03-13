@@ -63,8 +63,7 @@ public class Commodity implements Serializable {
 	@XmlElement @Column(name = "turnoverTime") private double turnoverTime;
 	@XmlElement @Column(name = "unitValue") private double unitValue;
 	@XmlElement @Column(name = "unitPrice") private double unitPrice;
-	@XmlElement @Column(name = "surplusProduct") private double surplusProduct; // if after production there is an excess of inventory over use, it is recorded
-																				 // here
+	@XmlElement @Column(name = "surplusProduct") private double surplusProduct; // Excess of inventory over use after production
 	@XmlElement @Column(name = "allocationShare") private double allocationShare;// proportion of total demand that can actually be supplied
 	@XmlElement @Column(name = "stockUsedUp") private double stockUsedUp; // stock used up in production in the current period
 	@XmlElement @Column(name = "stockProduced") private double stockProduced; // stock produced in the current period
@@ -86,6 +85,7 @@ public class Commodity implements Serializable {
 	private static TypedQuery<Commodity> withProjectAndTimeStampQuery;
 	private static TypedQuery<Commodity> withOriginQuery;
 	private static TypedQuery<Commodity> withFunctionQuery;
+	private static TypedQuery<Commodity> deleteQuery;
 
 	// initialise the entitManagers and queries statically once only, hopefully to reduce expensive requests for connections and query-building
 	// TODO test with the EclipseLink profiler
@@ -100,6 +100,7 @@ public class Commodity implements Serializable {
 		withFunctionQuery = entityManager.createQuery(
 				"SELECT u FROM Commodity u where u.pk.projectID= :project and u.pk.timeStampID = :timeStamp and u.function=:function order by u.displayOrder",
 				Commodity.class);
+		deleteQuery = entityManager.createQuery("Delete from Commodity c where c.pk.projectID=:project", Commodity.class);
 	}
 
 	// Enums
@@ -250,14 +251,17 @@ public class Commodity implements Serializable {
 	}
 
 	/**
-	 * an observable list of type Commodity for display by ViewManager, at the current project and timeStampDisplayCursor. timeStampDisplayCursor, which
+	 * an observable list of type Commodity for display by ViewManager, at the given project and timeStampDisplayCursor, which
 	 * may diverge from timeStamp, identifies the row that the user last clicked on.
 	 * 
+	 * @param projectID
+	 *            the given projectID
+	 * @param timeStampID
+	 *            the given timeStampID
 	 * @return a list of Observable Commodities for the current project and timeStamp
 	 */
-	public static ObservableList<Commodity> commoditiesObservable() {
-		Commodity.withProjectAndTimeStampQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp",
-				Simulation.timeStampDisplayCursor);
+	public static ObservableList<Commodity> commoditiesObservable(int projectID, int timeStampID) {
+		Commodity.withProjectAndTimeStampQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID);
 		ObservableList<Commodity> result = FXCollections.observableArrayList();
 		for (Commodity u : Commodity.withProjectAndTimeStampQuery.getResultList()) {
 			result.add(u);
@@ -455,7 +459,7 @@ public class Commodity implements Serializable {
 	 *         {@link DisplayControlsBox#expressionDisplay} and {@link DisplayControlsBox#expressionDisplay}
 	 */
 	public double expressionOf(VALUE_PROPERTY valueProperty) {
-		double melt = Simulation.currentTimeStamp.getMelt();
+		double melt = Simulation.getTimeStampCurrent().getMelt();
 		double expression;
 		switch (valueProperty) {
 		case VALUE:
@@ -503,7 +507,7 @@ public class Commodity implements Serializable {
 		double quantity = 0;
 		double value = 0;
 		double price = 0;
-		for (Stock s : Stock.comoditiesCalled(this.pk.timeStampID, pk.name)) {
+		for (Stock s : Stock.stocksOfCommodity(pk.projectID, pk.timeStampID, pk.name)) {
 			quantity += s.getQuantity();
 			value += s.getValue();
 			price += s.getPrice();
@@ -552,7 +556,7 @@ public class Commodity implements Serializable {
 
 	public double totalValue() {
 		double totalValue = 0;
-		for (Stock s : Stock.comoditiesCalled(pk.timeStampID, pk.name)) {
+		for (Stock s : Stock.stocksOfCommodity(pk.projectID, pk.timeStampID, pk.name)) {
 			totalValue += s.getValue();
 		}
 		return totalValue;
@@ -564,7 +568,7 @@ public class Commodity implements Serializable {
 
 	public double totalPrice() {
 		double totalPrice = 0;
-		for (Stock s : Stock.comoditiesCalled(pk.timeStampID, pk.name)) {
+		for (Stock s : Stock.stocksOfCommodity(pk.projectID, pk.timeStampID, pk.name)) {
 			totalPrice += s.getPrice();
 		}
 		return totalPrice;
@@ -576,7 +580,7 @@ public class Commodity implements Serializable {
 
 	public double totalQuantity() {
 		double totalQuantity = 0;
-		for (Stock s : Stock.comoditiesCalled(pk.timeStampID, pk.name)) {
+		for (Stock s : Stock.stocksOfCommodity(pk.projectID, pk.timeStampID, pk.name)) {
 			totalQuantity += s.getQuantity();
 		}
 		return totalQuantity;
@@ -634,7 +638,7 @@ public class Commodity implements Serializable {
 	 */
 	public double totalSupply() {
 		double supply = 0.0;
-		for (Stock s : Stock.salesByCommodity(pk.timeStampID, pk.name)) {
+		for (Stock s : Stock.salesByCommodity(pk.projectID, pk.timeStampID, pk.name)) {
 			supply += s.getQuantity();
 		}
 		return supply;
@@ -648,7 +652,7 @@ public class Commodity implements Serializable {
 
 	public double replenishmentDemand() {
 		double demand = 0.0;
-		for (Stock s : Stock.comoditiesCalled(pk.timeStampID, pk.name)) {
+		for (Stock s : Stock.stocksOfCommodity(pk.projectID, pk.timeStampID, pk.name)) {
 			demand += s.getReplenishmentDemand();
 		}
 		return demand;
@@ -662,7 +666,7 @@ public class Commodity implements Serializable {
 
 	public double expansionDemand() {
 		double demand = 0.0;
-		for (Stock s : Stock.comoditiesCalled(pk.timeStampID, pk.name)) {
+		for (Stock s : Stock.stocksOfCommodity(pk.projectID, pk.timeStampID, pk.name)) {
 			demand += s.getExpansionDemand();
 		}
 		return demand;
@@ -680,13 +684,11 @@ public class Commodity implements Serializable {
 		return currentCapital;
 	}
 
-	// QUERIES
-
 	/**
 	 * @return a list of industries that produce this commodity
 	 */
 	public List<Industry> industries() {
-		return Industry.currentProjectAndTimeStampWithCommodityName(pk.timeStampID, pk.name);
+		return Industry.withCommodityNamed(pk.projectID, pk.timeStampID, pk.name);
 	}
 
 	/**
@@ -710,49 +712,6 @@ public class Commodity implements Serializable {
 	}
 
 	/**
-	 * retrieve a Commodity by its name for the current project and a given timestamp
-	 * 
-	 * @param timeStampID
-	 *            the given timeStamp
-	 * 
-	 * @param name
-	 *            the name of the commodity
-	 * @return the commodity called name, unless it doesn't exist, in which case null
-	 */
-	public static Commodity singleCurrentProject(int timeStampID, String name) {
-		primaryQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStampID).setParameter("name",
-				name);
-		try {
-			return primaryQuery.getSingleResult();
-		} catch (NoResultException r) {
-			return null;
-		}
-	}
-
-	/**
-	 * a list of all commodities at the current project and timeStamp
-	 * 
-	 * 
-	 * @return a list of all commodities at the current timeStamp and the current project
-	 */
-	public static List<Commodity> allCurrent() {
-		withProjectAndTimeStampQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", Simulation.timeStampIDCurrent);
-		return withProjectAndTimeStampQuery.getResultList();
-	}
-
-	/**
-	 * a list of all commodities at the current project and the given timeStamp
-	 * 
-	 * @param timeStampID
-	 *            the timeStamp of the commodities returned
-	 * @return a list of all commodities at the given timeStamp and the current project
-	 */
-	public static List<Commodity> allCurrentProject(int timeStampID) {
-		withProjectAndTimeStampQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStampID);
-		return withProjectAndTimeStampQuery.getResultList();
-	}
-
-	/**
 	 * a list of all commodities at the given project and the given timeStamp
 	 * 
 	 * @param projectID
@@ -761,22 +720,26 @@ public class Commodity implements Serializable {
 	 *            the timeStamp of the commodities returned
 	 * @return a list of all commodities at the given projectID and timeStampID
 	 */
-	public static List<Commodity> allCurrentProject(int projectID, int timeStampID) {
+	public static List<Commodity> all(int projectID, int timeStampID) {
 		withProjectAndTimeStampQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID);
 		return withProjectAndTimeStampQuery.getResultList();
 	}
 
 	/**
-	 * a list of all commodities of the given origin at the current timeStamp and project
+	 * a list of all commodities of the given origin at the given projectID and timeStampID
 	 * 
+	 * @param projectID
+	 *            the given projectID
+	 * @param timeStampID
+	 *            the given timeStampID
 	 * @param origin
 	 *            the origin type of the Commodity (SOCIALLY_PRODUCED, INDUSTRIALLY_PRODUCED)
 	 * @return a list of industries of the specified origin type, at the latest timeStamp that has been persisted.
 	 * 
 	 */
-	public static List<Commodity> currentByOrigin(Commodity.ORIGIN origin) {
-		withOriginQuery.setParameter("project", Simulation.projectIDCurrent);
-		withOriginQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent);
+	public static List<Commodity> currentByOrigin(int projectID, int timeStampID, Commodity.ORIGIN origin) {
+		withOriginQuery.setParameter("project", projectID);
+		withOriginQuery.setParameter("timeStamp", timeStampID);
 		withOriginQuery.setParameter("origin", origin);
 		return withOriginQuery.getResultList();
 	}
@@ -784,12 +747,17 @@ public class Commodity implements Serializable {
 	/**
 	 * a list of all commodities of the given function at the current timeStamp and project
 	 * 
+	 * @param projectID
+	 *            the given projectID
+	 * 
+	 * @param timeStampID
+	 *            the given timeStampID
 	 * @param function
 	 *            the function type of the use value (PRODUCTIVE INPUT, CONSUMER GOOD, MONEY)
 	 * @return a list all use values with the given function at the current timeStamp and project
 	 */
-	public static List<Commodity> currentByFunction(Commodity.FUNCTION function) {
-		withFunctionQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent).setParameter("project", Simulation.projectIDCurrent);
+	public static List<Commodity> currentByFunction(int projectID, int timeStampID, Commodity.FUNCTION function) {
+		withFunctionQuery.setParameter("timeStamp", timeStampID).setParameter("project", projectID);
 		withFunctionQuery.setParameter("function", function);
 		return withFunctionQuery.getResultList();
 	}
@@ -798,11 +766,16 @@ public class Commodity implements Serializable {
 	 * return a single commodity of origin type SOCIALLY_PRODUCED, which will be labour power
 	 * TODO but not immediately; there could conceivably be more than one such
 	 * 
+	 * @param projectID
+	 *            the given projectID
+	 * 
+	 * @param timeStampID
+	 *            the given timeStampID
 	 * @return the single use value of origin type SOCIALLY_PRODUCED, which will be labour poweer
 	 */
-	public static Commodity labourPower() {
-		withOriginQuery.setParameter("project", Simulation.projectIDCurrent);
-		withOriginQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent);
+	public static Commodity labourPower(int projectID, int timeStampID) {
+		withOriginQuery.setParameter("project", projectID);
+		withOriginQuery.setParameter("timeStamp", timeStampID);
 		withOriginQuery.setParameter("origin", Commodity.ORIGIN.SOCIALlY_PRODUCED);
 		try {
 			return withOriginQuery.getSingleResult();
@@ -818,13 +791,23 @@ public class Commodity implements Serializable {
 	 *            the timeStamp of the commodities
 	 */
 	public static void setComparators(int timeStampID) {
-		withProjectAndTimeStampQuery.setParameter("project", Simulation.projectIDCurrent).setParameter("timeStamp", timeStampID);
+		withProjectAndTimeStampQuery.setParameter("project", Simulation.projectIDCurrent()).setParameter("timeStamp", timeStampID);
 		for (Commodity u : Commodity.withProjectAndTimeStampQuery.getResultList()) {
-			u.setPreviousComparator(single(Simulation.projectIDCurrent, Simulation.getTimeStampComparatorCursor(), u.name()));
-			u.setStartComparator(single(Simulation.projectIDCurrent, 1, u.name()));
-			u.setEndComparator(single(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, u.name()));
-			u.setCustomComparator(single(Simulation.projectIDCurrent, Simulation.timeStampIDCurrent, u.name()));
+			u.setPreviousComparator(single(Simulation.projectIDCurrent(), Simulation.getTimeStampComparatorCursor(), u.name()));
+			u.setStartComparator(single(Simulation.projectIDCurrent(), 1, u.name()));
+			u.setEndComparator(single(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent(), u.name()));
+			u.setCustomComparator(single(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent(), u.name()));
 		}
+	}
+
+	/**
+	 * Delete all commodities with the given projectID
+	 * 
+	 * @param projectID
+	 *            the projectID whose commodities will be deleted
+	 */
+	public static void deleteFromProject(int projectID) {
+		deleteQuery.setParameter("project", projectID);
 	}
 
 	/**
@@ -846,6 +829,9 @@ public class Commodity implements Serializable {
 
 	/**
 	 * Set the name of this commodity
+	 * 
+	 * @param name
+	 *            the name to set
 	 */
 
 	public void setName(String name) {

@@ -58,7 +58,7 @@ public class TimeStamp implements Serializable {
 	private static TypedQuery<TimeStamp> primaryQuery;
 	private static TypedQuery<TimeStamp> superStateQuery;
 	private static TypedQuery<TimeStamp> allInProjectQuery;
-	
+
 	// create the typed queries statically but not as named queries. This makes them easier to find and modify
 	static {
 		entityManager = entityManagerFactory.createEntityManager();
@@ -68,12 +68,12 @@ public class TimeStamp implements Serializable {
 		superStateQuery = entityManager.createQuery(
 				"Select t from TimeStamp t where t.pk.projectID=:project and t.period= :period and t.superState=:superState", TimeStamp.class);
 	}
-	
+
 	/**
-	 *  All list of displayable attributes of a timeStamp entity. 
-	 *  Used to determine what to display and how to display it
+	 * All list of displayable attributes of a timeStamp entity.
+	 * Used to determine what to display and how to display it
 	 */
-	
+
 	public static enum TIMESTAMP_ATTRIBUTE {
 		// @formatter:off
 		INITIALCAPITAL("Initial Capital"), 
@@ -235,18 +235,20 @@ public class TimeStamp implements Serializable {
 	/**
 	 * Set the comparators for the TimeStamp entity identified by the current project and the given timeStampID
 	 * This is done via a static query, because we have to search for the timeStamp concerned - it's not necessarily
-	 * this instantiation.  
-	 * @param timeStampID the timeStampID of the entity whose comparators are to be set
+	 * this instantiation.
+	 * 
+	 * @param timeStampID
+	 *            the timeStampID of the entity whose comparators are to be set
 	 */
 
 	public static void setComparators(int timeStampID) {
-		primaryQuery.setParameter("project", Simulation.projectIDCurrent);
+		primaryQuery.setParameter("project", Simulation.projectIDCurrent());
 		primaryQuery.setParameter("timeStamp", timeStampID);
 		TimeStamp timeStamp = primaryQuery.getSingleResult();
 		timeStamp.setPreviousComparator(singleInCurrentProject(Simulation.getTimeStampComparatorCursor()));
 		timeStamp.setStartComparator(singleInCurrentProject(1));
-		timeStamp.setEndComparator(singleInCurrentProject(Simulation.timeStampIDCurrent));
-		timeStamp.setCustomComparator(singleInCurrentProject(Simulation.timeStampIDCurrent));
+		timeStamp.setEndComparator(singleInCurrentProject(Simulation.timeStampIDCurrent()));
+		timeStamp.setCustomComparator(singleInCurrentProject(Simulation.timeStampIDCurrent()));
 	}
 
 	/**
@@ -312,7 +314,7 @@ public class TimeStamp implements Serializable {
 	 */
 	public double initialCapital() {
 		double initialCapital = 0;
-		for (Industry c : Industry.currentProjectWithTimeStamp(pk.timeStampID)) {
+		for (Industry c : Industry.all(pk.projectID, pk.timeStampID)) {
 			initialCapital += c.productiveCapital();
 		}
 		// TODO get this aggregate query working
@@ -327,7 +329,7 @@ public class TimeStamp implements Serializable {
 
 	public double currentCapital() {
 		double currentCapital = 0;
-		for (Industry c : Industry.currentProjectWithTimeStamp(pk.timeStampID)) {
+		for (Industry c : Industry.all(pk.projectID, pk.timeStampID)) {
 			currentCapital += c.currentCapital();
 		}
 		return currentCapital;
@@ -338,7 +340,7 @@ public class TimeStamp implements Serializable {
 	 */
 	public double profit() {
 		double profit = 0.0;
-		for (Commodity commodity : Commodity.allCurrentProject(pk.timeStampID)) {
+		for (Commodity commodity : Commodity.all(Simulation.projectIDCurrent(), pk.timeStampID)) {
 			profit += commodity.profit();
 		}
 		return profit;
@@ -362,7 +364,7 @@ public class TimeStamp implements Serializable {
 	public double totalValue() {
 		// TODO replace by a sum query
 		double totalValue = 0;
-		for (Stock s : Stock.allCurrentProject(pk.timeStampID)) {
+		for (Stock s : Stock.all(pk.projectID, pk.timeStampID)) {
 			if ((!s.getStockType().equals("Money")) || (Simulation.isFullPricing())) {
 				totalValue += s.getValue();
 			}
@@ -376,7 +378,7 @@ public class TimeStamp implements Serializable {
 	public double totalPrice() {
 		// TODO replace by a sum query
 		double totalPrice = 0;
-		for (Stock s : Stock.allCurrentProject(pk.timeStampID)) {
+		for (Stock s : Stock.all(pk.projectID, pk.timeStampID)) {
 			if ((!s.getStockType().equals("Money")) || (Simulation.isFullPricing())) {
 				totalPrice += s.getPrice();
 			}
@@ -391,7 +393,7 @@ public class TimeStamp implements Serializable {
 	 */
 
 	public static List<TimeStamp> allInCurrentProject() {
-		allInProjectQuery.setParameter("project", Simulation.getProjectIDCurrent());
+		allInProjectQuery.setParameter("project", Simulation.projectIDCurrent());
 		return allInProjectQuery.getResultList();
 	}
 
@@ -401,8 +403,8 @@ public class TimeStamp implements Serializable {
 	 * @return the TimeStamp that has the given timeStampID and project
 	 */
 	public static TimeStamp singleCurrent() {
-		primaryQuery.setParameter("project", Simulation.projectIDCurrent);
-		primaryQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent);
+		primaryQuery.setParameter("project", Simulation.projectIDCurrent());
+		primaryQuery.setParameter("timeStamp", Simulation.timeStampIDCurrent());
 		return primaryQuery.getSingleResult();
 	}
 
@@ -415,7 +417,7 @@ public class TimeStamp implements Serializable {
 	 */
 
 	public static TimeStamp singleInCurrentProject(int timeStampID) {
-		primaryQuery.setParameter("project", Simulation.projectIDCurrent);
+		primaryQuery.setParameter("project", Simulation.projectIDCurrent());
 		primaryQuery.setParameter("timeStamp", timeStampID);
 		return primaryQuery.getSingleResult();
 	}
@@ -445,14 +447,15 @@ public class TimeStamp implements Serializable {
 	 * @return a list of timeStamps that belong to this superstate in the given period and the current projec
 	 */
 	public static List<TimeStamp> superStateChildren(int period, String superStateName) {
-		superStateQuery.setParameter("project", Simulation.getProjectIDCurrent()).setParameter("period", period).setParameter("superState", superStateName);
+		superStateQuery.setParameter("project", Simulation.projectIDCurrent());
+		superStateQuery.setParameter("period", period).setParameter("superState", superStateName);
 		return superStateQuery.getResultList();
 	}
 
 	public static EntityManager getEntityManager() {
 		return entityManager;
 	}
-	
+
 	/**
 	 * Get the timeStampID of this timeStamp
 	 * 

@@ -19,6 +19,7 @@
 */
 package capitalism.editor;
 
+import capitalism.controller.Parameters;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -49,8 +50,8 @@ public class EditableTimeStamp {
 		period = new SimpleDoubleProperty(1);
 		populationGrowthRate = new SimpleDoubleProperty(1);
 		investmentRatio = new SimpleDoubleProperty(0);
-		labourSupplyResponse = new SimpleStringProperty("FIXED");
-		priceResponse = new SimpleStringProperty("VALUES");
+		labourSupplyResponse = new SimpleStringProperty(Parameters.LABOUR_RESPONSE.FIXED.text());
+		priceResponse = new SimpleStringProperty(Parameters.PRICE_RESPONSE.VALUES.text());
 		meltResponse = new SimpleStringProperty("");
 		currencySymbol = new SimpleStringProperty("$");
 		quantitySymbol = new SimpleStringProperty("#");
