@@ -48,26 +48,6 @@ public class Simulation extends Parameters {
 	 */
 	private static Project projectCurrent;
 
-	private static int projectIDCurrent;
-	private static int timeStampIDCurrent;
-	private static int periodCurrent;
-	/**
-	 * Application-wide display cursor. By changing this, the user views entities from earlier timestamps and compares them with
-	 * those from the current timeStamp.  The cursor is independent of timeStampIDCurrent and operations that involve it do not 
-	 * affect the entities stored in the database other than the timeStamp and project records, which keep track of
-	 * what the user is looking at
-	 */
-	private static int timeStampDisplayCursor;
-	
-	/**
-	 * Application-wide comparator cursor. By changing this, the user selects the earlier timeStamp with which the current
-	 * state of the simulation is compared.The cursor is independent of timeStampIDCurrent and operations that involve it do not 
-	 * affect the entities stored in the database other than the timeStamp and project records, which keep track of
-	 * what the user is looking at  
-	 */
-	
-	private static int timeStampComparatorCursor; 			// the timeStamp with which the displayed data is to be compared
-
 	/**
 	 * A copy of the melt, for convenience and speed. MUST be updated by timeStamp.setMelt(). That way it will always synchronise.
 	 * TODO under demelopvent
@@ -84,38 +64,41 @@ public class Simulation extends Parameters {
 	public static void startup() {
 		Reporter.report(logger, 0, "INITIALISE DATA FROM USER-DEFINED PROJECTS");
 
-		timeStampIDCurrent = 1;
-		timeStampDisplayCursor = 1;
-		timeStampComparatorCursor = 1;
-		periodCurrent = 1;
-
-		// Initialise all projects at the start
+		// initialise the two key state variables - the current period and the current project.
+		// all state variables are encapsulated in one or other of these variables.
+		// here for convenience we keep a copy that has to be kept synchronised with the database copy
+		// I am not sufficiently conversant with JPA to know if this happens automatically so
+		// we do some belt and braces. TODO resolve this.
+		timeStampCurrent = TimeStamp.single(1, 1);
+		timeStampCurrent.setPeriod(1);
+		projectCurrent = Project.get(1);
 		for (Project p : Project.projectsAll()) {
 			p.initialise();
 		}
-
-		// until we get rid of the side-effects (see Project.initialise), we re-initialise the timeStamp here
-		timeStampIDCurrent = 1;
-		timeStampDisplayCursor = 1;
-		timeStampComparatorCursor = 1;
-		periodCurrent = 1;
-		projectIDCurrent = 1;
-		timeStampCurrent = TimeStamp.singleCurrent();
+		
+		// initialise all the cursors, which are held in the current project
+		projectCurrent.setTimeStampID(1);
+		projectCurrent.setTimeStampDisplayCursor(1);
+		projectCurrent.setTimeStampComparatorCursor(1);
 	}
 
 	/**
 	 * Convert the stock inputs, which provide production and consumption magnitudes, into coefficients.
 	 * This is more transparent to the user and also permits higher precision, in general
+	 * 
+	 * @param projectID
+	 *            the projectID of the stocks whose coefficients we wish to calculate
+	 * @param timeStampID
+	 *            the timeStampID of the stocks whose coefficients we wish to calculate
 	 */
 
-	public static void convertMagnitudesToCoefficients() {
-		for (Industry industry : Industry.all(projectIDCurrent, timeStampIDCurrent)) {
-			for (Stock stock : Stock.allProductiveInIndustry(projectIDCurrent, timeStampIDCurrent, industry.name())) {
+	public static void convertMagnitudesToCoefficients(int projectID, int timeStampID) {
+		for (Industry industry : Industry.all(projectID, timeStampID)) {
+			for (Stock stock : Stock.allProductiveInIndustry(projectID, timeStampID, industry.name())) {
 				double coefficient = stock.getProductionQuantity() / industry.getOutput();
 				logger.debug("Industry {} stock {} has coefficient {} and magnitude {} for an output of {}. Coefficient will be changed to {}",
 						industry.name(), stock.name(), stock.getProductionCoefficient(), stock.getProductionQuantity(), industry.getOutput(),
 						coefficient);
-				// stock.setProductionCoefficient(coefficient);
 			}
 		}
 	}
@@ -130,7 +113,7 @@ public class Simulation extends Parameters {
 	 */
 
 	public static void checkInvariants() {
-		for (Commodity u : Commodity.all(projectIDCurrent, timeStampIDCurrent)) {
+		for (Commodity u : Commodity.all(projectIDCurrent(), timeStampIDCurrent())) {
 			double listedQuantity = u.totalQuantity();
 			double unitValue = u.getUnitValue();
 			double listedValue = u.totalValue();
@@ -161,34 +144,40 @@ public class Simulation extends Parameters {
 
 	public static void advanceOneStep(String description, String superState) {
 
-		checkMoneySufficiency();
+		checkMoneySufficiency(projectIDcurrent(),timeStampIDCurrent());
 
-		timeStampComparatorCursor = timeStampIDCurrent;
-		timeStampDisplayCursor = timeStampIDCurrent + 1;
+		// move the timeStamp forward in the current project persistent record and save it.
+		// do not create a new project record - modify the existing one.
+		// NOTE we move forward the persistent project record, and then copy it to
+		// the top copy that is held in the simulation.
+		// TODO check empirically whether if we update the top copy we in fact update the persistent entity
+		// probably we do, but I haven't studied JPA internals enough to be sure, so this is belt and braces
+
+		int oldTimeStampID=timeStampIDCurrent();
+		Project.getEntityManager().getTransaction().begin();
+		Project.get(projectCurrent.getProjectID()).setTimeStampComparatorCursor(oldTimeStampID);
+		Project.get(projectCurrent.getProjectID()).setTimeStampDisplayCursor(oldTimeStampID+ 1);
+		Project.get(projectCurrent.getProjectID()).setTimeStampID(oldTimeStampID+ 1);
+		Project.getEntityManager().getTransaction().commit();
+		projectCurrent=Project.get(projectCurrent.getProjectID()); // retrieve the newly-persisted record and take a fresh copy
+		
 		logger.debug("Move One Step in project {} at period {} by creating a new timeStamp {} called {}",
-				projectIDCurrent, periodCurrent, timeStampIDCurrent + 1, description);
+				projectCurrent.getProjectID(), getPeriodCurrent(), projectCurrent.getTimeStampID(), description);
 
 		// persist a new version of all simulation entities, with the same project, and the new timeStamp...
 		TimeStamp.getEntityManager().getTransaction().begin();
-		Project.getEntityManager().getTransaction().begin();
-
 		// Create a new timeStamp that moves on by one from the present timeStamp, but has the same project and period
 		// set its description and superState from the parameters in the call to advanceOneStep
-		TimeStamp oldTimeStamp = TimeStamp.singleInCurrentProject(timeStampIDCurrent);
+		int tempPID=projectIDCurrent();
+		TimeStamp oldTimeStamp = TimeStamp.single(tempPID, oldTimeStampID);
 		timeStampCurrent = new TimeStamp(oldTimeStamp);
-		timeStampCurrent.setTimeStampID(timeStampIDCurrent + 1);
+		timeStampCurrent.setTimeStampID(projectCurrent.getTimeStampID());
 		timeStampCurrent.setSuperState(superState);
 		timeStampCurrent.setDescription(description);
-		timeStampCurrent.setPeriod(periodCurrent);
+		timeStampCurrent.setPeriod(getPeriodCurrent());
 		TimeStamp.getEntityManager().persist(timeStampCurrent);
 
-		// record the present timeStamp and cursor in the current project persistent record and save it.
-		// do not create a new project record - modify the existing one.
-		Project.setTimeStamp(projectIDCurrent, timeStampIDCurrent + 1);
-		Project.setTimeStampCursor(projectIDCurrent, timeStampDisplayCursor);
-
 		TimeStamp.getEntityManager().getTransaction().commit();
-		Project.getEntityManager().getTransaction().commit();
 
 		Commodity.getEntityManager().getTransaction().begin();
 		Stock.getEntityManager().getTransaction().begin();
@@ -196,45 +185,45 @@ public class Simulation extends Parameters {
 		SocialClass.getEntityManager().getTransaction().begin();
 
 		// Commodities
-		logger.debug(" Persisting a new set of commodities with timeStamp {} and period {}", timeStampIDCurrent + 1, periodCurrent);
+		logger.debug(" Persisting a new set of commodities with timeStamp {} and period {}", timeStampIDCurrent(), getPeriodCurrent());
 		Commodity commodity;
-		for (Commodity u : Commodity.all(projectIDCurrent, timeStampIDCurrent)) {
+		for (Commodity u : Commodity.all(projectIDCurrent(), oldTimeStampID)) {
 			commodity = new Commodity(u);
-			commodity.setTimeStampID(timeStampIDCurrent + 1);
+			commodity.setTimeStampID(timeStampIDCurrent());
 			Commodity.getEntityManager().persist(commodity);
 		}
 
 		// Stocks
-		logger.debug(" Persisting a new set of stocks with timeStamp {} ", timeStampIDCurrent + 1);
+		logger.debug(" Persisting a new set of stocks with timeStamp {} ", timeStampIDCurrent());
 		Stock newStock;
-		for (Stock s : Stock.all(projectIDCurrent, timeStampIDCurrent)) {
+		for (Stock s : Stock.all(projectIDCurrent(), oldTimeStampID)) {
 			newStock = new Stock(s);
-			newStock.setTimeStamp(timeStampIDCurrent + 1);
+			newStock.setTimeStamp(timeStampIDCurrent());
 			Stock.getEntityManager().persist(newStock);
 		}
 
 		// industries
-		logger.debug("Persisting a new set of industries with timeStamp {} ", timeStampIDCurrent + 1);
+		logger.debug("Persisting a new set of industries with timeStamp {} ", timeStampIDCurrent());
 		Industry newIndustry;
-		for (Industry c : Industry.all(projectIDCurrent, timeStampIDCurrent)) {
+		for (Industry c : Industry.all(projectIDCurrent(), oldTimeStampID)) {
 			logger.debug("Persisting an industry that produces commodity" + c.name());
 			newIndustry = new Industry(c);
-			newIndustry.setTimeStamp(timeStampIDCurrent + 1);
+			newIndustry.setTimeStamp(timeStampIDCurrent());
 			Industry.getEntityManager().persist(newIndustry);
 		}
 
 		// Social Classes
-		logger.debug("Persisting a new set of social classes with timeStamp {}", timeStampIDCurrent + 1);
+		logger.debug("Persisting a new set of social classes with timeStamp {}", timeStampIDCurrent());
 		SocialClass newSocialClass;
-		for (SocialClass sc : SocialClass.all(projectIDCurrent, timeStampIDCurrent)) {
+		for (SocialClass sc : SocialClass.all(projectIDCurrent(), oldTimeStampID)) {
 			logger.debug("  Persisting a social class whose name is " + sc.name());
 			newSocialClass = new SocialClass();
 			newSocialClass.copy(sc);
-			newSocialClass.setTimeStamp(timeStampIDCurrent + 1);
+			newSocialClass.setTimeStamp(timeStampIDCurrent());
 			SocialClass.getEntityManager().persist(newSocialClass);
 		}
 
-		setComparators(timeStampIDCurrent + 1);
+		setComparators(projectIDCurrent(), timeStampIDCurrent());
 
 		// now commit all the modified records
 		SocialClass.getEntityManager().getTransaction().commit();
@@ -247,18 +236,20 @@ public class Simulation extends Parameters {
 		// logger.debug("Industry {} has project {} and timeStamp {}",i.getName(),i.getProject(),i.getTimeStamp());
 		// }
 
-		// we can only advance the timeStampID now, because the old ID was used to persist all the other records
-		timeStampIDCurrent++;
-
 		logger.debug("Done Persisting: exit AdvanceOneStep");
 	}
 
 	/**
 	 * A consistency check: does everyone have at least some money?
+	 * 
+	 * @param projectID
+	 *            the projectID of the stocks to be checked
+	 * @param timeStampID
+	 *            the timeStampID of the stocks to be checked
 	 */
-	private static void checkMoneySufficiency() {
+	private static void checkMoneySufficiency(int projectID, int timeStampID) {
 		// a little consistency check
-		for (Stock s : Stock.all(projectIDCurrent, timeStampIDCurrent)) {
+		for (Stock s : Stock.all(projectID, timeStampID)) {
 			if (s.getQuantity() < 0 - MathStuff.epsilon) {
 				if (s.getStockType().equals(Stock.STOCKTYPE.MONEY.text())) {
 					Dialogues.alert(logger, "The owner %s has run out of money. "
@@ -270,11 +261,15 @@ public class Simulation extends Parameters {
 	}
 
 	/**
-	 * tell every stock to record its value and price, based on the quantity of the stock, its unit value and its price
+	 * @param projectID
+	 *            the projectID for which the reporting and aggregation is to be done
+	 * @param timeStampID
+	 *            the timeStampID for which the reporting and aggregation is to be done
+	 *            tell every stock to record its value and price, based on the quantity of the stock, its unit value and its price
 	 */
-	public static void calculateStockAggregates() {
+	public static void calculateStockAggregates(int projectID, int timeStampID) {
 		Reporter.report(logger, 2, "Calculating stock values and prices from stock quantities, unit values and unit prices");
-		List<Stock> allStocks = Stock.all(projectIDCurrent, timeStampIDCurrent);
+		List<Stock> allStocks = Stock.all(projectID, timeStampID);
 		for (Stock s : allStocks) {
 			s.modifyTo(s.getQuantity());
 		}
@@ -288,7 +283,7 @@ public class Simulation extends Parameters {
 	 * of their product with social average values.
 	 */
 	public static void computeUnitValues() {
-		for (Commodity u : Commodity.all(projectIDCurrent, timeStampIDCurrent)) {
+		for (Commodity u : Commodity.all(projectIDCurrent(), timeStampIDCurrent())) {
 			if (u.getFunction() != Commodity.FUNCTION.MONEY) {
 				double quantity = u.totalQuantity();
 				double newUnitValue = u.totalValue() / quantity;
@@ -297,7 +292,7 @@ public class Simulation extends Parameters {
 				u.setUnitValue(newUnitValue);
 			}
 		}
-		for (Stock s : Stock.all(projectIDCurrent, timeStampIDCurrent)) {
+		for (Stock s : Stock.all(projectIDCurrent(), timeStampIDCurrent())) {
 			s.reCalculateStockTotalValuesAndPrices();
 		}
 	}
@@ -312,19 +307,19 @@ public class Simulation extends Parameters {
 
 		// TODO this is somewhat hamfisted. Need queries to do this stuff.
 		if (Parameters.isFullPricing()) {
-			for (Commodity u : Commodity.all(projectIDCurrent, timeStampIDCurrent)) {
+			for (Commodity u : Commodity.all(projectIDCurrent(), timeStampIDCurrent())) {
 				Reporter.report(logger, 2, "Commodity [%s] Total value is %.0f, and total price is %.0f", u.name(), u.totalValue(), u.totalPrice());
 				totalValue += u.totalValue();
 				totalPrice += u.totalPrice();
 			}
 		} else {
-			for (Commodity u : Commodity.currentByFunction(projectIDCurrent, timeStampIDCurrent, Commodity.FUNCTION.PRODUCTIVE_INPUT)) {
+			for (Commodity u : Commodity.currentByFunction(projectIDCurrent(), timeStampIDCurrent(), Commodity.FUNCTION.PRODUCTIVE_INPUT)) {
 				Reporter.report(logger, 2, "Commodity [%s] Total value is %.0f, and total price is %.0f", u.name(), u.totalValue(), u.totalPrice());
 				totalValue += u.totalValue();
 				totalPrice += u.totalPrice();
 
 			}
-			for (Commodity u : Commodity.currentByFunction(projectIDCurrent, timeStampIDCurrent, Commodity.FUNCTION.CONSUMER_GOOD)) {
+			for (Commodity u : Commodity.currentByFunction(projectIDCurrent(), timeStampIDCurrent(), Commodity.FUNCTION.CONSUMER_GOOD)) {
 				Reporter.report(logger, 2, "Commodity [%s] Total value is %.0f, and total price is %.0f", u.name(), u.totalValue(), u.totalPrice());
 				totalValue += u.totalValue();
 				totalPrice += u.totalPrice();
@@ -342,22 +337,27 @@ public class Simulation extends Parameters {
 	}
 
 	/**
-	 * initialise the initialCapital of each industry to be the price of its stocks when the period starts.
-	 * Initialise the currentCapital to be the same.
-	 * Called at startup and thereafter afterAccumulate (i.e. at the very end of the whole industry and start of the next)
+	 * @param projectID
+	 *            the projectID for which the capitals are being calculated
+	 * @param timeStampID
+	 *            the timeStampID for which the capitals are being calculated
+	 *            initialise the initialCapital of each industry to be the price of its stocks when the period starts.
+	 *            Initialise the currentCapital to be the same.
+	 *            Called at startup and thereafter afterAccumulate (i.e. at the very end of the whole industry and start of the next)
 	 */
-	public static void setCapitals() {
-		for (Industry c : Industry.all(projectIDCurrent, timeStampIDCurrent)) {
+	public static void setCapitals(int projectID, int timeStampID) {
+		TimeStamp ts = TimeStamp.single(projectID, timeStampID);
+		for (Industry c : Industry.all(projectID, timeStampID)) {
 			double initialCapital = c.currentCapital();
 			Reporter.report(logger, 3, "The initial capital of the industry[%s] is now $%.0f (intrinsic %.0f)", c.name(), initialCapital,
-					initialCapital / timeStampCurrent.getMelt());
+					initialCapital / ts.getMelt());
 			c.setInitialCapital(initialCapital);
 		}
-		Reporter.report(logger, 2, "Total initial capital is now $%.0f (intrinsic %.0f)", timeStampCurrent.initialCapital(),
-				timeStampCurrent.initialCapital() / timeStampCurrent.getMelt());
+		Reporter.report(logger, 2, "Total initial capital is now $%.0f (intrinsic %.0f)", ts.initialCapital(),
+				ts.initialCapital() / ts.getMelt());
 		Reporter.report(logger, 2, "The profit of the previous period has been erased from the record; it was stored during the price calculation");
 		// Erase the public record of the profit of the previous period
-		for (Industry c : Industry.all(projectIDCurrent, timeStampIDCurrent)) {
+		for (Industry c : Industry.all(projectID, timeStampID)) {
 			c.persistProfit();
 		}
 	}
@@ -369,7 +369,7 @@ public class Simulation extends Parameters {
 
 	public static void setInitialProductiveCapitals() {
 
-		for (Industry c : Industry.all(projectIDCurrent, timeStampIDCurrent)) {
+		for (Industry c : Industry.all(projectIDCurrent(), timeStampIDCurrent())) {
 			double productiveCapital = 0.0;
 			for (Stock s : c.productiveStocks()) {
 				productiveCapital += s.getPrice();
@@ -380,10 +380,10 @@ public class Simulation extends Parameters {
 	}
 
 	public static void advanceOnePeriod() {
-		periodCurrent++;
-		Reporter.report(logger, 0, "ADVANCING ONE PERIOD TO %d", periodCurrent);
+		setPeriodCurrent(getPeriodCurrent()+1);
+		Reporter.report(logger, 0, "ADVANCING ONE PERIOD TO %d", getPeriodCurrent());
 		// start another period so recompute the initial capitals and profits
-		setCapitals();
+		setCapitals(projectIDCurrent(), timeStampIDCurrent());
 	}
 
 	/**
@@ -402,35 +402,24 @@ public class Simulation extends Parameters {
 	 */
 
 	public static void switchProjects(int newProjectID, ActionButtonsBox actionButtonsBox) {
-		if (newProjectID == projectIDCurrent) {
+		if (newProjectID == projectIDCurrent()) {
 			logger.debug("The user switched to project {} which  is already current. No action was taken", newProjectID);
 			return;
 		}
-		Project newProject = Project.get(newProjectID);
-
-		// record the current timeStamp, timeStampDisplayCursor and buttonState in the current project record, and persist it to the database
-		Project thisProject = Project.get(projectIDCurrent);
 
 		Project.getEntityManager().getTransaction().begin();
 
-		thisProject.setTimeStampID(timeStampIDCurrent);
-		thisProject.setTimeStampDisplayCursor(timeStampDisplayCursor);
-		thisProject.setTimeStampComparatorCursor(getTimeStampComparatorCursor());
-		thisProject.setButtonState(ActionButtonsBox.getLastAction().text());
-		thisProject.setPeriod(getPeriodCurrent());
+		// save the state of the present project so it knows how to return to the same point
+		projectCurrent.setButtonState(ActionButtonsBox.getLastAction().text());
 
 		Project.getEntityManager().getTransaction().commit();
 
 		// retrieve the selected project record, and copy its various cursors and into the simulation cursors
-		timeStampIDCurrent = newProject.getTimeStampID();
-		timeStampDisplayCursor = newProject.getTimeStampDisplayCursor();
-		setTimeStampComparatorCursor(newProject.getTimeStampComparatorCursor());
-		setPeriodCurrent(newProject.getPeriod());
-		actionButtonsBox.setActionStateFromLabel(newProject.getButtonState());
-		projectIDCurrent = newProjectID;
+		projectCurrent = Project.get(newProjectID);
+		actionButtonsBox.setActionStateFromLabel(projectCurrent.getButtonState());
 		DisplayControlsBox.setParameterComboPrompts();
-		timeStampCurrent = TimeStamp.singleInProjectAndTimeStamp(newProjectID, timeStampIDCurrent);
-		Reporter.report(logger, 0, "SWITCHED TO PROJECT %s (%s)", newProjectID, newProject.getDescription());
+		timeStampCurrent = TimeStamp.singleInProjectAndTimeStamp(newProjectID, timeStampIDCurrent());
+		Reporter.report(logger, 0, "SWITCHED TO PROJECT %s (%s)", newProjectID, projectCurrent.getDescription());
 		// ViewManager.getTabbedTableViewer().buildTables();
 	}
 
@@ -438,17 +427,19 @@ public class Simulation extends Parameters {
 	 * for all persistent entities at the given timeStamp, set comparators that refer to the timeStampComparatorCursor
 	 * TODO previousComparator not yet properly implemented.
 	 * 
+	 * @param projectID
+	 *            all persistent records at this timeStampID will be given comparators equal to the timeStampComparatorCursor
 	 * @param timeStampID
 	 *            all persistent records at this timeStampID will be given comparators equal to the timeStampComparatorCursor
 	 */
 
-	public static void setComparators(int timeStampID) {
+	public static void setComparators(int projectID, int timeStampID) {
 		try {
-			Stock.setComparators(timeStampID);
-			Commodity.setComparators(timeStampID);
-			Industry.setComparators(timeStampID);
-			SocialClass.setComparators(timeStampID);
-			TimeStamp.setComparators(timeStampID);
+			Stock.setComparators(projectID, timeStampID);
+			Commodity.setComparators(projectID, timeStampID);
+			Industry.setComparators(projectID, timeStampID);
+			SocialClass.setComparators(projectID, timeStampID);
+			TimeStamp.setComparators(projectID, timeStampID);
 		} catch (Exception e) {
 			Dialogues.alert(logger, "Could not set comparators. Sorry, please contact developer");
 		}
@@ -469,7 +460,7 @@ public class Simulation extends Parameters {
 	 * @return the timeStampComparatorCursor
 	 */
 	public static int getTimeStampComparatorCursor() {
-		return timeStampComparatorCursor;
+		return projectCurrent.getTimeStampComparatorCursor();
 	}
 
 	/**
@@ -477,7 +468,7 @@ public class Simulation extends Parameters {
 	 *            the timeStampComparatorCursor to set
 	 */
 	public static void setTimeStampComparatorCursor(int timeStampComparatorCursor) {
-		Simulation.timeStampComparatorCursor = timeStampComparatorCursor;
+		projectCurrent.setTimeStampComparatorCursor(timeStampComparatorCursor);
 	}
 
 	/**
@@ -488,29 +479,29 @@ public class Simulation extends Parameters {
 	 * @return the periodCurrent
 	 */
 	public static int getPeriodCurrent() {
-		return periodCurrent;
+		return timeStampCurrent.getPeriod();
 	}
 
 	/**
-	 * @param periodCurrent
+	 * @param period
 	 *            the periodCurrent to set
 	 */
-	public static void setPeriodCurrent(int periodCurrent) {
-		Simulation.periodCurrent = periodCurrent;
+	public static void setPeriodCurrent(int period) {
+		timeStampCurrent.setPeriod(period);
 	}
 
 	/**
-	 * @return the projectCurrent
+	 * @return the projectIDCurrent
 	 */
 	public static int projectIDCurrent() {
-		return projectIDCurrent;
+		return projectCurrent.getProjectID();
 	}
 
 	/**
 	 * @return the timeStampDisplayCursor
 	 */
 	public static int timeStampDisplayCursor() {
-		return timeStampDisplayCursor;
+		return projectCurrent.getTimeStampDisplayCursor();
 	}
 
 	/**
@@ -539,14 +530,14 @@ public class Simulation extends Parameters {
 	 * @return the current projectID
 	 */
 	public static int projectIDcurrent() {
-		return projectIDCurrent;
+		return projectCurrent.getProjectID();
 	}
 
 	/**
 	 * @return the current timeStampID
 	 */
 	public static int timeStampIDCurrent() {
-		return timeStampIDCurrent;
+		return projectCurrent.getTimeStampID();
 	}
 
 	/**
@@ -558,7 +549,7 @@ public class Simulation extends Parameters {
 	}
 
 	public static void setProjectID(int projectID) {
-		Simulation.projectIDCurrent = projectID;
+		projectCurrent.setProjectID(projectID);
 	}
 
 	/**
@@ -569,16 +560,18 @@ public class Simulation extends Parameters {
 	}
 
 	/**
-	 * @param melt the melt to set
+	 * @param melt
+	 *            the melt to set
 	 */
 	public static void setMelt(double melt) {
 		Simulation.melt = melt;
 	}
 
 	/**
-	 * @param timeStampDisplayCursor the timeStampDisplayCursor to set
+	 * @param timeStampDisplayCursor
+	 *            the timeStampDisplayCursor to set
 	 */
 	public static void setTimeStampDisplayCursor(int timeStampDisplayCursor) {
-		Simulation.timeStampDisplayCursor = timeStampDisplayCursor;
+		projectCurrent.setTimeStampDisplayCursor(timeStampDisplayCursor);
 	}
 }

@@ -612,20 +612,21 @@ public class Stock implements Serializable {
 	}
 
 	/**
-	 * set the comparators for all stock entities in the current project, for the given timeStampID
+	 * set the comparators for all stock entities in the given project, for the given timeStampID
 	 * 
 	 * @param timeStampID
 	 *            the timeStampID of the Stock entities whose comparators will be set
+	 * @param projectID
+	 *            the projectID of the Stock entities whose comparators will be set
 	 */
-	public static void setComparators(int timeStampID) {
-		for (Stock s : all(Simulation.projectIDCurrent(), timeStampID)) {
-			s.setPreviousComparator(single(Simulation.projectIDCurrent(), Simulation.getTimeStampComparatorCursor(), s.getOwner(),
-					s.name(), s.getStockType()));
-			s.setStartComparator(single(Simulation.projectIDCurrent(), 1, s.getOwner(), s.name(), s.getStockType()));
-			s.setEndComparator(
-					single(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent(), s.getOwner(), s.name(), s.getStockType()));
-			s.setCustomComparator(
-					single(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent(), s.getOwner(), s.name(), s.getStockType()));
+	public static void setComparators(int projectID, int timeStampID) {
+		logger.debug("Setting comparators for stocks in project {} with timeStamp {}", projectID, timeStampID);
+		Project project=Project.get(projectID);
+		for (Stock s : all(projectID, timeStampID)) {
+			s.setPreviousComparator(single(projectID, project.getTimeStampComparatorCursor(), s.getOwner(),	s.name(), s.getStockType()));
+			s.setStartComparator(single(projectID, 1, s.getOwner(), s.name(), s.getStockType()));
+			s.setEndComparator(single(projectID, project.getTimeStampID(), s.getOwner(), s.name(), s.getStockType()));
+			s.setCustomComparator(single(projectID, project.getTimeStampID(), s.getOwner(), s.name(), s.getStockType()));
 		}
 	}
 

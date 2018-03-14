@@ -38,6 +38,6 @@ public class Distribute extends Simulation implements Command {
 
 		// since this is a super-action, the comparison should be with the state at the beginning of the whole set of actions
 		Simulation.setTimeStampComparatorCursor(startTimeStamp);
-		Simulation.setComparators(Simulation.timeStampIDCurrent());
+		Simulation.setComparators(Simulation.projectIDcurrent(), Simulation.timeStampIDCurrent());
 	}
 }

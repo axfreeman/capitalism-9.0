@@ -30,7 +30,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import capitalism.controller.Simulation;
 import capitalism.model.Stock.VALUE_EXPRESSION;
 import capitalism.utils.Dialogues;
 import capitalism.utils.Reporter;
@@ -88,19 +87,22 @@ public class SocialClass implements Serializable {
 	}
 
 	/**
-	 * set the comparators for the socialClass entity at the current project and the given timeStamp
+	 * set the comparators for the socialClass entity at the given project and timeStamp
+	 * @param projectID
+	 *            the projectID which selects the entity
 	 * 
 	 * @param timeStampID
-	 *            the timeStamp which selects the entity
+	 *            the timeStampID which selects the entity
 	 */
-	public static void setComparators(int timeStampID) {
-		allQuery.setParameter("project", Simulation.projectIDCurrent()).setParameter("timeStamp", timeStampID);
+	public static void setComparators(int projectID, int timeStampID) {
+		logger.debug("Setting comparators for socialClasses in project {} with timeStamp {}", projectID, timeStampID);
+		Project project=Project.get(projectID);
+		allQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID);
 		for (SocialClass sc : allQuery.getResultList()) {
-			sc.setPreviousComparator(
-					single(Simulation.projectIDCurrent(), Simulation.getTimeStampComparatorCursor(), sc.name()));
-			sc.setStartComparator(single(Simulation.projectIDCurrent(), 1, sc.name()));
-			sc.setEndComparator(single(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent(), sc.name()));
-			sc.setCustomComparator(single(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent(), sc.name()));
+			sc.setPreviousComparator(single(projectID, project.getTimeStampComparatorCursor(), sc.name()));
+			sc.setStartComparator(single(projectID, 1, sc.name()));
+			sc.setEndComparator(single(projectID, project.getTimeStampID(), sc.name()));
+			sc.setCustomComparator(single(projectID, project.getTimeStampID(), sc.name()));
 		}
 	}
 

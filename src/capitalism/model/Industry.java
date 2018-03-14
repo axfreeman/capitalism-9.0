@@ -668,7 +668,9 @@ public class Industry implements Serializable {
 
 	/**
 	 * A list of industries, for the given project and timeStamp, that produce a given commodity
-	 * @param projectID the given projectID
+	 * 
+	 * @param projectID
+	 *            the given projectID
 	 * @param commodityName
 	 *            the name of the commodity that these industries produce
 	 *            * @param projectID the given projectID
@@ -686,16 +688,20 @@ public class Industry implements Serializable {
 	/**
 	 * set the comparators for the industries records in the current project for the named timeStampID
 	 * 
+	 * @param projectID
+	 *            the projectID of the industries whose comparators are to be reset
 	 * @param timeStampID
 	 *            the timeStampID of the industries whose comparators are to be reset
 	 */
 
-	public static void setComparators(int timeStampID) {
-		for (Industry c : Industry.all(Simulation.projectIDCurrent(), timeStampID)) {
-			c.setPreviousComparator(single(Simulation.projectIDCurrent(), Simulation.getTimeStampComparatorCursor(), c.name()));
-			c.setStartComparator(single(Simulation.projectIDCurrent(), 1, c.name()));
-			c.setEndComparator(single(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent(), c.name()));
-			c.setCustomComparator(single(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent(), c.name()));
+	public static void setComparators(int projectID, int timeStampID) {
+		logger.debug("Setting comparators for industries in project {} with timeStamp {}", projectID, timeStampID);
+		Project project=Project.get(projectID);
+		for (Industry c : Industry.all(projectID, timeStampID)) {
+			c.setPreviousComparator(single(projectID, project.getTimeStampComparatorCursor(), c.name()));
+			c.setStartComparator(single(projectID, 1, c.name()));
+			c.setEndComparator(single(projectID, project.getTimeStampID(), c.name()));
+			c.setCustomComparator(single(projectID, project.getTimeStampID(), c.name()));
 		}
 	}
 

@@ -240,7 +240,11 @@ public class ViewManager {
 	 * 
 	 */
 	private static void populateSummaryGrid() {
-		TimeStamp timeStamp = TimeStamp.singleInCurrentProject(Simulation.timeStampDisplayCursor());
+		// TODO debug aid- remove when done
+		int projectIDCurrent =Simulation.projectIDCurrent();
+		int timeStampDisplayCursor= Simulation.timeStampDisplayCursor();
+		
+		TimeStamp timeStamp = TimeStamp.single(projectIDCurrent,timeStampDisplayCursor);
 		switchableGrid.populate(smallFormat, timeStamp);
 	}
 
@@ -365,12 +369,12 @@ public class ViewManager {
 					// simulation
 
 					// diagnostics -switch off unless there are problems with the treeview
-					for (TimeStamp t : TimeStamp.allInCurrentProject()) {
+					for (TimeStamp t : TimeStamp.allInCurrentProject(Simulation.projectIDcurrent())) {
 						logger.debug("TimeStamp described as {} has timeStampID {}, project {}, period {} and superState {}",
 								t.getDescription(), t.getTimeStampID(), t.getProjectID(), t.getPeriod(), t.getSuperState());
 					}
 
-					for (TimeStamp childStamp : TimeStamp.superStateChildren(thisPeriod, a.text())) {
+					for (TimeStamp childStamp : TimeStamp.superStateChildren(thisPeriod, Simulation.projectIDcurrent(), a.text())) {
 						logger.debug("Processing the timestamp called {} in period {}", childStamp.getDescription(), thisPeriod);
 						TimeStampViewItem childState = new TimeStampViewItem(childStamp);
 

@@ -785,18 +785,22 @@ public class Commodity implements Serializable {
 	}
 
 	/**
-	 * Set the comparators for the current commodities at the given timeStamp and for the current project
+	 * Set the comparators for the commodities at the given project and timeStamp 
 	 * 
 	 * @param timeStampID
 	 *            the timeStamp of the commodities
+	 * @param projectID 
+	 *            the project of the commodities
 	 */
-	public static void setComparators(int timeStampID) {
-		withProjectAndTimeStampQuery.setParameter("project", Simulation.projectIDCurrent()).setParameter("timeStamp", timeStampID);
+	public static void setComparators(int projectID, int timeStampID) {
+		logger.debug("Setting comparators for Commodities in project {} with timeStamp {}", projectID, timeStampID);
+		withProjectAndTimeStampQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID);
+		Project project=Project.get(projectID);
 		for (Commodity u : Commodity.withProjectAndTimeStampQuery.getResultList()) {
-			u.setPreviousComparator(single(Simulation.projectIDCurrent(), Simulation.getTimeStampComparatorCursor(), u.name()));
-			u.setStartComparator(single(Simulation.projectIDCurrent(), 1, u.name()));
-			u.setEndComparator(single(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent(), u.name()));
-			u.setCustomComparator(single(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent(), u.name()));
+			u.setPreviousComparator(single(projectID, project.getTimeStampComparatorCursor(), u.name()));
+			u.setStartComparator(single(projectID, 1, u.name()));
+			u.setEndComparator(single(projectID, project.getTimeStampID(), u.name()));
+			u.setCustomComparator(single(projectID, project.getTimeStampID(), u.name()));
 		}
 	}
 

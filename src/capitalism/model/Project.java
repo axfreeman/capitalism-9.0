@@ -33,6 +33,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import capitalism.controller.Simulation;
+import capitalism.utils.Dialogues;
 import capitalism.utils.Reporter;
 import capitalism.utils.StringStuff;
 import capitalism.view.custom.ActionStates;
@@ -54,9 +55,23 @@ public class Project implements Serializable {
 	@Id @EmbeddedId @Column(unique = true, nullable = false) private int projectID;
 	@XmlElement @Column(name = "description") private String description;
 	@XmlElement @Column(name = "currentTimeStamp") private int timeStampID;
+	
+	/**
+	 * Application-wide display cursor. By changing this, the user views entities from earlier timestamps and compares them with
+	 * those from the current timeStamp. The cursor is independent of timeStampIDCurrent and operations that involve it do not
+	 * affect the entities stored in the database other than the timeStamp and project records, which keep track of
+	 * what the user is looking at
+	 */
 	@XmlElement @Column(name = "currentTimeStampCursor") private int timeStampDisplayCursor;
+	
+	/**
+	 * Application-wide comparator cursor. By changing this, the user selects the earlier timeStamp with which the current
+	 * state of the simulation is compared.The cursor is independent of timeStampIDCurrent and operations that involve it do not
+	 * affect the entities stored in the database other than the timeStamp and project records, which keep track of
+	 * what the user is looking at
+	 */
 	@XmlElement @Column(name = "currentTimeStampComparatorCursor") private int timeStampComparatorCursor;
-	@XmlElement @Column(name = "period") private int period;
+	
 	@XmlElement @Column(name = "buttonState") private String buttonState;
 
 	private static EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DB_PROJECT");
@@ -130,6 +145,7 @@ public class Project implements Serializable {
 	 *            the projectID of a single project
 	 * @param timeStampID
 	 *            the timeStampID to be set for this project - normally, the timeStamp when the user switches a simulation
+	 *            or when the simulation moves one step forward
 	 * @return 0 if fail, the timeStamp otherwise
 	 */
 	public static int setTimeStamp(int projectID, int timeStampID) {
@@ -178,53 +194,41 @@ public class Project implements Serializable {
 	}
 
 	public void initialise() {
-		TimeStamp currentStamp;//temporary repository for the Simulation currentTimeStamp
-		Reporter.report(logger, 1, "Initialising project %d called '%s'", getProjectID(), getDescription());
-		Simulation.setProjectID(getProjectID());
+		//temporary repository for all timeStamp information
+		TimeStamp currentStamp=null;
+		try {
+			//since we are initialising, we start with timeStampID 1
+			currentStamp=TimeStamp.single(projectID, 1);
+		}catch (Exception e) {
+			Dialogues.alert(logger, "There is no timeStamp record for the project called "+
+					description+"\nPlease check your data. Will attempt to continue with other projects");
+			return;
+		}
+		Reporter.report(logger, 1, "Initialising project %d called '%s'", projectID, getDescription());
 
-		// initialise each project record so that its cursors are 1
-
+		// initialise the project record so that its cursors are 1
 		Project.getEntityManager().getTransaction().begin();
 		setTimeStampID(1);
 		setTimeStampDisplayCursor(1);
-		setTimeStampComparatorCursor(timeStampComparatorCursor);
+		setTimeStampComparatorCursor(1);
 
-		// set all project buttonState initially to the end of the non-existent previous period
+		// set the project buttonState initially to the end of the non-existent previous period
 		setButtonState(ActionStates.lastState().text());
-		Project.getEntityManager().getTransaction().commit();
-
-		// fetch this project's current timeStamp record (which must exist in the database or we flag an error but try to correct it)
-		// TODO isolate this from the Simulation setting which produces confusing side-effects
-		Simulation.setTimeStampCurrent(TimeStamp.singleInCurrentProject(1));
-		currentStamp=Simulation.getTimeStampCurrent();// work with the copy as we are only getting not setting
-		if (currentStamp == null) {
-			Reporter.report(logger, 1, " There is no initial timeStamp record for project %d. Please check the data",
-					getDescription());
-			return;
-		}
-		if (currentStamp.getTimeStampID() != 1) {
-			Reporter.report(logger, 1,
-					" The initial timeStamp record for project %d should have an ID of 1 but instead has  %d. Please check the Data",
-					getDescription(), currentStamp.getTimeStampID());
-			return;
-		}
+		getEntityManager().getTransaction().commit();
 
 		// Set the initial comparators for every timeStamp, project, industry, class, use value and stock .
 		// Since the comparator cursor and the cursor are already 1, this amounts to setting it to 1
 
 		// little tweak to handle currency symbols encoded in UTF8
-
 		logger.debug("Character Symbol for Project {} is {}", currentStamp.getCurrencySymbol());
 		String utfjava = StringStuff.convertFromUTF8(currentStamp.getCurrencySymbol());
 		logger.debug("Character symbol after conversion is {}", utfjava);
 		currentStamp.setCurrencySymbol(utfjava);
-		Simulation.setComparators(1);
+		Simulation.setComparators(projectID, 1);
 
-		// NOTE these calls depend on the side effect of setting currentTimeStamp to be the timeStamp of this project
-		// but since this is internal to the class, I think it is acceptable.
-		Simulation.convertMagnitudesToCoefficients();
-		Simulation.calculateStockAggregates();
-		Simulation.setCapitals();
+		Simulation.convertMagnitudesToCoefficients(projectID,timeStampID);
+		Simulation.calculateStockAggregates(projectID, timeStampID);
+		Simulation.setCapitals(projectID, timeStampID);
 		Simulation.checkInvariants();
 	}
 
@@ -309,20 +313,4 @@ public class Project implements Serializable {
 	public String toString() {
 		return description;
 	}
-
-	/**
-	 * @return the period
-	 */
-	public int getPeriod() {
-		return period;
-	}
-
-	/**
-	 * @param period
-	 *            the period to set
-	 */
-	public void setPeriod(int period) {
-		this.period = period;
-	}
-
 }

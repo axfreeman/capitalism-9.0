@@ -194,7 +194,7 @@ public class DisplayControlsBox extends HBox {
 	 * But if a simulation involves a currency reform, it could be in the right place after all.
 	 */
 	public static void setExpressionSymbols() {
-		TimeStamp timeStamp= TimeStamp.singleCurrent();
+		TimeStamp timeStamp= TimeStamp.single(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent());
 		moneyExpressionSymbol = timeStamp.getCurrencySymbol();
 		expressionSymbol=moneyExpressionSymbol;
 		quantityExpressionSymbol = timeStamp.getQuantitySymbol();
