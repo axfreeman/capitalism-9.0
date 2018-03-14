@@ -491,7 +491,7 @@ public class Stock implements Serializable {
 	 *            the quantity to be added to the size of the stock (negative if subtracted)
 	 */
 	public void modifyBy(double extraQuantity) {
-		double melt = Simulation.getTimeStampCurrent().getMelt();
+		double melt = Simulation.melt();
 
 		double unitValue = unitValue();
 		double unitPrice = unitPrice();
@@ -529,7 +529,7 @@ public class Stock implements Serializable {
 	 *            the quantity to be added to the size of the stock (negative if subtracted)
 	 */
 	public void modifyTo(double newQuantity) {
-		double melt = Simulation.getTimeStampCurrent().getMelt();
+		double melt = Simulation.melt();
 		try {
 			double unitValue = unitValue();
 			double unitPrice = unitPrice();

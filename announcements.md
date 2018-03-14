@@ -1,11 +1,8 @@
-# Capitalism 9.0 announcements 3/14/2018 10:27:48 AM 
+# Capitalism 9.0 announcements 3/14/2018 12:59:40 PM 
 
-Major technical overhaul (note to self: encapsulating the state variables in the project and timeStamp records).
-New executable
-Not yet benchmark tested so if it doesn't work, go back to the previous version.
-User can now load, edit and save a project.
-Project can be loaded but does not yet run
-Interim version, no new executable
+Load, edit and save now more fully functional.
+Loaded project does not yet run but displays- some data is not transmitted.
+Next step is to implement validation.
 
 ## consolidated prior announcements
 

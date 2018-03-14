@@ -263,7 +263,7 @@ public class ViewManager {
 		if (valuesExpressionDisplay == DisplayControlsBox.EXPRESSION_DISPLAY.MONEY) {
 			return intrinsicValueExpression;
 		} else {
-			double melt = Simulation.getTimeStampCurrent().getMelt();
+			double melt = Simulation.melt();
 			return intrinsicValueExpression / melt;
 		}
 	}

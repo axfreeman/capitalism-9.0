@@ -46,7 +46,7 @@ public class IndustriesProduce implements Command {
 	public void execute() {
 		Reporter.report(logger, 0, "INDUSTRY PRODUCTION");
 		Simulation.advanceOneStep(ActionStates.C_P_IndustriesProduce.text(), ActionStates.C_P_Produce.text());
-		double melt = Simulation.getTimeStampCurrent().getMelt();
+		double melt = Simulation.melt();
 
 		// Initialise the accounting for how much of this commodity is used up and how much is created in production in the current period
 		// Then we can calculate how much surplus of it resulted from production in this period.

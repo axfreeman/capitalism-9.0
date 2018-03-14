@@ -13,7 +13,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import capitalism.controller.Parameters;
-import capitalism.controller.Simulation;
 import capitalism.utils.MathStuff;
 import capitalism.view.ViewManager;
 import capitalism.view.custom.TrackingControlsBox;
@@ -42,8 +41,8 @@ public class TimeStamp implements Serializable {
 	@XmlElement @Column(name = "PopulationGrowthRate") private double populationGrowthRate;
 	@XmlElement @Column(name = "InvestmentRatio") private double investmentRatio;
 	@XmlElement @Column(name = "LabourSupplyResponse") private Parameters.LABOUR_RESPONSE labourSupplyResponse;
-	@XmlElement @Column(name = "priceResponse") private Simulation.PRICE_RESPONSE priceResponse;
-	@XmlElement @Column(name = "meltResponse") private Simulation.MELT_RESPONSE meltResponse;
+	@XmlElement @Column(name = "priceResponse") private Parameters.PRICE_RESPONSE priceResponse;
+	@XmlElement @Column(name = "meltResponse") private Parameters.MELT_RESPONSE meltResponse;
 	@XmlElement @Column(name = "CurrencySymbol") private String currencySymbol;
 	@XmlElement @Column(name = "QuantitySymbol") private String quantitySymbol;
 
@@ -368,7 +367,7 @@ public class TimeStamp implements Serializable {
 		// TODO replace by a sum query
 		double totalValue = 0;
 		for (Stock s : Stock.all(pk.projectID, pk.timeStampID)) {
-			if ((!s.getStockType().equals("Money")) || (Simulation.isFullPricing())) {
+			if ((!s.getStockType().equals("Money")) || (Parameters.isFullPricing())) {
 				totalValue += s.getValue();
 			}
 		}
@@ -382,7 +381,7 @@ public class TimeStamp implements Serializable {
 		// TODO replace by a sum query
 		double totalPrice = 0;
 		for (Stock s : Stock.all(pk.projectID, pk.timeStampID)) {
-			if ((!s.getStockType().equals("Money")) || (Simulation.isFullPricing())) {
+			if ((!s.getStockType().equals("Money")) || (Parameters.isFullPricing())) {
 				totalPrice += s.getPrice();
 			}
 		}
@@ -613,7 +612,7 @@ public class TimeStamp implements Serializable {
 	/**
 	 * @return the labourSupplyResponse
 	 */
-	public Simulation.LABOUR_RESPONSE getLabourSupplyResponse() {
+	public Parameters.LABOUR_RESPONSE getLabourSupplyResponse() {
 		return labourSupplyResponse;
 	}
 
@@ -621,14 +620,14 @@ public class TimeStamp implements Serializable {
 	 * @param labourSupplyResponse
 	 *            the labourSupplyResponse to set
 	 */
-	public void setLabourSupplyResponse(Simulation.LABOUR_RESPONSE labourSupplyResponse) {
+	public void setLabourSupplyResponse(Parameters.LABOUR_RESPONSE labourSupplyResponse) {
 		this.labourSupplyResponse = labourSupplyResponse;
 	}
 
 	/**
 	 * @return the priceResponse
 	 */
-	public Simulation.PRICE_RESPONSE getPriceResponse() {
+	public Parameters.PRICE_RESPONSE getPriceResponse() {
 		return priceResponse;
 	}
 
@@ -636,14 +635,14 @@ public class TimeStamp implements Serializable {
 	 * @param priceResponse
 	 *            the priceResponse to set
 	 */
-	public void setPriceResponse(Simulation.PRICE_RESPONSE priceResponse) {
+	public void setPriceResponse(Parameters.PRICE_RESPONSE priceResponse) {
 		this.priceResponse = priceResponse;
 	}
 
 	/**
 	 * @return the meltResponse
 	 */
-	public Simulation.MELT_RESPONSE getMeltResponse() {
+	public Parameters.MELT_RESPONSE getMeltResponse() {
 		return meltResponse;
 	}
 
@@ -651,7 +650,7 @@ public class TimeStamp implements Serializable {
 	 * @param meltResponse
 	 *            the meltResponse to set
 	 */
-	public void setMeltResponse(Simulation.MELT_RESPONSE meltResponse) {
+	public void setMeltResponse(Parameters.MELT_RESPONSE meltResponse) {
 		this.meltResponse = meltResponse;
 	}
 

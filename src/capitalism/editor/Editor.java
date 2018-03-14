@@ -22,6 +22,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import capitalism.controller.Simulation;
+import capitalism.controller.Parameters;
 import capitalism.editor.EditableCommodity.EC_ATTRIBUTE;
 import capitalism.editor.EditableIndustry.EI_ATTRIBUTE;
 import capitalism.editor.EditableSocialClass.ESC_ATTRIBUTE;
@@ -175,9 +176,9 @@ public class Editor extends VBox {
 		TimeStamp timeStamp = new TimeStamp(1, 0, 1, "Revenue", 1, "Start");
 		timeStamp.setPopulationGrowthRate(editableTimeStamp.getPopulationGrowthRate());
 		timeStamp.setInvestmentRatio(editableTimeStamp.getInvestmentRatio());
-		timeStamp.setLabourSupplyResponse(Simulation.LABOUR_RESPONSE.fromText(editableTimeStamp.getLabourSupplyResponse()));
-		timeStamp.setPriceResponse(Simulation.PRICE_RESPONSE.fromText(editableTimeStamp.getPriceResponse()));
-		timeStamp.setMeltResponse(Simulation.MELT_RESPONSE.fromText(editableTimeStamp.getMeltResponse()));
+		timeStamp.setLabourSupplyResponse(Parameters.LABOUR_RESPONSE.fromText(editableTimeStamp.getLabourSupplyResponse()));
+		timeStamp.setPriceResponse(Parameters.PRICE_RESPONSE.fromText(editableTimeStamp.getPriceResponse()));
+		timeStamp.setMeltResponse(Parameters.MELT_RESPONSE.fromText(editableTimeStamp.getMeltResponse()));
 		timeStamp.setCurrencySymbol(editableTimeStamp.getCurrencySymbol());
 		timeStamp.setQuantitySymbol(editableTimeStamp.getQuantitySymbol());
 		Project project = new Project();

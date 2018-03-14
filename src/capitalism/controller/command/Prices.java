@@ -59,7 +59,7 @@ public class Prices implements Command {
 
 	public void execute() {
 		Simulation.advanceOneStep(ActionStates.C_P_Prices.text(), ActionStates.C_P_Produce.text());
-		Reporter.report(logger, 0, "PRICE DYNAMICS (%s)", Simulation.getTimeStampCurrent().getPriceResponse());
+		Reporter.report(logger, 0, "PRICE DYNAMICS (%s)", Simulation.priceResponse());
 
 		// adjust prices depending on the price adjustment mechanism specific to the project (no change, equalization, or dynamic)
 		computeRelativePrices();
@@ -76,7 +76,7 @@ public class Prices implements Command {
 	 */
 
 	private static void computeRelativePrices() {
-		switch (Simulation.getTimeStampCurrent().getPriceResponse()) {
+		switch (Simulation.priceResponse()) {
 		case VALUES:
 			// for the simple case do not adjust relative prices.
 			// however, absolute prices may be adjusted in the next stage
@@ -86,7 +86,7 @@ public class Prices implements Command {
 			break;
 		case EQUALIZED:
 			Reporter.report(logger, 1, "Setting prices to equalise profit rates");
-			Reporter.report(logger, 2, "Average Profit Rate is currently recorded as %.4f", Simulation.getTimeStampCurrent().profitRate());
+			Reporter.report(logger, 2, "Average Profit Rate is currently recorded as %.4f", Simulation.profitRate());
 
 			// we can only set the profit rate for the sector as a whole, which means we work from the per-commodity profit rates
 			for (Commodity u : Commodity.currentByOrigin(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent(), Commodity.ORIGIN.INDUSTRIALLY_PRODUCED)) {
@@ -95,10 +95,10 @@ public class Prices implements Command {
 				for (Industry c : u.industries()) {
 					Reporter.report(logger, 3, "Note: industry %s produces this commodity", c.name());
 				}
-				double profitRate = Simulation.getTimeStampCurrent().profitRate();
+				double profitRate = Simulation.profitRate();
 				double profit = u.profit();
 				double initialCapital = u.initialProductiveCapital();
-				double totalPrice = initialCapital * (1 + Simulation.getTimeStampCurrent().profitRate());
+				double totalPrice = initialCapital * (1 + Simulation.profitRate());
 				double totalValue = initialCapital + profit;
 				double priceValueRatio = totalPrice / totalValue;
 				double newUnitPrice = priceValueRatio * u.getUnitValue();
@@ -119,11 +119,11 @@ public class Prices implements Command {
 	 * If the rule is Value-Driven, and total price is higher than total value, then prices have to adjust to fit the values
 	 */
 	private static void computeAbsolutePrices() {
-		double oldMelt = Simulation.getTimeStampCurrent().getMelt();
+		double oldMelt = Simulation.melt();
 		double newMelt = oldMelt;
-		double adjustmentFactor = Simulation.getTimeStampCurrent().totalPrice() / Simulation.getTimeStampCurrent().totalValue();
+		double adjustmentFactor = Simulation.totalPrice() / Simulation.totalValue();
 		if (MathStuff.equals(adjustmentFactor, 1)) {
-			switch (Simulation.getTimeStampCurrent().getMeltResponse()) {
+			switch (Simulation.meltResponse()) {
 			case VALUE_DRIVEN: // just accept the existing MELT; prices will then be adjusted to fit
 				Reporter.report(logger, 1, "Value-driven MELT remains unchanged at $%.4f. Prices will be recomputed",oldMelt);
 				break;
@@ -132,7 +132,7 @@ public class Prices implements Command {
 				Reporter.report(logger, 1, "Price-driven MELT was %.4f and will be reset to %.4f. Values will be recomputed", oldMelt, newMelt);
 				break;
 			}
-			Simulation.getTimeStampCurrent().setMelt(newMelt);
+			Simulation.setMelt(newMelt);
 		}else {
 			Reporter.report(logger, 1, "Prices and values have the same monetary expression. The MELT was not reset");
 		}

@@ -22,6 +22,7 @@ package capitalism.controller.command;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import capitalism.controller.Parameters;
 import capitalism.controller.Simulation;
 import capitalism.model.Commodity;
 import capitalism.model.Industry;
@@ -58,7 +59,7 @@ public class Demand implements Command {
 		Reporter.report(logger, 0, "DEMAND");
 
 		computeProductiveDemand();
-		registerLabourResponse(Simulation.getTimeStampCurrent().getLabourSupplyResponse());
+		registerLabourResponse(Simulation.labourSupplyResponse());
 		computeSocialClassDemand();
 	}
 
@@ -160,7 +161,7 @@ public class Demand implements Command {
 	 *            if this is FLEXIBLE, the supply changes to match demand
 	 *            if it is FIXED,supply is unaffected by demand
 	 */
-	private void registerLabourResponse(Simulation.LABOUR_RESPONSE response) {
+	private void registerLabourResponse(Parameters.LABOUR_RESPONSE response) {
 		//TODO but not very soon: there may be other socially-produced commodities to worry about
 		Commodity labourPower = Commodity.labourPower(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent());
 		double demandForLabourPower = labourPower.replenishmentDemand();

@@ -25,6 +25,7 @@ import java.util.Arrays;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import capitalism.controller.Parameters;
 import capitalism.controller.Simulation;
 import capitalism.model.Project;
 import capitalism.model.TimeStamp;
@@ -144,9 +145,9 @@ public class DisplayControlsBox extends HBox {
 		Project currentProject = Project.get(Simulation.projectIDCurrent());
 		String currentProjectDescription = currentProject.getDescription();
 		projectCombo = new ProjectCombo(projects, currentProjectDescription);
-		labourSupplyCombo = new ComboBox<String>(Simulation.LABOUR_RESPONSE.options());
-		meltCombo = new ComboBox<String>(Simulation.MELT_RESPONSE.options());
-		pricingCombo = new ComboBox<String>(Simulation.PRICE_RESPONSE.options());
+		labourSupplyCombo = new ComboBox<String>(Parameters.LABOUR_RESPONSE.options());
+		meltCombo = new ComboBox<String>(Parameters.MELT_RESPONSE.options());
+		pricingCombo = new ComboBox<String>(Parameters.PRICE_RESPONSE.options());
 		meltCombo.setMinWidth(80);
 		labourSupplyCombo.setMinWidth(100);
 		pricingCombo.setMinWidth(100);
@@ -155,19 +156,19 @@ public class DisplayControlsBox extends HBox {
 		meltCombo.valueProperty().addListener(new ChangeListener<String>() {
 			@Override public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
 				meltCombo.setPromptText(newValue);
-				Simulation.getTimeStampCurrent().setMeltResponse(Simulation.MELT_RESPONSE.fromText(newValue));
+				Simulation.setMeltResponse(Parameters.MELT_RESPONSE.fromText(newValue));
 			}
 		});
 		labourSupplyCombo.valueProperty().addListener(new ChangeListener<String>() {
 			@Override public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
 				labourSupplyCombo.setPromptText(newValue);
-				Simulation.getTimeStampCurrent().setLabourSupplyResponse(Simulation.LABOUR_RESPONSE.fromText(newValue));
+				Simulation.setLabourSupplyResponse(Parameters.LABOUR_RESPONSE.fromText(newValue));
 			}
 		});
 		pricingCombo.valueProperty().addListener(new ChangeListener<String>() {
 			@Override public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
 				pricingCombo.setPromptText(newValue);
-				Simulation.getTimeStampCurrent().setPriceResponse(Simulation.PRICE_RESPONSE.fromText(newValue));
+				Simulation.setPriceResponse(Parameters.PRICE_RESPONSE.fromText(newValue));
 			}
 		});
 	}
@@ -183,9 +184,9 @@ public class DisplayControlsBox extends HBox {
 	 */
 	
 	public static void setParameterComboPrompts() {
-		labourSupplyCombo.setPromptText(Simulation.getTimeStampCurrent().getLabourSupplyResponse().text());
-		meltCombo.setPromptText(Simulation.getTimeStampCurrent().getPriceResponse().text());
-		pricingCombo.setPromptText(Simulation.getTimeStampCurrent().getMeltResponse().text());
+		labourSupplyCombo.setPromptText(Simulation.labourSupplyResponse().text());
+		meltCombo.setPromptText(Simulation.priceResponse().text());
+		pricingCombo.setPromptText(Simulation.meltResponse().text());
 	}
 
 	/**

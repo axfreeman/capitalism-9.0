@@ -459,7 +459,7 @@ public class Commodity implements Serializable {
 	 *         {@link DisplayControlsBox#expressionDisplay} and {@link DisplayControlsBox#expressionDisplay}
 	 */
 	public double expressionOf(VALUE_PROPERTY valueProperty) {
-		double melt = Simulation.getTimeStampCurrent().getMelt();
+		double melt = Simulation.melt();
 		double expression;
 		switch (valueProperty) {
 		case VALUE:

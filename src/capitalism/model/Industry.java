@@ -448,7 +448,7 @@ public class Industry implements Serializable {
 	 *         {@link DisplayControlsBox#expressionDisplay} and {@link DisplayControlsBox#expressionDisplay}
 	 */
 	public double expressionOf(ATTRIBUTE valueProperty) {
-		double melt = Simulation.getTimeStampCurrent().getMelt();
+		double melt = Simulation.melt();
 		double expression;
 		switch (valueProperty) {
 

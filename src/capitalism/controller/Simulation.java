@@ -37,9 +37,15 @@ import capitalism.utils.Reporter;
 import capitalism.view.custom.ActionButtonsBox;
 import capitalism.view.custom.DisplayControlsBox;
 
-public class Simulation extends Parameters {
+public class Simulation{
 	private static final Logger logger = LogManager.getLogger("Simulation");
-	// top copy of the timestamp record - TODO this should be the sole route into the global timeStamp parameters
+	/**
+	 * A copy of the persistent timeStamp that defines the parameters of the current simulation.
+	 * It also provide the methods for calculating global magnitudes such as the profit rate, the melt and so on.
+	 * It is encapsulated in the Simulation class and its members and methods are accessed via
+	 * the static helper methods defined in this class. This is so that if, in future, we wish to
+	 * implement by means other than these persistent elements, as much as possible can be done by modifing the Simulation class.  
+	 */
 	private static TimeStamp timeStampCurrent;
 	/**
 	 * Application-wide persistent project that defines the current simulation.
@@ -47,12 +53,6 @@ public class Simulation extends Parameters {
 	 * TODO this should be the sole route into the global project parameters
 	 */
 	private static Project projectCurrent;
-
-	/**
-	 * A copy of the melt, for convenience and speed. MUST be updated by timeStamp.setMelt(). That way it will always synchronise.
-	 * TODO under demelopvent
-	 */
-	private static double melt;
 
 	public Simulation() {
 	}
@@ -504,12 +504,6 @@ public class Simulation extends Parameters {
 		return projectCurrent.getTimeStampDisplayCursor();
 	}
 
-	/**
-	 * @return the currentTimeStamp
-	 */
-	public static TimeStamp getTimeStampCurrent() {
-		return timeStampCurrent;
-	}
 
 	/**
 	 * @param currentTimeStamp
@@ -555,8 +549,8 @@ public class Simulation extends Parameters {
 	/**
 	 * @return the melt
 	 */
-	public static double getMelt() {
-		return melt;
+	public static double melt() {
+		return timeStampCurrent.getMelt();
 	}
 
 	/**
@@ -564,7 +558,7 @@ public class Simulation extends Parameters {
 	 *            the melt to set
 	 */
 	public static void setMelt(double melt) {
-		Simulation.melt = melt;
+		timeStampCurrent.setMelt(melt);
 	}
 
 	/**
@@ -573,5 +567,67 @@ public class Simulation extends Parameters {
 	 */
 	public static void setTimeStampDisplayCursor(int timeStampDisplayCursor) {
 		projectCurrent.setTimeStampDisplayCursor(timeStampDisplayCursor);
+	}
+	
+	/**
+	 * @return the labourSupplyResponse stored in timeStampCurrent
+	 */
+	public static Parameters.LABOUR_RESPONSE labourSupplyResponse(){
+		return timeStampCurrent.getLabourSupplyResponse();
+	}
+
+	/**
+	 * @return the result of the totalPrice() method of timeStampCurrent
+	 */
+	public static double totalPrice() {
+		return timeStampCurrent.totalPrice();
+	}
+	/**
+	 * @return the result of the totalValue() method of timeStampCurrent
+	 */
+	public static double totalValue() {
+		return timeStampCurrent.totalValue();
+	}
+	
+	/**
+	 * @return the result of the profitRate() method of timeStampCurrent
+	 */
+	public static double profitRate() {
+		return timeStampCurrent.profitRate();
+	}
+	
+	/**
+	 * @return the meltResponse stored in timeStampCurrent
+	 */
+	public static Parameters.MELT_RESPONSE meltResponse(){
+		return timeStampCurrent.getMeltResponse();
+	}
+	/**
+	 * set the meltResponse stored in timeStampCurrent
+	 * @param meltResponse the meltResponse to set
+	 */
+	public static void setMeltResponse(Parameters.MELT_RESPONSE meltResponse) {
+		timeStampCurrent.setMeltResponse(meltResponse);
+	}
+	/**
+	 * set the labourSupplyResponse stored in timeStampCurrent
+	 * @param labourSupplyResponse the meltResponse to set
+	 */
+	public static void setLabourSupplyResponse(Parameters.LABOUR_RESPONSE labourSupplyResponse) {
+		timeStampCurrent.setLabourSupplyResponse(labourSupplyResponse);
+	}
+	/**
+	 * set the priceResponse stored in timeStampCurrent
+	 * @param meltResponse the priceResponse to set
+	 */
+	public static void setPriceResponse(Parameters.PRICE_RESPONSE priceResponse) {
+		timeStampCurrent.setPriceResponse(priceResponse);
+	}
+	
+	/**
+	 * return the priceResponse stored in timeStampCurrent
+	 */
+	public static Parameters.PRICE_RESPONSE priceResponse(){
+		return timeStampCurrent.getPriceResponse();
 	}
 }
