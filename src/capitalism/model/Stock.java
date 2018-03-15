@@ -71,7 +71,6 @@ public class Stock implements Serializable {
 
 	// the proportion of this stock used up in producing one unit of output.
 	// ONLY relevant if this is of stockType PRODUCTIVE_INPUT (in which case the owner will be an industry)
-
 	@Column(name = "productionCoefficient") private double productionCoefficient;
 
 	// the amount of this stock required to produce the designated output.
@@ -103,19 +102,25 @@ public class Stock implements Serializable {
 	private static EntityManager entityManager;
 	private static TypedQuery<Stock> primaryQuery;
 	private static TypedQuery<Stock> allQuery;
+	private static TypedQuery<Stock> allInProjectAndTimeStampQuery;
+	private static TypedQuery<Stock> allInProjectQuery;
 	private static TypedQuery<Stock> ofCommodityQuery;
 	private static TypedQuery<Stock> ofCommodityAndTypeQuery;
 	private static TypedQuery<Stock> withOwnerAndTypeQuery;
 	private static TypedQuery<Stock> sourcesOfDemandQuery;
-	public static TypedQuery<Stock> withStockTypeQuery;
+	private static TypedQuery<Stock> withStockTypeQuery;
+	private static TypedQuery<Stock> productiveQuery;
 
 	static {
 		entityManager = entityManagerFactory.createEntityManager();
 		primaryQuery = entityManager.createQuery(
 				"SELECT s FROM Stock s WHERE s.pk.projectID=:project and s.pk.timeStampID =:timeStamp and s.pk.owner =:owner and s.pk.commodity= :commodity and s.pk.stockType=:stockType",
 				Stock.class);
-		allQuery = entityManager.createQuery(
+		allQuery=entityManager.createQuery("Select s from Stock s",Stock.class);
+		allInProjectAndTimeStampQuery = entityManager.createQuery(
 				"SELECT s FROM Stock s where s.pk.projectID= :project and s.pk.timeStampID = :timeStamp", Stock.class);
+		allInProjectQuery = entityManager.createQuery(
+				"SELECT s FROM Stock s where s.pk.projectID= :project", Stock.class);
 		withStockTypeQuery = entityManager.createQuery(
 				"SELECT s FROM Stock s where s.pk.projectID = :project and s.pk.timeStampID=:timeStamp and s.pk.stockType=:stockType",
 				Stock.class);
@@ -131,6 +136,8 @@ public class Stock implements Serializable {
 		sourcesOfDemandQuery = entityManager.createQuery(
 				"SELECT s FROM Stock s where s.pk.projectID = :project and s.pk.timeStampID =:timeStamp and (s.pk.stockType = :stockType1 or s.pk.stockType=:stockType2)",
 				Stock.class);
+		productiveQuery = entityManager.createQuery(
+				"Select s from Stock s where s.pk.projectID =:project and s.pk.stockType ='PRODUCTIVE'", Stock.class);
 	}
 
 	/**
@@ -180,6 +187,8 @@ public class Stock implements Serializable {
 	 * in consequence, the type of the persistent field 'stockType' is, confusingly, String and not StockType.
 	 * For code transparency, this enum provides the text that is used in SQL queries, via its 'text' method
 	 * See for example {@link Stock#singleProductive(int, int, String, String)}
+	 * TODO we should use the built in 'values()' method for this. But since we will drop this enum
+	 * if and when the bug is fixed, probably a low priority
 	 */
 	public static enum STOCKTYPE {
 		PRODUCTIVE("Productive"), CONSUMPTION("Consumption"), SALES("Sales"), MONEY("Money");
@@ -621,9 +630,9 @@ public class Stock implements Serializable {
 	 */
 	public static void setComparators(int projectID, int timeStampID) {
 		logger.debug("Setting comparators for stocks in project {} with timeStamp {}", projectID, timeStampID);
-		Project project=Project.get(projectID);
+		Project project = Project.get(projectID);
 		for (Stock s : all(projectID, timeStampID)) {
-			s.setPreviousComparator(single(projectID, project.getTimeStampComparatorCursor(), s.getOwner(),	s.name(), s.getStockType()));
+			s.setPreviousComparator(single(projectID, project.getTimeStampComparatorCursor(), s.getOwner(), s.name(), s.getStockType()));
 			s.setStartComparator(single(projectID, 1, s.getOwner(), s.name(), s.getStockType()));
 			s.setEndComparator(single(projectID, project.getTimeStampID(), s.getOwner(), s.name(), s.getStockType()));
 			s.setCustomComparator(single(projectID, project.getTimeStampID(), s.getOwner(), s.name(), s.getStockType()));
@@ -678,6 +687,17 @@ public class Stock implements Serializable {
 	}
 
 	/**
+	 * A list of all stocks at the database
+	 * Mainly for validation purposes but could have other uses
+	 * 
+	 * @return a list of stocks in the database
+	 */
+	public static List<Stock> all() {
+		return allQuery.getResultList();
+	}
+
+	
+	/**
 	 * a list of all stocks at the given projectID and a given timeStampID
 	 * 
 	 * @param projectID
@@ -688,8 +708,21 @@ public class Stock implements Serializable {
 	 * @return a list of stocks at the given projectID and timeStampID
 	 */
 	public static List<Stock> all(int projectID, int timeStampID) {
-		allQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID);
-		return allQuery.getResultList();
+		allInProjectAndTimeStampQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID);
+		return allInProjectAndTimeStampQuery.getResultList();
+	}
+
+	/**
+	 * A list of all stocks in the given projectID
+	 * Mainly for validation purposes but could have other uses
+	 * 
+	 * @param projectID
+	 *            the given projectID
+	 * @return a list of stocks in the given projectID
+	 */
+	public static List<Stock> all(int projectID) {
+		allInProjectQuery.setParameter("project", projectID);
+		return allInProjectQuery.getResultList();
 	}
 
 	/**
@@ -763,6 +796,18 @@ public class Stock implements Serializable {
 		} catch (javax.persistence.NoResultException e) {
 			return null;// because this query throws a fit if it doesn't find anything
 		}
+	}
+
+	/**
+	 * A list of all productive stocks belonging to a given project, regardless of owner and timeStamp
+	 * 
+	 * @param projectID
+	 *            the ID of the project containing the stocks
+	 * @return a list of all productive stocks belonging to a given project, regardless of owner and timeStamp
+	 */
+	public static List<Stock> productive(int projectID) {
+		productiveQuery.setParameter("project", projectID);
+		return productiveQuery.getResultList();
 	}
 
 	/**

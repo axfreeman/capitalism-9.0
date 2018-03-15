@@ -55,7 +55,7 @@ public class Project implements Serializable {
 	@Id @EmbeddedId @Column(unique = true, nullable = false) private int projectID;
 	@XmlElement @Column(name = "description") private String description;
 	@XmlElement @Column(name = "currentTimeStamp") private int timeStampID;
-	
+
 	/**
 	 * Application-wide display cursor. By changing this, the user views entities from earlier timestamps and compares them with
 	 * those from the current timeStamp. The cursor is independent of timeStampIDCurrent and operations that involve it do not
@@ -63,7 +63,7 @@ public class Project implements Serializable {
 	 * what the user is looking at
 	 */
 	@XmlElement @Column(name = "currentTimeStampCursor") private int timeStampDisplayCursor;
-	
+
 	/**
 	 * Application-wide comparator cursor. By changing this, the user selects the earlier timeStamp with which the current
 	 * state of the simulation is compared.The cursor is independent of timeStampIDCurrent and operations that involve it do not
@@ -71,7 +71,7 @@ public class Project implements Serializable {
 	 * what the user is looking at
 	 */
 	@XmlElement @Column(name = "currentTimeStampComparatorCursor") private int timeStampComparatorCursor;
-	
+
 	@XmlElement @Column(name = "buttonState") private String buttonState;
 
 	private static EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DB_PROJECT");
@@ -118,11 +118,15 @@ public class Project implements Serializable {
 	 * 
 	 * @param projectID
 	 *            the projectID of a single project
-	 * @return the project record containing this project
+	 * @return the project record containing this project, null if the project does not exist
 	 */
 	public static Project get(int projectID) {
 		primaryQuery.setParameter("project", projectID);
-		return primaryQuery.getSingleResult();
+		try {
+			return primaryQuery.getSingleResult();
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	/**
@@ -130,7 +134,7 @@ public class Project implements Serializable {
 	 * 
 	 * @return a list of all projects
 	 */
-	public static List<Project> projectsAll() {
+	public static List<Project> all() {
 		return allQuery.getResultList();
 	}
 
@@ -194,14 +198,14 @@ public class Project implements Serializable {
 	}
 
 	public void initialise() {
-		//temporary repository for all timeStamp information
-		TimeStamp currentStamp=null;
+		// temporary repository for all timeStamp information
+		TimeStamp currentStamp = null;
 		try {
-			//since we are initialising, we start with timeStampID 1
-			currentStamp=TimeStamp.single(projectID, 1);
-		}catch (Exception e) {
-			Dialogues.alert(logger, "There is no timeStamp record for the project called "+
-					description+"\nPlease check your data. Will attempt to continue with other projects");
+			// since we are initialising, we start with timeStampID 1
+			currentStamp = TimeStamp.single(projectID, 1);
+		} catch (Exception e) {
+			Dialogues.alert(logger, "There is no timeStamp record for the project called " +
+					description + "\nPlease check your data. Will attempt to continue with other projects");
 			return;
 		}
 		Reporter.report(logger, 1, "Initialising project %d called '%s'", projectID, getDescription());
@@ -226,13 +230,12 @@ public class Project implements Serializable {
 		currentStamp.setCurrencySymbol(utfjava);
 		Simulation.setComparators(projectID, 1);
 
-		Simulation.convertMagnitudesToCoefficients(projectID,timeStampID);
+		Simulation.convertMagnitudesToCoefficients(projectID, timeStampID);
 		Simulation.calculateStockAggregates(projectID, timeStampID);
 		Simulation.setCapitals(projectID, timeStampID);
-		Simulation.checkInvariants();
+		Simulation.checkInvariants();// TODO Stub at present
 	}
 
-	
 	public int getProjectID() {
 		return this.projectID;
 	}
@@ -313,4 +316,5 @@ public class Project implements Serializable {
 	public String toString() {
 		return description;
 	}
+
 }

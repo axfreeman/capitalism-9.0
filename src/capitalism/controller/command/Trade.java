@@ -78,7 +78,7 @@ public class Trade implements Command {
 							s.name(), quantityPurchased * unitPrice);
 					Stock sellerMoneyStock = null;
 					Stock sellerSalesStock = null;
-					if (s.getCommodity().getOrigin() == ORIGIN.SOCIALlY_PRODUCED){
+					if (s.getCommodity().getOrigin() == ORIGIN.SOCIALLY_PRODUCED){
 						// ask each class if it has some labour power to sell
 						// TODO at this point we only accept the first offer
 						// eventually we need to allow multiple sellers of Labour Power

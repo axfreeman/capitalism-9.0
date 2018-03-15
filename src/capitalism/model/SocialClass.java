@@ -75,6 +75,8 @@ public class SocialClass implements Serializable {
 	private static EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DB_SOCIALCLASSES");
 	private static EntityManager entityManager;
 	private static TypedQuery<SocialClass> primaryQuery;
+	private static TypedQuery<SocialClass> allInProjectAndTimeStampQuery;
+	private static TypedQuery<SocialClass> allInProjectQuery;
 	private static TypedQuery<SocialClass> allQuery;
 
 	static {
@@ -83,7 +85,11 @@ public class SocialClass implements Serializable {
 				"SELECT c FROM SocialClass c where c.pk.projectID= :project and c.pk.timeStampID = :timeStamp and c.pk.name=:socialClassName",
 				SocialClass.class);
 		allQuery = entityManager.createQuery(
+				"SELECT c FROM SocialClass c ", SocialClass.class);
+		allInProjectAndTimeStampQuery = entityManager.createQuery(
 				"SELECT c FROM SocialClass c where c.pk.projectID= :project and c.pk.timeStampID = :timeStamp ", SocialClass.class);
+		allInProjectQuery = entityManager.createQuery(
+				"SELECT c FROM SocialClass c where c.pk.projectID= :project ", SocialClass.class);
 	}
 
 	/**
@@ -97,8 +103,8 @@ public class SocialClass implements Serializable {
 	public static void setComparators(int projectID, int timeStampID) {
 		logger.debug("Setting comparators for socialClasses in project {} with timeStamp {}", projectID, timeStampID);
 		Project project=Project.get(projectID);
-		allQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID);
-		for (SocialClass sc : allQuery.getResultList()) {
+		allInProjectAndTimeStampQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID);
+		for (SocialClass sc : allInProjectAndTimeStampQuery.getResultList()) {
 			sc.setPreviousComparator(single(projectID, project.getTimeStampComparatorCursor(), sc.name()));
 			sc.setStartComparator(single(projectID, 1, sc.name()));
 			sc.setEndComparator(single(projectID, project.getTimeStampID(), sc.name()));
@@ -180,9 +186,9 @@ public class SocialClass implements Serializable {
 	 * @return an ObservableList of SocialClasses
 	 */
 	public static ObservableList<SocialClass> socialClassesObservable(int projectID, int timeStampID) {
-		SocialClass.allQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID);
+		SocialClass.allInProjectAndTimeStampQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID);
 		ObservableList<SocialClass> result = FXCollections.observableArrayList();
-		for (SocialClass s : SocialClass.allQuery.getResultList()) {
+		for (SocialClass s : SocialClass.allInProjectAndTimeStampQuery.getResultList()) {
 			result.add(s);
 		}
 		return result;
@@ -541,6 +547,31 @@ public class SocialClass implements Serializable {
 	}
 
 	/**
+	 * a list of social classes in the database
+	 * Mainly for validation purposes though it could have other uses
+	 * 
+	 * @return a list of all social classes in the database
+	 */
+	public static List<SocialClass> all() {
+		return allQuery.getResultList();
+	}
+
+	
+	/**
+	 * a list of social classes, for the given projectID.
+	 * Mainly for validation purposes though it could have other uses
+	 * 
+	 * @param projectID
+	 *            the given projectID
+	 * @return a list of all social classes for the given project 
+	 */
+	public static List<SocialClass> all(int projectID) {
+		allInProjectQuery.setParameter("project", projectID);
+		return allInProjectQuery.getResultList();
+	}
+
+	
+	/**
 	 * a list of social classes, for the current project and timeStamp
 	 * 
 	 * @param projectID
@@ -550,8 +581,8 @@ public class SocialClass implements Serializable {
 	 * @return a list of all social classes for the current project and timeStamp
 	 */
 	public static List<SocialClass> all(int projectID, int timeStampID) {
-		allQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID);
-		return allQuery.getResultList();
+		allInProjectAndTimeStampQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID);
+		return allInProjectAndTimeStampQuery.getResultList();
 	}
 
 	/**

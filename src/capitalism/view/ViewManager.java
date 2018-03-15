@@ -226,14 +226,17 @@ public class ViewManager {
 	public static void restart() {
 		Reporter.report(logger, 1, "RESTART OF ENTIRE SIMULATION REQUESTED");
 		Capitalism.dataHandler.restart();// fetch all the data
-		Simulation.startup();// pre-process all the data
+		if (Simulation.startup()) {
+			logger.debug("Will attempt to continue despite database errors");
+			// TODO need some graceful action if this fails though because by this time we have full control, it would
+			// have to be a programme error. In future though we may provide options that, if we are not careful, 
+			// allow the user to break the database. Need precautions against that.
+		}
 		actionButtonsBox.setActionStateFromLabel("Accumulate");
 		refreshTimeStampView();
 		refreshDisplay();
-		// capitalism.showMainWindow();// Set up the display (NOTE: this calls setMainApp and hence all the display initialization methods)
 	}
 
-	
 	/**
 	 * populate the number fields in the summary grid from the value of the TimeStamp persistent entity
 	 * defined by the displayCursor
@@ -241,10 +244,10 @@ public class ViewManager {
 	 */
 	private static void populateSummaryGrid() {
 		// TODO debug aid- remove when done
-		int projectIDCurrent =Simulation.projectIDCurrent();
-		int timeStampDisplayCursor= Simulation.timeStampDisplayCursor();
-		
-		TimeStamp timeStamp = TimeStamp.single(projectIDCurrent,timeStampDisplayCursor);
+		int projectIDCurrent = Simulation.projectIDCurrent();
+		int timeStampDisplayCursor = Simulation.timeStampDisplayCursor();
+
+		TimeStamp timeStamp = TimeStamp.single(projectIDCurrent, timeStampDisplayCursor);
 		switchableGrid.populate(smallFormat, timeStamp);
 	}
 
@@ -369,7 +372,7 @@ public class ViewManager {
 					// simulation
 
 					// diagnostics -switch off unless there are problems with the treeview
-					for (TimeStamp t : TimeStamp.allInCurrentProject(Simulation.projectIDcurrent())) {
+					for (TimeStamp t : TimeStamp.allInProject(Simulation.projectIDcurrent())) {
 						logger.debug("TimeStamp described as {} has timeStampID {}, project {}, period {} and superState {}",
 								t.getDescription(), t.getTimeStampID(), t.getProjectID(), t.getPeriod(), t.getSuperState());
 					}

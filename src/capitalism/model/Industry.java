@@ -83,6 +83,7 @@ public class Industry implements Serializable {
 	private static EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("DB_INDUSTRIES");
 	private static EntityManager entityManager;
 	private static TypedQuery<Industry> primaryQuery;
+	private static TypedQuery<Industry> allWithProjectQuery;
 	private static TypedQuery<Industry> allWithProjectAndTimeStampQuery;
 	private static TypedQuery<Industry> withProjectTimeStampAndCommodityNameQuery;
 	private static TypedQuery<Industry> allQuery;
@@ -96,6 +97,7 @@ public class Industry implements Serializable {
 		withProjectTimeStampAndCommodityNameQuery = entityManager.createQuery(
 				"Select c from Industry c where c.pk.projectID=:project and c.pk.timeStampID=:timeStamp and c.commodityName=:commodityName", Industry.class);
 		allQuery = entityManager.createQuery("Select i from Industry i", Industry.class);
+		allWithProjectQuery=entityManager.createQuery("Select i from Industry i where i.pk.projectID = :project",Industry.class);
 	}
 
 	/**
@@ -572,7 +574,7 @@ public class Industry implements Serializable {
 			Commodity u = s.getCommodity();
 
 			// Exclude socially-produced commodities
-			if (u.getOrigin() == Commodity.ORIGIN.SOCIALlY_PRODUCED)
+			if (u.getOrigin() == Commodity.ORIGIN.SOCIALLY_PRODUCED)
 				continue;
 
 			double replenishmentDemand = s.getProductionCoefficient() * output;
@@ -648,6 +650,19 @@ public class Industry implements Serializable {
 	 */
 	public static List<Industry> all() {
 		return allQuery.getResultList();
+	}
+
+	/**
+	 * a list of industries, for a given projectID (and all timeStampIDs)
+	 * 
+	 * @param projectID
+	 *            the given projectID
+	 * @return a list of industries for the given projectID
+	 */
+
+	public static List<Industry> all(int projectID) {
+		allWithProjectQuery.setParameter("project", projectID);
+		return allWithProjectQuery.getResultList();
 	}
 
 	/**

@@ -75,7 +75,7 @@ public class OneProject {
 	public void loadXML() {
 		// find the largest project so far. We will add the new project with a project numeber one greater than this
 		int maxProjectID = 0;
-		for (Project p : Project.projectsAll()) {
+		for (Project p : Project.all()) {
 			if (p.getProjectID() > maxProjectID)
 				maxProjectID = p.getProjectID();
 		}

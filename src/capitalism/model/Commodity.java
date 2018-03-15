@@ -86,6 +86,8 @@ public class Commodity implements Serializable {
 	private static TypedQuery<Commodity> withOriginQuery;
 	private static TypedQuery<Commodity> withFunctionQuery;
 	private static TypedQuery<Commodity> deleteQuery;
+	private static TypedQuery<Commodity> allInProjectQuery;
+	private static TypedQuery<Commodity> allQuery;
 
 	// initialise the entitManagers and queries statically once only, hopefully to reduce expensive requests for connections and query-building
 	// TODO test with the EclipseLink profiler
@@ -93,6 +95,8 @@ public class Commodity implements Serializable {
 		entityManager = entityManagerFactory.createEntityManager();
 		primaryQuery = entityManager.createQuery(
 				"SELECT u FROM Commodity u where u.pk.projectID= :project AND u.pk.timeStampID= :timeStamp and u.pk.name=:name", Commodity.class);
+		allQuery=entityManager.createQuery("SELECT u from Commodity u",Commodity.class);
+		allInProjectQuery=entityManager. createQuery("SELECT u from Commodity u where u.pk.projectID =:project", Commodity.class);
 		withProjectAndTimeStampQuery = entityManager.createQuery(
 				"SELECT u FROM Commodity u where u.pk.projectID= :project and u.pk.timeStampID = :timeStamp", Commodity.class);
 		withOriginQuery = entityManager.createQuery(
@@ -139,7 +143,7 @@ public class Commodity implements Serializable {
 	 *
 	 */
 	public enum ORIGIN {
-		SOCIALlY_PRODUCED("Social"), INDUSTRIALLY_PRODUCED("Capitalist"), MONEY("Money");
+		SOCIALLY_PRODUCED("Social"), INDUSTRIALLY_PRODUCED("Capitalist"), MONEY("Money");
 		String text;
 
 		ORIGIN(String text) {
@@ -153,7 +157,7 @@ public class Commodity implements Serializable {
 		public static ORIGIN origin(String text) {
 			switch (text) {
 			case "Social":
-				return SOCIALlY_PRODUCED;
+				return SOCIALLY_PRODUCED;
 			case "Capitalist":
 				return INDUSTRIALLY_PRODUCED;
 			case "Money":
@@ -726,6 +730,28 @@ public class Commodity implements Serializable {
 	}
 
 	/**
+	 * a list of all commodities at the given projectID
+	 * 
+	 * @param projectID
+	 *            the project of the commodities returned
+	 * @return a list of all commodities at the given projectID
+	 */
+	public static List<Commodity> all(int projectID) {
+		allInProjectQuery.setParameter("project", projectID);
+		return allInProjectQuery.getResultList();
+	}
+	
+	
+	/**
+	 * a list of all commodities at the database. Mainly for validation purposes but could have other uses
+	 * @return a list of all commodities at the given projectID
+	 */
+	public static List<Commodity> all() {
+		return allQuery.getResultList();
+	}
+
+	
+	/**
 	 * a list of all commodities of the given origin at the given projectID and timeStampID
 	 * 
 	 * @param projectID
@@ -745,16 +771,15 @@ public class Commodity implements Serializable {
 	}
 
 	/**
-	 * a list of all commodities of the given function at the current timeStamp and project
+	 * a list of all commodities of the given function at the given timeStamp and project
 	 * 
 	 * @param projectID
 	 *            the given projectID
-	 * 
 	 * @param timeStampID
 	 *            the given timeStampID
 	 * @param function
 	 *            the function type of the use value (PRODUCTIVE INPUT, CONSUMER GOOD, MONEY)
-	 * @return a list all use values with the given function at the current timeStamp and project
+	 * @return a list of all commodities with the given function at the given timeStamp and project
 	 */
 	public static List<Commodity> currentByFunction(int projectID, int timeStampID, Commodity.FUNCTION function) {
 		withFunctionQuery.setParameter("timeStamp", timeStampID).setParameter("project", projectID);
@@ -776,7 +801,7 @@ public class Commodity implements Serializable {
 	public static Commodity labourPower(int projectID, int timeStampID) {
 		withOriginQuery.setParameter("project", projectID);
 		withOriginQuery.setParameter("timeStamp", timeStampID);
-		withOriginQuery.setParameter("origin", Commodity.ORIGIN.SOCIALlY_PRODUCED);
+		withOriginQuery.setParameter("origin", Commodity.ORIGIN.SOCIALLY_PRODUCED);
 		try {
 			return withOriginQuery.getSingleResult();
 		} catch (NoResultException r) {

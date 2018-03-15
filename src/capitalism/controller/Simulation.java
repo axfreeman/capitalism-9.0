@@ -34,6 +34,7 @@ import capitalism.model.TimeStamp;
 import capitalism.utils.Dialogues;
 import capitalism.utils.MathStuff;
 import capitalism.utils.Reporter;
+import capitalism.utils.Validate;
 import capitalism.view.custom.ActionButtonsBox;
 import capitalism.view.custom.DisplayControlsBox;
 
@@ -58,12 +59,11 @@ public class Simulation{
 	}
 
 	/**
-	 * startup. Initialise all variables that are derived from user data but not required explicitly
-	 * TODO validate user data at this point
+	 * startup. Initialise all variables that are derived from user data but not required explicitly.
+	 * @return true if it all worked, false if we can't go on because of validation errors
 	 */
-	public static void startup() {
-		Reporter.report(logger, 0, "INITIALISE DATA FROM USER-DEFINED PROJECTS");
-
+	public static boolean startup() {
+		boolean validStart=true;
 		// initialise the two key state variables - the current period and the current project.
 		// all state variables are encapsulated in one or other of these variables.
 		// here for convenience we keep a copy that has to be kept synchronised with the database copy
@@ -72,7 +72,13 @@ public class Simulation{
 		timeStampCurrent = TimeStamp.single(1, 1);
 		timeStampCurrent.setPeriod(1);
 		projectCurrent = Project.get(1);
-		for (Project p : Project.projectsAll()) {
+		Reporter.report(logger, 0, "Validate");
+		if (!Validate.validate()) {
+			Dialogues.alert(logger, "There is an error in the database. Please see the log for details. will try to continue");
+			validStart=false;
+		}
+		Reporter.report(logger, 0, "Initialise");
+		for (Project p : Project.all()) {
 			p.initialise();
 		}
 		
@@ -80,6 +86,7 @@ public class Simulation{
 		projectCurrent.setTimeStampID(1);
 		projectCurrent.setTimeStampDisplayCursor(1);
 		projectCurrent.setTimeStampComparatorCursor(1);
+		return validStart;
 	}
 
 	/**

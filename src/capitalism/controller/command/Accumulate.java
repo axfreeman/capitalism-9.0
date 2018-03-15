@@ -81,7 +81,7 @@ public class Accumulate implements Command {
 		for (Commodity u : Commodity.currentByFunction(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent(),Commodity.FUNCTION.PRODUCTIVE_INPUT)) {
 
 			// Exclude socially-produced commodities
-			if (u.getOrigin() == Commodity.ORIGIN.SOCIALlY_PRODUCED)
+			if (u.getOrigin() == Commodity.ORIGIN.SOCIALLY_PRODUCED)
 				continue;
 
 			Reporter.report(logger, 2, "Processing commodity %s", u.name());
@@ -113,7 +113,7 @@ public class Accumulate implements Command {
 		for (Commodity u : Commodity.currentByFunction(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent(),Commodity.FUNCTION.CONSUMER_GOOD)) {
 
 			// Exclude socially-produced commodities
-			if (u.getOrigin() == Commodity.ORIGIN.SOCIALlY_PRODUCED)
+			if (u.getOrigin() == Commodity.ORIGIN.SOCIALLY_PRODUCED)
 				continue;
 			
 			Reporter.report(logger, 2, "Processing commodity %s", u.name());

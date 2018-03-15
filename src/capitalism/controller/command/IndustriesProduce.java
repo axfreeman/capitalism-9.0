@@ -85,7 +85,7 @@ public class IndustriesProduce implements Command {
 
 				double coefficient = s.getProductionCoefficient();
 				double stockUsedUp = output * coefficient;
-				if (s.getCommodity().getOrigin() == ORIGIN.SOCIALlY_PRODUCED) {
+				if (s.getCommodity().getOrigin() == ORIGIN.SOCIALLY_PRODUCED) {
 					intrinsicValueAdded += stockUsedUp;
 					Reporter.report(logger, 2, "Labour Power has added intrinsic value %.0f (monetary expression $%.0f) to commodity [%s]", 
 							intrinsicValueAdded, stockUsedUp*melt,industry.name());

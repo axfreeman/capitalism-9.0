@@ -57,12 +57,14 @@ public class TimeStamp implements Serializable {
 	private static TypedQuery<TimeStamp> primaryQuery;
 	private static TypedQuery<TimeStamp> superStateQuery;
 	private static TypedQuery<TimeStamp> allInProjectQuery;
+	private static TypedQuery<TimeStamp> allQuery;
 
 	// create the typed queries statically but not as named queries. This makes them easier to find and modify
 	static {
 		entityManager = entityManagerFactory.createEntityManager();
 		primaryQuery = entityManager.createQuery(
 				"SELECT t FROM TimeStamp t where t.pk.projectID = :project and t.pk.timeStampID = :timeStamp", TimeStamp.class);
+		allQuery = entityManager.createQuery("SELECT t from TimeStamp t", TimeStamp.class);
 		allInProjectQuery = entityManager.createQuery("Select t from TimeStamp t where t.pk.projectID =:project", TimeStamp.class);
 		superStateQuery = entityManager.createQuery(
 				"Select t from TimeStamp t where t.pk.projectID=:project and t.period= :period and t.superState=:superState", TimeStamp.class);
@@ -235,6 +237,7 @@ public class TimeStamp implements Serializable {
 	 * Set the comparators for the TimeStamp entity identified by the current project and the given timeStampID
 	 * This is done via a static query, because we have to search for the timeStamp concerned - it's not necessarily
 	 * this instantiation.
+	 * 
 	 * @param projectID
 	 *            all persistent records at this timeStampID will be given comparators equal to the timeStampComparatorCursor
 	 * @param timeStampID
@@ -243,7 +246,7 @@ public class TimeStamp implements Serializable {
 
 	public static void setComparators(int projectID, int timeStampID) {
 		logger.debug("Setting comparators for the timeStamp in project {} with timeStamp {}", projectID, timeStampID);
-		Project project=Project.get(projectID);
+		Project project = Project.get(projectID);
 		primaryQuery.setParameter("project", projectID);
 		primaryQuery.setParameter("timeStamp", timeStampID);
 		TimeStamp timeStamp = primaryQuery.getSingleResult();
@@ -389,6 +392,15 @@ public class TimeStamp implements Serializable {
 	}
 
 	/**
+	 * Fetch all timeStamps in the database. Largely for validation purposes though could have other uses
+	 * 
+	 * @return a list of all timeStamps
+	 */
+	public static List<TimeStamp> all() {
+		return allQuery.getResultList();
+	}
+
+	/**
 	 * Fetch all timeStamps in the given project. Largely for diagnostic purposes though could have other uses
 	 * 
 	 * @param projectID
@@ -396,7 +408,7 @@ public class TimeStamp implements Serializable {
 	 * @return a list of all timeStamps at the given project
 	 */
 
-	public static List<TimeStamp> allInCurrentProject(int projectID) {
+	public static List<TimeStamp> allInProject(int projectID) {
 		allInProjectQuery.setParameter("project", projectID);
 		return allInProjectQuery.getResultList();
 	}
@@ -408,12 +420,16 @@ public class TimeStamp implements Serializable {
 	 *            the project that contains the timeStamp we want
 	 * @param timeStampID
 	 *            the ID of the timeStamp we want
-	 * @return the TimeStamp that has the given timeStampID and projectID
+	 * @return the TimeStamp that has the given timeStampID and projectID, null if the record does not exist
 	 */
 	public static TimeStamp single(int projectID, int timeStampID) {
 		primaryQuery.setParameter("project", projectID);
 		primaryQuery.setParameter("timeStamp", timeStampID);
-		return primaryQuery.getSingleResult();
+		try {
+			return primaryQuery.getSingleResult();
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	/**
