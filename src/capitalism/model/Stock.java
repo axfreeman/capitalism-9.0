@@ -71,24 +71,24 @@ public class Stock implements Serializable {
 
 	// the proportion of this stock used up in producing one unit of output.
 	// ONLY relevant if this is of stockType PRODUCTIVE_INPUT (in which case the owner will be an industry)
-	@Column(name = "productionCoefficient") private double productionCoefficient;
+	@XmlElement @Column(name = "productionCoefficient") private double productionCoefficient;
 
 	// the amount of this stock required to produce the designated output.
 	// this is loaded at the start and used to calculate the productionCoefficient
 	// like productionCoefficient, only relevant if this is of stockType PRODUCTIVE_INPUT
-	@Column(name = "productionQuantity") private double productionQuantity;
+	@XmlElement @Column(name = "productionQuantity") private double productionQuantity;
 
 	// the proportion of the revenue of a class that will be spent on this stock in one period.
 	// ONLY relevant if this is of stockType CONSUMER_GOOD (in which case the owner will be a social class)
-	@Column(name = "consumptionCoefficient") private double consumptionCoefficient;
+	@XmlElement @Column(name = "consumptionCoefficient") private double consumptionCoefficient;
 
 	// the amount of this stock required to produce the designated output.
 	// this is loaded at the start and used to calculate the consumptionCoefficient
 	// like consumptionCoefficient, only relevant if this is of stockType CONSUMER_GOOD
-	@Column(name = "consumptionQuantity") private double consumptionQuantity;
+	@XmlElement @Column(name = "consumptionQuantity") private double consumptionQuantity;
 
 	// how much of this was used up in production or reproduction
-	@Column(name = "stockUsedUp") private double stockUsedUp;
+	@XmlElement @Column(name = "stockUsedUp") private double stockUsedUp;
 
 	// Comparators
 	@Transient private Stock comparator;

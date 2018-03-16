@@ -584,7 +584,8 @@ public class Industry implements Serializable {
 				minimumGrowthRate = possibleGrowthRate;
 		}
 		if (minimumGrowthRate == Double.MAX_VALUE) {
-			Dialogues.alert(logger, "Industry {} seems to have no inputs. Please look at your data. If the problem persists, contact the developer",
+			Dialogues.alert(logger, "Industry "+pk.name+ 
+					" seems to have no viable growth rate. Please look at your data. If the problem persists, contact the developer",
 					pk.name);
 			minimumGrowthRate = 0;
 		}

@@ -31,6 +31,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import capitalism.utils.Reporter;
+import capitalism.utils.Validate;
 import capitalism.view.custom.ActionStates;
 import capitalism.view.custom.DisplayControlsBox;
 
@@ -48,49 +49,41 @@ public class OneProject {
 	@XmlElementWrapper(name = "Industries") List<Industry> industries;
 	@XmlElementWrapper(name = "SocialClasses") List<SocialClass> socialClasses;
 	@XmlElementWrapper(name = "Stocks") List<Stock> stocks;
-	@XmlElement(name = "TimeStamp") TimeStamp timeStamp;
+	@XmlElementWrapper(name ="TimeStamps") List<TimeStamp> timeStamps;
 	@XmlElement(name = "Project") Project project;
-
+	
 	/**
-	 * element that is going to be marshaled in the xml
-	 * 
-	 * @param projectID
-	 *            the projectID that is to be dumped to an XML file
-	 * @param timeStampID
-	 *            the timeStampID of the persistent entitities to be dumped to an XML file
+	 * Wrap the lists from the given state of the database for a specific project
+	 * @param projectID the project to wrap 
 	 */
-	public void setLists(int projectID, int timeStampID) {
-		commodities = Commodity.all(projectID, timeStampID);
-		industries = Industry.all(projectID, timeStampID);
-		socialClasses = SocialClass.all(projectID, timeStampID);
-		stocks = Stock.all(projectID, timeStampID);
-		timeStamp = TimeStamp.singleInProjectAndTimeStamp(projectID,timeStampID);
-		project = Project.get(projectID);
+	public void wrap(int projectID) {
+		commodities = Commodity.all(projectID);
+		industries = Industry.all(projectID);
+		socialClasses=SocialClass.all(projectID);
+		stocks=Stock.all(projectID);
+		timeStamps=TimeStamp.allInProject(projectID);
+		project=Project.get(projectID);
 	}
 
 	/**
-	 * Create a new project from the XML file that has just been loaded into this OneProject entity.
+	 * Create a new project in the database from whatever has been loaded into this oneProject entity.
 	 */
-	
-	public void loadXML() {
+	public void sendToDatabase() {
 		// find the largest project so far. We will add the new project with a project numeber one greater than this
-		int maxProjectID = 0;
-		for (Project p : Project.all()) {
-			if (p.getProjectID() > maxProjectID)
-				maxProjectID = p.getProjectID();
-		}
+		int maxProjectID = Project.maxProjectID();
 		Reporter.report(logger, 1, "Adding a new project with project number %d", maxProjectID + 1);
 		Project.getEntityManager().getTransaction().begin();
 		project.setProjectID(maxProjectID+1);
 		project.setButtonState(ActionStates.lastState().text());
 		Project.getEntityManager().persist(project);
-		logger.debug("Committing project with project ID {} and timeStampID {}", project.getProjectID(), project.getTimeStampID());
 		Project.getEntityManager().getTransaction().commit();
 
 		TimeStamp.getEntityManager().getTransaction().begin();
-		timeStamp.setProjectID(maxProjectID+1);
-		TimeStamp.getEntityManager().persist(timeStamp);
-		logger.debug("Committing timeStamp with project ID {} and timeStampID {}", timeStamp.getProjectID(), timeStamp.getTimeStampID());
+		for (TimeStamp ts:timeStamps) {
+			ts.setProjectID(maxProjectID+1);
+			TimeStamp.getEntityManager().persist(ts);
+			logger.debug("Committing timeStamp with project ID {} and timeStampID {}", ts.getProjectID(), ts.getTimeStampID());
+		}
 		TimeStamp.getEntityManager().getTransaction().commit();
 
 		Commodity.getEntityManager().getTransaction().begin();
@@ -123,7 +116,95 @@ public class OneProject {
 		Stock.getEntityManager().getTransaction().commit();
 
 		// we loaded the persistent fields, but now we must initialise all the derived fields
+		
+		Validate.validate(maxProjectID);
 		project.initialise();
+		
 		DisplayControlsBox.rePopulateProjectCombo();
 	}
+	
+	/**
+	 * @return the commodities
+	 */
+	public List<Commodity> getCommodities() {
+		return commodities;
+	}
+
+	/**
+	 * @param commodities the commodities to set
+	 */
+	public void setCommodities(List<Commodity> commodities) {
+		this.commodities = commodities;
+	}
+
+	/**
+	 * @return the industries
+	 */
+	public List<Industry> getIndustries() {
+		return industries;
+	}
+
+	/**
+	 * @param industries the industries to set
+	 */
+	public void setIndustries(List<Industry> industries) {
+		this.industries = industries;
+	}
+
+	/**
+	 * @return the socialClasses
+	 */
+	public List<SocialClass> getSocialClasses() {
+		return socialClasses;
+	}
+
+	/**
+	 * @param socialClasses the socialClasses to set
+	 */
+	public void setSocialClasses(List<SocialClass> socialClasses) {
+		this.socialClasses = socialClasses;
+	}
+
+	/**
+	 * @return the stocks
+	 */
+	public List<Stock> getStocks() {
+		return stocks;
+	}
+
+	/**
+	 * @param stocks the stocks to set
+	 */
+	public void setStocks(List<Stock> stocks) {
+		this.stocks = stocks;
+	}
+
+	/**
+	 * @return the project
+	 */
+	public Project getProject() {
+		return project;
+	}
+
+	/**
+	 * @param project the project to set
+	 */
+	public void setProject(Project project) {
+		this.project = project;
+	}
+
+	/**
+	 * @return the timeStamps
+	 */
+	public List<TimeStamp> getTimeStamps() {
+		return timeStamps;
+	}
+
+	/**
+	 * @param timeStamps the timeStamps to set
+	 */
+	public void setTimeStamps(List<TimeStamp> timeStamps) {
+		this.timeStamps = timeStamps;
+	}
+
 }

@@ -23,6 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import capitalism.controller.Simulation;
+import capitalism.model.OneProject;
 import capitalism.utils.XMLStuff;
 import capitalism.view.custom.ImageButton;
 
@@ -31,7 +32,9 @@ public class DumpCommand implements DisplayCommand{
 
 	@Override public void execute(ImageButton caller) {
 		logger.debug("User saved the current project");
-		XMLStuff.saveToXML(Simulation.projectIDCurrent(), 1);
+		OneProject oneProject= new OneProject();
+		oneProject.wrap(Simulation.projectIDcurrent());
+		XMLStuff.exportToXML(oneProject);
 	}
 
 }

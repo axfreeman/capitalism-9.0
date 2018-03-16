@@ -114,6 +114,18 @@ public class Project implements Serializable {
 	}
 
 	/**
+	 * @return the largest projectID so far - allows us to add new projects without clashes
+	 */
+	public static int maxProjectID() {
+		int maxProjectID = 0;
+		for (Project p : Project.all()) {
+			if (p.getProjectID() > maxProjectID)
+				maxProjectID = p.getProjectID();
+		}
+		return maxProjectID;
+	}
+	
+	/**
 	 * Get a single project identified by the primary key {@code projectID},
 	 * 
 	 * @param projectID

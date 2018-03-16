@@ -96,8 +96,8 @@ public class Capitalism extends Application {
 	@Override public void start(Stage primaryStage) {
 		ViewManager.setPrimaryStage(primaryStage);
 		viewManager = new ViewManager();
-		if(Simulation.startup()) {
-			logger.debug("Will attempt to continue despite database errors");
+		if(!Simulation.startup()) {
+			//TODO we may wish to take some other action if there is a database flaw
 		}
 		ViewManager.startUp();
 	}

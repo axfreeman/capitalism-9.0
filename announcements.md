@@ -1,8 +1,10 @@
-# Capitalism 9.0 announcements 3/14/2018 12:59:40 PM 
+# Capitalism 9.0 announcements 3/15/2018 8:57:41 PM 
 
-Load, edit and save now more fully functional.
-Loaded project does not yet run but displays- some data is not transmitted.
-Next step is to implement validation.
+Load, edit and save now functional.
+User cannot yet specify the file name of the saved project yet.
+Loaded project runs.
+Benchmark projects not yet re-tested fully.
+New Executable
 
 ## consolidated prior announcements
 

@@ -38,20 +38,14 @@ import capitalism.model.TimeStamp;
  */
 public class Validate {
 
-	private static final Logger logger = LogManager.getLogger("Commodity");
+	private static final Logger logger = LogManager.getLogger("Validate");
 
 	/**
 	 * TODO:
-	 * Not every commodity needs to be produced(Money) but if it is consumed it must be produced.
-	 * Every productive commodity must have a productive stock that is owned by every industry
-	 * Every Industry must have exactly one stock of every possible input
+	 * If a commodity is consumed, it must be produced.
 	 * Every social class must have a sales stock for labour power even if it doesn't have any to sell (!)
 	 * If a commodity type is productive, we should disallow stocks of it being consumption goods, and vice versa
 	 * Every class should have a sales stock of labour power even if it doesn't produce it.
-	 * 
-	 * @param projectID
-	 *            the ID of the project to be validated
-	 * @return true if the project passes all validation tests, false otherwise
 	 */
 
 	private static Project project;
@@ -60,13 +54,14 @@ public class Validate {
 	 * carry out the global validation tests on the timeStamp and project records.
 	 * Carry out the project-specific tests
 	 * 
-	 * @return
+	 * @return true if all tests are passed, false otherwise
 	 */
 
 	public static boolean validate() {
+		Reporter.report(logger, 0, "Validating");
 		boolean valid = true;
 		if (Validate.timeStampIntegrity()) {
-			Reporter.report(logger, 2, "Passed time stamp integrity test");
+			Reporter.report(logger, 1, "Passed time stamp integrity test");
 		} else {
 			valid = false;
 		}
@@ -82,7 +77,7 @@ public class Validate {
 	 * 
 	 * @param projectID
 	 *            the ID of the project to be validated
-	 * @return
+	 * @return true if all tests are passed, false otherwise
 	 */
 
 	public static boolean validate(int projectID) {
@@ -127,6 +122,13 @@ public class Validate {
 		} else {
 			valid = false;
 		}
+		
+		if (inputCompleteness(projectID)) {
+			Reporter.report(logger, 2, "Passed industry product test");
+		} else {
+			valid = false;
+		}
+
 		return valid;
 	}
 
@@ -160,7 +162,7 @@ public class Validate {
 
 	/**
 	 * there should be a Project record for every project that is referenced by any other table in the database
-	 * 
+	 * @return true if the project passes the test, false otherwise
 	 */
 	public static boolean projectIntegrity() {
 		boolean valid = true;
@@ -202,7 +204,7 @@ public class Validate {
 	 * 
 	 * @param projectID
 	 *            the ID of the project whose integrity is to be tested
-	 * @return
+	 * @return true if the project passes the test, false otherwise
 	 */
 
 	public static boolean timeStampIntegrity(int projectID) {
@@ -265,7 +267,7 @@ public class Validate {
 
 	/**
 	 * A commodity called Labour Power must exist at all times
-	 * 
+	 * @param projectID the ID of the project being tested
 	 * @return true if a commodity called Labour Power exists, false otherwise
 	 */
 	private static boolean labourPowerTest(int projectID) {
@@ -302,6 +304,9 @@ public class Validate {
 
 	/**
 	 * Every stock must belong to either an industry or a social class that exists.
+	 * @param projectID the ID of the project being tested
+	 * @return true if a commodity called Labour Power exists, false otherwise
+	 * 
 	 */
 	private static boolean stockOwnerExists(int projectID) {
 		boolean valid = true;
@@ -339,6 +344,9 @@ public class Validate {
 
 	/**
 	 * every stock must have a stock type in the enum STOCKTYPE
+	 * @param projectID the ID of the project being tested
+	 * @return true if a commodity called Labour Power exists, false otherwise
+
 	 */
 	private static boolean validStockType(int projectID) {
 		boolean valid = true;
@@ -387,6 +395,28 @@ public class Validate {
 				}
 			}
 		}
+		return valid;
+	}
+	
+	/**
+	 * Every Industry must have exactly one stock of every possible productive input
+	 * @param projectID the ID of the project to check
+	 * @return true if the test completes successfully, false if any errors are discovered
+	 */
+
+	public static boolean inputCompleteness(int projectID) {
+		boolean valid = true;
+		for (Industry ind:Industry.all(projectID)) {
+			for (Commodity c: Commodity.currentByFunction(projectID, ind.getTimeStampID(), FUNCTION.PRODUCTIVE_INPUT)) {
+				Stock s=Stock.single(projectID, ind.getTimeStampID(), ind.name(), c.name(), STOCKTYPE.PRODUCTIVE.text());
+				if (s==null) {
+					Reporter.report(logger, 2, "Validation error: the industry %s does not have a productive stock of the commodity %s at timeStamp %d",
+							ind.name(),c.name(),ind.getTimeStampID());
+					valid = false;
+				}
+			}
+		}
+		
 		return valid;
 	}
 

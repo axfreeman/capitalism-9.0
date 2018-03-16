@@ -22,7 +22,9 @@ package capitalism.editor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import capitalism.model.OneProject;
 import capitalism.utils.Reporter;
+import capitalism.utils.XMLStuff;
 import capitalism.view.ViewManager;
 import capitalism.view.command.CreateProjectCommand;
 import capitalism.view.custom.DisplayControlsBox;
@@ -113,8 +115,8 @@ public class EditorManager {
 
 		EventHandler<ActionEvent> btnSaveHandler = new EventHandler<ActionEvent>() {
 			@Override public void handle(ActionEvent t) {
-				// TODO stub
-				Editor.saveToJPA();
+				OneProject oneProject= Editor.wrap();
+				XMLStuff.exportToXML(oneProject);
 			}
 		};
 

@@ -108,27 +108,29 @@ PROJECT,TIMESTAMP,OWNER,OWNERTYPE,COMMODITY,STOCKTYPE,QUANTITY,PRODUCTIONCOEFFIC
 7,1,Consumption,INDUSTRY,Consumption,Sales,300,0,0,0,0
 7,1,Workers,CLASS,Money,Money,3000,0,0,0,0
 7,1,Workers,CLASS,Labour Power,Sales,300,0,0,0,0
-8,1,Department Ib,INDUSTRY,Raw Materials,Sales,3000,0,0,0,0
-8,1,Workers,CLASS,Consumption,Consumption,0,0,0,1,0
-8,1,Department Ib,INDUSTRY,Money,Money,3000,0,0,0,0
+8,1,Capitalists,CLASS,Labour Power,Sales,0,0,0,0,0
 8,1,Department Ia,INDUSTRY,Raw Materials,Productive,0,0.333333333,1000,0,0
 8,1,Department Ia,INDUSTRY,Labour Power,Productive,0,0.333333333,1000,0,0
-8,1,Workers,CLASS,Money,Money,1500,0,0,0,0
-8,1,Department II,INDUSTRY,Money,Money,3000,0,0,0,0
 8,1,Department Ia,INDUSTRY,Money,Money,3000,0,0,0,0
 8,1,Department Ia,INDUSTRY,Fixed,Productive,0,0.333333333,1000,0,0
-8,1,Department Ib,INDUSTRY,Fixed,Productive,0,0.666666667,2000,0,0
-8,1,Department Ib,INDUSTRY,Labour Power,Productive,0,0.333333333,1000,0,0
-8,1,Workers,CLASS,Labour Power,Sales,3000,0,0,0,0
 8,1,Department Ia,INDUSTRY,Fixed,Sales,3000,0,0,0,0
+8,1,Department Ib,INDUSTRY,Raw Materials,Sales,3000,0,0,0,0
+8,1,Department Ib,INDUSTRY,Money,Money,3000,0,0,0,0
+8,1,Department Ib,INDUSTRY,Fixed,Productive,0,0.666666667,2000,0,0
+8,1,Department Ib,INDUSTRY,Raw Materials,Productive,0,0,0,0,0
+8,1,Department Ib,INDUSTRY,Labour Power,Productive,0,0.333333333,1000,0,0
+8,1,Department II,INDUSTRY,Money,Money,3000,0,0,0,0
 8,1,Department II,INDUSTRY,Labour Power,Productive,0,0.333333333,1000,0,0
 8,1,Department II,INDUSTRY,Consumption,Sales,3000,0,0,0,0
+8,1,Department II,INDUSTRY,Fixed,Productive,0,0,0,0,0
 8,1,Department II,INDUSTRY,Raw Materials,Productive,0,0.666666667,2000,0,0
+8,1,Workers,CLASS,Consumption,Consumption,0,0,0,1,0
+8,1,Workers,CLASS,Money,Money,1500,0,0,0,0
 1,1,Capitalists,CLASS,Labour Power,Sales,0,0,0,0,0
 2,1,Capitalists,CLASS,Labour Power,Sales,0,0,0,0,0
 3,1,Capitalists,CLASS,Labour Power,Sales,0,0,0,0,0
 4,1,Capitalists,CLASS,Labour Power,Sales,0,0,0,0,0
 5,1,Capitalists,CLASS,Labour Power,Sales,0,0,0,0,0
 6,1,Capitalists,CLASS,Labour Power,Sales,0,0,0,0,0
-8,1,Capitalists,CLASS,Labour Power,Sales,0,0,0,0,0
+8,1,Workers,CLASS,Labour Power,Sales,3000,0,0,0,0
 7,1,Capitalists,CLASS,Labour Power,Sales,0,0,0,0,0

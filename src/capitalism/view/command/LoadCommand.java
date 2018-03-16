@@ -30,7 +30,7 @@ public class LoadCommand implements DisplayCommand {
 
 	@Override public void execute(ImageButton caller) {
 		logger.debug("User loaded a project");
-		XMLStuff.getXML();
+		XMLStuff.getDatabaseFromXML();
 	}
 
 }

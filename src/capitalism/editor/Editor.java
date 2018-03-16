@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) Alan Freeman 2017-2019
+ * Copyright (C) Alan Freeman 2017-2019
  *  
  *  This file is part of the Capitalism Simulation, abbreviated to CapSim
  *  in the remainder of this project
@@ -18,10 +18,11 @@
 *   along with Capsim.  If not, see <http://www.gnu.org/licenses/>.
 */
 package capitalism.editor;
+
+import java.util.ArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import capitalism.controller.Simulation;
 import capitalism.controller.Parameters;
 import capitalism.editor.EditableCommodity.EC_ATTRIBUTE;
 import capitalism.editor.EditableIndustry.EI_ATTRIBUTE;
@@ -29,12 +30,12 @@ import capitalism.editor.EditableSocialClass.ESC_ATTRIBUTE;
 import capitalism.editor.EditorManager.EditorControlBar;
 import capitalism.model.Commodity;
 import capitalism.model.Industry;
+import capitalism.model.OneProject;
 import capitalism.model.Project;
 import capitalism.model.SocialClass;
 import capitalism.model.Stock;
 import capitalism.model.Stock.OWNERTYPE;
 import capitalism.model.TimeStamp;
-import capitalism.utils.XMLStuff;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Tab;
@@ -58,8 +59,8 @@ public class Editor extends VBox {
 	private static TableView<EditableIndustry> industryTable = new TableView<EditableIndustry>();
 	private static ObservableList<EditableSocialClass> socialClassData = null;
 	private static TableView<EditableSocialClass> socialClassTable = new TableView<EditableSocialClass>();
-	private static EditableTimeStamp editableTimeStamp=new EditableTimeStamp();
-	
+	private static EditableTimeStamp editableTimeStamp = new EditableTimeStamp();
+
 	public Editor() {
 
 		// start from scratch every time
@@ -168,11 +169,23 @@ public class Editor extends VBox {
 		socialClassTable.refresh();
 	}
 
-	public static void saveToJPA() {
-		
-		// wipe out any previous saves
-		Simulation.deleteAllFromProject(0);
-		
+	/**
+	 * Wrap the editor entities in an instance of oneProject, for exporting or importing
+	 * 
+	 * @return a OneProject entity with all the editor entities stored in it as 'floating' JPA entities
+	 *         that have not been persisted. These are purely transient objects which mediate between the editor
+	 *         and the database, and should not be managed or persisted
+	 */
+	public static OneProject wrap() {
+		OneProject oneProject = new OneProject();
+
+		ArrayList<Commodity> commodities = new ArrayList<Commodity>();
+		ArrayList<Industry> industries = new ArrayList<Industry>();
+		ArrayList<SocialClass> socialClasses = new ArrayList<SocialClass>();
+		ArrayList<Stock> stocks = new ArrayList<Stock>();
+		ArrayList<TimeStamp> timeStamps = new ArrayList<TimeStamp>();
+
+		// The timeStamp - actually a list, even though in this case it only has one member
 		TimeStamp timeStamp = new TimeStamp(1, 0, 1, "Revenue", 1, "Start");
 		timeStamp.setPopulationGrowthRate(editableTimeStamp.getPopulationGrowthRate());
 		timeStamp.setInvestmentRatio(editableTimeStamp.getInvestmentRatio());
@@ -181,19 +194,19 @@ public class Editor extends VBox {
 		timeStamp.setMeltResponse(Parameters.MELT_RESPONSE.fromText(editableTimeStamp.getMeltResponse()));
 		timeStamp.setCurrencySymbol(editableTimeStamp.getCurrencySymbol());
 		timeStamp.setQuantitySymbol(editableTimeStamp.getQuantitySymbol());
+		timeStamps.add(timeStamp);
+		oneProject.setTimeStamps(timeStamps);
+
+		// the project
 		Project project = new Project();
 		project.setProjectID(0);
 		project.setTimeStampID(1);
 		project.setDescription("New Project");
 		project.setTimeStampDisplayCursor(1);
 		project.setTimeStampComparatorCursor(1);
-		TimeStamp.getEntityManager().getTransaction().begin();
-		TimeStamp.getEntityManager().persist(timeStamp);
-		TimeStamp.getEntityManager().getTransaction().commit();
-		Project.getEntityManager().getTransaction().begin();
-		Project.getEntityManager().persist(project);
-		Project.getEntityManager().getTransaction().commit();
-		Commodity.getEntityManager().getTransaction().begin();
+		oneProject.setProject(project);
+
+		// The commodities
 		for (EditableCommodity c : commodityData) {
 			Commodity pc = new Commodity();
 			pc.setProjectID(0);
@@ -204,15 +217,13 @@ public class Editor extends VBox {
 			pc.setUnitPrice(pc.getUnitPrice());
 			pc.setFunction(Commodity.FUNCTION.function(c.getFunction()));
 			pc.setOrigin(Commodity.ORIGIN.origin(c.getOrigin()));
-			logger.debug("Persisting the commodity called {} with projectID {} and timeStamp {}",
-					pc.name(), pc.getProjectID(),pc.getTimeStampID());
-			Commodity.getEntityManager().persist(pc);
+			logger.debug("Stashing the commodity called {} ", pc.name());
+			commodities.add(pc);
 		}
-		Commodity.getEntityManager().getTransaction().commit();
+		oneProject.setCommodities(commodities);
 
-		Stock.getEntityManager().getTransaction().begin();
+		// The industries
 
-		Industry.getEntityManager().getTransaction().begin();
 		for (EditableIndustry ind : industryData) {
 			Industry pind = new Industry();
 			pind.setProjectID(0);
@@ -220,28 +231,22 @@ public class Editor extends VBox {
 			pind.setName(ind.getName());
 			pind.setCommodityName(ind.getCommodityName());
 			pind.setOutput(ind.getOutput());
-
+			industries.add(pind);
+			logger.debug("Saving the industry called {}, together with its money and sales stocks ", pind.name());
 			// TODO retrieve the actual amounts
-			Stock moneyStock = moneyStockBuilder(ind.getName(), ind.getDouble(EI_ATTRIBUTE.MONEY),OWNERTYPE.INDUSTRY);
-			Stock salesStock = salesStockBuilder(ind.getName(), ind.getCommodityName(), ind.getDouble(EI_ATTRIBUTE.SALES),OWNERTYPE.INDUSTRY);
-			Stock.getEntityManager().persist(moneyStock);
-			Stock.getEntityManager().persist(salesStock);
-			logger.debug("Persisting the industry called {} with projectID {} and timeStamp {}",
-					pind.name(), pind.getProjectID(),pind.getTimeStampID());
-			Industry.getEntityManager().persist(pind);
-
+			Stock moneyStock = moneyStockBuilder(ind.getName(), ind.getDouble(EI_ATTRIBUTE.MONEY), OWNERTYPE.INDUSTRY);
+			Stock salesStock = salesStockBuilder(ind.getName(), ind.getCommodityName(), ind.getDouble(EI_ATTRIBUTE.SALES), OWNERTYPE.INDUSTRY);
+			stocks.add(salesStock);
+			stocks.add(moneyStock);
 			for (EditableStock ps : ind.getProductiveStocks().values()) {
 				Stock pps = productiveStockBuilder(ind.getName(), ps.getName(), ps.getDesiredQuantity(), ps.getActualQuantity());
-				logger.debug(" Persisting the  stock called {} with projectID {} and timeStamp {}",
-						pps.name(),pps.getProjectID(),pps.getTimeStampID());
-				Stock.getEntityManager().persist(pps);
+				logger.debug(" Stashing the  stock called {} belonging to industry {}", pps.name(), pind.name());
+				stocks.add(pps);
 			}
 		}
-		Industry.getEntityManager().getTransaction().commit();
-		Stock.getEntityManager().getTransaction().commit();
+		oneProject.setIndustries(industries);
 
-		Stock.getEntityManager().getTransaction().begin();
-		SocialClass.getEntityManager().getTransaction().begin();
+		// the Social Classes
 		for (EditableSocialClass sc : socialClassData) {
 			SocialClass psc = new SocialClass();
 			psc.setProjectID(0);
@@ -249,25 +254,22 @@ public class Editor extends VBox {
 			psc.setName(sc.getName());
 			psc.setparticipationRatio(sc.getParticipationRatio());
 			psc.setRevenue(psc.getRevenue());
-			logger.debug("Persisting the social class called {} with projectID {} and timeStamp {}",
-					psc.name(), psc.getProjectID(),psc.getTimeStampID());
-					
-			SocialClass.getEntityManager().persist(psc);
-			Stock moneyStock = moneyStockBuilder(sc.getName(), sc.getDouble(ESC_ATTRIBUTE.MONEY),OWNERTYPE.CLASS);
-			Stock salesStock = salesStockBuilder(sc.getName(), "Labour Power", sc.getDouble(ESC_ATTRIBUTE.SALES),OWNERTYPE.CLASS);
-			Stock.getEntityManager().persist(moneyStock);
-			Stock.getEntityManager().persist(salesStock);
+			logger.debug("Stashing the social class called {} together with its money and sales stocks", psc.name());
+			socialClasses.add(psc);
+			Stock moneyStock = moneyStockBuilder(sc.getName(), sc.getDouble(ESC_ATTRIBUTE.MONEY), OWNERTYPE.CLASS);
+			Stock salesStock = salesStockBuilder(sc.getName(), "Labour Power", sc.getDouble(ESC_ATTRIBUTE.SALES), OWNERTYPE.CLASS);
+			stocks.add(salesStock);
+			stocks.add(moneyStock);
 			for (EditableStock ps : sc.getConsumptionStocks().values()) {
 				Stock pps = consumptionStockBuilder(sc.getName(), ps.getName(), ps.getDesiredQuantity(), ps.getActualQuantity());
-				logger.debug(" Persisting the  stock called {} with projectID {} and timeStamp {}",
-						pps.name(),pps.getProjectID(),pps.getTimeStampID());
-				Stock.getEntityManager().persist(pps);
+				logger.debug(" Stashing the  stock called {} belonging to class {} ", pps.name(), psc.name());
+				stocks.add(pps);
 			}
 		}
-
-		SocialClass.getEntityManager().getTransaction().commit();
-		Stock.getEntityManager().getTransaction().commit();
-		XMLStuff.saveToXML(0, 1);
+		oneProject.setSocialClasses(socialClasses);
+		// The stocks, which have all been created as we go along
+		oneProject.setStocks(stocks);
+		return oneProject;
 	}
 
 	public static Stock moneyStockBuilder(String owner, double actualQuantity, OWNERTYPE ownerType) {

@@ -72,7 +72,6 @@ public class Simulation{
 		timeStampCurrent = TimeStamp.single(1, 1);
 		timeStampCurrent.setPeriod(1);
 		projectCurrent = Project.get(1);
-		Reporter.report(logger, 0, "Validate");
 		if (!Validate.validate()) {
 			Dialogues.alert(logger, "There is an error in the database. Please see the log for details. will try to continue");
 			validStart=false;
@@ -111,8 +110,8 @@ public class Simulation{
 	}
 
 	/**
-	 * Test the invariants of motion. Calculates, for each commodity, the total price and total value based on what this commodity knows. Compares it with the
-	 * recorded totalprice and total value. Logs an error if they are not the same.
+	 * Test the invariants of motion. Calculates, for each commodity, the total price and total value based on what this commodity knows. 
+	 * Compares it with the recorded totalprice and total value. Logs an error if they are not the same.
 	 * 
 	 * TODO incorporate further checks, as follows:
 	 * (1) no new value is created except in production
@@ -120,6 +119,7 @@ public class Simulation{
 	 */
 
 	public static void checkInvariants() {
+		logger.debug("Checking Invariants");
 		for (Commodity u : Commodity.all(projectIDCurrent(), timeStampIDCurrent())) {
 			double listedQuantity = u.totalQuantity();
 			double unitValue = u.getUnitValue();
@@ -625,14 +625,14 @@ public class Simulation{
 	}
 	/**
 	 * set the priceResponse stored in timeStampCurrent
-	 * @param meltResponse the priceResponse to set
+	 * @param priceResponse the priceResponse to set
 	 */
 	public static void setPriceResponse(Parameters.PRICE_RESPONSE priceResponse) {
 		timeStampCurrent.setPriceResponse(priceResponse);
 	}
 	
 	/**
-	 * return the priceResponse stored in timeStampCurrent
+	 * @return the priceResponse stored in timeStampCurrent
 	 */
 	public static Parameters.PRICE_RESPONSE priceResponse(){
 		return timeStampCurrent.getPriceResponse();
