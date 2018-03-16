@@ -19,11 +19,14 @@
 */
 package capitalism.view.command;
 
+import java.io.File;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import capitalism.controller.Simulation;
 import capitalism.model.OneProject;
+import capitalism.utils.Dialogues;
 import capitalism.utils.XMLStuff;
 import capitalism.view.custom.ImageButton;
 
@@ -34,7 +37,10 @@ public class DumpCommand implements DisplayCommand{
 		logger.debug("User saved the current project");
 		OneProject oneProject= new OneProject();
 		oneProject.wrap(Simulation.projectIDcurrent());
-		XMLStuff.exportToXML(oneProject);
+		File file=Dialogues.saveFileChooser("Where should this project be saved?");
+		if (file == null) return;
+		logger.debug("Saving new project to {}", file.getAbsolutePath());
+		XMLStuff.exportToXML(oneProject,file);
 	}
 
 }

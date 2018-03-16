@@ -30,26 +30,18 @@ import javax.xml.bind.ValidationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import capitalism.Capitalism;
 import capitalism.model.OneProject;
 
 public class XMLStuff {
 	private static final Logger logger = LogManager.getLogger("XML handler");
 
-	public static void exportToXML(OneProject oneProject) {
+	public static void exportToXML(OneProject oneProject, File file) {
 		JAXBContext commoditiesContext;
-		File output;
-		try {
-			output = new File(Capitalism.getUserBasePath() + "Capitalism.xml");
-		} catch (Exception e) {
-			Dialogues.alert(logger, "Could not create file to save the database because {}", e.getMessage());
-			return;
-		}
 		try {
 			commoditiesContext = JAXBContext.newInstance(OneProject.class);
 			Marshaller commoditiesMarshaller = commoditiesContext.createMarshaller();
 			commoditiesMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			commoditiesMarshaller.marshal(oneProject, output);
+			commoditiesMarshaller.marshal(oneProject, file);
 		} catch (JAXBException e) {
 			Dialogues.alert(logger, "Could not save the database because %s", e.getMessage());
 		}
@@ -57,17 +49,14 @@ public class XMLStuff {
 
 	public static void getDatabaseFromXML() {
 		File file = null;
-		try {
-			file = Dialogues.fileChooser("Location of the new data");
-		} catch (Exception e) {
-			Dialogues.alert(logger, "Could not load this file because {}", e.getMessage());
+		file = Dialogues.loadFileChooser("Location of the new data");
+		if (file == null)
 			return;
-		}
 		Unmarshaller jaxbUnmarshaller;
 		try {
 			JAXBContext jaxbContext = JAXBContext.newInstance(OneProject.class);
 			jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-			OneProject oneProject= (OneProject) jaxbUnmarshaller.unmarshal(file);
+			OneProject oneProject = (OneProject) jaxbUnmarshaller.unmarshal(file);
 			oneProject.sendToDatabase();
 		} catch (ValidationException r) {
 			Dialogues.alert(logger, "The file was invalid because {}", r.getMessage());

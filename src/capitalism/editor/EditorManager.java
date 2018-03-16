@@ -19,10 +19,13 @@
 */
 package capitalism.editor;
 
+import java.io.File;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import capitalism.model.OneProject;
+import capitalism.utils.Dialogues;
 import capitalism.utils.Reporter;
 import capitalism.utils.XMLStuff;
 import capitalism.view.ViewManager;
@@ -115,8 +118,11 @@ public class EditorManager {
 
 		EventHandler<ActionEvent> btnSaveHandler = new EventHandler<ActionEvent>() {
 			@Override public void handle(ActionEvent t) {
+				File file=Dialogues.saveFileChooser("Where should this project be saved?");
+				if (file == null) return;
+				logger.debug("Saving new project to {}", file.getAbsolutePath());
 				OneProject oneProject= Editor.wrap();
-				XMLStuff.exportToXML(oneProject);
+				XMLStuff.exportToXML(oneProject,file);
 			}
 		};
 

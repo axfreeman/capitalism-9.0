@@ -1,7 +1,7 @@
-# Capitalism 9.0 announcements 3/15/2018 8:57:41 PM 
+# Capitalism 9.0 announcements 3/15/2018 10:48:25 PM 
 
 Load, edit and save now functional.
-User cannot yet specify the file name of the saved project yet.
+User can now specify the file name of the saved and loaded projects.
 Loaded project runs.
 Benchmark projects not yet re-tested fully.
 New Executable
