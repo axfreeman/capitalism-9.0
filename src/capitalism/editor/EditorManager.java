@@ -24,14 +24,14 @@ import java.io.File;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import capitalism.model.Commodity.FUNCTION;
+import capitalism.model.Commodity.ORIGIN;
 import capitalism.model.OneProject;
 import capitalism.utils.Dialogues;
 import capitalism.utils.Reporter;
 import capitalism.utils.XMLStuff;
 import capitalism.view.ViewManager;
-import capitalism.view.command.CreateProjectCommand;
 import capitalism.view.custom.DisplayControlsBox;
-import capitalism.view.custom.ImageButton;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -43,11 +43,13 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
 public class EditorManager {
-	private final static Logger logger = LogManager.getLogger("ViewManager");
+	private final static Logger logger = LogManager.getLogger("EditorManager");
 
 	private Stage editorStage = null;
 	private Scene editorScene;
@@ -106,11 +108,15 @@ public class EditorManager {
 
 	}
 
+	/**
+	 * The EditorControlBar contains the main editor controls, in a bar above the tables
+	 */
+	
 	public static class EditorControlBar extends HBox {
-		private static ImageButton createProjectButton = new ImageButton("littlePlus.png", null, new CreateProjectCommand(),
-				"Create a new project", "Create a new project (under development)");
 		private Button btnSave = new Button("Save Project");
 		private Button btnNew = new Button("Create New Project");
+
+		private static Pane spacer = new Pane();
 
 		private RadioButton showDesiredStocksButton = new RadioButton("Required Stocks");
 		private RadioButton showActualStocksButton = new RadioButton("Actual Stocks");
@@ -121,18 +127,23 @@ public class EditorManager {
 				File file=Dialogues.saveFileChooser("Where should this project be saved?");
 				if (file == null) return;
 				logger.debug("Saving new project to {}", file.getAbsolutePath());
-				OneProject oneProject= Editor.wrap();
+				OneProject oneProject= Editor.wrappedOneProject();
 				XMLStuff.exportToXML(oneProject,file);
 			}
 		};
 
 		EventHandler<ActionEvent> btnNewHandler = new EventHandler<ActionEvent>() {
 			@Override public void handle(ActionEvent t) {
-				// TODO stub
+				createSkeletonProject();
 			}
 		};
 
 		EditorControlBar() {
+			setMaxWidth(Double.MAX_VALUE);
+
+			spacer.setPrefHeight(50);
+			spacer.setPrefWidth(50);
+			setHgrow(spacer, Priority.ALWAYS);
 			ViewManager.setTip(showDesiredStocksButton,
 					"Show the production or consumption stocks are required, given industrial output and the size of the social classes");
 			ViewManager.setTip(showActualStocksButton, "Show the actual production and consumption stocks owned by the industries and social classes");
@@ -164,17 +175,50 @@ public class EditorManager {
 			btnSave.setOnAction(btnSaveHandler);
 			setPrefWidth(400);
 
+			showDesiredStocksButton.setPrefHeight(30);
+			showActualStocksButton.setPrefHeight(30);
 			showDesiredStocksButton.setPadding(new Insets(2, 0, 0, 0));
 			showActualStocksButton.setPadding(new Insets(2, 0, 0, 0));
 
 			getChildren().add(btnNew);
 			getChildren().add(btnSave);
-			getChildren().add(createProjectButton);
+			getChildren().add(spacer);
 			getChildren().add(showDesiredStocksButton);
 			getChildren().add(showActualStocksButton);
 		}
 	}
 
+	/**
+	 * Create a skeleton project, which contains the minimum necessary for a viable project
+	 */
+	public static void createSkeletonProject() {
+		Reporter.report(logger, 0, "CREATING A PROJECT");
+		// Clear the decks
+		Editor.clearDecks();
+
+		// Create the commodities money, necessities, labour power, and means of production
+		Reporter.report(logger, 1, "Creating the basic commodities");
+		EditableCommodity moneyCommodity=EditableCommodity.makeCommodity("Money",ORIGIN.MONEY,FUNCTION.MONEY);
+		EditableCommodity necessityCommodity=EditableCommodity.makeCommodity("Necessities",ORIGIN.INDUSTRIALLY_PRODUCED,FUNCTION.CONSUMER_GOOD);
+		EditableCommodity meandOfProductionCommodity=EditableCommodity.makeCommodity("Means of Production",ORIGIN.INDUSTRIALLY_PRODUCED,FUNCTION.PRODUCTIVE_INPUT);
+		EditableCommodity labourPowerCommodity=EditableCommodity.makeCommodity("Labour Power",ORIGIN.SOCIALLY_PRODUCED,FUNCTION.PRODUCTIVE_INPUT);
+		Editor.getCommodityData().addAll(moneyCommodity,necessityCommodity,meandOfProductionCommodity,labourPowerCommodity);
+		
+		// Create the social classes Capitalists, Workers and their stocks
+		Reporter.report(logger, 1, "Creating the minimum social Classes");
+		EditableSocialClass capitalists=EditableSocialClass.makeSocialClass("Capitalists",0);
+		EditableSocialClass workers=EditableSocialClass.makeSocialClass("Workers",1);
+		Editor.getSocialClassData().addAll(workers,capitalists);
+		
+		// Create the two industries means of production and consumption and their stocks
+		Reporter.report(logger, 1, "Creating the minimum industries");
+		EditableIndustry dI = EditableIndustry.makeIndustry("Department I","Means of production",0);
+		EditableIndustry dII=EditableIndustry.makeIndustry("Departmment II","Necessities", 0);
+		Editor.getIndustryData().addAll(dI,dII);
+		// repopulate the display
+		Editor.rebuildTables();
+	}
+	
 	public static boolean displayActuals() {
 		return displayActuals;
 	}

@@ -21,6 +21,8 @@ package capitalism.editor;
 
 import capitalism.controller.Simulation;
 import capitalism.model.Commodity;
+import capitalism.model.Commodity.FUNCTION;
+import capitalism.model.Commodity.ORIGIN;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -46,22 +48,48 @@ public class EditableCommodity {
 	private StringProperty function;// see enum FUNCTION for list of possible types
 
 	enum EC_ATTRIBUTE {
-		UNIT_VALUE("Unit Value"), UNIT_PRICE("Unit Price"), TURNOVER("Turnover Time"), NAME("Name"),FUNCTION("Function"),ORIGIN("Origin");
+		UNIT_VALUE("Unit Value"), UNIT_PRICE("Unit Price"), TURNOVER("Turnover Time"), NAME("Name"), FUNCTION("Function"), ORIGIN("Origin");
 		protected String text;
+
 		private EC_ATTRIBUTE(String text) {
-			this.text=text;
+			this.text = text;
 		}
 	}
 
+	/**
+	 * Create a completely empty Editable commodity
+	 */
 	public EditableCommodity() {
 		name = new SimpleStringProperty();
 		turnoverTime = new SimpleDoubleProperty();
 		unitValue = new SimpleDoubleProperty();
 		unitPrice = new SimpleDoubleProperty();
-		origin=new SimpleStringProperty();
-		function  = new SimpleStringProperty();
+		origin = new SimpleStringProperty();
+		function = new SimpleStringProperty();
 	}
-	
+
+	/**
+	 * Create a single Editable commodity with minimal properties
+	 * 
+	 * @param name
+	 *            the name of the new commodity
+	 * @param origin
+	 *            the origin of the new commodity (SOCIALLY_PRODUCED, INDUSTRIALLY_PRODUCED, MONEY)
+	 * @param function
+	 *            the function of the new commodity (PRODUCTIVE_INPUT, CONSUMER_GOOD, MONEY)
+	 * @return a populated EditableCommodity
+	 */
+	public static EditableCommodity makeCommodity(String name, ORIGIN origin, FUNCTION function) {
+		EditableCommodity commodity = new EditableCommodity();
+		commodity.setName(name);
+		commodity.setTurnoverTime(1);
+		commodity.setUnitValue(1);
+		commodity.setUnitPrice(1);
+		commodity.setFunction(function.text());
+		commodity.setOrigin(origin.text());
+		return commodity;
+	}
+
 	/**
 	 * Create an observable list of EditableCommodity entities (normally for display in the Commodities Table) from the
 	 * project identified by the current projectID and timeStamp.
@@ -70,7 +98,7 @@ public class EditableCommodity {
 	 */
 	public static ObservableList<EditableCommodity> editableCommodities() {
 		ObservableList<EditableCommodity> result = FXCollections.observableArrayList();
-		for (Commodity c : Commodity.all(Simulation.projectIDcurrent(),Simulation.timeStampIDCurrent())) {
+		for (Commodity c : Commodity.all(Simulation.projectIDcurrent(), Simulation.timeStampIDCurrent())) {
 			EditableCommodity oneRecord = new EditableCommodity();
 			oneRecord.setName(c.name());
 			oneRecord.setUnitValue(c.getUnitValue());
@@ -137,7 +165,7 @@ public class EditableCommodity {
 			return "";
 		}
 	}
-	
+
 	public static TableColumn<EditableCommodity, Double> makeDoubleColumn(EC_ATTRIBUTE attribute) {
 		TableColumn<EditableCommodity, Double> col = new TableColumn<EditableCommodity, Double>(attribute.text);
 		Callback<TableColumn<EditableCommodity, Double>, TableCell<EditableCommodity, Double>> cellFactory = new Callback<TableColumn<EditableCommodity, Double>, TableCell<EditableCommodity, Double>>() {
@@ -148,9 +176,9 @@ public class EditableCommodity {
 		col.setCellValueFactory(
 				cellData -> cellData.getValue().doubleProperty(attribute)
 
-				// TODO need to abstract here
-				// new PropertyValueFactory<EditableCommodity, Double>(fieldName)
-				);
+		// TODO need to abstract here
+		// new PropertyValueFactory<EditableCommodity, Double>(fieldName)
+		);
 		col.setCellFactory(cellFactory);
 		col.setOnEditCommit(
 				new EventHandler<TableColumn.CellEditEvent<EditableCommodity, Double>>() {
@@ -161,7 +189,7 @@ public class EditableCommodity {
 				});
 		return col;
 	}
-	
+
 	public static TableColumn<EditableCommodity, String> makeStringColumn(EC_ATTRIBUTE attribute) {
 		TableColumn<EditableCommodity, String> col = new TableColumn<EditableCommodity, String>(attribute.text);
 		Callback<TableColumn<EditableCommodity, String>, TableCell<EditableCommodity, String>> cellFactory = new Callback<TableColumn<EditableCommodity, String>, TableCell<EditableCommodity, String>>() {
@@ -172,9 +200,9 @@ public class EditableCommodity {
 		col.setCellValueFactory(
 				cellData -> cellData.getValue().stringProperty(attribute)
 
-				// TODO need to abstract here
-				// new PropertyValueFactory<EditableCommodity, String>(fieldName)
-				);
+		// TODO need to abstract here
+		// new PropertyValueFactory<EditableCommodity, String>(fieldName)
+		);
 		col.setCellFactory(cellFactory);
 		col.setOnEditCommit(
 				new EventHandler<TableColumn.CellEditEvent<EditableCommodity, String>>() {
@@ -198,8 +226,8 @@ public class EditableCommodity {
 			return new SimpleDoubleProperty(Double.NaN).asObject();
 		}
 	}
-	
-	private ObservableValue<String> stringProperty(EC_ATTRIBUTE attribute){
+
+	private ObservableValue<String> stringProperty(EC_ATTRIBUTE attribute) {
 		switch (attribute) {
 		case NAME:
 			return name;
@@ -210,13 +238,15 @@ public class EditableCommodity {
 		default:
 			return new SimpleStringProperty("");
 		}
-		
+
 	}
 
 	private static class EditableCommodityStringCell extends TableCell<EditableCommodity, String> {
 		private TextField textField;
+
 		public EditableCommodityStringCell() {
 		}
+
 		@Override public void startEdit() {
 			super.startEdit();
 			if (textField == null) {
@@ -271,11 +301,13 @@ public class EditableCommodity {
 			return getItem() == null ? "" : getItem().toString();
 		}
 	}
-	
+
 	private static class EditableCommodityCell extends TableCell<EditableCommodity, Double> {
 		private TextField textField;
+
 		public EditableCommodityCell() {
 		}
+
 		@Override public void startEdit() {
 			super.startEdit();
 			if (textField == null) {
@@ -331,9 +363,6 @@ public class EditableCommodity {
 		}
 	}
 
-
-	
-
 	public double getUnitValue() {
 		return unitValue.get();
 	}
@@ -385,7 +414,8 @@ public class EditableCommodity {
 	}
 
 	/**
-	 * @param origin the origin to set
+	 * @param origin
+	 *            the origin to set
 	 */
 	public void setOrigin(String origin) {
 		this.origin.set(origin);
@@ -399,7 +429,8 @@ public class EditableCommodity {
 	}
 
 	/**
-	 * @param function the function to set
+	 * @param function
+	 *            the function to set
 	 */
 	public void setFunction(String function) {
 		this.function.set(function);

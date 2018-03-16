@@ -98,7 +98,7 @@ public class DisplayControlsBox extends HBox {
 	// convenient list in case we want to do something to all the buttons (at present, not much except add them to the HBox)
 	static {
 		imageButtons.addAll(Arrays.asList(graphicsButton, colourHintsButton, expressionButton, logButton,
-				decimalsButton, dataLoadButton, dataDumpButton,restartButton));
+				decimalsButton, createProjectButton, dataLoadButton, dataDumpButton,restartButton));
 	}
 	
 	// this is the projectCombo box
@@ -124,8 +124,9 @@ public class DisplayControlsBox extends HBox {
 		labourResponseImage.setFitHeight(15);
 		pricingResponseImage.setFitWidth(15);
 		pricingResponseImage.setFitHeight(15);
-		getChildren().addAll(createProjectButton, projectCombo, labourResponseImage, labourSupplyCombo, pricingResponseImage, pricingCombo, meltResponseImage, meltCombo, spacer,
-				buttonBar);
+		// 16/03/2018 for now, remove the other combos which clutter the screen
+		// TODO put these into a settings window
+		getChildren().addAll(projectCombo, spacer, buttonBar);
 	}
 
 	private void buildControlsBar() {

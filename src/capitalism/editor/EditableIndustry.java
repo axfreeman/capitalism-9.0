@@ -27,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 import capitalism.controller.Simulation;
 import capitalism.model.Industry;
 import capitalism.model.Stock;
+import capitalism.model.Commodity.FUNCTION;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -69,6 +70,31 @@ public class EditableIndustry {
 	}
 
 	/**
+	 * Create a populated EditableSocialClass entity and also create its salesStock, moneyStock and consumptionStock
+	 * 
+	 * @param name
+	 *            the name of the industry
+	 * @param commodityName
+	 *            the name of the commodity this industry produces
+	 * @param output
+	 *            the output that sells this industry is currently producing (i.e. at the time of project initiation)
+	 * @return the populated EditableIndustry
+	 */
+	public static EditableIndustry makeIndustry(String name, String commodityName, double output) {
+		EditableIndustry industry = new EditableIndustry();
+		industry.setName(name);
+		industry.setOutput(output);
+		industry.money = new EditableStock("Money");
+		industry.sales = new EditableStock(commodityName);
+		for (EditableCommodity e : Editor.getCommodityData()) {
+			if (e.getFunction().equals(FUNCTION.PRODUCTIVE_INPUT.text())) {
+				industry.productiveStocks.put(e.getName(), new EditableStock(e.getName()));
+			}
+		}
+		return industry;
+	}
+
+	/**
 	 * Create an observable list of EditableIndustries (normally for display in the Industries Table) from the
 	 * project identified by the current projectID and timeStampID. NOTE this is not just a wrapper. It will
 	 * be edited by the user and eventually stored back to a modified version of the persistent entities
@@ -79,13 +105,13 @@ public class EditableIndustry {
 
 	public static ObservableList<EditableIndustry> editableIndustries() {
 		ObservableList<EditableIndustry> result = FXCollections.observableArrayList();
-		for (Industry c : Industry.all(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent())) {
+		for (Industry c : Industry.all(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent())) {
 			EditableIndustry oneRecord = new EditableIndustry();
 			oneRecord.setName(c.name());
 			oneRecord.setCommodityName(c.getCommodityName());
 			oneRecord.setOutput(c.getOutput());
-			oneRecord.sales= new EditableStock(c.getCommodityName());
-			oneRecord.money= new EditableStock("Money");
+			oneRecord.sales = new EditableStock(c.getCommodityName());
+			oneRecord.money = new EditableStock("Money");
 			result.add(oneRecord);
 		}
 		return result;
@@ -443,7 +469,8 @@ public class EditableIndustry {
 	}
 
 	/**
-	 * @param productiveStocks the productiveStocks to set
+	 * @param productiveStocks
+	 *            the productiveStocks to set
 	 */
 	public void setProductiveStocks(HashMap<String, EditableStock> productiveStocks) {
 		this.productiveStocks = productiveStocks;

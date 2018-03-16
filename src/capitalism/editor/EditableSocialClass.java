@@ -24,6 +24,7 @@ import java.util.HashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import capitalism.controller.Simulation;
+import capitalism.model.Commodity.FUNCTION;
 import capitalism.model.SocialClass;
 import capitalism.model.Stock;
 import capitalism.utils.Dialogues;
@@ -62,6 +63,9 @@ public class EditableSocialClass {
 		}
 	}
 
+	/**
+	 * Create an empty new EditableSocialClass entity
+	 */
 	public EditableSocialClass() {
 		name = new SimpleStringProperty();
 		revenue = new SimpleDoubleProperty();
@@ -70,26 +74,58 @@ public class EditableSocialClass {
 	}
 
 	/**
+	 * Create a populated EditableSocialClass entity and also create its salesStock, moneyStock and consumptionStock
+	 * 
+	 * @param name
+	 *            the name of the social Class
+	 * @param participationRatio
+	 *            the proportion of this class that sells labour power
+	 * @return the populated EditableSocialClass
+	 */
+	public static EditableSocialClass makeSocialClass(String name, double participationRatio) {
+		EditableSocialClass socialClass = new EditableSocialClass();
+		socialClass.setName(name);
+		socialClass.setParticipationRatio(participationRatio);
+		socialClass.money = new EditableStock("Money");
+		socialClass.sales = new EditableStock("Labour Power");
+		for (EditableCommodity e : Editor.getCommodityData()) {
+			if (e.getFunction().equals(FUNCTION.CONSUMER_GOOD.text())) {
+				socialClass.consumptionStocks.put(e.getName(), new EditableStock(e.getName()));
+			}
+		}
+
+		return socialClass;
+	}
+
+	/**
 	 * Create an observable list of EditableSocialClass entities (normally for display in the SocialClass Table) from the
 	 * project identified by the current projectID and timeStamp.
 	 * 
 	 * @return an observableList of EditableSocialClass entities identified by the current projectID and timeStampID
 	 */
-
 	public static ObservableList<EditableSocialClass> editableSocialClasses() {
 		ObservableList<EditableSocialClass> result = FXCollections.observableArrayList();
-		for (SocialClass c : SocialClass.all(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent())) {
+		for (SocialClass c : SocialClass.all(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent())) {
 			EditableSocialClass oneRecord = new EditableSocialClass();
 			oneRecord.setName(c.name());
 			oneRecord.setParticipationRatio(c.getparticipationRatio());
 			oneRecord.setRevenue(c.getRevenue());
-			oneRecord.sales= new EditableStock("Labour Power");
-			oneRecord.money= new EditableStock("Money");
+			oneRecord.sales = new EditableStock("Labour Power");
+			oneRecord.money = new EditableStock("Money");
 			result.add(oneRecord);
 		}
 		return result;
 	}
 
+	/**
+	 * Set one or other of the fields of this social class entity, depending on ESC_ATTRIBUTE
+	 * 
+	 * @param attribute
+	 *            the attribute selects which field to modify (PR, REVENUE, MONEY, SALES)
+	 * 
+	 * @param d
+	 *            the value to be placed in the field
+	 */
 	public void setDouble(ESC_ATTRIBUTE attribute, double d) {
 		switch (attribute) {
 		case PR:
@@ -108,6 +144,12 @@ public class EditableSocialClass {
 		}
 	}
 
+	/**
+	 * 
+	 * @param attribute
+	 *            the attribute selects which field to retrieve (PR, REVENUE, MONEY, SALES)
+	 * @return a numeric field selected by the attribute (PR, REVENUE, MONEY, SALES)
+	 */
 	public double getDouble(ESC_ATTRIBUTE attribute) {
 		switch (attribute) {
 		case PR:
@@ -123,6 +165,12 @@ public class EditableSocialClass {
 		}
 	}
 
+	/**
+	 * @param attribute
+	 *            the attribute selects which field to retrieve (PR, REVENUE, MONEY, SALES)
+	 * @return a text field selected by the attribute (NAME is the only text attribute right now
+	 *         but this might change so provided for completeness)
+	 */
 	public String getString(ESC_ATTRIBUTE attribute) {
 		switch (attribute) {
 		case NAME:
@@ -132,6 +180,16 @@ public class EditableSocialClass {
 		}
 	}
 
+	/**
+	 * Set one or other of the text fields of this social class entity, depending on ESC_ATTRIBUTE
+	 * 
+	 * @param attribute
+	 *            the attribute selects which field to modify (NAME is the only text attribute right now
+	 *            but this might change so provided for completeness)
+	 * 
+	 * @param newValue
+	 *            the value to be placed in the field
+	 */
 	public void setString(ESC_ATTRIBUTE attribute, String newValue) {
 		switch (attribute) {
 		case NAME:
@@ -148,6 +206,7 @@ public class EditableSocialClass {
 	}
 
 	public static TableColumn<EditableSocialClass, Double> makeStockColumn(String commodityName) {
+		logger.debug("Making a stock column for the commodity called {} ", commodityName);
 		TableColumn<EditableSocialClass, Double> col = new TableColumn<EditableSocialClass, Double>(commodityName);
 
 		Callback<TableColumn<EditableSocialClass, Double>, TableCell<EditableSocialClass, Double>> cellFactory;
@@ -378,7 +437,7 @@ public class EditableSocialClass {
 	public void loadStocksFromSimulation() {
 		SocialClass persistentSocialClass = SocialClass.single(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent(), name.get());
 		try {
-			// A simple dodge: since there is no difference between desired and actual 
+			// A simple dodge: since there is no difference between desired and actual
 			// money and sales stocks, set both to be the same
 			Stock moneyStock = persistentSocialClass.moneyStock();
 			money.setActualQuantity(moneyStock.getQuantity());
@@ -450,7 +509,8 @@ public class EditableSocialClass {
 	}
 
 	/**
-	 * @param consumptionStocks the consumptionStocks to set
+	 * @param consumptionStocks
+	 *            the consumptionStocks to set
 	 */
 	public void setConsumptionStocks(HashMap<String, EditableStock> consumptionStocks) {
 		this.consumptionStocks = consumptionStocks;

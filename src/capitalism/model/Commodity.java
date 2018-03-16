@@ -129,7 +129,7 @@ public class Commodity implements Serializable {
 			case "Money":
 				return MONEY;
 			case "Productive Inputs":
-				return FUNCTION.PRODUCTIVE_INPUT;
+				return PRODUCTIVE_INPUT;
 			case "Consumer Goods":
 				return CONSUMER_GOOD;
 			default:

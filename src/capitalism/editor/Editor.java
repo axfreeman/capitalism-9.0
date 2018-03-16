@@ -62,7 +62,6 @@ public class Editor extends VBox {
 	private static EditableTimeStamp editableTimeStamp = new EditableTimeStamp();
 
 	public Editor() {
-
 		// start from scratch every time
 		commodityData = FXCollections.observableArrayList();
 		industryData = FXCollections.observableArrayList();
@@ -107,7 +106,11 @@ public class Editor extends VBox {
 		getChildren().addAll(ecb, tabPane);
 	}
 
-	private void makeCommodityTable() {
+	/**
+	 * create the columns for the Commodity table and populate the table
+	 */
+	private static void makeCommodityTable() {
+		commodityTable.getColumns().clear();
 		commodityTable.setEditable(true);
 		commodityTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 		commodityTable.getColumns().add(EditableCommodity.makeStringColumn(EC_ATTRIBUTE.NAME));
@@ -119,7 +122,11 @@ public class Editor extends VBox {
 		commodityTable.setItems(commodityData);
 	}
 
-	private void makeIndustryTable() {
+	/**
+	 * Create the columns for the Industry table and populate the table
+	 */
+	private static void makeIndustryTable() {
+		industryTable.getColumns().clear();
 		industryTable.setEditable(true);
 		industryTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 		industryTable.getColumns().add(EditableIndustry.makeStringColumn(EI_ATTRIBUTE.NAME));
@@ -130,17 +137,26 @@ public class Editor extends VBox {
 		industryTable.setItems(industryData);
 	}
 
+	/**
+	 * Add one column for each productive stock in the industry Table.
+	 * public because it is invoked post-hoc by the Editor Manager
+	 * TODO do something more elegant
+	 */
 	public static void addIndustryStockColumns() {
 		for (EditableCommodity commodity : commodityData) {
 			// TODO bit of a developer leak here: need to make sure the
 			// data exists. May be Better to drive from the data table than just
 			// assume that just because there is a commodity, the data has been supplied.
-			if (commodity.getFunction().equals("Productive Inputs"))
+			if (commodity.getFunction().equals(Commodity.FUNCTION.PRODUCTIVE_INPUT.text()))
 				industryTable.getColumns().add(EditableIndustry.makeStockColumn(commodity.getName()));
 		}
 	}
 
-	private void makeSocialClassTable() {
+	/**
+	 * Create the columns for the Social Class table and populate the table
+	 */
+	private static void makeSocialClassTable() {
+		socialClassTable.getColumns().clear();
 		socialClassTable.setEditable(true);
 		socialClassTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 		socialClassTable.getColumns().add(EditableSocialClass.makeStringColumn(ESC_ATTRIBUTE.NAME));
@@ -151,32 +167,63 @@ public class Editor extends VBox {
 		socialClassTable.setItems(socialClassData);
 	}
 
+	/**
+	 * Add one column for each consumption stock in the Social Class table.
+	 * public because it is invoked post-hoc by the Editor Manager
+	 * TODO do something more elegant
+	 */
 	public static void addSocialClassStockColumns() {
 		for (EditableCommodity commodity : commodityData) {
 			logger.debug("Adding columns for consumption goods: trying {}", commodity.getName());
 			// TODO bit of a developer leak here: need to make sure the
 			// data exists. May be Better to drive from the data table than just
 			// assume that just because there is a commodity, the data has been supplied.
-			if (commodity.getFunction().equals("Consumer Goods"))
+			if (commodity.getFunction().equals(Commodity.FUNCTION.CONSUMER_GOOD.text()))
 				socialClassTable.getColumns().add(EditableSocialClass.makeStockColumn(commodity.getName()));
 		}
 	}
 
+	/**
+	 * Remake the tables. This has to be done whenever the stock columns change, because the
+	 * commodities they represent have new names. There may be a better way but this is 
+	 * the simplest and I don't think it's expensive because there are no database operations involved.
+	 */
+	public static void rebuildTables() {
+		makeCommodityTable();
+		makeIndustryTable();
+		makeSocialClassTable();
+	}
+	
+	
+	/**
+	 * Refresh the tables by requesting a reload of their data
+	 * TODO check empirically if this is really needed because these are observables
+	 * so in principle refresh should be automatic
+	 */
 	public static void refresh() {
-		// TODO check empirically if this is really needed because these are observables
-		// so in principle refresh should be automatic
 		industryTable.refresh();
 		socialClassTable.refresh();
+		commodityTable.refresh();
 	}
 
 	/**
-	 * Wrap the editor entities in an instance of oneProject, for exporting or importing
+	 * Repopulate the tables by resetting their data
+	 * TODO check if this is automatic
+	 */
+	public static void rePopulate() {
+		commodityTable.setItems(commodityData);
+		industryTable.setItems(industryData);
+		socialClassTable.setItems(socialClassData);
+	}
+
+	/**
+	 * Wrap the editor's observable entities in an instance of oneProject, for exporting or importing
 	 * 
 	 * @return a OneProject entity with all the editor entities stored in it as 'floating' JPA entities
 	 *         that have not been persisted. These are purely transient objects which mediate between the editor
 	 *         and the database, and should not be managed or persisted
 	 */
-	public static OneProject wrap() {
+	public static OneProject wrappedOneProject() {
 		OneProject oneProject = new OneProject();
 
 		ArrayList<Commodity> commodities = new ArrayList<Commodity>();
@@ -223,7 +270,6 @@ public class Editor extends VBox {
 		oneProject.setCommodities(commodities);
 
 		// The industries
-
 		for (EditableIndustry ind : industryData) {
 			Industry pind = new Industry();
 			pind.setProjectID(0);
@@ -267,11 +313,23 @@ public class Editor extends VBox {
 			}
 		}
 		oneProject.setSocialClasses(socialClasses);
+
 		// The stocks, which have all been created as we go along
 		oneProject.setStocks(stocks);
 		return oneProject;
 	}
 
+	/**
+	 * Create and populate one persistent money Stock entity
+	 * 
+	 * @param owner
+	 *            the owner of the stock
+	 * @param actualQuantity
+	 *            the actual quantity of this commodity in existence
+	 * @param ownerType
+	 *            the ownerType of this stock (CLASS, INDUSTRY)
+	 * @return one persistent Stock entity
+	 */
 	public static Stock moneyStockBuilder(String owner, double actualQuantity, OWNERTYPE ownerType) {
 		Stock moneyStock = new Stock();
 		moneyStock.setTimeStamp(1);
@@ -284,6 +342,19 @@ public class Editor extends VBox {
 		return moneyStock;
 	}
 
+	/**
+	 * Create and populate one persistent sales Stock entity
+	 * 
+	 * @param owner
+	 *            the owner of the stock, which may be a class or an industry
+	 * @param commodityName
+	 *            the name of its commodity
+	 * @param actualQuantity
+	 *            the actual quantity of this commodity in existence
+	 * @param ownerType
+	 *            the type of the owner (CLASS or INDUSTRY)
+	 * @return one persistent Stock entity
+	 */
 	public static Stock salesStockBuilder(String owner, String commodityName, double actualQuantity, OWNERTYPE ownerType) {
 		Stock salesStock = new Stock();
 		salesStock.setTimeStamp(1);
@@ -296,6 +367,19 @@ public class Editor extends VBox {
 		return salesStock;
 	}
 
+	/**
+	 * Create and populate one persistent production Stock entity
+	 * 
+	 * @param owner
+	 *            the owner of the stock (which will be an industry)
+	 * @param commodityName
+	 *            the name of its commodity
+	 * @param desiredQuantity
+	 *            the quantity of this commodity required, given the output level
+	 * @param actualQuantity
+	 *            the actual quantity of this commodity in existence
+	 * @return one persistent Stock entity
+	 */
 	public static Stock productiveStockBuilder(String owner, String commodityName, double desiredQuantity, double actualQuantity) {
 		Stock productiveStock = new Stock();
 		productiveStock.setTimeStamp(1);
@@ -309,6 +393,19 @@ public class Editor extends VBox {
 		return productiveStock;
 	}
 
+	/**
+	 * Create and populate one persistent consumption Stock entity
+	 * 
+	 * @param owner
+	 *            the owner of the stock(which will be a social class)
+	 * @param commodityName
+	 *            the name of its commodity
+	 * @param desiredQuantity
+	 *            the quantity of this commodity required, given the size of the class that owns it
+	 * @param actualQuantity
+	 *            the actual quantity of this commodity in existence
+	 * @return one persistent Stock entity
+	 */
 	public static Stock consumptionStockBuilder(String owner, String commodityName, double desiredQuantity, double actualQuantity) {
 		Stock consumptionStock = new Stock();
 		consumptionStock.setTimeStamp(1);
@@ -323,7 +420,21 @@ public class Editor extends VBox {
 	}
 
 	/**
-	 * @return the data
+	 * Clear the decks. Empty all the data lists
+	 */
+	public static void clearDecks() {
+		commodityData = FXCollections.observableArrayList();
+		commodityTable.setItems(commodityData);
+		industryData = FXCollections.observableArrayList();
+		industryTable.setItems(industryData);
+		socialClassData = FXCollections.observableArrayList();
+		socialClassTable.setItems(socialClassData);
+		editableTimeStamp = new EditableTimeStamp();
+		refresh();
+	}
+
+	/**
+	 * @return an observable list of commodities (used to populate the commodities table)
 	 */
 	public static ObservableList<EditableCommodity> getCommodityData() {
 		return commodityData;
