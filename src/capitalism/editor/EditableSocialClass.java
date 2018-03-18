@@ -200,11 +200,26 @@ public class EditableSocialClass {
 		}
 	}
 
+	/**
+	 * Create a new EditableStock of the commodity called commodityName and place it in the list
+	 * of consumption good stocks owned by members of this class
+	 * 
+	 * @param commodityName
+	 *            the name of the commodity
+	 */
 	public void addConsumptionStock(String commodityName) {
 		EditableStock stock = new EditableStock(commodityName);
 		consumptionStocks.put(commodityName, stock);
 	}
 
+	/**
+	 * Create a column dynamically, ready to be added to the socialClasses table, which refers to a
+	 * stock owned by the social Class entity that owns this stock.
+	 * 
+	 * @param commodityName
+	 *            the name of the commodity to which this refers
+	 * @return an editable TableColumn entity that will display this stock, and allow it to be edited.
+	 */
 	public static TableColumn<EditableSocialClass, Double> makeStockColumn(String commodityName) {
 		logger.debug("Making a stock column for the commodity called {} ", commodityName);
 		TableColumn<EditableSocialClass, Double> col = new TableColumn<EditableSocialClass, Double>(commodityName);
@@ -227,6 +242,14 @@ public class EditableSocialClass {
 		return col;
 	}
 
+	/**
+	 * Create a column for the socialClass table that refers to a numeric attribute (field) of this EditableSocialClass
+	 * entity. The field is selected by the attribute parameter.
+	 * 
+	 * @param attribute
+	 *            the attribute which selects the (fixed) field in question
+	 * @return an editable TableColumn entity that will display this field, and allow it to be edited.
+	 */
 	public static TableColumn<EditableSocialClass, Double> makeDoubleColumn(ESC_ATTRIBUTE attribute) {
 		TableColumn<EditableSocialClass, Double> col = new TableColumn<EditableSocialClass, Double>(attribute.text);
 		Callback<TableColumn<EditableSocialClass, Double>, TableCell<EditableSocialClass, Double>> cellFactory;
@@ -248,6 +271,14 @@ public class EditableSocialClass {
 		return col;
 	}
 
+	/**
+	 * Create a column for the socialClass table that refers to a text attribute (field) of this EditableSocialClass
+	 * entity. The field is selected by the attribute parameter.
+	 * 
+	 * @param attribute
+	 *            the attribute which selects the (fixed) field in question
+	 * @return an editable TableColumn entity that will display this field, and allow it to be edited.
+	 */
 	public static TableColumn<EditableSocialClass, String> makeStringColumn(ESC_ATTRIBUTE attribute) {
 		TableColumn<EditableSocialClass, String> col = new TableColumn<EditableSocialClass, String>(attribute.text);
 		Callback<TableColumn<EditableSocialClass, String>, TableCell<EditableSocialClass, String>> cellFactory = new Callback<TableColumn<EditableSocialClass, String>, TableCell<EditableSocialClass, String>>() {

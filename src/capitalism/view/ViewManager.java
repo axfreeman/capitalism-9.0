@@ -118,7 +118,6 @@ public class ViewManager {
 		scene.getStylesheets().add(css);
 		primaryStage.setScene(scene);
 		primaryStage.setY(0);
-		primaryStage.show();
 		primaryStage.setTitle("Capitalism");
 
 		// now, and only now, create the logger window. We had to wait until the application launched but
@@ -143,6 +142,7 @@ public class ViewManager {
 
 		// the display is refreshed every time it changes, starting here
 		refreshDisplay();
+//		primaryStage.show(); //leave this till after the preloader closes, to get seamless transition
 	}
 
 	/**
@@ -153,6 +153,7 @@ public class ViewManager {
 		anchorPane = new AnchorPane();
 		anchorPane.setPrefHeight(800);
 		anchorPane.setPrefWidth(1300);
+		
 		simulationResultsPane = new VBox();
 		manePane = new HBox();
 		bigEverything = new VBox();

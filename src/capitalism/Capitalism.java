@@ -25,6 +25,8 @@ import java.net.URLClassLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.sun.javafx.application.LauncherImpl;
+
 import capitalism.controller.Simulation;
 import capitalism.utils.DBHandler;
 import capitalism.utils.Reporter;
@@ -38,7 +40,8 @@ public class Capitalism extends Application {
 	public static DBHandler dataHandler = new DBHandler();		// handles the initial database transactions such as creation and initialisation
 	public static ViewManager viewManager = null; 				// controls all aspects of the display
 	private static String userBasePath = System.getProperty("user.home").replace('\\', '/') + "/Documents/Capsim/";
-	
+
+
 	/**
 	 * The main class extends the javafx class 'Application' and therefore inherits {@code launch()} which is where the action begins
 	 * However, there ain't no such thing as a free launch.
@@ -49,11 +52,18 @@ public class Capitalism extends Application {
 	 * 4. calls stop() to turn out the lights (does nothing unless overridden)
 	 * see https://docs.oracle.com/javase/8/javafx/api/javafx/application/Application.html
 	 * 
-	 * @param args the arguments supplied by the external caller. Ignored in this application
+	 * @param args
+	 *            the arguments supplied by the external caller. Ignored in this application
 	 */
 
 	public static void main(String[] args) {
-		// set up the logger files and log the fact that we have started
+		System.out.println("Constructed capitalism");
+		// launch the preloader which displays the splash screen
+		LauncherImpl.launchApplication(Capitalism.class, MyPreloader.class, args);
+	}
+
+	@Override public void init() throws Exception {
+		System.out.println("entered init, thread: " + Thread.currentThread().getName());
 		Reporter.initialiseLoggerFiles();
 
 		logger.debug("STARTUP");
@@ -61,10 +71,12 @@ public class Capitalism extends Application {
 		if (!dataHandler.initialiseDataBaseAndStart()) {
 			logger.error("Data error on startup. Sorry, could not continue");
 			return;
-		};
-		
-		// launch the application
-		launch();
+		}
+	}
+
+	// Constructor is called after BEFORE_LOAD.
+	public Capitalism() {
+		System.out.println("Capitalism constructor called, thread: " + Thread.currentThread().getName());
 	}
 
 	/**
@@ -79,14 +91,14 @@ public class Capitalism extends Application {
 	}
 
 	/**
-	 * A slightly complex procedure but necessary as far as I can see. 
+	 * A slightly complex procedure but necessary as far as I can see.
 	 * {@code primaryStage} is supplied by the JavaFX launcher. We simply pass it to the viewManager statically,
-	 * because there is no need to instantiate multiplie copies of the primary stage (or it wouldn't be primary, would it?) 
+	 * because there is no need to instantiate multiplie copies of the primary stage (or it wouldn't be primary, would it?)
 	 * Next, create the viewManager. There's only a single instance of it.
 	 * The constructor doesn't do much, but it does initialise a root layout which is a container for most of the
 	 * display, and it creates the LogWindow (again, a single instance) which is used for reporting. Thus, it must
 	 * be done before the next step, initialising the values and prices of the stocks and the commodities, and the global totals.
-	 * This, performed by the Simulation class static startup method, is needed because the information in the user-supplied 
+	 * This, performed by the Simulation class static startup method, is needed because the information in the user-supplied
 	 * data files is incomplete - it provides only the bare minimum. It is done before viewManager constructs most of its
 	 * custom controls (the display tables, buttons, etc) because to do this, viewManager needs the fully-initialised data.
 	 * Initialization is performed for all projects, so we can subsequently switch from one to the other.
@@ -96,10 +108,14 @@ public class Capitalism extends Application {
 	@Override public void start(Stage primaryStage) {
 		ViewManager.setPrimaryStage(primaryStage);
 		viewManager = new ViewManager();
-		if(!Simulation.startup()) {
-			//TODO we may wish to take some other action if there is a database flaw
+		if (!Simulation.startup()) {
+			// TODO we may wish to take some other action if there is a database flaw
 		}
 		ViewManager.startUp();
+		ViewManager.getPrimaryStage().centerOnScreen();
+        ViewManager.getPrimaryStage().show();
+        
+        MyPreloader.closePreloader();
 	}
 
 	/**
@@ -113,10 +129,11 @@ public class Capitalism extends Application {
 	/**
 	 * Returns the base for all files that are created in, or copied into, the user's file system.
 	 * TODO Currently a fixed location, but could be made configurable
+	 * 
 	 * @return the userBasePath
 	 */
 	public static String getUserBasePath() {
 		return userBasePath;
 	}
-	
+
 }
