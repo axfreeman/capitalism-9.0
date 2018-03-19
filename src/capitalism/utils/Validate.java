@@ -46,6 +46,7 @@ public class Validate {
 	 * Every social class must have a sales stock for labour power even if it doesn't have any to sell (!)
 	 * If a commodity type is productive, we should disallow stocks of it being consumption goods, and vice versa
 	 * Every class should have a sales stock of labour power even if it doesn't produce it.
+	 * Complain if there are zeroes where there should be positive numbers
 	 */
 
 	private static Project project;

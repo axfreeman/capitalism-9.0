@@ -258,7 +258,7 @@ public class EditableIndustry {
 
 	private ObservableValue<Double> stockDoubleProperty(String commodityName) {
 		EditableStock stock = productiveStocks.get(commodityName);
-		if (EditorManager.displayActuals()) {
+		if (EditorControlBar.displayActuals()) {
 			return stock.getActualQuantityProperty().asObject();
 		} else {
 			return stock.getDesiredQuantityProperty().asObject();
@@ -267,7 +267,7 @@ public class EditableIndustry {
 
 	private void setStockDouble(String commodityName, Double newValue) {
 		EditableStock stock = productiveStocks.get(commodityName);
-		if (EditorManager.displayActuals()) {
+		if (EditorControlBar.displayActuals()) {
 			stock.setActualQuantity(newValue);
 		} else {
 			stock.setDesiredQuantity(newValue);

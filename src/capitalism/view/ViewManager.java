@@ -112,12 +112,10 @@ public class ViewManager {
 		rootLayout.setPrefWidth(1300);
 
 		// display the root layout. Later (in startup) it will hold an anchorPane where most of the business is conducted.
-
 		Scene scene = new Scene(rootLayout);
 		String css = getClass().getResource("/SimulationTheme.css").toExternalForm();
 		scene.getStylesheets().add(css);
 		primaryStage.setScene(scene);
-		primaryStage.setY(0);
 		primaryStage.setTitle("Capitalism");
 
 		// now, and only now, create the logger window. We had to wait until the application launched but

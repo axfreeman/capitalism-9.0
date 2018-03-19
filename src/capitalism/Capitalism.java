@@ -29,27 +29,28 @@ import com.sun.javafx.application.LauncherImpl;
 
 import capitalism.controller.Simulation;
 import capitalism.utils.DBHandler;
-import capitalism.utils.Reporter;
 import capitalism.view.ViewManager;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
 public class Capitalism extends Application {
-
 	private static final Logger logger = LogManager.getLogger(Capitalism.class);
 	public static DBHandler dataHandler = new DBHandler();		// handles the initial database transactions such as creation and initialisation
 	public static ViewManager viewManager = null; 				// controls all aspects of the display
 	private static String userBasePath = System.getProperty("user.home").replace('\\', '/') + "/Documents/Capsim/";
 
-
 	/**
 	 * The main class extends the javafx class 'Application' and therefore inherits {@code launch()} which is where the action begins
 	 * However, there ain't no such thing as a free launch.
 	 * The Order is:
-	 * 1. calls super.init()(does nothing unless overeridden)
-	 * 2. calls 'start()' (see below)
-	 * 3. waits until finished - either because of Platform.exit() or because last window is closed (provided Platform.implicitExit attribute is true)
-	 * 4. calls stop() to turn out the lights (does nothing unless overridden)
+	 * 1. call {@link #main(String[])} which calls the preloader to display the splash screen 
+	 *    and instruct it to start {@link Capitalism#main(String[])} when it is ready
+	 * 2. call super#init() unless overeridden - which, in this case, it is.
+	 *    call {@link #init()} instead, since this overrides super.init()
+	 * 3. call {@link #start} (see below)
+	 * 4. wait until finished - either because of Platform#exit or because last window is closed 
+	 *    (provided Platform.implicitExit attribute is true)
+	 * 5. call {@link #stop()} to turn out the lights (also does nothing unless overridden)
 	 * see https://docs.oracle.com/javase/8/javafx/api/javafx/application/Application.html
 	 * 
 	 * @param args
@@ -59,19 +60,12 @@ public class Capitalism extends Application {
 	public static void main(String[] args) {
 		System.out.println("Constructed capitalism");
 		// launch the preloader which displays the splash screen
-		LauncherImpl.launchApplication(Capitalism.class, MyPreloader.class, args);
+		LauncherImpl.launchApplication(Capitalism.class, ApplicationPreloader.class, args);
 	}
 
 	@Override public void init() throws Exception {
 		System.out.println("entered init, thread: " + Thread.currentThread().getName());
-		Reporter.initialiseLoggerFiles();
-
-		logger.debug("STARTUP");
-		// Create the database and read in the user-defined persistent entities
-		if (!dataHandler.initialiseDataBaseAndStart()) {
-			logger.error("Data error on startup. Sorry, could not continue");
-			return;
-		}
+		logger.debug("DEBUG STARTUP");
 	}
 
 	// Constructor is called after BEFORE_LOAD.
@@ -108,14 +102,19 @@ public class Capitalism extends Application {
 	@Override public void start(Stage primaryStage) {
 		ViewManager.setPrimaryStage(primaryStage);
 		viewManager = new ViewManager();
+		
+		// Create the database and read in the user-defined persistent entities
+		
+		if (!dataHandler.initialiseDataBaseAndStart()) {
+			logger.error("Data error on startup. Sorry, could not continue");
+			return;
+		}
 		if (!Simulation.startup()) {
 			// TODO we may wish to take some other action if there is a database flaw
 		}
 		ViewManager.startUp();
 		ViewManager.getPrimaryStage().centerOnScreen();
         ViewManager.getPrimaryStage().show();
-        
-        MyPreloader.closePreloader();
 	}
 
 	/**

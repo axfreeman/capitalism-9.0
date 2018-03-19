@@ -325,7 +325,7 @@ public class EditableSocialClass {
 
 	private ObservableValue<Double> stockDoubleProperty(String commodityName) {
 		EditableStock stock = consumptionStocks.get(commodityName);
-		if (EditorManager.displayActuals()) {
+		if (EditorControlBar.displayActuals()) {
 			return stock.getActualQuantityProperty().asObject();
 		} else {
 			return stock.getDesiredQuantityProperty().asObject();
@@ -334,7 +334,7 @@ public class EditableSocialClass {
 
 	private void setStockDouble(String commodityName, Double newValue) {
 		EditableStock stock = consumptionStocks.get(commodityName);
-		if (EditorManager.displayActuals()) {
+		if (EditorControlBar.displayActuals()) {
 			stock.setActualQuantity(newValue);
 		} else {
 			stock.setDesiredQuantity(newValue);
@@ -546,5 +546,6 @@ public class EditableSocialClass {
 	public void setConsumptionStocks(HashMap<String, EditableStock> consumptionStocks) {
 		this.consumptionStocks = consumptionStocks;
 	}
+
 
 }
