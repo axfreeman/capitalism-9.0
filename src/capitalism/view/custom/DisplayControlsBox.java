@@ -233,18 +233,5 @@ public class DisplayControlsBox extends HBox {
 		return graphicsState;
 	}
 
-	/**
-	 * @return the editorIsOpen
-	 */
-	public static boolean editorIsOpen() {
-		return editorWindowOpen;
-	}
-
-	/**
-	 * @param editorIsOpen the editorIsOpen to set
-	 */
-	public static void setEditorOpen(boolean editorIsOpen) {
-		DisplayControlsBox.editorWindowOpen = editorIsOpen;
-	}
 
 }

@@ -23,6 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import capitalism.utils.Reporter;
+import capitalism.view.ViewManager;
 import javafx.animation.ScaleTransition;
 import javafx.application.Platform;
 import javafx.application.Preloader;
@@ -41,9 +42,6 @@ import javafx.util.Duration;
 public class ApplicationPreloader extends Preloader {
 	@SuppressWarnings("unused")
 	private static final Logger logger = LogManager.getLogger(ApplicationPreloader.class);
-
-	private static final double WIDTH = 1300;
-	private static final double HEIGHT = 800;
 
 	private static Stage preloaderStage;
 	private static Scene scene;
@@ -72,17 +70,19 @@ public class ApplicationPreloader extends Preloader {
 
 		ApplicationPreloader.preloaderStage = primaryStage;
 		progress = new Label("Watch this space");
-		progress.setFont(new Font(48));
+		progress.setFont(new Font(36));
 		progress.setTextFill(Color.ORANGERED);
 
 		economy = new ImageView("worldeconomy.png");
-		economy.setFitWidth(1300);
-		economy.setFitHeight(800);
+		economy.setFitWidth(ViewManager.windowWidth);
+		economy.setFitHeight(ViewManager.windowHeight);
 		root = new StackPane(economy);
 		root.getChildren().add(progress);
+		progress.setTranslateX(120);
+		progress.setTranslateY(-30);
 		root.setAlignment(Pos.CENTER);
 
-		scene = new Scene(root, WIDTH, HEIGHT);
+		scene = new Scene(root, ViewManager.windowWidth, ViewManager.windowHeight);
 		// Set preloader scene and show stage.
 		preloaderStage.setAlwaysOnTop(true);
 		preloaderStage.setScene(scene);

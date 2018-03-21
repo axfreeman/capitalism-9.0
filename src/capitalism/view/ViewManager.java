@@ -78,7 +78,9 @@ public class ViewManager {
 
 	final public static Rectangle2D screenBounds = Screen.getPrimary().getBounds();
 	final public static String deltaSymbol = "± ";
-
+	final public static double windowWidth=screenBounds.getWidth()*0.9;
+	final public static double windowHeight=screenBounds.getHeight()*0.9;
+	
 	// display parameters that can change as the simulation proceeds
 
 	private static String largeFormat = "%1$,.0f";	// Formats the display of large floating point numbers
@@ -108,8 +110,8 @@ public class ViewManager {
 		// construct the root window, a simple container with almost no functionality
 		// TODO do we really need it?
 
-		rootLayout.setPrefHeight(800);
-		rootLayout.setPrefWidth(1300);
+		rootLayout.setPrefHeight(ViewManager.windowHeight);
+		rootLayout.setPrefWidth(ViewManager.windowWidth);
 
 		// display the root layout. Later (in startup) it will hold an anchorPane where most of the business is conducted.
 		Scene scene = new Scene(rootLayout);

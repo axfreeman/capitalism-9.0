@@ -24,6 +24,7 @@ public class EditorDialogueBox extends VBox {
 	private HBox buttonsBox = new HBox();
 	private Label warningLabel;
 	private ArrayList<Node> disableList;
+	private String initialPrompt;
 
 	public EditorDialogueBox(List<Node> fields, String initialPrompt,EventHandler<ActionEvent> btnSaveHandler,ArrayList<Node> disableList) {
 		super();
@@ -35,6 +36,7 @@ public class EditorDialogueBox extends VBox {
 		warningLabel.setMaxWidth(Double.MAX_VALUE);
 		warningLabel.setMinWidth(300);
 		warningLabel.setPrefWidth(300);
+		this.initialPrompt=initialPrompt;
 		warningLabel.setText(initialPrompt);
 		btnSave.setOnAction(btnSaveHandler);
 		Insets sidePadding = new Insets(5, 5, 5, 5);
@@ -65,10 +67,11 @@ public class EditorDialogueBox extends VBox {
 	};
 
 	/**
-	 * Make this dialogue visible and enabled
-	 * and disable everything else, effectively making the dialogue modal
+	 * Make this dialogue visible and enabled, disable everything else, effectively making the dialogue modal.
+	 * Re-initialise the prompt.
 	 */
 	public void showDialogue() {
+		warningLabel.setText(initialPrompt);
 		setVisible(true);
 		Editor.setControlsDisabled(true);
 		for (Node n:disableList) {

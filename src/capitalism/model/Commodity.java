@@ -143,7 +143,7 @@ public class Commodity implements Serializable {
 	 *
 	 */
 	public enum ORIGIN {
-		SOCIALLY_PRODUCED("Social"), INDUSTRIALLY_PRODUCED("Capitalist"), MONEY("Money");
+		SOCIALLY_PRODUCED("Social"), INDUSTRIALLY_PRODUCED("Industrial"), MONEY("Money");
 		String text;
 
 		ORIGIN(String text) {

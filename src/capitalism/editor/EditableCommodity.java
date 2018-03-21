@@ -436,4 +436,9 @@ public class EditableCommodity {
 		this.function.set(function);
 	}
 
+	public String toString() {
+		StringBuilder sb=new StringBuilder();
+		sb.append(name.get()).append("(").append(function.get()).append(",").append(origin.get()).append(")\n");
+		return  sb.toString();
+	}
 }

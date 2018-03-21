@@ -54,8 +54,8 @@ public class LogWindow {
 	private Stage loggingStage=null;
 	private HBox hBox=null;
 	private TreeView<Label> treeView= null;
-	private double logWindowWidth = ViewManager.screenBounds.getWidth() * 0.5;
-	private double logWindowHeight = ViewManager.screenBounds.getHeight() * 0.9;
+	private double logWindowWidth = ViewManager.windowWidth* 0.6;
+	private double logWindowHeight = ViewManager.windowHeight;
 	private TreeItem<Label> lastLevel1;
 	private TreeItem<Label> lastLevel2;
 	private TreeItem<Label> lastLevel3;

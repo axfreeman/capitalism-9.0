@@ -49,7 +49,7 @@ public  class EditorControlBar extends HBox {
 	/**
 	 * This button allows the user to add a new row by invoking {@link AddRowCommand#execute(ImageButton)}
 	 */
-	private static ImageButton addNewRow = new ImageButton("littlePlus.png", "littlePlus.png", new AddRowCommand(), "Add a new row to this table", "");
+	private static ImageButton addNewRow = new ImageButton("littlePlus.png", "littlePlus.png", new AddRowCommand(), "", "Add a new row to this table");
 	private static Pane spacer = new Pane();
 	private static RadioButtonPair stocksPair = new RadioButtonPair(
 			"Required Stocks",

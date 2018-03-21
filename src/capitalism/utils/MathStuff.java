@@ -38,4 +38,6 @@ public class MathStuff {
 	public static double round(double x) {
 		return Precision.round(x, roundingPrecision);
 	}
+	
+	
 }

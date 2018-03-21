@@ -39,6 +39,7 @@ import capitalism.model.SocialClass;
 import capitalism.model.Stock;
 import capitalism.model.Stock.OWNERTYPE;
 import capitalism.model.TimeStamp;
+import capitalism.utils.Dialogues;
 import capitalism.utils.Reporter;
 import capitalism.view.custom.RadioButtonPair;
 import javafx.collections.FXCollections;
@@ -62,13 +63,15 @@ public class Editor extends VBox {
 
 	private static EditorControlBar ecb = new EditorControlBar();
 
-	protected static ObservableList<EditableCommodity> commodityData = null;
-	protected static TableView<EditableCommodity> commodityTable = new TableView<EditableCommodity>();
-	protected static ObservableList<EditableIndustry> industryData = null;
-	protected static TableView<EditableIndustry> industryTable = new TableView<EditableIndustry>();
-	protected static ObservableList<EditableSocialClass> socialClassData = null;
-	protected static TableView<EditableSocialClass> socialClassTable = new TableView<EditableSocialClass>();
-	protected static EditableTimeStamp editableTimeStamp = new EditableTimeStamp();
+	private static TableView<EditableCommodity> commodityTable = new TableView<EditableCommodity>();
+	private static TableView<EditableIndustry> industryTable = new TableView<EditableIndustry>();
+	private static TableView<EditableSocialClass> socialClassTable = new TableView<EditableSocialClass>();
+	private static EditableTimeStamp editableTimeStamp = new EditableTimeStamp();
+
+	private static ObservableList<EditableCommodity> commodityData = null;
+	private static ObservableList<EditableIndustry> industryData = null;
+	private static ObservableList<EditableSocialClass> socialClassData = null;
+
 	private static TabPane tabPane = null;
 	private static Tab commodityTab = null;
 	private static Tab industryTab = null;
@@ -79,15 +82,24 @@ public class Editor extends VBox {
 
 	private static TextField industryField;
 	private static TextField industryCommodityField;
+	private static TextField industryOutputField;
 	private static TextField socialClassField;
 	private static TextField commodityField;
+	private static TextField commoditySizeField;
 
 	private static RadioButtonPair commodityFunction;
 	private static RadioButtonPair commodityOrigin;
-	
+
 	private static EditorDialogueBox industryDialogueBox;
 	private static EditorDialogueBox socialClassDialogueBox;
 	private static EditorDialogueBox commodityDialogueBox;
+
+	private static double industryDialogueHeight;
+	private static double commodityDialogueHeight;
+	private static double socialClassDialogueHeight;
+	private static double industryBoxHeight;
+	private static double commodityBoxHeight;
+	private static double socialClassBoxHeight;
 
 	// the next three are a complete botch to get things going while we figure
 	// out how to get inherited disable working
@@ -100,72 +112,42 @@ public class Editor extends VBox {
 	}
 
 	/**
+	 * Tells which tab is selected.
+	 * 
+	 * @return an enum representing which tab has been selected (COMMODITY, INDUSTRY, SOCIALCLASS)
+	 */
+	public static TAB_SELECTION selectedTab() {
+		if (commodityTab.isSelected())
+			return TAB_SELECTION.COMMODITY;
+		if (industryTab.isSelected())
+			return TAB_SELECTION.INDUSTRY;
+		if (socialClassTab.isSelected())
+			return TAB_SELECTION.SOCIALCLASS;
+		return TAB_SELECTION.UNKNOWN;
+	}
+
+	/**
 	 * Construct an editor window. This will be displayed modally (using {@code showandwait()}) by {@link EditorManager}
 	 */
 	public Editor() {
-		// start from scratch every time
-		commodityData = FXCollections.observableArrayList();
-		industryData = FXCollections.observableArrayList();
-		socialClassData = FXCollections.observableArrayList();
-		commodityTable.getColumns().clear();
-		industryTable.getColumns().clear();
-		socialClassTable.getColumns().clear();
-
-		makeCommodityTable();
-		makeIndustryTable();
-		makeSocialClassTable();
-
+		buildDialogues();
 		// box for the commodity table
 		commodityBox = new VBox();
-		commodityBox.setPrefHeight(300);
-		commodityBox.setPrefWidth(7600);
+		commodityBox.setPrefWidth(Double.MAX_VALUE);
 		commodityBox.getChildren().add(commodityTable);
-
-		// commodityBox associated dialogue box
-		List<Node> commodityList = new ArrayList<Node>();
-		commodityField = new TextField();
-		commodityField.setPromptText("Name of the new commodity");
-		commodityField = new TextField();
-		commodityField.setPromptText("Name of the rose");
-		commodityFunction = new RadioButtonPair("Production","Consumption","Used as an input to production","Consumed by a social class");
-		commodityOrigin = new RadioButtonPair("Industrial","Social","Produced by an industry","Produced by a class");
-		commodityList.add(commodityField);
-		commodityList.add(commodityFunction);
-		commodityList.add(commodityOrigin);
-		commodityDialogueBox = new EditorDialogueBox(commodityList,"Enter the name of the new commodity", commoditySaveHandler, commodityDisableList);
-		commodityBox.getChildren().add(commodityDialogueBox);
 
 		// box for the industry table
 		industryBox = new VBox();
-		industryBox.setPrefHeight(300);
-		industryBox.setPrefWidth(7600);
+		industryBox.setPrefWidth(Double.MAX_VALUE);
 		industryBox.getChildren().add(industryTable);
-
-		// industryBox associated dialogue box
-		List<Node> industryList = new ArrayList<Node>();
-		industryField = new TextField();
-		industryField.setPromptText("Name of the new industry");
-		industryCommodityField = new TextField();
-		industryCommodityField.setPromptText("Name of the commodity that this industry produces");
-
-		industryList.add(industryField);
-		industryList.add(industryCommodityField);
-		industryDialogueBox = new EditorDialogueBox(industryList,"Enter the name of the new industry", industrySaveHandler, industryDisableList);
-		industryBox.getChildren().add(industryDialogueBox);
 
 		// box for the social class table
 		socialClassBox = new VBox();
-		socialClassBox.setPrefHeight(300);
-		socialClassBox.setPrefWidth(7600);
+		socialClassBox.setPrefWidth(Double.MAX_VALUE);
 		socialClassBox.getChildren().add(socialClassTable);
 
-		// socialClassBox associated dialogue box
-		// get the name of the social class and its participation ratio
-		List<Node> socialClassList = new ArrayList<Node>();
-		socialClassField = new TextField();
-		socialClassField.setPromptText("Name of the new social Class");
-		socialClassList.add(socialClassField);
-		socialClassDialogueBox = new EditorDialogueBox(socialClassList,"Enter the name of the new social class", socialClassSaveHandler, socialClassDisableList);
+		commodityBox.getChildren().add(commodityDialogueBox);
+		industryBox.getChildren().add(industryDialogueBox);
 		socialClassBox.getChildren().add(socialClassDialogueBox);
 
 		// the tabbed pane
@@ -201,7 +183,47 @@ public class Editor extends VBox {
 	}
 
 	/**
-	 * create the columns for the Commodity table and populate the table
+	 * Build the dialogue boxes
+	 */
+	public static void buildDialogues() {
+		// commodityBox associated dialogue box
+		List<Node> commodityList = new ArrayList<Node>();
+		commodityField = new TextField();
+		commodityField.setPromptText("Name of the new commodity");
+		commoditySizeField = new TextField();
+		commoditySizeField.setPromptText("Suggested size");
+		commodityFunction = new RadioButtonPair("Production", "Consumption", "Used as an input to production", "Consumed by a social class");
+		commodityOrigin = new RadioButtonPair("Industrial", "Social", "Produced by an industry", "Produced by a class");
+		commodityList.add(commodityField);
+		commodityList.add(commodityFunction);
+		commodityList.add(commodityOrigin);
+		commodityList.add(commoditySizeField);
+		commodityDialogueBox = new EditorDialogueBox(commodityList, "Enter the name of the new commodity", commoditySaveHandler, commodityDisableList);
+		// industryBox associated dialogue box
+		List<Node> industryList = new ArrayList<Node>();
+		industryField = new TextField();
+		industryField.setPromptText("Name of the new industry");
+		industryCommodityField = new TextField();
+		industryCommodityField.setPromptText("Name of the commodity that this industry produces");
+		industryOutputField = new TextField();
+		industryOutputField.setPromptText("Suggested output");
+		industryList.add(industryField);
+		industryList.add(industryCommodityField);
+		industryList.add(industryOutputField);
+		industryDialogueBox = new EditorDialogueBox(industryList, "Enter the name of the new industry", industrySaveHandler, industryDisableList);
+
+		// socialClassBox associated dialogue box
+		// get the name of the social class and its participation ratio
+		List<Node> socialClassList = new ArrayList<Node>();
+		socialClassField = new TextField();
+		socialClassField.setPromptText("Name of the new social Class");
+		socialClassList.add(socialClassField);
+		socialClassDialogueBox = new EditorDialogueBox(socialClassList, "Enter the name of the new social class", socialClassSaveHandler,
+				socialClassDisableList);
+	}
+
+	/**
+	 * create the static columns for the Commodity table
 	 */
 	private static void makeCommodityTable() {
 		commodityTable.getColumns().clear();
@@ -217,7 +239,7 @@ public class Editor extends VBox {
 	}
 
 	/**
-	 * Create the columns for the Industry table and populate the table
+	 * Create the static columns for the Industry table
 	 */
 	private static void makeIndustryTable() {
 		industryTable.getColumns().clear();
@@ -238,16 +260,16 @@ public class Editor extends VBox {
 	 */
 	public static void addIndustryStockColumns() {
 		for (EditableCommodity commodity : commodityData) {
-			// TODO bit of a developer leak here: need to make sure the
-			// data exists. May be Better to drive from the data table than just
-			// assume that just because there is a commodity, the data has been supplied.
-			if (commodity.getFunction().equals(Commodity.FUNCTION.PRODUCTIVE_INPUT.text()))
+			logger.debug("Adding columns for industries: trying {}", commodity.getName());
+			if (commodity.getFunction().equals(Commodity.FUNCTION.PRODUCTIVE_INPUT.text())) {
+				logger.debug("Adding {}", commodity.getName());
 				industryTable.getColumns().add(EditableIndustry.makeStockColumn(commodity.getName()));
+			}
 		}
 	}
 
 	/**
-	 * Create the columns for the Social Class table and populate the table
+	 * Create the static columns for the Social Class table
 	 */
 	private static void makeSocialClassTable() {
 		socialClassTable.getColumns().clear();
@@ -269,11 +291,10 @@ public class Editor extends VBox {
 	public static void addSocialClassStockColumns() {
 		for (EditableCommodity commodity : commodityData) {
 			logger.debug("Adding columns for consumption goods: trying {}", commodity.getName());
-			// TODO bit of a developer leak here: need to make sure the
-			// data exists. May be Better to drive from the data table than just
-			// assume that just because there is a commodity, the data has been supplied.
-			if (commodity.getFunction().equals(Commodity.FUNCTION.CONSUMER_GOOD.text()))
+			if (commodity.getFunction().equals(Commodity.FUNCTION.CONSUMER_GOOD.text())) {
+				logger.debug("Adding {}", commodity.getName());
 				socialClassTable.getColumns().add(EditableSocialClass.makeStockColumn(commodity.getName()));
+			}
 		}
 	}
 
@@ -282,14 +303,57 @@ public class Editor extends VBox {
 	 * commodities they represent have new names. There may be a better way but this is
 	 * the simplest and I don't think it's expensive because there are no database operations involved.
 	 */
-	public static void rebuildTables() {
+	public static void buildTables() {
+		commodityTable.getColumns().clear();
+		industryTable.getColumns().clear();
+		socialClassTable.getColumns().clear();
 		makeCommodityTable();
 		makeIndustryTable();
 		makeSocialClassTable();
+		// Create columns for the productive stocks
+		addIndustryStockColumns();
+		// Create the columns for consumption stocks
+		addSocialClassStockColumns();
+		setHeights();
 	}
 
 	/**
-	 * Refresh the tables by requesting a reload of their data
+	 * Record the displayed heights of the dialogue boxes to help in resizing the tables
+	 */
+
+	public static void getHeights() {
+		industryDialogueBox.showDialogue();
+		socialClassDialogueBox.showDialogue();
+		commodityDialogueBox.showDialogue();
+		commodityDialogueHeight = commodityDialogueBox.getHeight();
+		industryDialogueHeight = industryDialogueBox.getHeight();
+		socialClassDialogueHeight = socialClassDialogueBox.getHeight();
+		commodityBoxHeight = commodityBox.getHeight();
+		industryBoxHeight = industryBox.getHeight();
+		socialClassBoxHeight = socialClassBox.getHeight();
+		industryDialogueBox.hideDialogue();
+		socialClassDialogueBox.hideDialogue();
+		commodityDialogueBox.hideDialogue();
+	}
+
+	/**
+	 * Set the table heights to accomodate the number of rows
+	 */
+
+	public static void setHeights() {
+		int rowCount = commodityTable.getItems().size() + 1;
+		double prefHeight = Math.min(rowCount * 25, commodityBoxHeight - commodityDialogueHeight) + 5;
+		commodityTable.setFixedCellSize(25);
+		logger.debug("Commodity table has {} rows, the dialogue box takes up {}, the box height is {}"
+				+ " and the table height will be set to {}", rowCount, commodityDialogueHeight, commodityBoxHeight, prefHeight);
+		commodityTable.setMinHeight(prefHeight);
+		commodityTable.setPrefHeight(prefHeight);
+	}
+
+	/**
+	 * Refresh the tables by requesting a reload of their data. This is called when there is
+	 * a change to an item of data within a table (for example as a result of an edit)
+	 * but the structure of the table has not changed.
 	 * TODO check empirically if this is really needed because these are observables
 	 * so in principle refresh should be automatic
 	 */
@@ -312,41 +376,44 @@ public class Editor extends VBox {
 	/**
 	 * Load the current project into the editor
 	 */
-	public static void load() {
-		// First find out which commodities we have
-		setCommodityData(EditableCommodity.editableCommodities());
+	public static void loadFromSimulation() {
+		// start from scratch every time
+		commodityData = FXCollections.observableArrayList();
+		industryData = FXCollections.observableArrayList();
+		socialClassData = FXCollections.observableArrayList();
 
-		// Next, find out which industries we have
-		setIndustryData(EditableIndustry.editableIndustries());
+		// First fetch the commodities from the simulation into the commodity table
+		commodityData = EditableCommodity.editableCommodities();
+		commodityTable.setItems(commodityData);
+
+		// Next, load the industries
+		industryData = EditableIndustry.editableIndustries();
+		industryTable.setItems(industryData);
 
 		// Now add the productive stocks that these industries own
-		for (EditableIndustry industry : getIndustryData()) {
-			for (EditableCommodity commodity : getCommodityData()) {
+		for (EditableIndustry industry : industryData) {
+			for (EditableCommodity commodity : commodityData) {
 				if (commodity.getFunction().equals("Productive Inputs"))
 					industry.addProductiveStock(commodity.getName());
 			}
 		}
-		// and create columns for the productive stocks
-		addIndustryStockColumns();
-
 		// Populate the EditableStocks from the simulation.
 		// The money and sales stocks were created by the EditableIndustry constructor
 		// We just added the productive stocks
 		EditableIndustry.loadAllStocksFromSimulation();
 
-		setSocialClassData(EditableSocialClass.editableSocialClasses());
-		// Now add the consumption stocks that these industries classes own
+		// load the social classes
+		socialClassData = EditableSocialClass.editableSocialClasses();
+		socialClassTable.setItems(socialClassData);
+		// Add the consumption stocks that these industries classes own
 		for (EditableSocialClass socialClass : getSocialClassData()) {
-			for (EditableCommodity commodity : getCommodityData()) {
+			for (EditableCommodity commodity : commodityData) {
 				if (commodity.getFunction().equals("Consumer Goods"))
 					socialClass.addConsumptionStock(commodity.getName());
 			}
 		}
 
-		// and create the columns for consumption stocks
-		addSocialClassStockColumns();
 		EditableSocialClass.loadAllStocksFromSimulation();
-
 	}
 
 	/**
@@ -364,21 +431,21 @@ public class Editor extends VBox {
 		EditableCommodity meandOfProductionCommodity = EditableCommodity.makeCommodity("Means of Production", ORIGIN.INDUSTRIALLY_PRODUCED,
 				FUNCTION.PRODUCTIVE_INPUT);
 		EditableCommodity labourPowerCommodity = EditableCommodity.makeCommodity("Labour Power", ORIGIN.SOCIALLY_PRODUCED, FUNCTION.PRODUCTIVE_INPUT);
-		getCommodityData().addAll(moneyCommodity, necessityCommodity, meandOfProductionCommodity, labourPowerCommodity);
+		commodityData.addAll(moneyCommodity, necessityCommodity, meandOfProductionCommodity, labourPowerCommodity);
 
 		// Create the social classes Capitalists, Workers and their stocks
 		Reporter.report(logger, 1, "Creating the minimum social Classes");
 		EditableSocialClass capitalists = EditableSocialClass.makeSocialClass("Capitalists", 0);
 		EditableSocialClass workers = EditableSocialClass.makeSocialClass("Workers", 1);
-		getSocialClassData().addAll(workers, capitalists);
+		socialClassData.addAll(workers, capitalists);
 
 		// Create the two industries means of production and consumption and their stocks
 		Reporter.report(logger, 1, "Creating the minimum industries");
 		EditableIndustry dI = EditableIndustry.makeIndustry("Department I", "Means of production", 0);
 		EditableIndustry dII = EditableIndustry.makeIndustry("Departmment II", "Necessities", 0);
-		getIndustryData().addAll(dI, dII);
+		industryData.addAll(dI, dII);
 		// repopulate the display
-		rebuildTables();
+		buildTables();
 	}
 
 	/**
@@ -397,21 +464,48 @@ public class Editor extends VBox {
 	 * 
 	 */
 
-	private EventHandler<ActionEvent> commoditySaveHandler = new EventHandler<ActionEvent>() {
+	private static EventHandler<ActionEvent> commoditySaveHandler = new EventHandler<ActionEvent>() {
 		@Override public void handle(ActionEvent t) {
+			// logger.debug("commodityData:\n{}", commodityDataAsString());
 			// Check that there is a name for the commodity
-			if (commodityField.getText().equals("")) {
-				socialClassDialogueBox.warn("Commodity name cannot be blank");
+			String commodityText = commodityField.getText();
+			logger.debug("User entered a commodity called [{}]", commodityText);
+			if (((commodityText == null)) || (commodityText.equals(""))) {
+				commodityDialogueBox.warn("Commodity name cannot be blank");
 				return;
 			}
-			if (isCommodity(commodityField.getText())) {
+			if (isCommodity(commodityText)) {
 				commodityDialogueBox.warn("A commodity with this name already exists");
+				return;
 			}
-			Commodity.ORIGIN origin=commodityOrigin.result()?Commodity.ORIGIN.INDUSTRIALLY_PRODUCED:Commodity.ORIGIN.SOCIALLY_PRODUCED;
-			Commodity.FUNCTION function=commodityFunction.result()?Commodity.FUNCTION.PRODUCTIVE_INPUT:Commodity.FUNCTION.CONSUMER_GOOD;
-			EditableCommodity newCommodity = EditableCommodity.makeCommodity(commodityField.getText(),origin, function);
-			Editor.commodityData.add(newCommodity);
-			Editor.commodityTable.refresh();
+			Commodity.ORIGIN origin = commodityOrigin.result() ? Commodity.ORIGIN.INDUSTRIALLY_PRODUCED : Commodity.ORIGIN.SOCIALLY_PRODUCED;
+			Commodity.FUNCTION function = commodityFunction.result() ? Commodity.FUNCTION.PRODUCTIVE_INPUT : Commodity.FUNCTION.CONSUMER_GOOD;
+			logger.debug("Origin is {} and function is {}", origin, function);
+			EditableCommodity newCommodity = EditableCommodity.makeCommodity(commodityText, origin, function);
+			commodityData.add(newCommodity);
+			// Now we have to add the relevant stock items to the data model
+			// case 1: it is an industrially-produced input. So we need an input stock
+			// case 2: it is a socially-produced input. Same as the above
+			// case 3: it is an industrially-produced consumption good: So we need a consumption stock
+			// case 4: it is a socially-produced consumption good. No reason why not but we haven't got there yet.
+			if (function == Commodity.FUNCTION.PRODUCTIVE_INPUT) {
+				for (EditableIndustry ind : EditableIndustry.editableIndustries()) {
+					
+					ind.addProductiveStock(commodityText);
+				}
+			} else {
+				if (function == Commodity.FUNCTION.CONSUMER_GOOD) {
+					if (origin == Commodity.ORIGIN.INDUSTRIALLY_PRODUCED) {
+						for (EditableSocialClass sc : EditableSocialClass.editableSocialClasses()) {
+							sc.addConsumptionStock(commodityText);
+						}
+					} else {
+						Dialogues.alert(logger, "Sorry, we haven't implemented this yet. We should. Perhaps you would like to?");
+					}
+				}
+			}
+			buildTables(); // because the extra columnns need to be constructed
+			setHeights();  // set the heights before we close the dialogue box because when hidden, the dialogue box has a height of zero
 			commodityDialogueBox.hideDialogue();
 		}
 	};
@@ -423,7 +517,7 @@ public class Editor extends VBox {
 		industryDialogueBox.showDialogue();
 	}
 
-	private EventHandler<ActionEvent> industrySaveHandler = new EventHandler<ActionEvent>() {
+	private static EventHandler<ActionEvent> industrySaveHandler = new EventHandler<ActionEvent>() {
 		@Override public void handle(ActionEvent t) {
 			// Check that there is a name for the industry
 			if (industryField.getText().equals("")) {
@@ -438,14 +532,14 @@ public class Editor extends VBox {
 				industryDialogueBox.warn("Commodity name cannot be blank");
 				return;
 			}
-			if (!Editor.isCommodity(industryCommodityField.getText())) {
+			if (!isCommodity(industryCommodityField.getText())) {
 				industryDialogueBox.warn("Commodity does not exist");
 				return;
 			}
 
 			EditableIndustry newIndustry = EditableIndustry.makeIndustry(industryField.getText(), industryCommodityField.getText(), 0);
-			Editor.industryData.add(newIndustry);
-			Editor.industryTable.refresh();
+			industryData.add(newIndustry);
+			industryTable.refresh();
 			industryDialogueBox.hideDialogue();
 		}
 	};
@@ -461,7 +555,7 @@ public class Editor extends VBox {
 	 * Using the input from {@link Editor#socialClassDialogueBox}}, constructs a new
 	 * social class in the {@link Editor#makeSocialClassTable()}.
 	 */
-	private EventHandler<ActionEvent> socialClassSaveHandler = new EventHandler<ActionEvent>() {
+	private static EventHandler<ActionEvent> socialClassSaveHandler = new EventHandler<ActionEvent>() {
 		@Override public void handle(ActionEvent t) {
 			// Check that there is a name for the socialClass
 			if (socialClassField.getText().equals("")) {
@@ -472,8 +566,8 @@ public class Editor extends VBox {
 				socialClassDialogueBox.warn("A social class with this name already exists");
 			}
 			EditableSocialClass newsocialClass = EditableSocialClass.makeSocialClass(socialClassField.getText(), 0);
-			Editor.socialClassData.add(newsocialClass);
-			Editor.socialClassTable.refresh();
+			socialClassData.add(newsocialClass);
+			socialClassTable.refresh();
 			socialClassDialogueBox.hideDialogue();
 		}
 	};
@@ -741,11 +835,12 @@ public class Editor extends VBox {
 	 * Clear the decks. Empty all the data lists
 	 */
 	public static void clearDecks() {
+		// start from scratch every time
 		commodityData = FXCollections.observableArrayList();
-		commodityTable.setItems(commodityData);
 		industryData = FXCollections.observableArrayList();
-		industryTable.setItems(industryData);
 		socialClassData = FXCollections.observableArrayList();
+		commodityTable.setItems(commodityData);
+		industryTable.setItems(industryData);
 		socialClassTable.setItems(socialClassData);
 		editableTimeStamp = new EditableTimeStamp();
 		refresh();
@@ -756,48 +851,6 @@ public class Editor extends VBox {
 	 */
 	public static ObservableList<EditableCommodity> getCommodityData() {
 		return commodityData;
-	}
-
-	/**
-	 * Tells which tab is selected.
-	 * 
-	 * @return an enum representing which tab has been selected (COMMODITY, INDUSTRY, SOCIALCLASS)
-	 */
-	public static TAB_SELECTION selectedTab() {
-		if (commodityTab.isSelected())
-			return TAB_SELECTION.COMMODITY;
-		if (industryTab.isSelected())
-			return TAB_SELECTION.INDUSTRY;
-		if (socialClassTab.isSelected())
-			return TAB_SELECTION.SOCIALCLASS;
-		return TAB_SELECTION.UNKNOWN;
-	}
-
-	/**
-	 * @param data
-	 *            the data to set
-	 */
-	public static void setCommodityData(ObservableList<EditableCommodity> data) {
-		commodityData = data;
-		commodityTable.setItems(commodityData);
-	}
-
-	/**
-	 * @param data
-	 *            the data to set
-	 */
-	public static void setIndustryData(ObservableList<EditableIndustry> data) {
-		industryData = data;
-		industryTable.setItems(industryData);
-	}
-
-	/**
-	 * @param data
-	 *            the data to set
-	 */
-	public static void setSocialClassData(ObservableList<EditableSocialClass> data) {
-		socialClassData = data;
-		socialClassTable.setItems(socialClassData);
 	}
 
 	/**
@@ -814,4 +867,15 @@ public class Editor extends VBox {
 		return socialClassData;
 	}
 
+	/**
+	 * @return the commodityData as a printable string
+	 */
+
+	public String commodityDataAsString() {
+		StringBuilder sb = new StringBuilder();
+		for (EditableCommodity e : commodityData) {
+			sb.append(e.toString());
+		}
+		return sb.toString();
+	}
 }

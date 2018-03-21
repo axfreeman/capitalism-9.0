@@ -84,6 +84,7 @@ public class EditableIndustry {
 		EditableIndustry industry = new EditableIndustry();
 		industry.setName(name);
 		industry.setOutput(output);
+		industry.setCommodityName(commodityName);
 		industry.money = new EditableStock("Money");
 		industry.sales = new EditableStock(commodityName);
 		for (EditableCommodity e : Editor.getCommodityData()) {
@@ -166,7 +167,7 @@ public class EditableIndustry {
 
 	public void addProductiveStock(String commodityName) {
 		EditableStock stock = new EditableStock(commodityName);
-		logger.debug("Adding the editable productive Stock {} to the industry  {}", commodityName, name.get());
+		logger.debug("Adding the editable productive Stock {} to the industry {}", commodityName, name.get());
 		productiveStocks.put(commodityName, stock);
 	}
 
@@ -258,6 +259,10 @@ public class EditableIndustry {
 
 	private ObservableValue<Double> stockDoubleProperty(String commodityName) {
 		EditableStock stock = productiveStocks.get(commodityName);
+		if (stock==null) {
+			logger.debug("The stock of {} in industry {} does not exist", commodityName, name.get());
+			return new SimpleDoubleProperty(-99).asObject();
+		}
 		if (EditorControlBar.displayActuals()) {
 			return stock.getActualQuantityProperty().asObject();
 		} else {

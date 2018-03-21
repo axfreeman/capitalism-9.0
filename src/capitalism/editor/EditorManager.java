@@ -23,7 +23,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import capitalism.utils.Reporter;
-import capitalism.view.custom.DisplayControlsBox;
+import capitalism.view.ViewManager;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -34,21 +35,26 @@ public class EditorManager {
 
 	private Stage editorStage = null;
 	private Scene editorScene;
-	private Editor editor = new Editor();
+	private Editor editor;;
 
 	public EditorManager() {
 		Reporter.report(logger, 0, "Editor Window Opened");
 		editorStage = new Stage();
-		editorStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-			public void handle(WindowEvent we) {
-				DisplayControlsBox.setEditorOpen(false);
-			}
-		});
-		editorScene = new Scene(editor, 1000, 500);
+		editor = new Editor();
+		editorScene = new Scene(editor, ViewManager.windowWidth, ViewManager.windowHeight);
 		editorStage.setScene(editorScene);
-		Editor.load();
+		Editor.loadFromSimulation();
+		Editor.buildTables();
+		editorStage.setOnShown(collectHeights);
 		editorStage.showAndWait();
 	}
+	
+	private static EventHandler<WindowEvent> collectHeights= new EventHandler <WindowEvent> (){
+		@Override public void handle(WindowEvent t) {
+		Editor.getHeights();
+		Editor.setHeights();
+		}
+	};
 
 
 }
