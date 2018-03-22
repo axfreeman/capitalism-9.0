@@ -413,7 +413,7 @@ public class SocialClass implements Serializable {
 	 * temporary fix to yield the stock of necessities, while we convert to multiple consumption goods
 	 * TODO phase this out
 	 * 
-	 * @return a Single Consumption Stock called either "COnsumption" or "Necessities" if one of these exists, null otherwise
+	 * @return a Single Consumption Stock called either "Consumption" or "Necessities" if one of these exists, null otherwise
 	 */
 	public Stock getNecessitiesStock() {
 		for (Stock s : Stock.consumedByClass(pk.projectID, pk.timeStampID, pk.name)) {

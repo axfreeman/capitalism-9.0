@@ -173,6 +173,7 @@ public class EditableIndustry {
 
 	public static TableColumn<EditableIndustry, Double> makeStockColumn(String commodityName) {
 		TableColumn<EditableIndustry, Double> col = new TableColumn<EditableIndustry, Double>(commodityName);
+		col.getStyleClass().add("table-column-right");
 
 		Callback<TableColumn<EditableIndustry, Double>, TableCell<EditableIndustry, Double>> cellFactory;
 		cellFactory = new Callback<TableColumn<EditableIndustry, Double>, TableCell<EditableIndustry, Double>>() {
@@ -194,6 +195,7 @@ public class EditableIndustry {
 
 	public static TableColumn<EditableIndustry, Double> makeDoubleColumn(EI_ATTRIBUTE attribute) {
 		TableColumn<EditableIndustry, Double> col = new TableColumn<EditableIndustry, Double>(attribute.text);
+		col.getStyleClass().add("table-column-right");
 		Callback<TableColumn<EditableIndustry, Double>, TableCell<EditableIndustry, Double>> cellFactory;
 		cellFactory = new Callback<TableColumn<EditableIndustry, Double>, TableCell<EditableIndustry, Double>>() {
 			public TableCell<EditableIndustry, Double> call(TableColumn<EditableIndustry, Double> p) {
@@ -215,6 +217,7 @@ public class EditableIndustry {
 
 	public static TableColumn<EditableIndustry, String> makeStringColumn(EI_ATTRIBUTE attribute) {
 		TableColumn<EditableIndustry, String> col = new TableColumn<EditableIndustry, String>(attribute.text);
+		col.getStyleClass().add("table-column-right");
 		Callback<TableColumn<EditableIndustry, String>, TableCell<EditableIndustry, String>> cellFactory;
 		cellFactory = new Callback<TableColumn<EditableIndustry, String>, TableCell<EditableIndustry, String>>() {
 			public TableCell<EditableIndustry, String> call(TableColumn<EditableIndustry, String> p) {

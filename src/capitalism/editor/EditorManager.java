@@ -24,7 +24,6 @@ import org.apache.logging.log4j.Logger;
 
 import capitalism.utils.Reporter;
 import capitalism.view.ViewManager;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -42,6 +41,8 @@ public class EditorManager {
 		editorStage = new Stage();
 		editor = new Editor();
 		editorScene = new Scene(editor, ViewManager.windowWidth, ViewManager.windowHeight);
+		String css = getClass().getResource("/SimulationTheme.css").toExternalForm();
+		editorScene.getStylesheets().add(css);
 		editorStage.setScene(editorScene);
 		Editor.loadFromSimulation();
 		Editor.buildTables();

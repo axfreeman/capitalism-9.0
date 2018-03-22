@@ -168,6 +168,7 @@ public class EditableCommodity {
 
 	public static TableColumn<EditableCommodity, Double> makeDoubleColumn(EC_ATTRIBUTE attribute) {
 		TableColumn<EditableCommodity, Double> col = new TableColumn<EditableCommodity, Double>(attribute.text);
+		col.getStyleClass().add("table-column-right");
 		Callback<TableColumn<EditableCommodity, Double>, TableCell<EditableCommodity, Double>> cellFactory = new Callback<TableColumn<EditableCommodity, Double>, TableCell<EditableCommodity, Double>>() {
 			public TableCell<EditableCommodity, Double> call(TableColumn<EditableCommodity, Double> p) {
 				return new EditableCommodityCell();
@@ -192,6 +193,8 @@ public class EditableCommodity {
 
 	public static TableColumn<EditableCommodity, String> makeStringColumn(EC_ATTRIBUTE attribute) {
 		TableColumn<EditableCommodity, String> col = new TableColumn<EditableCommodity, String>(attribute.text);
+		col.getStyleClass().add("table-column-right");
+
 		Callback<TableColumn<EditableCommodity, String>, TableCell<EditableCommodity, String>> cellFactory = new Callback<TableColumn<EditableCommodity, String>, TableCell<EditableCommodity, String>>() {
 			public TableCell<EditableCommodity, String> call(TableColumn<EditableCommodity, String> p) {
 				return new EditableCommodityStringCell();

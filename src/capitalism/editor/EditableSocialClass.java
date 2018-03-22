@@ -89,7 +89,9 @@ public class EditableSocialClass {
 		socialClass.money = new EditableStock("Money");
 		socialClass.sales = new EditableStock("Labour Power");
 		for (EditableCommodity e : Editor.getCommodityData()) {
+			logger.debug("Trying the consumption stock {}", e.getName());
 			if (e.getFunction().equals(FUNCTION.CONSUMER_GOOD.text())) {
+				logger.debug("Creating a consumption stock of {} for social class {}", e.getName(), name);
 				socialClass.consumptionStocks.put(e.getName(), new EditableStock(e.getName()));
 			}
 		}
@@ -223,7 +225,7 @@ public class EditableSocialClass {
 	public static TableColumn<EditableSocialClass, Double> makeStockColumn(String commodityName) {
 		logger.debug("Making a stock column for the commodity called {} ", commodityName);
 		TableColumn<EditableSocialClass, Double> col = new TableColumn<EditableSocialClass, Double>(commodityName);
-
+		col.getStyleClass().add("table-column-right");
 		Callback<TableColumn<EditableSocialClass, Double>, TableCell<EditableSocialClass, Double>> cellFactory;
 		cellFactory = new Callback<TableColumn<EditableSocialClass, Double>, TableCell<EditableSocialClass, Double>>() {
 			public TableCell<EditableSocialClass, Double> call(TableColumn<EditableSocialClass, Double> p) {
@@ -252,6 +254,7 @@ public class EditableSocialClass {
 	 */
 	public static TableColumn<EditableSocialClass, Double> makeDoubleColumn(ESC_ATTRIBUTE attribute) {
 		TableColumn<EditableSocialClass, Double> col = new TableColumn<EditableSocialClass, Double>(attribute.text);
+		col.getStyleClass().add("table-column-right");
 		Callback<TableColumn<EditableSocialClass, Double>, TableCell<EditableSocialClass, Double>> cellFactory;
 		cellFactory = new Callback<TableColumn<EditableSocialClass, Double>, TableCell<EditableSocialClass, Double>>() {
 			public TableCell<EditableSocialClass, Double> call(TableColumn<EditableSocialClass, Double> p) {
@@ -281,6 +284,7 @@ public class EditableSocialClass {
 	 */
 	public static TableColumn<EditableSocialClass, String> makeStringColumn(ESC_ATTRIBUTE attribute) {
 		TableColumn<EditableSocialClass, String> col = new TableColumn<EditableSocialClass, String>(attribute.text);
+		col.getStyleClass().add("table-column-right");
 		Callback<TableColumn<EditableSocialClass, String>, TableCell<EditableSocialClass, String>> cellFactory = new Callback<TableColumn<EditableSocialClass, String>, TableCell<EditableSocialClass, String>>() {
 			public TableCell<EditableSocialClass, String> call(TableColumn<EditableSocialClass, String> p) {
 				return new EditableSocialClassStringCell();
@@ -325,6 +329,10 @@ public class EditableSocialClass {
 
 	private ObservableValue<Double> stockDoubleProperty(String commodityName) {
 		EditableStock stock = consumptionStocks.get(commodityName);
+		if (stock==null) {
+			logger.debug("The stock of {} in social class {} does not exist", commodityName, name.get());
+			return new SimpleDoubleProperty(-99).asObject();
+		}
 		if (EditorControlBar.displayActuals()) {
 			return stock.getActualQuantityProperty().asObject();
 		} else {

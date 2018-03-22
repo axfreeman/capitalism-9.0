@@ -42,26 +42,26 @@ public class SocialClassColumn extends TableColumn<SocialClass, String> {
 	 * bean
 	 * that is chosen by the {@code selector} enum. Use the enum to set the header text and graphic, and prepare the column header so its graphic is switchable.
 	 * 
-	 * @param sOCIALCLASS_ATTRIBUTE
+	 * @param socialClassAttribute
 	 *            an enum specifying which field to display
 	 * @param alignedLeft
 	 *            true if the data in this column should be displayed aligned to the left (typically text fields such as commodity names or owner names)
 	 */
-	public SocialClassColumn(SocialClass.SOCIALCLASS_ATTRIBUTE sOCIALCLASS_ATTRIBUTE, boolean alignedLeft) {
-		super(sOCIALCLASS_ATTRIBUTE.text());
+	public SocialClassColumn(SocialClass.SOCIALCLASS_ATTRIBUTE socialClassAttribute, boolean alignedLeft) {
+		super(socialClassAttribute.text());
 		setCellFactory(new Callback<TableColumn<SocialClass, String>, TableCell<SocialClass, String>>() {
 			@Override public TableCell<SocialClass, String> call(TableColumn<SocialClass, String> col) {
-				return new SocialClassTableCell(sOCIALCLASS_ATTRIBUTE);
+				return new SocialClassTableCell(socialClassAttribute);
 			}
 		});
-		setCellValueFactory(cellData -> cellData.getValue().wrappedString(sOCIALCLASS_ATTRIBUTE, TabbedTableViewer.displayAttribute));
+		setCellValueFactory(cellData -> cellData.getValue().wrappedString(socialClassAttribute, TabbedTableViewer.displayAttribute));
 
 		// tailor the visual appearance of the column header
 
 		setPrefWidth(75.0);
 		if (!alignedLeft)
 			getStyleClass().add("table-column-right");
-		TableUtilities.addGraphicToColummnHeader(this, sOCIALCLASS_ATTRIBUTE.imageName(), sOCIALCLASS_ATTRIBUTE.tooltip());
+		TableUtilities.addGraphicToColummnHeader(this, socialClassAttribute.imageName(), socialClassAttribute.tooltip());
 	}
 
 	/**

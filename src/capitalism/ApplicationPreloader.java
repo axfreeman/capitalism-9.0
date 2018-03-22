@@ -37,11 +37,11 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 public class ApplicationPreloader extends Preloader {
-	@SuppressWarnings("unused")
-	private static final Logger logger = LogManager.getLogger(ApplicationPreloader.class);
+	@SuppressWarnings("unused") private static final Logger logger = LogManager.getLogger(ApplicationPreloader.class);
 
 	private static Stage preloaderStage;
 	private static Scene scene;
@@ -60,7 +60,7 @@ public class ApplicationPreloader extends Preloader {
 
 		// If preloader has complex UI its initialization can be done in MyPreloader#init
 		Platform.runLater(() -> {
-			//Nothing at present
+			// Nothing at present
 		});
 		Reporter.initialiseLoggerFiles();
 	}
@@ -87,6 +87,8 @@ public class ApplicationPreloader extends Preloader {
 		preloaderStage.setAlwaysOnTop(true);
 		preloaderStage.setScene(scene);
 		preloaderStage.centerOnScreen();
+		preloaderStage.initStyle(StageStyle.UNDECORATED);
+
 		Platform.runLater(() -> {
 			preloaderStage.show();
 			animatePreloader();
@@ -146,13 +148,13 @@ public class ApplicationPreloader extends Preloader {
 		// ft.setFromValue(1.0);
 		// ft.setToValue(0.0);
 
-		 ScaleTransition scaleTransition = new ScaleTransition();
-		 scaleTransition.setDuration(Duration.millis(3000));
-		 scaleTransition.setNode(progress);
-		 scaleTransition.setByY(1.2);
-		 scaleTransition.setByX(1.2);
-		 scaleTransition.setCycleCount(1);
-		 scaleTransition.setAutoReverse(false);
+		ScaleTransition scaleTransition = new ScaleTransition();
+		scaleTransition.setDuration(Duration.millis(3000));
+		scaleTransition.setNode(progress);
+		scaleTransition.setByY(1.2);
+		scaleTransition.setByX(1.2);
+		scaleTransition.setCycleCount(1);
+		scaleTransition.setAutoReverse(false);
 
 		scaleTransition.setOnFinished(new EventHandler<ActionEvent>() {
 			@Override public void handle(ActionEvent event) {
