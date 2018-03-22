@@ -62,14 +62,15 @@ public  class EditorControlBar extends HBox {
 			if (file == null)
 				return;
 			logger.debug("Saving new project to {}", file.getAbsolutePath());
-			OneProject oneProject = Editor.wrappedOneProject();
+			OneProject oneProject = EditorLoader.wrappedOneProject();
 			XMLStuff.exportToXML(oneProject, file);
 		}
 	};
 
 	EventHandler<ActionEvent> btnNewHandler = new EventHandler<ActionEvent>() {
 		@Override public void handle(ActionEvent t) {
-			Editor.createSkeletonProject();
+			EditorLoader.createSkeletonProject();
+			
 		}
 	};
 

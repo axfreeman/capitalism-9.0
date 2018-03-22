@@ -17,7 +17,7 @@
 *   You should have received a copy of the GNU General Public License
 *   along with Capsim.  If not, see <http://www.gnu.org/licenses/>.
 */
-package capitalism.editor;
+package capitalism.editor.model;
 
 import java.util.HashMap;
 
@@ -25,6 +25,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import capitalism.controller.Simulation;
+import capitalism.editor.EditorControlBar;
+import capitalism.editor.EditorLoader;
 import capitalism.model.Industry;
 import capitalism.model.Stock;
 import capitalism.model.Commodity.FUNCTION;
@@ -53,7 +55,7 @@ public class EditableIndustry {
 	private EditableStock money;
 	private HashMap<String, EditableStock> productiveStocks;
 
-	enum EI_ATTRIBUTE {
+	public enum EI_ATTRIBUTE {
 		NAME("Name"), COMMODITY_NAME("Product"), OUTPUT("Output"), SALES("Sales Inventory"), MONEY("Money"), PRODUCTIVE_STOCK("Input");
 		protected String text;
 
@@ -87,7 +89,7 @@ public class EditableIndustry {
 		industry.setCommodityName(commodityName);
 		industry.money = new EditableStock("Money");
 		industry.sales = new EditableStock(commodityName);
-		for (EditableCommodity e : Editor.getCommodityData()) {
+		for (EditableCommodity e : EditorLoader.getCommodityData()) {
 			if (e.getFunction().equals(FUNCTION.PRODUCTIVE_INPUT.text())) {
 				industry.productiveStocks.put(e.getName(), new EditableStock(e.getName()));
 			}
@@ -426,7 +428,7 @@ public class EditableIndustry {
 	}
 
 	public static void loadAllStocksFromSimulation() {
-		for (EditableIndustry industry : Editor.getIndustryData()) {
+		for (EditableIndustry industry : EditorLoader.getIndustryData()) {
 			industry.loadStocksFromSimulation();
 		}
 	}

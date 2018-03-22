@@ -17,7 +17,7 @@
 *   You should have received a copy of the GNU General Public License
 *   along with Capsim.  If not, see <http://www.gnu.org/licenses/>.
 */
-package capitalism.editor;
+package capitalism.editor.model;
 
 import capitalism.controller.Parameters;
 import javafx.beans.property.DoubleProperty;
@@ -46,7 +46,7 @@ public class EditableTimeStamp {
 	private StringProperty currencySymbol;
 	private StringProperty quantitySymbol;
 
-	EditableTimeStamp() {
+	public EditableTimeStamp() {
 		period = new SimpleDoubleProperty(1);
 		populationGrowthRate = new SimpleDoubleProperty(1);
 		investmentRatio = new SimpleDoubleProperty(0);

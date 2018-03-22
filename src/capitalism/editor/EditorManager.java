@@ -41,12 +41,24 @@ public class EditorManager {
 		editorStage = new Stage();
 		editor = new Editor();
 		editorScene = new Scene(editor, ViewManager.windowWidth, ViewManager.windowHeight);
+		
+		// style the Editor window (and in particular, the table columns)
 		String css = getClass().getResource("/SimulationTheme.css").toExternalForm();
 		editorScene.getStylesheets().add(css);
+
+		// get ready to show the window
 		editorStage.setScene(editorScene);
-		Editor.loadFromSimulation();
-		Editor.buildTables();
+		
+		// at present, when the editor fires up, we load the current project from the simulation.
+		// this could change eg we could have a button in the Editor to do it or a combo box
+		// to select the simulation
+		EditorLoader.loadFromSimulation();
+		
+		// as soon as the editor window is shown, resize the tables to fit the space
+		// that was allocated to them, showing only the rows that exist
 		editorStage.setOnShown(collectHeights);
+		
+		// show the editor window
 		editorStage.showAndWait();
 	}
 	

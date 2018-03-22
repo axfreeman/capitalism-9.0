@@ -17,7 +17,7 @@
 *   You should have received a copy of the GNU General Public License
 *   along with Capsim.  If not, see <http://www.gnu.org/licenses/>.
 */
-package capitalism.editor;
+package capitalism.editor.model;
 
 import capitalism.controller.Simulation;
 import capitalism.model.Commodity;
@@ -47,7 +47,7 @@ public class EditableCommodity {
 	private StringProperty origin; // whether this is produced by an enterprise or a class
 	private StringProperty function;// see enum FUNCTION for list of possible types
 
-	enum EC_ATTRIBUTE {
+	public enum EC_ATTRIBUTE {
 		UNIT_VALUE("Unit Value"), UNIT_PRICE("Unit Price"), TURNOVER("Turnover Time"), NAME("Name"), FUNCTION("Function"), ORIGIN("Origin");
 		protected String text;
 

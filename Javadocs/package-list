@@ -2,6 +2,7 @@ capitalism
 capitalism.controller
 capitalism.controller.command
 capitalism.editor
+capitalism.editor.model
 capitalism.model
 capitalism.utils
 capitalism.view

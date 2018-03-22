@@ -17,13 +17,15 @@
 *   You should have received a copy of the GNU General Public License
 *   along with Capsim.  If not, see <http://www.gnu.org/licenses/>.
 */
-package capitalism.editor;
+package capitalism.editor.model;
 
 import java.util.HashMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import capitalism.controller.Simulation;
+import capitalism.editor.EditorControlBar;
+import capitalism.editor.EditorLoader;
 import capitalism.model.Commodity.FUNCTION;
 import capitalism.model.SocialClass;
 import capitalism.model.Stock;
@@ -54,7 +56,7 @@ public class EditableSocialClass {
 	private EditableStock sales;
 	private HashMap<String, EditableStock> consumptionStocks;
 
-	enum ESC_ATTRIBUTE {
+	public enum ESC_ATTRIBUTE {
 		NAME("Class Name"), PR("Participation Ratio"), REVENUE("Revenue"), MONEY("Money"), SALES("Sales Inventory"), CONSUMPTION("Consumer Goods");
 		protected String text;
 
@@ -88,7 +90,7 @@ public class EditableSocialClass {
 		socialClass.setParticipationRatio(participationRatio);
 		socialClass.money = new EditableStock("Money");
 		socialClass.sales = new EditableStock("Labour Power");
-		for (EditableCommodity e : Editor.getCommodityData()) {
+		for (EditableCommodity e : EditorLoader.getCommodityData()) {
 			logger.debug("Trying the consumption stock {}", e.getName());
 			if (e.getFunction().equals(FUNCTION.CONSUMER_GOOD.text())) {
 				logger.debug("Creating a consumption stock of {} for social class {}", e.getName(), name);
@@ -497,7 +499,7 @@ public class EditableSocialClass {
 	}
 
 	public static void loadAllStocksFromSimulation() {
-		for (EditableSocialClass socialClass : Editor.getSocialClassData()) {
+		for (EditableSocialClass socialClass : EditorLoader.getSocialClassData()) {
 			socialClass.loadStocksFromSimulation();
 		}
 	}
