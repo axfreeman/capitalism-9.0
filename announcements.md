@@ -1,15 +1,10 @@
-# Capitalism 9.0 announcements 3/21/2018 3:28:19 PM 
+# Capitalism 9.0 announcements 3/22/2018 10:58:25 PM 
 
 Splash screen at startup.
-Load, edit and save now functional.
-User can now specify the file name of the saved and loaded projects.
-Loaded project runs.
-Improved editor interface
-User can create a skeleton project, but some fields have to be added such as class size, before the project is ready to go.
-User can create additional commodities, industries and social classes 
-The stocks needed for a new commodity are created but incorrectly populated
-The stocks needed for a new industry or social class are not created 
-(so the resulting project will not yet run)
+New user interface starts with the editor.
+Load, edit and save functional.
+But the saved project won't always run, because there is insufficient validation.
+This comes next.
 Benchmark projects not yet re-tested fully.
 User Guide is quite far behind, though still useful.
 New Executable.

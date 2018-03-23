@@ -22,8 +22,8 @@ package capitalism.view.custom;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import capitalism.Capitalism;
 import capitalism.model.Project;
+import capitalism.view.ViewManager;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
@@ -56,7 +56,7 @@ public class ProjectCombo extends ComboBox<Project> {
 				if (newValue != null) {
 					logger.debug("User chose project {}", newValue.getDescription());
 					setPromptText(newValue.getDescription());
-					Capitalism.viewManager.switchProject(newValue);
+					ViewManager.switchProject(newValue);
 				}
 			}
 		});

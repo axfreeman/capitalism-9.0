@@ -9,6 +9,6 @@ public class ShowEditorCommand implements DisplayCommand {
 	EditorManager editorManager;
 
 	@Override public void execute(ImageButton caller) {
-		editorManager = new EditorManager();
+		EditorManager.showEditorWindow();
 	}
 }

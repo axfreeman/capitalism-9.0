@@ -1,5 +1,8 @@
 package capitalism.utils;
 
+import java.net.URL;
+import java.net.URLClassLoader;
+
 public class StringStuff {
 
 	/**
@@ -20,4 +23,15 @@ public class StringStuff {
 		}
 		return out;
 	}
+	/**
+	 * debug method, sometimes used to check what's going on with the runnable jar
+	 */
+	public void printClassPath() {
+		ClassLoader cl = ClassLoader.getSystemClassLoader();
+		URL[] urls = ((URLClassLoader) cl).getURLs();
+		for (URL url : urls) {
+			System.out.println(url.getFile());
+		}
+	}
+
 }

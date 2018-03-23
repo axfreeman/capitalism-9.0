@@ -20,14 +20,13 @@
 
 package capitalism;
 
-import java.net.URL;
-import java.net.URLClassLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.sun.javafx.application.LauncherImpl;
 
 import capitalism.controller.Simulation;
+import capitalism.editor.EditorManager;
 import capitalism.utils.DBHandler;
 import capitalism.view.ViewManager;
 import javafx.application.Application;
@@ -35,10 +34,9 @@ import javafx.stage.Stage;
 
 public class Capitalism extends Application {
 	private static final Logger logger = LogManager.getLogger(Capitalism.class);
-	public static DBHandler dataHandler = new DBHandler();		// handles the initial database transactions such as creation and initialisation
-	public static ViewManager viewManager = null; 				// controls all aspects of the display
+	private static DBHandler dataHandler = new DBHandler();		// handles the initial database transactions such as creation and initialisation
 	private static String userBasePath = System.getProperty("user.home").replace('\\', '/') + "/Documents/Capsim/";
-
+	
 	/**
 	 * The main class extends the javafx class 'Application' and therefore inherits {@code launch()} which is where the action begins
 	 * However, there ain't no such thing as a free launch.
@@ -58,7 +56,7 @@ public class Capitalism extends Application {
 	 */
 
 	public static void main(String[] args) {
-		System.out.println("Constructed capitalism");
+		System.out.println("Capitalism Rosy Dawn");
 		// launch the preloader which displays the splash screen
 		LauncherImpl.launchApplication(Capitalism.class, ApplicationPreloader.class, args);
 	}
@@ -71,17 +69,6 @@ public class Capitalism extends Application {
 	// Constructor is called after BEFORE_LOAD.
 	public Capitalism() {
 		System.out.println("Capitalism constructor called, thread: " + Thread.currentThread().getName());
-	}
-
-	/**
-	 * debug method, sometimes used to check what's going on with the runnable jar
-	 */
-	public void printClassPath() {
-		ClassLoader cl = ClassLoader.getSystemClassLoader();
-		URL[] urls = ((URLClassLoader) cl).getURLs();
-		for (URL url : urls) {
-			System.out.println(url.getFile());
-		}
 	}
 
 	/**
@@ -100,12 +87,11 @@ public class Capitalism extends Application {
 	 */
 
 	@Override public void start(Stage primaryStage) {
-		ViewManager.setPrimaryStage(primaryStage);
-		viewManager = new ViewManager();
+		ViewManager.buildMainView(primaryStage);
 		
 		// Create the database and read in the user-defined persistent entities
 		
-		if (!dataHandler.initialiseDataBaseAndStart()) {
+		if (!DBHandler.initialiseDataBaseAndStart()) {
 			logger.error("Data error on startup. Sorry, could not continue");
 			return;
 		}
@@ -115,13 +101,15 @@ public class Capitalism extends Application {
 		ViewManager.startUp();
 		ViewManager.getPrimaryStage().centerOnScreen();
         ViewManager.getPrimaryStage().show();
+        EditorManager.buildEditorWindow();
+        EditorManager.showEditorWindow();
 	}
 
 	/**
 	 * @return the data handler.
 	 */
 
-	public DBHandler getDBHandler() {
+	public static DBHandler getDBHandler() {
 		return dataHandler;
 	}
 
@@ -134,5 +122,4 @@ public class Capitalism extends Application {
 	public static String getUserBasePath() {
 		return userBasePath;
 	}
-
 }

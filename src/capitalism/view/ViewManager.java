@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 
 import capitalism.Capitalism;
 import capitalism.controller.Simulation;
+import capitalism.editor.Editor;
 import capitalism.model.Project;
 import capitalism.model.TimeStamp;
 import capitalism.utils.Reporter;
@@ -99,30 +100,29 @@ public class ViewManager {
 	private static TabbedTableViewer tabbedTableViewer;
 	private static DisplayControlsBox displayControlsBox;
 	private static TrackingControlsBox trackingControlsBox;
-
-	public ViewManager() {
-		logger.debug("Creating ViewManager");
+	
+	public static void buildMainView(Stage stage) {
+		logger.debug("Creating the main view");
 		logger.debug(" Screen right is " + Double.toString(screenBounds.getMaxX()));
 		logger.debug(" Screen top is " + Double.toString(screenBounds.getMaxY()));
 		logger.debug(" Screen left is " + Double.toString(screenBounds.getMinX()));
 		logger.debug(" Screen bottom is " + Double.toString(screenBounds.getMinY()));
 
+		primaryStage = stage;
+		
 		// construct the root window, a simple container with almost no functionality
-		// TODO do we really need it?
-
 		rootLayout.setPrefHeight(ViewManager.windowHeight);
 		rootLayout.setPrefWidth(ViewManager.windowWidth);
 
 		// display the root layout. Later (in startup) it will hold an anchorPane where most of the business is conducted.
 		Scene scene = new Scene(rootLayout);
-		String css = getClass().getResource("/SimulationTheme.css").toExternalForm();
+		String css = Editor.class.getResource("/SimulationTheme.css").toExternalForm();
 		scene.getStylesheets().add(css);
 		primaryStage.setScene(scene);
 		primaryStage.setTitle("Capitalism");
 
 		// now, and only now, create the logger window. We had to wait until the application launched but
 		// we have to do it now because otherwise, we would crash the logging reports that occur during Simulation.startup()
-
 		Reporter.createLogWindow();
 	}
 
@@ -142,7 +142,6 @@ public class ViewManager {
 
 		// the display is refreshed every time it changes, starting here
 		refreshDisplay();
-//		primaryStage.show(); //leave this till after the preloader closes, to get seamless transition
 	}
 
 	/**
@@ -226,7 +225,7 @@ public class ViewManager {
 
 	public static void restart() {
 		Reporter.report(logger, 1, "RESTART OF ENTIRE SIMULATION REQUESTED");
-		Capitalism.dataHandler.restart();// fetch all the data
+		Capitalism.getDBHandler().restart();// fetch all the data
 		if (Simulation.startup()) {
 			logger.debug("Will attempt to continue despite database errors");
 			// TODO need some graceful action if this fails though because by this time we have full control, it would
@@ -297,7 +296,7 @@ public class ViewManager {
 	 * @param newValue
 	 *            the selected Project
 	 */
-	public void switchProject(Project newValue) {
+	public static void switchProject(Project newValue) {
 		logger.debug("entered switchProject");
 		if (newValue.getProjectID() != Simulation.projectIDCurrent()) {
 			logger.debug("Requested switch to project with ID {} and description {} ", newValue.getProjectID(), newValue.getDescription());

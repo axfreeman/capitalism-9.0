@@ -32,7 +32,7 @@ import capitalism.Capitalism;
 
 public class DBHandler {
 	private static final Logger logger = LogManager.getLogger(DBHandler.class);
-	private Connection conn;
+	private static Connection conn;
 
 	public DBHandler() {
 	}
@@ -55,35 +55,13 @@ public class DBHandler {
 	}
 
 	/**
-	 * Ask the user where to load data from and then restore the database from it.
-	 * Under development
-	 */
-	public static void dataLoad() {
-		File saveDirectory = Dialogues.directoryChooser("Location of the new data");
-		try {
-			Capitalism.dataHandler.loadCSVDatabase(saveDirectory.getCanonicalPath());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	/**
-	 * Ask the user where to store data and then dump the database into it as a set of CSV files
-	 * Under Development
-	 */
-	public static void dataDump() {
-		File saveDirectory = Dialogues.directoryChooser("Location to save data");
-		Capitalism.dataHandler.saveCSVDataBase(saveDirectory);
-	}
-
-	/**
 	 * load a new database in csv format from a specified location
 	 * 
 	 * @param dataFileDirectory
 	 *            the full path to the directory in which the data files are located. If in NIX format (with '\' instead of '/') this is converted to Windows
 	 *            format.
 	 */
-	public void loadCSVDatabase(String dataFileDirectory) {
+	public static void loadCSVDatabase(String dataFileDirectory) {
 		dataFileDirectory = dataFileDirectory.replace('\\', '/');
 		try {
 			conn.close();
@@ -110,7 +88,7 @@ public class DBHandler {
 	 * 
 	 * @return true if successful, false otherwise
 	 */
-	private boolean openDatabase() {
+	private static boolean openDatabase() {
 		try {
 			Class.forName("org.h2.Driver");
 			String urlPath = "jdbc:h2:mem:capitalism";
@@ -146,8 +124,8 @@ public class DBHandler {
 	 *            the absolute path to the main directory in which subDirectory is to be found
 	 * 
 	 */
-	public void copyDataFilesToUserDirectory(String basePath, String subDirectory, String resource) {
-		URL inputUrl = getClass().getClassLoader().getResource(resource);
+	public static void copyDataFilesToUserDirectory(String basePath, String subDirectory, String resource) {
+		URL inputUrl = DBHandler.class.getClassLoader().getResource(resource);
 		String userDestinationFile = basePath + subDirectory + resource;
 		File dest = new File(userDestinationFile);
 		logger.debug("Copying the file called {} to the user file system at location {}", resource, userDestinationFile);
@@ -167,7 +145,7 @@ public class DBHandler {
 	 * 
 	 * @return true if successful, false otherwise
 	 */
-	public boolean exportDataFiles() {
+	public static boolean exportDataFiles() {
 		try {
 			copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "industries.csv");
 			copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "socialClasses.csv");
@@ -187,7 +165,7 @@ public class DBHandler {
 	 * export the data files to the user directory and open them
 	 * @return true if it worked, false otherwise
 	 */
-	public boolean initialiseDataBaseAndStart() {
+	public static boolean initialiseDataBaseAndStart() {
 		if (!exportDataFiles()) return false;
 		return openDatabase();
 	}
@@ -198,7 +176,7 @@ public class DBHandler {
 	 * @param saveDirectory
 	 *            the directory in which to save the files
 	 */
-	public void saveCSVDataBase(File saveDirectory) {
+	public static void saveCSVDataBase(File saveDirectory) {
 		String[] standardFiles = { "timeStamps", "projects", "globals", "commodities", "stocks", "socialClasses", "industries" };
 
 		String baseDirectoryURL;
@@ -228,7 +206,7 @@ public class DBHandler {
 	 * @param tableName
 	 *            the name of the table to save, which will also be the name of the .csv file
 	 */
-	public void saveOneTable(String baseDirectory, String tableName) {
+	public static void saveOneTable(String baseDirectory, String tableName) {
 		Reporter.report(logger, 1, "Saving %s to %s", tableName, baseDirectory);
 		Statement s;
 		try {
