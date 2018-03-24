@@ -51,21 +51,21 @@ public class TabbedTableViewer extends VBox {
 
 	// Stock Tables and header columns
 
-	private static TableView<Stock> productiveStockTable= new TableView<Stock> ();
-	private static TableColumn<Stock, String> productiveStockHeaderColumn = new TableColumn<Stock, String> ("Productive Stocks");
+	private static TableView<Stock> productiveStockTable = new TableView<Stock>();
+	private static TableColumn<Stock, String> productiveStockHeaderColumn = new TableColumn<Stock, String>("Productive Stocks");
 
-	private static TableView<Stock> moneyStockTable =  new TableView<Stock> ();
-	private static TableColumn<Stock, String> moneyStockHeaderColumn =new TableColumn<Stock, String> ("Money");
+	private static TableView<Stock> moneyStockTable = new TableView<Stock>();
+	private static TableColumn<Stock, String> moneyStockHeaderColumn = new TableColumn<Stock, String>("Money");
 
-	private static TableView<Stock> salesStockTable = new TableView<Stock> ();
-	private static TableColumn<Stock, String> salesStockHeaderColumn =new TableColumn<Stock, String>("Sales Stocks") ;
-	
-	private static TableView<Stock> consumptionStockTable = new TableView<Stock> ();
-	private static TableColumn<Stock, String> consumptionStockHeaderColumn = new TableColumn<Stock, String> ("Stocks of Consumption Goods");
+	private static TableView<Stock> salesStockTable = new TableView<Stock>();
+	private static TableColumn<Stock, String> salesStockHeaderColumn = new TableColumn<Stock, String>("Sales Stocks");
+
+	private static TableView<Stock> consumptionStockTable = new TableView<Stock>();
+	private static TableColumn<Stock, String> consumptionStockHeaderColumn = new TableColumn<Stock, String>("Stocks of Consumption Goods");
 
 	// The Commodities table and its header columns
 
-	protected static TableView<Commodity> commoditiesTable = new TableView<Commodity> ();
+	protected static TableView<Commodity> commoditiesTable = new TableView<Commodity>();
 	private static TableColumn<Commodity, String> commodityDemandSupplySuperColumn;
 	private static TableColumn<Commodity, String> commodityCapitalProfitSuperColumn;
 	private static TableColumn<Commodity, String> commodityValuePriceSuperColumn;
@@ -79,13 +79,13 @@ public class TabbedTableViewer extends VBox {
 
 	// Industry Tables and their header columns
 
-	private static TableView<Industry> industryCapitalAccountTable =new TableView<Industry> ();
-	private static TableView<Industry> industryProductionAccountsTable= new TableView<Industry> ();
-	private static TableView<SocialClass> socialClassesTable=  new TableView<SocialClass> ();
+	private static TableView<Industry> industryCapitalAccountTable = new TableView<Industry>();
+	private static TableView<Industry> industryProductionAccountsTable = new TableView<Industry>();
+	private static TableView<SocialClass> socialClassesTable = new TableView<SocialClass>();
 	private static TableColumn<Industry, String> inputSuperColumn;
-	private static TableColumn<Industry,String> productiveInputsColumn;
+	private static TableColumn<Industry, String> productiveInputsColumn;
 	private static TableColumn<Industry, String> outputSuperColumn;
-	private static TableColumn<Industry,String> outputColumn;
+	private static TableColumn<Industry, String> outputColumn;
 
 	/**
 	 * Simple static lists of tables, so utilities can get at them
@@ -145,10 +145,10 @@ public class TabbedTableViewer extends VBox {
 		mainTables.add(socialClassesTable);
 		mainTables.add(commoditiesTable);
 		// TODO there must be a better way...
-		for (TableView<?> table:stockTables) {
+		for (TableView<?> table : stockTables) {
 			allTables.add(table);
 		}
-		for (TableView<?> table:mainTables) {
+		for (TableView<?> table : mainTables) {
 			allTables.add(table);
 		}
 	}
@@ -161,8 +161,8 @@ public class TabbedTableViewer extends VBox {
 
 		// box for the main tables
 		VBox mainBox = new VBox();
-		mainBox.setPrefHeight(700);
-		mainBox.setPrefWidth(7600);
+		mainBox.setPrefHeight(ViewManager.windowHeight - 100);
+		mainBox.setPrefWidth(10000);// just a large number; for reasons I don't understand, MAX_HEIGHT futzes up the display
 
 		// box for the stock tables
 		VBox stockBox = new VBox();
@@ -180,13 +180,15 @@ public class TabbedTableViewer extends VBox {
 
 		for (TableView<?> table : mainTables) {
 			table.setPrefHeight(150);
-			table.setPrefWidth(750);
+			table.setPrefWidth(ViewManager.windowWidth - 100);
 			table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 			mainBox.getChildren().add(table);
 		}
+		socialClassesTable.setPrefHeight(120);// this is usually smaller, lop a bit off it
+		commoditiesTable.setPrefHeight(180);//this is usually bigger, give it a bit more room
 		for (TableView<?> table : stockTables) {
 			table.setPrefHeight(150);
-			table.setPrefWidth(750);
+			table.setPrefWidth(ViewManager.windowWidth - 100);
 			table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 			stockBox.getChildren().add(table);
 		}
@@ -197,7 +199,7 @@ public class TabbedTableViewer extends VBox {
 		consumptionStockTable.getColumns().add(consumptionStockHeaderColumn);
 
 		getChildren().add(tabPane);
-		
+
 		DisplayControlsBox.setGraphicsState(ContentDisplay.TEXT_ONLY);		// initialize so start state is text only
 		setDisplayAttribute(Stock.VALUE_EXPRESSION.PRICE);			// start off displaying prices
 		buildTables();
@@ -220,7 +222,7 @@ public class TabbedTableViewer extends VBox {
 
 		TableUtilities.setSuperColumnHandler(inputSuperColumn, productiveInputsColumn);
 		TableUtilities.setSuperColumnHandler(outputSuperColumn, outputColumn);
-		
+
 		TableUtilities.setSuperColumnHandler(commodityValuePriceSuperColumn, commodityTotalPriceColumn);
 		TableUtilities.setSuperColumnHandler(commodityDemandSupplySuperColumn, commodityAllocationShareColumn);
 		TableUtilities.setSuperColumnHandler(commodityCapitalProfitSuperColumn, commodityProfitRateColumn);
@@ -334,7 +336,7 @@ public class TabbedTableViewer extends VBox {
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.SOCIALCLASS_ATTRIBUTE.SOCIALCLASSNAME, true));
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.SOCIALCLASS_ATTRIBUTE.SIZE, false));
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.SOCIALCLASS_ATTRIBUTE.SALES, false));
-		for (Commodity u : Commodity.currentByFunction(Simulation.projectIDcurrent(),Simulation.timeStampIDCurrent(), Commodity.FUNCTION.CONSUMER_GOOD)) {
+		for (Commodity u : Commodity.currentByFunction(Simulation.projectIDcurrent(), Simulation.timeStampIDCurrent(), Commodity.FUNCTION.CONSUMER_GOOD)) {
 			socialClassesTable.getColumns().add(new SocialClassColumn(u));
 		}
 		socialClassesTable.getColumns().add(new SocialClassColumn(SocialClass.SOCIALCLASS_ATTRIBUTE.MONEY, false));
@@ -370,17 +372,17 @@ public class TabbedTableViewer extends VBox {
 		industryProductionAccountsTable.getColumns().add(industryNameColumn);
 		industryProductionAccountsTable.getColumns().add(new IndustryColumn(Industry.INDUSTRY_ATTRIBUTE.COMMODITYNAME, true));
 
-		inputSuperColumn= new TableColumn<Industry, String>("Inputs");
+		inputSuperColumn = new TableColumn<Industry, String>("Inputs");
 		inputSuperColumn.setResizable(true);
 		industryProductionAccountsTable.getColumns().add(inputSuperColumn);
-		productiveInputsColumn= new IndustryColumn(Industry.INDUSTRY_ATTRIBUTE.PRODUCTIVESTOCKS, false);
-		for (Commodity u : Commodity.currentByFunction(Simulation.projectIDcurrent(),Simulation.timeStampIDCurrent(), Commodity.FUNCTION.PRODUCTIVE_INPUT)) {
+		productiveInputsColumn = new IndustryColumn(Industry.INDUSTRY_ATTRIBUTE.PRODUCTIVESTOCKS, false);
+		for (Commodity u : Commodity.currentByFunction(Simulation.projectIDcurrent(), Simulation.timeStampIDCurrent(), Commodity.FUNCTION.PRODUCTIVE_INPUT)) {
 			inputSuperColumn.getColumns().add(new IndustryColumn(u));
 		}
 		inputSuperColumn.getColumns().add(productiveInputsColumn);
 
-		outputSuperColumn=new TableColumn<Industry, String>("Outputs");
-		outputColumn=new IndustryColumn(Industry.INDUSTRY_ATTRIBUTE.OUTPUT, false);
+		outputSuperColumn = new TableColumn<Industry, String>("Outputs");
+		outputColumn = new IndustryColumn(Industry.INDUSTRY_ATTRIBUTE.OUTPUT, false);
 		industryProductionAccountsTable.getColumns().add(outputSuperColumn);
 		outputSuperColumn.getColumns().add(outputColumn);
 		outputSuperColumn.getColumns().add(new IndustryColumn(Industry.INDUSTRY_ATTRIBUTE.PROPOSEDOUTPUT, false));
@@ -392,16 +394,16 @@ public class TabbedTableViewer extends VBox {
 	 * 
 	 */
 	public void repopulateTabbedTables() {
-		int projectID =Simulation.projectIDCurrent();
-		int timeStampDisplayID=Simulation.timeStampDisplayCursor();
+		int projectID = Simulation.projectIDCurrent();
+		int timeStampDisplayID = Simulation.timeStampDisplayCursor();
 		productiveStockTable.setItems(Stock.ofStockTypeObservable(projectID, timeStampDisplayID, "Productive"));
 		moneyStockTable.setItems(Stock.ofStockTypeObservable(projectID, timeStampDisplayID, "Money"));
 		salesStockTable.setItems(Stock.ofStockTypeObservable(projectID, timeStampDisplayID, "Sales"));
 		consumptionStockTable.setItems(Stock.ofStockTypeObservable(projectID, timeStampDisplayID, "Consumption"));
-		commoditiesTable.setItems(Commodity.commoditiesObservable(projectID,timeStampDisplayID));
-		industryCapitalAccountTable.setItems(Industry.industriesObservable(projectID,timeStampDisplayID));
-		socialClassesTable.setItems(SocialClass.socialClassesObservable(projectID,timeStampDisplayID));
-		industryProductionAccountsTable.setItems(Industry.industriesObservable(projectID,timeStampDisplayID));
+		commoditiesTable.setItems(Commodity.commoditiesObservable(projectID, timeStampDisplayID));
+		industryCapitalAccountTable.setItems(Industry.industriesObservable(projectID, timeStampDisplayID));
+		socialClassesTable.setItems(SocialClass.socialClassesObservable(projectID, timeStampDisplayID));
+		industryProductionAccountsTable.setItems(Industry.industriesObservable(projectID, timeStampDisplayID));
 	}
 
 	/**

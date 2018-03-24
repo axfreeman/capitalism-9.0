@@ -23,7 +23,6 @@ package capitalism.utils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import capitalism.Capitalism;
 import capitalism.view.custom.LogWindow;
 
@@ -43,17 +42,18 @@ import java.time.format.DateTimeFormatter;
  */
 public class Reporter {
 	private static final Logger logger = LogManager.getLogger(Reporter.class);
+	private static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+	private static double startUpTime;
+	private static LocalDateTime logTime;
+	
 	// used by ViewManager and Reporter to tell the user what's going on.
-
 	public static LogWindow logWindow;
 
 	/**
 	 * Empty constructor which does not initialise {@code logWindow}
 	 * See notes on {@link Reporter#createLogWindow()}
 	 */
-
 	public Reporter() {
-
 	}
 
 	/**
@@ -85,16 +85,12 @@ public class Reporter {
 	 */
 	public static void initialiseLoggerFiles() {
 		// the log files are written into the user directory specified by Capitalism.userBasePath/logfiles - currently fixed, but could be configurable
-
+		logTime=LocalDateTime.now();
 		String logFilesBase = Capitalism.getUserBasePath() + "\\logfiles\\";
-
 		String logFile1 = logFilesBase + "userview.log";
 		String logFile2 = logFilesBase + "debug.log";
 		try {
-			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-			LocalDateTime now = LocalDateTime.now();
-			logger.info("Started new log file at " + dtf.format(now)); // This only goes to archive.log
-			String str = "Start of new log at" + dtf.format(now) + "\n";
+			String str = "Start of new log at" + dtf.format(logTime) + "\n";
 			BufferedWriter writer1 = new BufferedWriter(new FileWriter(logFile1));
 			BufferedWriter writer2 = new BufferedWriter(new FileWriter(logFile2));
 			writer1.write(str);
@@ -106,6 +102,14 @@ public class Reporter {
 		} catch (IOException i) {
 			logger.error("The log file could not be initialised beause of" + i.getMessage());
 		}
+	}
+	
+	public static double timeSinceStart() {
+		return System.currentTimeMillis()-startUpTime;
+	}
+
+	public static void setStartTime() {
+		startUpTime = System.currentTimeMillis();
 	}
 
 	/**

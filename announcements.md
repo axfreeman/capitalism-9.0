@@ -1,7 +1,5 @@
-# Capitalism 9.0 announcements 3/22/2018 10:58:25 PM 
+# Capitalism 9.0 announcements 3/24/2018 5:03:12 AM 
 
-Splash screen at startup.
-New user interface starts with the editor.
 Load, edit and save functional.
 But the saved project won't always run, because there is insufficient validation.
 This comes next.

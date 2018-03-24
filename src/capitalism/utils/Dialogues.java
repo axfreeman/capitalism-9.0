@@ -96,7 +96,7 @@ public class Dialogues {
 	public static File directoryChooser(String title) {
 		DirectoryChooser chooser = new DirectoryChooser();
 		chooser.setTitle(title);
-		File defaultDirectory = new File("Capitalism.getUserBasePath()");
+		File defaultDirectory = new File(Capitalism.getUserBasePath());
 		chooser.setInitialDirectory(defaultDirectory);
 		File selectedDirectory = chooser.showDialog(ViewManager.getPrimaryStage());
 		return selectedDirectory;
@@ -115,7 +115,7 @@ public class Dialogues {
 			File selectedFile = chooser.showSaveDialog(ViewManager.getPrimaryStage());
 			return selectedFile;
 		} catch (Exception e) {
-			Dialogues.alert(logger, "Could not load an file because" + e.getMessage());
+			Dialogues.alert(logger, "Could not load a file because" + e.getMessage());
 			return null;
 		}
 	}

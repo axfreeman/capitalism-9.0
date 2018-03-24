@@ -103,12 +103,14 @@ public class EditableIndustry {
 	 * be edited by the user and eventually stored back to a modified version of the persistent entities
 	 * from which it was created.
 	 * 
+	 * @param projectID the ID of the project whose observable representation is to be constructed
+	 * 
 	 * @return an observableList of EditableIndustries identified by the current projectID and timeStampID
 	 */
 
-	public static ObservableList<EditableIndustry> editableIndustries() {
+	public static ObservableList<EditableIndustry> editableIndustries(int projectID) {
 		ObservableList<EditableIndustry> result = FXCollections.observableArrayList();
-		for (Industry c : Industry.all(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent())) {
+		for (Industry c : Industry.all(projectID, Simulation.timeStampIDCurrent())) {
 			EditableIndustry oneRecord = new EditableIndustry();
 			oneRecord.setName(c.name());
 			oneRecord.setCommodityName(c.getCommodityName());
@@ -407,8 +409,8 @@ public class EditableIndustry {
 		}
 	}
 
-	public void loadStocksFromSimulation() {
-		Industry persistentIndustry = Industry.single(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent(), name.get());
+	public void loadStocksFromSimulation(int projectID) {
+		Industry persistentIndustry = Industry.single(projectID, Simulation.timeStampIDCurrent(), name.get());
 		Stock moneyStock = persistentIndustry.moneyStock();
 
 		// A simple dodge: for money and sales stocks, the desired and actual quantity are the same
@@ -427,9 +429,9 @@ public class EditableIndustry {
 		}
 	}
 
-	public static void loadAllStocksFromSimulation() {
+	public static void loadAllStocksFromSimulation(int projectID) {
 		for (EditableIndustry industry : EditorLoader.getIndustryData()) {
-			industry.loadStocksFromSimulation();
+			industry.loadStocksFromSimulation(projectID);
 		}
 	}
 

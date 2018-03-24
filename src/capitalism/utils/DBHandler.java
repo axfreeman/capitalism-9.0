@@ -177,7 +177,7 @@ public class DBHandler {
 	 *            the directory in which to save the files
 	 */
 	public static void saveCSVDataBase(File saveDirectory) {
-		String[] standardFiles = { "timeStamps", "projects", "globals", "commodities", "stocks", "socialClasses", "industries" };
+		String[] standardFiles = { "timeStamps", "projects", "commodities", "stocks", "socialClasses", "industries" };
 
 		String baseDirectoryURL;
 		try {

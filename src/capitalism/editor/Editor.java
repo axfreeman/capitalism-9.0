@@ -85,14 +85,6 @@ public class Editor extends VBox {
 	private static EditorDialogueBox socialClassDialogueBox;
 	private static EditorDialogueBox commodityDialogueBox;
 
-	private static double industryDialogueHeight;
-	private static double commodityDialogueHeight;
-	private static double socialClassDialogueHeight;
-	private static double industryBoxHeight;
-	private static double commodityBoxHeight;
-	private static double socialClassBoxHeight;
-	private static double tabPaneHeight;
-
 	// the next three are a complete botch to get things going while we figure
 	// out how to get inherited disable working
 	public static ArrayList<Node> industryDisableList = new ArrayList<Node>();
@@ -139,8 +131,7 @@ public class Editor extends VBox {
 
 		getChildren().addAll(ecb, tabPane);
 
-		// TODO the below nine lines just a bodge to get things going until I can figure out disable inheritance.
-		// general apology to the world of mentation.
+		// TODO get this working using disable inheritance.
 		Collections.addAll(industryDisableList,commodityBox,socialClassBox,industryTable);
 		Collections.addAll(socialClassDisableList,commodityBox,industryBox,socialClassTable);
 		Collections.addAll(commodityDisableList,industryBox,socialClassBox,commodityTable);
@@ -275,75 +266,53 @@ public class Editor extends VBox {
 	 * commodities they represent have new names. There may be a better way but this is
 	 * the simplest and I don't think it's expensive because there are no database operations involved.
 	 */
-	public static void buildTables() {
+	public static void makeAllTables() {
 		commodityTable.getColumns().clear();
 		industryTable.getColumns().clear();
 		socialClassTable.getColumns().clear();
 		makeCommodityTable();
 		makeIndustryTable();
 		makeSocialClassTable();
+		
 		// Create columns for the productive stocks
 		addIndustryStockColumns();
+		
 		// Create the columns for consumption stocks
 		addSocialClassStockColumns();
+		setTableHeights();
 	}
 
 	/**
-	 * Record the displayed heights of the dialogue boxes to help in resizing the tables
+	 * little helper method
 	 */
-	public static void getHeights() {
-		// we temporarily show the dialogues so we can access the actual sizes assigned to the components
-		// TODO is there a better way?
-		industryDialogueBox.showDialogue();
-		socialClassDialogueBox.showDialogue();
-		commodityDialogueBox.showDialogue();
-
-		commodityDialogueHeight = commodityDialogueBox.getHeight();
-		industryDialogueHeight = industryDialogueBox.getHeight();
-		socialClassDialogueHeight = socialClassDialogueBox.getHeight();
-
-		commodityBoxHeight = commodityBox.getHeight();
-		industryBoxHeight = industryBox.getHeight();
-		socialClassBoxHeight = socialClassBox.getHeight();
-
-		tabPaneHeight = tabPane.getHeight();
-		logger.debug("Tab Pane height is {}, CommodityBox height is {}, industryBoxHeight {}, socialClassBoxHeight {}", tabPaneHeight, 
-				commodityBoxHeight,	industryBoxHeight, socialClassBoxHeight);
-		// found what we need to know, disable the dialogues again.
-		// NOTE at this point, we know the dialogue sizes so even if the window
-		// is resized, we should not need to capture them again.
-		industryDialogueBox.hideDialogue();
-		socialClassDialogueBox.hideDialogue();
-		commodityDialogueBox.hideDialogue();
+	public static void heightSniffer() {
+		logger.debug("SNIFFING THE DIMENSIONS OF THE CONTROLS");
+		double actualHeight = commodityBox.getHeight();
+		double prefHeight=commodityBox.getPrefHeight();
+		double minHeight=commodityBox.getMinHeight();
+		double maxHeight=commodityBox.getMaxHeight();
+		logger.debug("Heights: actual {}, preferred {}, min {}, max{}",actualHeight,prefHeight,minHeight,maxHeight);
 	}
-
+	
+	
 	/**
 	 * Set the table heights to accomodate the number of rows
+	 * TODO retrieve the heights dynamically
 	 */
-	public static void setHeights() {
-		int rowCount = commodityTable.getItems().size() + 1;
-		double prefHeight = Math.min(rowCount * 25, commodityBoxHeight - commodityDialogueHeight) + 3;
-		commodityTable.setFixedCellSize(25);
-		logger.debug("Commodity table has {} rows, the dialogue box takes up {}, the box height is {}"
-				+ " and the table height will be set to {}", rowCount, commodityDialogueHeight, commodityBoxHeight, prefHeight);
-		commodityTable.setMinHeight(prefHeight);
-		commodityTable.setPrefHeight(prefHeight);
-
-		rowCount = industryTable.getItems().size() + 2;
-		prefHeight = Math.min(rowCount * 25, industryBoxHeight - industryDialogueHeight) + 3;
-		industryTable.setFixedCellSize(25);
-		logger.debug("Industry table has {} rows, the dialogue box takes up {}, the box height is {}"
-				+ " and the table height will be set to {}", rowCount, industryDialogueHeight, industryBoxHeight, prefHeight);
-		industryTable.setMinHeight(prefHeight);
-		industryTable.setPrefHeight(prefHeight);
-
-		rowCount = socialClassTable.getItems().size() + 2;
-		prefHeight = Math.min(rowCount * 25, socialClassBoxHeight - socialClassDialogueHeight) + 3;
-		socialClassTable.setFixedCellSize(25);
-		logger.debug("Social Class table has {} rows, the dialogue box takes up {}, the box height is {}"
-				+ " and the table height will be set to {}", rowCount, socialClassDialogueHeight, socialClassBoxHeight, prefHeight);
-		socialClassTable.setMinHeight(prefHeight);
-		socialClassTable.setPrefHeight(prefHeight);
+	public static void setTableHeights() {
+		heightSniffer();
+		setOneTableHeight(commodityTable, 1);
+		setOneTableHeight(industryTable, 2);
+		setOneTableHeight(socialClassTable, 2);
+	}
+	
+	public static void  setOneTableHeight(TableView<?> table,int increment) {
+		int rowCount = table.getItems().size() + increment;
+		double prefHeight = Math.min(rowCount * 25, 500) + 3;
+		table.setFixedCellSize(25);
+		logger.debug("Table has {} rows, 500 is allocated for the pane including the table, whose height will be set to {}", rowCount, prefHeight);
+		table.setMinHeight(USE_PREF_SIZE);
+		table.setPrefHeight(prefHeight);
 	}
 
 	/**
@@ -413,8 +382,7 @@ public class Editor extends VBox {
 					}
 				}
 			}
-			buildTables(); // because the extra columnns need to be constructed
-			setHeights();
+			makeAllTables(); // because the extra columnns need to be constructed
 			commodityDialogueBox.hideDialogue();
 		}
 	};
@@ -468,8 +436,7 @@ public class Editor extends VBox {
 					newIndustry.addProductiveStock(c.getName());
 				}
 			}
-			buildTables(); // because the extra columnns need to be constructed
-			setHeights();
+			makeAllTables(); // because the extra columnns need to be constructed
 			industryDialogueBox.hideDialogue();
 		}
 	};
@@ -500,13 +467,12 @@ public class Editor extends VBox {
 			EditorLoader.socialClassData.add(newsocialClass);
 			socialClassTable.refresh();
 			socialClassDialogueBox.hideDialogue();
-			buildTables();
-			setHeights();
+			makeAllTables();
 		}
 	};
 
 	/**
-	 * Disable or enable the controls, tabs and tables- used when an xxxDialogueBox is open, to give the effect
+	 * Disable or enable the controls, tabs and tables- used when a dialogueBox is open, to give the effect
 	 * of a modal dialogue without the pother and complexity of a new modal window.
 	 * TODO work out how to do this using inheritance, selectively
 	 * TODO at present just for the industry pane

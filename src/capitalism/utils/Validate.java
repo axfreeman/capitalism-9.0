@@ -80,7 +80,6 @@ public class Validate {
 	 *            the ID of the project to be validated
 	 * @return true if all tests are passed, false otherwise
 	 */
-
 	public static boolean validate(int projectID) {
 		project = Project.get(projectID);
 		boolean valid = true;
@@ -130,6 +129,11 @@ public class Validate {
 			valid = false;
 		}
 
+		if (commodityOriginTest(projectID)) {
+			Reporter.report(logger, 2, "Passed origin test");
+		}else {
+			valid=false;
+		}
 		return valid;
 	}
 
@@ -207,7 +211,6 @@ public class Validate {
 	 *            the ID of the project whose integrity is to be tested
 	 * @return true if the project passes the test, false otherwise
 	 */
-
 	public static boolean timeStampIntegrity(int projectID) {
 		boolean valid = true;
 		for (Commodity c : Commodity.all(projectID)) {
@@ -276,6 +279,20 @@ public class Validate {
 		for (TimeStamp ts : TimeStamp.allInProject(projectID)) {
 			if (Commodity.single(projectID, ts.getTimeStampID(), "Labour Power") == null) {
 				Reporter.report(logger, 2, "Validation error: there is no commodity called Labour Power at time %d", ts);
+				valid = false;
+			}
+		}
+		return valid;
+	}
+	
+	/**
+	 * Every commodity origin must be defined
+	 */
+	private static boolean commodityOriginTest(int projectID) {
+		boolean valid = true;
+		for (Commodity commodity:Commodity.all()) {
+			if (commodity.getOrigin()==null) {
+				Reporter.report(logger, 2, "Validation error: the origin of the commodity %s in project %d is undefined", commodity.name(),projectID);
 				valid = false;
 			}
 		}

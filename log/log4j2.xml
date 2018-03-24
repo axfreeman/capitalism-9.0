@@ -17,7 +17,7 @@
 	<Loggers>
 		<Root level="trace">
 			<AppenderRef ref="Console" level ="DEBUG"/>
-			<AppenderRef ref="Debug" level = "OFF"/>
+			<AppenderRef ref="Debug" level = "DEBUG"/>
 			<AppenderRef ref="Userview" level="INFO"/>
 		</Root>
 	</Loggers>

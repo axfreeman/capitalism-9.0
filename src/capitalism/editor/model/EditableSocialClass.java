@@ -97,7 +97,6 @@ public class EditableSocialClass {
 				socialClass.consumptionStocks.put(e.getName(), new EditableStock(e.getName()));
 			}
 		}
-
 		return socialClass;
 	}
 
@@ -105,11 +104,13 @@ public class EditableSocialClass {
 	 * Create an observable list of EditableSocialClass entities (normally for display in the SocialClass Table) from the
 	 * project identified by the current projectID and timeStamp.
 	 * 
-	 * @return an observableList of EditableSocialClass entities identified by the current projectID and timeStampID
+	 * @param projectID
+	 *            the ID of the project containing the social classes whose observable representation is to be constructed
+	 * @return an observableList of EditableSocialClass entities identified by projectID and its current timeStampID
 	 */
-	public static ObservableList<EditableSocialClass> editableSocialClasses() {
+	public static ObservableList<EditableSocialClass> editableSocialClasses(int projectID) {
 		ObservableList<EditableSocialClass> result = FXCollections.observableArrayList();
-		for (SocialClass c : SocialClass.all(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent())) {
+		for (SocialClass c : SocialClass.all(projectID, Simulation.timeStampIDCurrent())) {
 			EditableSocialClass oneRecord = new EditableSocialClass();
 			oneRecord.setName(c.name());
 			oneRecord.setParticipationRatio(c.getparticipationRatio());
@@ -331,7 +332,7 @@ public class EditableSocialClass {
 
 	private ObservableValue<Double> stockDoubleProperty(String commodityName) {
 		EditableStock stock = consumptionStocks.get(commodityName);
-		if (stock==null) {
+		if (stock == null) {
 			logger.debug("The stock of {} in social class {} does not exist", commodityName, name.get());
 			return new SimpleDoubleProperty(-99).asObject();
 		}
@@ -475,8 +476,8 @@ public class EditableSocialClass {
 		}
 	}
 
-	public void loadStocksFromSimulation() {
-		SocialClass persistentSocialClass = SocialClass.single(Simulation.projectIDCurrent(), Simulation.timeStampIDCurrent(), name.get());
+	public void loadStocksFromSimulation(int projectID) {
+		SocialClass persistentSocialClass = SocialClass.single(projectID, Simulation.timeStampIDCurrent(), name.get());
 		try {
 			// A simple dodge: since there is no difference between desired and actual
 			// money and sales stocks, set both to be the same
@@ -498,9 +499,9 @@ public class EditableSocialClass {
 		}
 	}
 
-	public static void loadAllStocksFromSimulation() {
+	public static void loadAllStocksFromSimulation(int projectID) {
 		for (EditableSocialClass socialClass : EditorLoader.getSocialClassData()) {
-			socialClass.loadStocksFromSimulation();
+			socialClass.loadStocksFromSimulation(projectID);
 		}
 	}
 
@@ -556,6 +557,5 @@ public class EditableSocialClass {
 	public void setConsumptionStocks(HashMap<String, EditableStock> consumptionStocks) {
 		this.consumptionStocks = consumptionStocks;
 	}
-
 
 }

@@ -164,6 +164,11 @@ public class Demand implements Command {
 	private void registerLabourResponse(Parameters.LABOUR_RESPONSE response) {
 		//TODO but not very soon: there may be other socially-produced commodities to worry about
 		Commodity labourPower = Commodity.labourPower(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent());
+
+		//limp along if failure,because user can still do other projects
+		//TODO more graceful degradation
+		if (labourPower==null) return;
+		
 		double demandForLabourPower = labourPower.replenishmentDemand();
 		double supplyOfLabourPower = labourPower.totalSupply();
 		switch (response) {

@@ -32,6 +32,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import capitalism.controller.Simulation;
+import capitalism.utils.Dialogues;
 import capitalism.utils.MathStuff;
 import capitalism.utils.Reporter;
 import capitalism.view.TabbedTableViewer;
@@ -95,8 +96,8 @@ public class Commodity implements Serializable {
 		entityManager = entityManagerFactory.createEntityManager();
 		primaryQuery = entityManager.createQuery(
 				"SELECT u FROM Commodity u where u.pk.projectID= :project AND u.pk.timeStampID= :timeStamp and u.pk.name=:name", Commodity.class);
-		allQuery=entityManager.createQuery("SELECT u from Commodity u",Commodity.class);
-		allInProjectQuery=entityManager. createQuery("SELECT u from Commodity u where u.pk.projectID =:project", Commodity.class);
+		allQuery = entityManager.createQuery("SELECT u from Commodity u", Commodity.class);
+		allInProjectQuery = entityManager.createQuery("SELECT u from Commodity u where u.pk.projectID =:project", Commodity.class);
 		withProjectAndTimeStampQuery = entityManager.createQuery(
 				"SELECT u FROM Commodity u where u.pk.projectID= :project and u.pk.timeStampID = :timeStamp", Commodity.class);
 		withOriginQuery = entityManager.createQuery(
@@ -158,7 +159,7 @@ public class Commodity implements Serializable {
 			switch (text) {
 			case "Social":
 				return SOCIALLY_PRODUCED;
-			case "Capitalist":
+			case "Industrial":
 				return INDUSTRIALLY_PRODUCED;
 			case "Money":
 				return MONEY;
@@ -740,17 +741,16 @@ public class Commodity implements Serializable {
 		allInProjectQuery.setParameter("project", projectID);
 		return allInProjectQuery.getResultList();
 	}
-	
-	
+
 	/**
 	 * a list of all commodities at the database. Mainly for validation purposes but could have other uses
+	 * 
 	 * @return a list of all commodities at the given projectID
 	 */
 	public static List<Commodity> all() {
 		return allQuery.getResultList();
 	}
 
-	
 	/**
 	 * a list of all commodities of the given origin at the given projectID and timeStampID
 	 * 
@@ -793,34 +793,49 @@ public class Commodity implements Serializable {
 	 * 
 	 * @param projectID
 	 *            the given projectID
-	 * 
 	 * @param timeStampID
 	 *            the given timeStampID
 	 * @return the single use value of origin type SOCIALLY_PRODUCED, which will be labour poweer
 	 */
 	public static Commodity labourPower(int projectID, int timeStampID) {
+		
+		// temporary debug query
+		for (Commodity commodity: all(projectID)) {
+			logger.debug(commodity.toString());
+		}
+		
 		withOriginQuery.setParameter("project", projectID);
 		withOriginQuery.setParameter("timeStamp", timeStampID);
 		withOriginQuery.setParameter("origin", Commodity.ORIGIN.SOCIALLY_PRODUCED);
+		
+		for (Commodity commodity:withOriginQuery.getResultList()) {
+			logger.debug("Restricted list");
+			logger.debug(commodity.toString());
+		}
+		
 		try {
 			return withOriginQuery.getSingleResult();
 		} catch (NoResultException r) {
+			return null;
+		} catch (NonUniqueResultException n) {
+			Dialogues.alert(logger, "More than one commodity labour power found. This is a data error. Please consult the log. "
+					+ "If the problem persists, please contact the developer");
 			return null;
 		}
 	}
 
 	/**
-	 * Set the comparators for the commodities at the given project and timeStamp 
+	 * Set the comparators for the commodities at the given project and timeStamp
 	 * 
 	 * @param timeStampID
 	 *            the timeStamp of the commodities
-	 * @param projectID 
+	 * @param projectID
 	 *            the project of the commodities
 	 */
 	public static void setComparators(int projectID, int timeStampID) {
 		logger.debug("Setting comparators for Commodities in project {} with timeStamp {}", projectID, timeStampID);
 		withProjectAndTimeStampQuery.setParameter("project", projectID).setParameter("timeStamp", timeStampID);
-		Project project=Project.get(projectID);
+		Project project = Project.get(projectID);
 		for (Commodity u : Commodity.withProjectAndTimeStampQuery.getResultList()) {
 			u.setPreviousComparator(single(projectID, project.getTimeStampComparatorCursor(), u.name()));
 			u.setStartComparator(single(projectID, 1, u.name()));
@@ -1138,6 +1153,13 @@ public class Commodity implements Serializable {
 	 */
 	public void setFunction(FUNCTION function) {
 		this.function = function;
+	}
+
+	/**
+	 * Customised minimal toString()
+	 */
+	public String toString() {
+		return String.format("COMMODITY %20s:project %d,time %d, origin %s", pk.name, pk.projectID, pk.timeStampID, origin);
 	}
 
 }

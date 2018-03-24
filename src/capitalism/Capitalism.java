@@ -28,6 +28,8 @@ import com.sun.javafx.application.LauncherImpl;
 import capitalism.controller.Simulation;
 import capitalism.editor.EditorManager;
 import capitalism.utils.DBHandler;
+import capitalism.utils.Dialogues;
+import capitalism.utils.Reporter;
 import capitalism.view.ViewManager;
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -38,14 +40,14 @@ public class Capitalism extends Application {
 	private static String userBasePath = System.getProperty("user.home").replace('\\', '/') + "/Documents/Capsim/";
 	
 	/**
-	 * The main class extends the javafx class 'Application' and therefore inherits {@code launch()} which is where the action begins
-	 * However, there ain't no such thing as a free launch.
-	 * The Order is:
-	 * 1. call {@link #main(String[])} which calls the preloader to display the splash screen 
+	 * The main class extends the javafx class 'Application' and therefore inherits {@code launch()} which is where the action begins.
+	 * There ain't no such thing as a free launch.
+	 * The order is:
+	 * 1. launch calls {@link #main(String[])} which calls the preloader to display the splash screen 
 	 *    and instruct it to start {@link Capitalism#main(String[])} when it is ready
-	 * 2. call super#init() unless overeridden - which, in this case, it is.
+	 * 2. super#init() gets called unless it is overeridden - which, in this case, it is.
 	 *    call {@link #init()} instead, since this overrides super.init()
-	 * 3. call {@link #start} (see below)
+	 * 3. call {@link #start} where we currently do most of the heavy lifting
 	 * 4. wait until finished - either because of Platform#exit or because last window is closed 
 	 *    (provided Platform.implicitExit attribute is true)
 	 * 5. call {@link #stop()} to turn out the lights (also does nothing unless overridden)
@@ -54,54 +56,66 @@ public class Capitalism extends Application {
 	 * @param args
 	 *            the arguments supplied by the external caller. Ignored in this application
 	 */
-
 	public static void main(String[] args) {
-		System.out.println("Capitalism Rosy Dawn");
+		logger.debug("Startup: Entered Capitalism#main");
+		Reporter.setStartTime();// start the benchmarking clock
+
 		// launch the preloader which displays the splash screen
-		LauncherImpl.launchApplication(Capitalism.class, ApplicationPreloader.class, args);
+		LauncherImpl.launchApplication(Capitalism.class, SplashScreenPreLoader.class, args);
 	}
 
+	/**
+	 * The {@link Capitalism#init()} method doesn't actually do anything because we do all the heavy lifting in 
+	 * {@link Capitalism#start(Stage)}; we keep it so if later we want to do some heavy lifting here, the 
+	 * possibility exists.
+	 */
 	@Override public void init() throws Exception {
-		System.out.println("entered init, thread: " + Thread.currentThread().getName());
-		logger.debug("DEBUG STARTUP");
+		logger.debug("Entered init, thread: " + Thread.currentThread().getName());
 	}
 
-	// Constructor is called after BEFORE_LOAD.
+	/**
+	 * The Capitalism constructor is called by ApplicationPreloader
+	 */
 	public Capitalism() {
 		System.out.println("Capitalism constructor called, thread: " + Thread.currentThread().getName());
 	}
 
 	/**
-	 * A slightly complex procedure but necessary as far as I can see.
-	 * {@code primaryStage} is supplied by the JavaFX launcher. We simply pass it to the viewManager statically,
-	 * because there is no need to instantiate multiplie copies of the primary stage (or it wouldn't be primary, would it?)
-	 * Next, create the viewManager. There's only a single instance of it.
-	 * The constructor doesn't do much, but it does initialise a root layout which is a container for most of the
-	 * display, and it creates the LogWindow (again, a single instance) which is used for reporting. Thus, it must
-	 * be done before the next step, initialising the values and prices of the stocks and the commodities, and the global totals.
-	 * This, performed by the Simulation class static startup method, is needed because the information in the user-supplied
-	 * data files is incomplete - it provides only the bare minimum. It is done before viewManager constructs most of its
-	 * custom controls (the display tables, buttons, etc) because to do this, viewManager needs the fully-initialised data.
-	 * Initialization is performed for all projects, so we can subsequently switch from one to the other.
-	 * Finally we ask the ViewManager to populate the display with the various custom controls that it manages.
+	 * The preloader splash screen is already up and probably showing by now.
+	 * First build the main window and the log window, but do not populate them and do not show them.
+	 * Then, initialise the database, which has to be done before the other windows can be populated.
+	 * Then start the simulation itself, which preprocesses the data and also must complete before populating any windows
+	 * Then populate the windows main window and the log window
+	 * Then build and populate the editor window in one go
+	 * TODO rationalise the editor window process to bring it in line with the others
 	 */
-
 	@Override public void start(Stage primaryStage) {
-		ViewManager.buildMainView(primaryStage);
+		ViewManager.buildMainWindow(primaryStage);
+		Reporter.createLogWindow();
 		
+		SplashScreenPreLoader.setProgress("Loading data");
+		logger.debug("Starting database after {} milliseconds",Reporter.timeSinceStart());
 		// Create the database and read in the user-defined persistent entities
-		
 		if (!DBHandler.initialiseDataBaseAndStart()) {
-			logger.error("Data error on startup. Sorry, could not continue");
+			Dialogues.alert(logger, "Data error on startup. Sorry, could not continue");
 			return;
 		}
+
+		SplashScreenPreLoader.setProgress("Initialising Simulation");
+		logger.debug("Starting simulation after {} milliseconds",Reporter.timeSinceStart());
+
 		if (!Simulation.startup()) {
 			// TODO we may wish to take some other action if there is a database flaw
 		}
+		SplashScreenPreLoader.setProgress("Initialising the display");
+		logger.debug("Starting view manager after {} milliseconds",Reporter.timeSinceStart());
+
 		ViewManager.startUp();
 		ViewManager.getPrimaryStage().centerOnScreen();
         ViewManager.getPrimaryStage().show();
         EditorManager.buildEditorWindow();
+		SplashScreenPreLoader.setProgress("Ready");
+		logger.debug("Finished initialising after {} milliseconds",Reporter.timeSinceStart());
         EditorManager.showEditorWindow();
 	}
 

@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 import capitalism.controller.Simulation;
 import capitalism.model.OneProject;
+import capitalism.utils.DBHandler;
 import capitalism.utils.Dialogues;
 import capitalism.utils.XMLStuff;
 import capitalism.view.custom.ImageButton;
@@ -41,6 +42,8 @@ public class DumpCommand implements DisplayCommand{
 		if (file == null) return;
 		logger.debug("Saving new project to {}", file.getAbsolutePath());
 		XMLStuff.exportToXML(oneProject,file);
+		File saveDirectory = Dialogues.directoryChooser("Temporary CSV dump directory");
+		DBHandler.saveCSVDataBase(saveDirectory);//temporary belt and braces check
 	}
 
 }

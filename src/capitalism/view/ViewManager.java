@@ -79,11 +79,10 @@ public class ViewManager {
 
 	final public static Rectangle2D screenBounds = Screen.getPrimary().getBounds();
 	final public static String deltaSymbol = "± ";
-	final public static double windowWidth=screenBounds.getWidth()*0.9;
-	final public static double windowHeight=screenBounds.getHeight()*0.9;
+	final public static double windowWidth=screenBounds.getWidth()*0.75;
+	final public static double windowHeight=screenBounds.getHeight()*0.8;
 	
 	// display parameters that can change as the simulation proceeds
-
 	private static String largeFormat = "%1$,.0f";	// Formats the display of large floating point numbers
 	private static String smallFormat = "%1$.2f";   // Formats the display of small floating point numbers
 
@@ -101,29 +100,20 @@ public class ViewManager {
 	private static DisplayControlsBox displayControlsBox;
 	private static TrackingControlsBox trackingControlsBox;
 	
-	public static void buildMainView(Stage stage) {
-		logger.debug("Creating the main view");
-		logger.debug(" Screen right is " + Double.toString(screenBounds.getMaxX()));
-		logger.debug(" Screen top is " + Double.toString(screenBounds.getMaxY()));
-		logger.debug(" Screen left is " + Double.toString(screenBounds.getMinX()));
-		logger.debug(" Screen bottom is " + Double.toString(screenBounds.getMinY()));
-
+	public static void buildMainWindow(Stage stage) {
+		logger.debug("Creating the main window");
+		logger.debug("Screen is {} high and {} wide",windowHeight, windowWidth);
 		primaryStage = stage;
 		
 		// construct the root window, a simple container with almost no functionality
-		rootLayout.setPrefHeight(ViewManager.windowHeight);
-		rootLayout.setPrefWidth(ViewManager.windowWidth);
-
-		// display the root layout. Later (in startup) it will hold an anchorPane where most of the business is conducted.
+		// height has to allow for the control bar. TODO can we set the window height directly?
+		rootLayout.setPrefHeight(windowHeight-20);
+		rootLayout.setPrefWidth(windowWidth);
 		Scene scene = new Scene(rootLayout);
 		String css = Editor.class.getResource("/SimulationTheme.css").toExternalForm();
 		scene.getStylesheets().add(css);
 		primaryStage.setScene(scene);
 		primaryStage.setTitle("Capitalism");
-
-		// now, and only now, create the logger window. We had to wait until the application launched but
-		// we have to do it now because otherwise, we would crash the logging reports that occur during Simulation.startup()
-		Reporter.createLogWindow();
 	}
 
 	/**
@@ -150,8 +140,8 @@ public class ViewManager {
 	 */
 	private static void addCustomControls() {
 		anchorPane = new AnchorPane();
-		anchorPane.setPrefHeight(800);
-		anchorPane.setPrefWidth(1300);
+		anchorPane.setPrefHeight(windowHeight);
+		anchorPane.setPrefWidth(windowWidth);
 		
 		simulationResultsPane = new VBox();
 		manePane = new HBox();

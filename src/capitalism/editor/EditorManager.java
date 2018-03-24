@@ -24,10 +24,9 @@ import org.apache.logging.log4j.Logger;
 
 import capitalism.utils.Reporter;
 import capitalism.view.ViewManager;
-import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 
 public class EditorManager {
 	private final static Logger logger = LogManager.getLogger("EditorManager");
@@ -49,15 +48,12 @@ public class EditorManager {
 		// get ready to show the window
 		editorStage.setScene(editorScene);
 		
-		// at present, when the editor fires up, we load the current project from the simulation.
-		// this could change eg we could have a button in the Editor to do it or a combo box
-		// to select the simulation
-		EditorLoader.loadFromSimulation();
+		// make the window modal so we can't do anything else until it is closed
+		editorStage.initModality(Modality.WINDOW_MODAL);
+        editorStage.initOwner(ViewManager.getPrimaryStage());
 
-		// as soon as the editor window is shown, resize the tables to fit the space
-		// that was allocated to them, showing only the rows that exist
-		editorStage.setOnShown(collectHeights);
-		// TODO take action when the editor window is resized
+        // at present, when the editor fires up, we load the simple reproduction project from the simulation.
+		EditorLoader.loadFromSimulation(1);
 	}
 	
 	/**
@@ -74,14 +70,4 @@ public class EditorManager {
 	public static void closeEditorWindow() {
 		editorStage.close();
 	}
-
-	/**
-	 * Sizes the tables within the window, once it is shown (so that we know its dimensions)
-	 */
-	private static EventHandler<WindowEvent> collectHeights= new EventHandler <WindowEvent> (){
-		@Override public void handle(WindowEvent t) {
-		Editor.getHeights();
-		Editor.setHeights();
-		}
-	};
 }

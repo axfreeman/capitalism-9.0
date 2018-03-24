@@ -94,11 +94,13 @@ public class EditableCommodity {
 	 * Create an observable list of EditableCommodity entities (normally for display in the Commodities Table) from the
 	 * project identified by the current projectID and timeStamp.
 	 * 
+	 * @param projectID
+	 *            the ID of the project whose commodities will be represented by this observableList
 	 * @return an observableList of EditableCommodity entities identified by the current projectID and timeStampID
 	 */
-	public static ObservableList<EditableCommodity> editableCommodities() {
+	public static ObservableList<EditableCommodity> editableCommodities(int projectID) {
 		ObservableList<EditableCommodity> result = FXCollections.observableArrayList();
-		for (Commodity c : Commodity.all(Simulation.projectIDcurrent(), Simulation.timeStampIDCurrent())) {
+		for (Commodity c : Commodity.all(projectID, Simulation.timeStampIDCurrent())) {
 			EditableCommodity oneRecord = new EditableCommodity();
 			oneRecord.setName(c.name());
 			oneRecord.setUnitValue(c.getUnitValue());
@@ -440,8 +442,8 @@ public class EditableCommodity {
 	}
 
 	public String toString() {
-		StringBuilder sb=new StringBuilder();
+		StringBuilder sb = new StringBuilder();
 		sb.append(name.get()).append("(").append(function.get()).append(",").append(origin.get()).append(")\n");
-		return  sb.toString();
+		return sb.toString();
 	}
 }

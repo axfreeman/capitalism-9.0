@@ -33,7 +33,6 @@ public class EditorDialogueBox extends VBox {
 
 		fieldsBox.setSpacing(10);
 		buttonsBox.setSpacing(10);
-		warningLabel.setMaxWidth(Double.MAX_VALUE);
 		warningLabel.setMinWidth(300);
 		warningLabel.setPrefWidth(300);
 		this.initialPrompt=initialPrompt;

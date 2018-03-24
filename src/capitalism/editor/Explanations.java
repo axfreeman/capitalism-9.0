@@ -31,8 +31,8 @@ public class Explanations {
 				+ "is likely to be insufficient to ensure the industry will function properly; you can fill this out by editing the table above.\n\n "
 				+ "Or, you can load a simulation that has already been defined, and either modify it or simply run it, to see what it does.\n\n"
 				+ "An industry is any group of enterprises, or productive units, who make the same commodity using the same technology. "
-				+ "More than one industry can produce the same commodity./n/n"
-				+ "Industries use 'inputs' which are other commodities, used to make their product. Labour is an input to most"
+				+ "More than one industry can produce the same commodity.\n\n"
+				+ "Industries use 'inputs' which are other commodities, used to make their product. Labour is an input to most "
 				+ "industries. You can control which inputs an industry needs when you fill out its details.";
 		commodityText = "Welcome to the capitalism App. \n\n" 
 				+" This is the editor screen, which lets you create and modify projects. You can exit at any time by pressing the > button.\n\n"

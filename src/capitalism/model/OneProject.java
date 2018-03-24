@@ -30,6 +30,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import capitalism.utils.Dialogues;
 import capitalism.utils.Reporter;
 import capitalism.utils.Validate;
 import capitalism.view.custom.ActionStates;
@@ -117,7 +118,10 @@ public class OneProject {
 
 		// we loaded the persistent fields, but now we must initialise all the derived fields
 		
-		Validate.validate(maxProjectID);
+		if (!Validate.validate(maxProjectID+1)) {
+			Dialogues.alert(logger,"There is a data problem with this project. You can run other projects, but not this one");
+			return;
+		};
 		project.initialise();
 		
 		DisplayControlsBox.rePopulateProjectCombo();

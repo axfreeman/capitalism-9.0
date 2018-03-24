@@ -21,12 +21,15 @@ package capitalism.editor;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import capitalism.model.Project;
 import capitalism.view.command.AddRowCommand;
 import capitalism.view.command.CreateCommand;
 import capitalism.view.command.SaveEditorWindowCommand;
 import capitalism.view.command.SimCommand;
 import capitalism.view.custom.ImageButton;
 import capitalism.view.custom.RadioButtonPair;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.layout.HBox;
@@ -39,10 +42,14 @@ import javafx.scene.layout.Priority;
  */
 
 public class EditorControlBar extends HBox {
-	@SuppressWarnings("unused")
-	private final static Logger logger = LogManager.getLogger("EditorControlBar");
+	@SuppressWarnings("unused") private final static Logger logger = LogManager.getLogger("EditorControlBar");
 
 	private static Pane spacer = new Pane();
+	private static EditorProjectCombo projectCombo = null;
+	private static ObservableList<Project> projects = Project.observableProjects();
+	private Project currentProject;
+	private String currentProjectDescription;
+
 	private ImageButton simButton = new ImageButton(
 			"start.png",
 			"start.png",
@@ -62,13 +69,13 @@ public class EditorControlBar extends HBox {
 			"",
 			"Add a new row to this table");
 	private static RadioButtonPair stocksPair = new RadioButtonPair(
-			"Required Stocks",
-			"Actual Stocks",
+			"Required Stocks ",
+			"Actual Stocks ",
 			"Show the production or consumption stocks are required, given industrial output and the size of the social classes",
 			"Show the actual production and consumption stocks owned by the industries and social classes");
 	private static ImageButton saveButton = new ImageButton(
-			"save2.png",
-			"save2.png",
+			"download.png",
+			"download.png",
 			new SaveEditorWindowCommand(),
 			"Save the contents of the editor window to a file on your computer",
 			"Save the contents of the editor window to a file on your computer");
@@ -83,7 +90,11 @@ public class EditorControlBar extends HBox {
 		spacer.setPrefWidth(50);
 		setHgrow(spacer, Priority.ALWAYS);
 		setPrefWidth(400);
-		getChildren().addAll(createButton, saveButton, simButton, addNewRow, spacer, stocksPair);
+		currentProject = Project.get(1);
+		currentProjectDescription = currentProject.getDescription();
+		projectCombo = new EditorProjectCombo(projects, currentProjectDescription);
+		// use spacer if need be to place one or more controls on the right of the bar
+		getChildren().addAll(projectCombo, stocksPair, spacer, createButton, saveButton, simButton, addNewRow);
 	}
 
 	public static boolean displayActuals() {

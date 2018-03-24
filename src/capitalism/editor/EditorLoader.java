@@ -57,19 +57,23 @@ public class EditorLoader {
 	private static EditableTimeStamp editableTimeStamp = null;
 
 	/**
-	 * Load the current project into the editor
+	 * Load the project with ID projectID into the editor
+	 * 
+	 * @param projectID
+	 *            the ID of the project to load
 	 */
-	public static void loadFromSimulation() {
+	public static void loadFromSimulation(int projectID) {
+		logger.debug("Loading the project with ID {}", projectID);
 		// start from scratch every time
 		commodityData = FXCollections.observableArrayList();
 		industryData = FXCollections.observableArrayList();
 		socialClassData = FXCollections.observableArrayList();
-		
-		// First fetch the commodities from the simulation into the commodity table
-		commodityData = EditableCommodity.editableCommodities();
+
+		// First fetch the commodities from the project into the commodity table
+		commodityData = EditableCommodity.editableCommodities(projectID);
 
 		// Next, load the industries
-		industryData = EditableIndustry.editableIndustries();
+		industryData = EditableIndustry.editableIndustries(projectID);
 
 		// Now add the productive stocks that these industries own
 		for (EditableIndustry industry : industryData) {
@@ -81,10 +85,10 @@ public class EditorLoader {
 		// Populate the EditableStocks from the simulation.
 		// The money and sales stocks were created by the EditableIndustry constructor
 		// We just added the productive stocks
-		EditableIndustry.loadAllStocksFromSimulation();
+		EditableIndustry.loadAllStocksFromSimulation(projectID);
 
 		// load the social classes
-		socialClassData = EditableSocialClass.editableSocialClasses();
+		socialClassData = EditableSocialClass.editableSocialClasses(projectID);
 		// Add the consumption stocks that these industries classes own
 		for (EditableSocialClass socialClass : socialClassData) {
 			for (EditableCommodity commodity : commodityData) {
@@ -92,10 +96,10 @@ public class EditorLoader {
 					socialClass.addConsumptionStock(commodity.getName());
 			}
 		}
-		EditableSocialClass.loadAllStocksFromSimulation();
-		Editor.buildTables();
+		EditableSocialClass.loadAllStocksFromSimulation(projectID);
+		Editor.makeAllTables();
 	}
-	
+
 	/**
 	 * Create a skeleton project, which contains the minimum necessary for a viable project
 	 */
@@ -125,9 +129,9 @@ public class EditorLoader {
 		EditableIndustry dI = EditableIndustry.makeIndustry("Department I", "Means of production", 0);
 		EditableIndustry dII = EditableIndustry.makeIndustry("Departmment II", "Necessities", 0);
 		industryData.addAll(dI, dII);
-		Editor.buildTables();
+		Editor.makeAllTables();
 	}
-	
+
 	/**
 	 * Wrap the editor's observable entities in an instance of oneProject, for exporting or importing
 	 * 
@@ -137,7 +141,7 @@ public class EditorLoader {
 	 */
 	public static OneProject wrappedOneProject() {
 		OneProject oneProject = new OneProject();
-		editableTimeStamp=new EditableTimeStamp();
+		editableTimeStamp = new EditableTimeStamp();
 		ArrayList<Commodity> commodities = new ArrayList<Commodity>();
 		ArrayList<Industry> industries = new ArrayList<Industry>();
 		ArrayList<SocialClass> socialClasses = new ArrayList<SocialClass>();
@@ -331,7 +335,6 @@ public class EditorLoader {
 		return productiveStock;
 	}
 
-
 	/**
 	 * @return the commodityData
 	 */
@@ -352,6 +355,5 @@ public class EditorLoader {
 	public static ObservableList<EditableSocialClass> getSocialClassData() {
 		return socialClassData;
 	}
-	
-	
+
 }

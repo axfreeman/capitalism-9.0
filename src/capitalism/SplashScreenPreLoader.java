@@ -40,8 +40,8 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
-public class ApplicationPreloader extends Preloader {
-	@SuppressWarnings("unused") private static final Logger logger = LogManager.getLogger(ApplicationPreloader.class);
+public class SplashScreenPreLoader extends Preloader {
+	private static final Logger logger = LogManager.getLogger(SplashScreenPreLoader.class);
 
 	private static Stage preloaderStage;
 	private static Scene scene;
@@ -50,13 +50,13 @@ public class ApplicationPreloader extends Preloader {
 
 	private static Label progress;
 
-	public ApplicationPreloader() {
+	public SplashScreenPreLoader() {
 		// Constructor is called before everything.
-		System.out.println("Preloader constructor called, thread: " + Thread.currentThread().getName());
+		logger.debug("Preloader constructor called, thread: " + Thread.currentThread().getName());
 	}
 
 	@Override public void init() throws Exception {
-		System.out.println("Preloader#init (could be used to initialize preloader view), thread: " + Thread.currentThread().getName());
+		logger.debug("Preloader#init, thread: " + Thread.currentThread().getName());
 
 		// If preloader has complex UI its initialization can be done in MyPreloader#init
 		Platform.runLater(() -> {
@@ -68,18 +68,18 @@ public class ApplicationPreloader extends Preloader {
 	@Override public void start(Stage primaryStage) throws Exception {
 		System.out.println("Preloader#start (showing preloader stage), thread: " + Thread.currentThread().getName());
 
-		ApplicationPreloader.preloaderStage = primaryStage;
+		SplashScreenPreLoader.preloaderStage = primaryStage;
 		progress = new Label("Watch this space");
 		progress.setFont(new Font(36));
 		progress.setTextFill(Color.ORANGERED);
 
 		economy = new ImageView("worldeconomy.png");
 		economy.setFitWidth(ViewManager.windowWidth);
-		economy.setFitHeight(ViewManager.windowHeight);
+		economy.setFitHeight(ViewManager.windowHeight+10);
 		root = new StackPane(economy);
 		root.getChildren().add(progress);
-		progress.setTranslateX(120);
-		progress.setTranslateY(-30);
+		progress.setTranslateX(110);
+		progress.setTranslateY(-50);
 		root.setAlignment(Pos.CENTER);
 
 		scene = new Scene(root, ViewManager.windowWidth, ViewManager.windowHeight);
@@ -131,22 +131,20 @@ public class ApplicationPreloader extends Preloader {
 	}
 
 	/**
+	 * Set the progress label
+	 * 
+	 * @param the
+	 *            text of the progress label
+	 */
+	public static void setProgress(String text) {
+		progress.setText(text);
+	}
+
+	/**
 	 * Preloader animation
 	 */
 	public static void animatePreloader() {
-		System.out.println("Preloader#fadePreloader, thread: " + Thread.currentThread().getName());
-
-		// Creating a rotate transition
-		// RotateTransition rotateTransition = new RotateTransition();
-		// rotateTransition.setDuration(Duration.millis(1000));
-		// rotateTransition.setNode(progress);
-		// rotateTransition.setByAngle(360);
-		// rotateTransition.setCycleCount(50);
-		// rotateTransition.setAutoReverse(false);
-
-		// FadeTransition ft = new FadeTransition(Duration.millis(5000), root);
-		// ft.setFromValue(1.0);
-		// ft.setToValue(0.0);
+		logger.debug("Preloader#fadePreloader, thread: " + Thread.currentThread().getName());
 
 		ScaleTransition scaleTransition = new ScaleTransition();
 		scaleTransition.setDuration(Duration.millis(3000));
