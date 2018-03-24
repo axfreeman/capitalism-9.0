@@ -57,7 +57,7 @@ public class XMLStuff {
 			JAXBContext jaxbContext = JAXBContext.newInstance(OneProject.class);
 			jaxbUnmarshaller = jaxbContext.createUnmarshaller();
 			OneProject oneProject = (OneProject) jaxbUnmarshaller.unmarshal(file);
-			oneProject.sendToDatabase();
+			oneProject.importFromEditorToDatabase();
 		} catch (ValidationException r) {
 			Dialogues.alert(logger, "The file was invalid because {}", r.getMessage());
 			return;

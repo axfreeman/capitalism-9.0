@@ -75,7 +75,7 @@ public class SplashScreenPreLoader extends Preloader {
 
 		economy = new ImageView("worldeconomy.png");
 		economy.setFitWidth(ViewManager.windowWidth);
-		economy.setFitHeight(ViewManager.windowHeight+10);
+		economy.setFitHeight(ViewManager.windowHeight + 10);
 		root = new StackPane(economy);
 		root.getChildren().add(progress);
 		progress.setTranslateX(110);
@@ -133,8 +133,8 @@ public class SplashScreenPreLoader extends Preloader {
 	/**
 	 * Set the progress label
 	 * 
-	 * @param the
-	 *            text of the progress label
+	 * @param text
+	 *            the text of the progress label
 	 */
 	public static void setProgress(String text) {
 		progress.setText(text);
@@ -147,7 +147,7 @@ public class SplashScreenPreLoader extends Preloader {
 		logger.debug("Preloader#fadePreloader, thread: " + Thread.currentThread().getName());
 
 		ScaleTransition scaleTransition = new ScaleTransition();
-		scaleTransition.setDuration(Duration.millis(3000));
+		scaleTransition.setDuration(Duration.millis(3500));
 		scaleTransition.setNode(progress);
 		scaleTransition.setByY(1.2);
 		scaleTransition.setByX(1.2);

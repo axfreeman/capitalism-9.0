@@ -50,6 +50,7 @@ public class EditableSocialClass {
 	private static final Logger logger = LogManager.getLogger("EditableSocialClass");
 
 	private StringProperty name;
+	private DoubleProperty size;
 	private DoubleProperty participationRatio;
 	private DoubleProperty revenue;
 	private EditableStock money;
@@ -57,7 +58,8 @@ public class EditableSocialClass {
 	private HashMap<String, EditableStock> consumptionStocks;
 
 	public enum ESC_ATTRIBUTE {
-		NAME("Class Name"), PR("Participation Ratio"), REVENUE("Revenue"), MONEY("Money"), SALES("Sales Inventory"), CONSUMPTION("Consumer Goods");
+		NAME("Class Name"), SIZE("Population"), PR("Participation Ratio"), REVENUE("Revenue"), MONEY("Money"), SALES("Sales Inventory"), CONSUMPTION(
+				"Consumer Goods");
 		protected String text;
 
 		private ESC_ATTRIBUTE(String text) {
@@ -71,6 +73,7 @@ public class EditableSocialClass {
 	public EditableSocialClass() {
 		name = new SimpleStringProperty();
 		revenue = new SimpleDoubleProperty();
+		size=new SimpleDoubleProperty();
 		participationRatio = new SimpleDoubleProperty();
 		consumptionStocks = new HashMap<String, EditableStock>();
 	}
@@ -80,13 +83,16 @@ public class EditableSocialClass {
 	 * 
 	 * @param name
 	 *            the name of the social Class
+	 * @param size
+	 *            the size(population) of this social class
 	 * @param participationRatio
 	 *            the proportion of this class that sells labour power
 	 * @return the populated EditableSocialClass
 	 */
-	public static EditableSocialClass makeSocialClass(String name, double participationRatio) {
+	public static EditableSocialClass makeSocialClass(String name,  double size, double participationRatio) {
 		EditableSocialClass socialClass = new EditableSocialClass();
 		socialClass.setName(name);
+		socialClass.setSize(size);
 		socialClass.setParticipationRatio(participationRatio);
 		socialClass.money = new EditableStock("Money");
 		socialClass.sales = new EditableStock("Labour Power");
@@ -110,11 +116,12 @@ public class EditableSocialClass {
 	 */
 	public static ObservableList<EditableSocialClass> editableSocialClasses(int projectID) {
 		ObservableList<EditableSocialClass> result = FXCollections.observableArrayList();
-		for (SocialClass c : SocialClass.all(projectID, Simulation.timeStampIDCurrent())) {
+		for (SocialClass sc : SocialClass.all(projectID, Simulation.timeStampIDCurrent())) {
 			EditableSocialClass oneRecord = new EditableSocialClass();
-			oneRecord.setName(c.name());
-			oneRecord.setParticipationRatio(c.getparticipationRatio());
-			oneRecord.setRevenue(c.getRevenue());
+			oneRecord.setName(sc.name());
+			oneRecord.setSize(sc.getSize());
+			oneRecord.setParticipationRatio(sc.getparticipationRatio());
+			oneRecord.setRevenue(sc.getRevenue());
 			oneRecord.sales = new EditableStock("Labour Power");
 			oneRecord.money = new EditableStock("Money");
 			result.add(oneRecord);
@@ -136,6 +143,8 @@ public class EditableSocialClass {
 		case PR:
 			participationRatio.set(d);
 			break;
+		case SIZE:
+			size.set(d);
 		case REVENUE:
 			revenue.set(d);
 			break;
@@ -159,6 +168,8 @@ public class EditableSocialClass {
 		switch (attribute) {
 		case PR:
 			return participationRatio.get();
+		case SIZE:
+			return size.get();
 		case REVENUE:
 			return participationRatio.get();
 		case MONEY:
@@ -310,6 +321,8 @@ public class EditableSocialClass {
 		switch (attribute) {
 		case PR:
 			return participationRatio.asObject();
+		case SIZE:
+			return size.asObject();
 		case REVENUE:
 			return revenue.asObject();
 		case SALES:
@@ -407,7 +420,6 @@ public class EditableSocialClass {
 				}
 			});
 		}
-
 		private String getString() {
 			String value = getItem() == null ? "" : getItem().toString();
 			return value;
@@ -527,6 +539,21 @@ public class EditableSocialClass {
 	public void setParticipationRatio(double participationRatio) {
 		this.participationRatio.set(participationRatio);
 	}
+	/**
+	 * @return the size
+	 */
+	public double getSize() {
+		return size.get();
+	}
+
+	/**
+	 * @param size
+	 *            the size to set
+	 */
+	public void setSize(double size) {
+		this.size.set(size);
+	}
+
 
 	/**
 	 * @return the revenue

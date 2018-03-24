@@ -71,12 +71,12 @@ public class Editor extends VBox {
 	private static VBox industryBox = null;
 	private static VBox socialClassBox = null;
 
+	private static TextField commodityField;
 	private static TextField industryField;
 	private static TextField industryCommodityField;
-	private static TextField industryOutputField;
+	private static NumericField industryOutputField;
 	private static TextField socialClassField;
-	private static TextField socialClassSizeField;
-	private static TextField commodityField;
+	private static NumericField socialClassSizeField;
 
 	private static RadioButtonPair commodityFunction;
 	private static RadioButtonPair commodityOrigin;
@@ -226,6 +226,7 @@ public class Editor extends VBox {
 		socialClassConsumptionSuperColumn.setMaxWidth(Double.MAX_VALUE);
 		socialClassTable.getColumns().add(socialClassConsumptionSuperColumn);
 
+		socialClassTable.getColumns().add(EditableSocialClass.makeDoubleColumn(ESC_ATTRIBUTE.SIZE));
 		socialClassTable.getColumns().add(EditableSocialClass.makeDoubleColumn(ESC_ATTRIBUTE.PR));
 		socialClassTable.getColumns().add(EditableSocialClass.makeDoubleColumn(ESC_ATTRIBUTE.REVENUE));
 		socialClassTable.getColumns().add(EditableSocialClass.makeDoubleColumn(ESC_ATTRIBUTE.SALES));
@@ -463,7 +464,15 @@ public class Editor extends VBox {
 			if (isSocialClass(socialClassField.getText())) {
 				socialClassDialogueBox.warn("A social class with this name already exists");
 			}
-			EditableSocialClass newsocialClass = EditableSocialClass.makeSocialClass(socialClassField.getText(), 0);
+			double socialClassSize;
+			try {
+				socialClassSize=Double.parseDouble(socialClassSizeField.getText());
+			}catch (Exception e) {
+				Dialogues.info("Number Required", "You should enter a number for the size of this class, even if it is zero");
+				return;
+			}
+			EditableSocialClass newsocialClass = EditableSocialClass.makeSocialClass(
+					socialClassField.getText(),socialClassSize, 0);
 			EditorLoader.socialClassData.add(newsocialClass);
 			socialClassTable.refresh();
 			socialClassDialogueBox.hideDialogue();

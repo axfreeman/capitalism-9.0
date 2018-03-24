@@ -86,9 +86,9 @@ public class DisplayControlsBox extends HBox {
 			"Hide Log Window", "Show Log Window");
 	private static ImageButton decimalsButton = new ImageButton("more.png", null, new DecimalsCommand(), 
 			"More digits after the decimal","Fewer digits after the decimal");
-	private static ImageButton dataLoadButton = new ImageButton("loadbw.png", null, new LoadCommand(), 
+	private static ImageButton dataLoadButton = new ImageButton("upload.png", null, new LoadCommand(), 
 			"", "Load data from your computer");
-	private static ImageButton dataDumpButton = new ImageButton("savebw.png", null, new DumpCommand(), 
+	private static ImageButton dataDumpButton = new ImageButton("download.png", null, new DumpCommand(), 
 			"", "Save the database to your computer");
 	private static ImageButton createProjectButton =new ImageButton("edit.png",null, new ShowEditorCommand(),
 			"Create a new project","Create a new project (under development)");

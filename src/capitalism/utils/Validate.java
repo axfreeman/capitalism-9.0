@@ -122,17 +122,17 @@ public class Validate {
 		} else {
 			valid = false;
 		}
-		
+
 		if (inputCompleteness(projectID)) {
-			Reporter.report(logger, 2, "Passed industry product test");
+			Reporter.report(logger, 2, "Passed input completeness test");
 		} else {
 			valid = false;
 		}
 
 		if (commodityOriginTest(projectID)) {
 			Reporter.report(logger, 2, "Passed origin test");
-		}else {
-			valid=false;
+		} else {
+			valid = false;
 		}
 		return valid;
 	}
@@ -167,6 +167,7 @@ public class Validate {
 
 	/**
 	 * there should be a Project record for every project that is referenced by any other table in the database
+	 * 
 	 * @return true if the project passes the test, false otherwise
 	 */
 	public static boolean projectIntegrity() {
@@ -271,7 +272,9 @@ public class Validate {
 
 	/**
 	 * A commodity called Labour Power must exist at all times
-	 * @param projectID the ID of the project being tested
+	 * 
+	 * @param projectID
+	 *            the ID of the project being tested
 	 * @return true if a commodity called Labour Power exists, false otherwise
 	 */
 	private static boolean labourPowerTest(int projectID) {
@@ -284,15 +287,19 @@ public class Validate {
 		}
 		return valid;
 	}
-	
+
 	/**
 	 * Every commodity origin must be defined
+	 * 
+	 * @param projectID
+	 *            the ID of the project whose commodity origins are to be tested
+	 * @return true if the project is valid, false otherwise
 	 */
 	private static boolean commodityOriginTest(int projectID) {
 		boolean valid = true;
-		for (Commodity commodity:Commodity.all()) {
-			if (commodity.getOrigin()==null) {
-				Reporter.report(logger, 2, "Validation error: the origin of the commodity %s in project %d is undefined", commodity.name(),projectID);
+		for (Commodity commodity : Commodity.all()) {
+			if (commodity.getOrigin() == null) {
+				Reporter.report(logger, 2, "Validation error: the origin of the commodity %s in project %d is undefined", commodity.name(), projectID);
 				valid = false;
 			}
 		}
@@ -322,7 +329,9 @@ public class Validate {
 
 	/**
 	 * Every stock must belong to either an industry or a social class that exists.
-	 * @param projectID the ID of the project being tested
+	 * 
+	 * @param projectID
+	 *            the ID of the project being tested
 	 * @return true if a commodity called Labour Power exists, false otherwise
 	 * 
 	 */
@@ -362,9 +371,11 @@ public class Validate {
 
 	/**
 	 * every stock must have a stock type in the enum STOCKTYPE
-	 * @param projectID the ID of the project being tested
+	 * 
+	 * @param projectID
+	 *            the ID of the project being tested
 	 * @return true if a commodity called Labour Power exists, false otherwise
-
+	 * 
 	 */
 	private static boolean validStockType(int projectID) {
 		boolean valid = true;
@@ -415,26 +426,28 @@ public class Validate {
 		}
 		return valid;
 	}
-	
+
 	/**
 	 * Every Industry must have exactly one stock of every possible productive input
-	 * @param projectID the ID of the project to check
+	 * 
+	 * @param projectID
+	 *            the ID of the project to check
 	 * @return true if the test completes successfully, false if any errors are discovered
 	 */
 
 	public static boolean inputCompleteness(int projectID) {
 		boolean valid = true;
-		for (Industry ind:Industry.all(projectID)) {
-			for (Commodity c: Commodity.currentByFunction(projectID, ind.getTimeStampID(), FUNCTION.PRODUCTIVE_INPUT)) {
-				Stock s=Stock.single(projectID, ind.getTimeStampID(), ind.name(), c.name(), STOCKTYPE.PRODUCTIVE.text());
-				if (s==null) {
+		for (Industry ind : Industry.all(projectID)) {
+			for (Commodity c : Commodity.currentByFunction(projectID, ind.getTimeStampID(), FUNCTION.PRODUCTIVE_INPUT)) {
+				Stock s = Stock.single(projectID, ind.getTimeStampID(), ind.name(), c.name(), STOCKTYPE.PRODUCTIVE.text());
+				if (s == null) {
 					Reporter.report(logger, 2, "Validation error: the industry %s does not have a productive stock of the commodity %s at timeStamp %d",
-							ind.name(),c.name(),ind.getTimeStampID());
+							ind.name(), c.name(), ind.getTimeStampID());
 					valid = false;
 				}
 			}
 		}
-		
+
 		return valid;
 	}
 

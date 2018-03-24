@@ -120,8 +120,8 @@ public class EditorLoader {
 
 		// Create the social classes Capitalists, Workers and their stocks
 		Reporter.report(logger, 1, "Creating the minimum social Classes");
-		EditableSocialClass capitalists = EditableSocialClass.makeSocialClass("Capitalists", 0);
-		EditableSocialClass workers = EditableSocialClass.makeSocialClass("Workers", 1);
+		EditableSocialClass capitalists = EditableSocialClass.makeSocialClass("Capitalists",0, 0);
+		EditableSocialClass workers = EditableSocialClass.makeSocialClass("Workers",0, 1);
 		socialClassData.addAll(workers, capitalists);
 
 		// Create the two industries means of production and necessities and their stocks
@@ -176,8 +176,8 @@ public class EditorLoader {
 			pc.setTimeStampID(1);
 			pc.setName(c.getName());
 			pc.setTurnoverTime(c.getTurnoverTime());
-			pc.setUnitValue(pc.getUnitValue());
-			pc.setUnitPrice(pc.getUnitPrice());
+			pc.setUnitValue(c.getUnitValue());
+			pc.setUnitPrice(c.getUnitPrice());
 			pc.setFunction(Commodity.FUNCTION.function(c.getFunction()));
 			pc.setOrigin(Commodity.ORIGIN.origin(c.getOrigin()));
 			logger.debug("Stashing the commodity called {} ", pc.name());
@@ -215,7 +215,8 @@ public class EditorLoader {
 			psc.setTimeStamp(1);
 			psc.setName(sc.getName());
 			psc.setparticipationRatio(sc.getParticipationRatio());
-			psc.setRevenue(psc.getRevenue());
+			psc.setRevenue(sc.getRevenue());
+			psc.setSize(sc.getSize());
 			logger.debug("Stashing the social class called {} together with its money and sales stocks", psc.name());
 			socialClasses.add(psc);
 			Stock moneyStock = moneyStockBuilder(sc.getName(), sc.getDouble(ESC_ATTRIBUTE.MONEY), OWNERTYPE.CLASS);

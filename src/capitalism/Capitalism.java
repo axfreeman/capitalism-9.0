@@ -105,6 +105,8 @@ public class Capitalism extends Application {
 		logger.debug("Starting simulation after {} milliseconds",Reporter.timeSinceStart());
 
 		if (!Simulation.startup()) {
+			logger.debug("The main simulation could not start");
+			return;
 			// TODO we may wish to take some other action if there is a database flaw
 		}
 		SplashScreenPreLoader.setProgress("Initialising the display");

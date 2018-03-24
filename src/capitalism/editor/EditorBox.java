@@ -65,11 +65,15 @@ public class EditorBox extends VBox {
 		textArea.setTextAlignment(TextAlignment.CENTER);
 		final String cssBackground = "-fx-background-color: LIGHTSTEELBLUE;\n"
 				+ "-fx-border-color: silver;\n"
-				+ "-fx-border-width: 3;\n";
+				+ "-fx-border-width: 3;\n"
+				+ "-fx-border-radius: 10 10 10 10;\n" + 
+				"  -fx-background-radius: 10 10 10 10;";
+
 		// setStyle(cssBackground);
-		final String cssTextArea = "-fx-background-color: #F4F4F4;\n"
-				+ "-fx-border-color: silver;\n"
-				+ "-fx-border-width: 1;\n";
+		//final String cssTextArea = "-fx-background-color: #F4F4F4;\n"
+		//		+ "-fx-border-color: silver;\n"
+		//		+ "-fx-border-width: 1;\n";
+
 		textArea.setStyle(cssBackground);
 		textArea.setPadding(new Insets(5, 5, 5, 5));
 		DropShadow dropShadow = new DropShadow();
@@ -77,6 +81,9 @@ public class EditorBox extends VBox {
 		dropShadow.setOffsetY(0.5);
 		dropShadow.setColor(Color.CADETBLUE);
 		textArea.setEffect(dropShadow);
+		
+		textArea.setTranslateX(-10);
+		textArea.setTranslateY(10);
 
 		dialogueContainer.getChildren().addAll(dialogueBox, textArea);
 		getChildren().addAll(table, dialogueContainer);

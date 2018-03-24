@@ -69,10 +69,10 @@ public class OneProject {
 	/**
 	 * Create a new project in the database from whatever has been loaded into this oneProject entity.
 	 */
-	public void sendToDatabase() {
+	public void importFromEditorToDatabase() {
 		// find the largest project so far. We will add the new project with a project numeber one greater than this
 		int maxProjectID = Project.maxProjectID();
-		Reporter.report(logger, 1, "Adding a new project with project number %d", maxProjectID + 1);
+		Reporter.report(logger, 1, "Importing a new project with project number %d", maxProjectID + 1);
 		Project.getEntityManager().getTransaction().begin();
 		project.setProjectID(maxProjectID+1);
 		project.setButtonState(ActionStates.lastState().text());
@@ -83,7 +83,7 @@ public class OneProject {
 		for (TimeStamp ts:timeStamps) {
 			ts.setProjectID(maxProjectID+1);
 			TimeStamp.getEntityManager().persist(ts);
-			logger.debug("Committing timeStamp with project ID {} and timeStampID {}", ts.getProjectID(), ts.getTimeStampID());
+			logger.debug("Importing timeStamp with project ID {} and timeStampID {}", ts.getProjectID(), ts.getTimeStampID());
 		}
 		TimeStamp.getEntityManager().getTransaction().commit();
 
@@ -92,22 +92,22 @@ public class OneProject {
 		SocialClass.getEntityManager().getTransaction().begin();
 		Stock.getEntityManager().getTransaction().begin();
 		for (Commodity c : commodities) {
-			logger.debug("Adding commodity called {}", c.name());
+			logger.debug("Importing commodity called {}", c.name());
 			c.setProjectID(maxProjectID+1);
 			Commodity.getEntityManager().persist(c);
 		}
 		for (Industry i: industries) {
-			logger.debug("Adding industry called {}", i.name());
+			logger.debug("Importing industry called {}", i.name());
 			i.setProjectID(maxProjectID+1);
 			Industry.getEntityManager().persist(i);
 		}
 		for (SocialClass sc : socialClasses) {
-			logger.debug("Adding socialClass called {}", sc.name());
+			logger.debug("Importing socialClass called {}", sc.name());
 			sc.setProjectID(maxProjectID+1);
 			SocialClass.getEntityManager().persist(sc);
 		}
 		for (Stock s : stocks) {
-			logger.debug("Adding stock called {}", s.name());
+			logger.debug("Importing stock called {}", s.name());
 			s.setProjectID(maxProjectID+1);
 			Stock.getEntityManager().persist(s);
 		}

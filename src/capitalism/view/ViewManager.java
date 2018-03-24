@@ -107,7 +107,7 @@ public class ViewManager {
 		
 		// construct the root window, a simple container with almost no functionality
 		// height has to allow for the control bar. TODO can we set the window height directly?
-		rootLayout.setPrefHeight(windowHeight-20);
+		rootLayout.setPrefHeight(windowHeight-25);
 		rootLayout.setPrefWidth(windowWidth);
 		Scene scene = new Scene(rootLayout);
 		String css = Editor.class.getResource("/SimulationTheme.css").toExternalForm();

@@ -1,9 +1,9 @@
-# Capitalism 9.0 announcements 3/24/2018 5:03:12 AM 
+# Capitalism 9.0 announcements 3/24/2018 5:47:20 PM 
 
+Watershed version
 Load, edit and save functional.
-But the saved project won't always run, because there is insufficient validation.
-This comes next.
-Benchmark projects not yet re-tested fully.
+Saved projects run
+Benchmark projects not yet re-tested fully
 User Guide is quite far behind, though still useful.
 New Executable.
 

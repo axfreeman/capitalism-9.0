@@ -411,14 +411,18 @@ public class EditableIndustry {
 
 	public void loadStocksFromSimulation(int projectID) {
 		Industry persistentIndustry = Industry.single(projectID, Simulation.timeStampIDCurrent(), name.get());
-		Stock moneyStock = persistentIndustry.moneyStock();
 
 		// A simple dodge: for money and sales stocks, the desired and actual quantity are the same
+		Stock moneyStock = persistentIndustry.moneyStock();
+		logger.debug("Setting the money stock of industry {} to {}", name.get(), moneyStock.getQuantity());
 		money.setActualQuantity(moneyStock.getQuantity());
 		money.setDesiredQuantity(moneyStock.getQuantity());
+
 		Stock salesStock = persistentIndustry.salesStock();
+		logger.debug("Setting the sales stock of industry {} to {}", name.get(), salesStock.getQuantity());
 		sales.setActualQuantity(salesStock.getQuantity());
 		sales.setDesiredQuantity(moneyStock.getQuantity());
+
 		for (Stock productiveStock : persistentIndustry.productiveStocks()) {
 			logger.debug("Loading the productiveStock called {} belonging to the industry called {}", productiveStock.name(), name.get());
 			logger.debug("Actual quantity is {} and desired quantity is {}", productiveStock.getQuantity(), productiveStock.getProductionQuantity());

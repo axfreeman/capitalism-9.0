@@ -39,7 +39,7 @@ public class EditorManager {
 		Reporter.report(logger, 0, "Create Editor Window");
 		editorStage = new Stage();
 		editor = new Editor();
-		editorScene = new Scene(editor, ViewManager.windowWidth, ViewManager.windowHeight);
+		editorScene = new Scene(editor, ViewManager.windowWidth, ViewManager.windowHeight-25);
 		
 		// style the Editor window (and in particular, the table columns)
 		String css = Editor.class.getResource("/SimulationTheme.css").toExternalForm();

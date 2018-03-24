@@ -225,12 +225,15 @@ public class Demand implements Command {
 	public void computeSocialClassDemand() {
 		Reporter.report(logger, 1, "Compute demand from social classes");
 		for (SocialClass sc:SocialClass.all(Simulation.projectIDCurrent(),Simulation.timeStampIDCurrent())) {
-			Reporter.report(logger, 2, "Calculating demand from the social Class [%s] whose revenue is $%.0f", 
+			Reporter.report(logger, 2, 
+					"Calculating demand from the social Class [%s] whose revenue is $%.0f", 
 					sc.name(),sc.getRevenue());
 			for (Stock s:sc.consumptionStocks()) {
 				double demand = sc.getRevenue()*s.getConsumptionCoefficient();
-				Reporter.report(logger, 3, "This class's demand for the commodity [%s] is %.0f%% of its revenue, which is $%.0f", 
-						s.name(), s.getConsumptionCoefficient()*100,demand);
+				Reporter.report(logger, 3, 
+						"This class's demand for the commodity [%s] is %.0f%% of its revenue, which is $%.0f", 
+						s.name(), 
+						s.getConsumptionCoefficient()*100,demand);
 				s.setReplenishmentDemand(demand);
 			}
 		}
