@@ -32,6 +32,13 @@ import capitalism.Capitalism;
 import capitalism.reporting.Dialogues;
 import capitalism.reporting.Reporter;
 
+/**
+ * This class handles the interaction with the H2 database. It is encapsulated, so
+ * another JPA-compliant database can be switched in here and, hopefully, only the SQL
+ * initialising commands need to be changed.
+ * TODO implement the SQL commands with JQL
+ */
+
 public class DBHandler {
 	private static final Logger logger = LogManager.getLogger(DBHandler.class);
 	private static Connection conn;
@@ -44,7 +51,6 @@ public class DBHandler {
 	 * assumes the connection is already open
 	 * 
 	 */
-
 	public void restart() {
 		try {
 			conn.close();

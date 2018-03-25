@@ -77,5 +77,4 @@ public class EditorManager {
 	public static Stage getEditorStage() {
 		return editorStage;
 	}
-	
 }

@@ -1,0 +1,14 @@
+<h1>Welcome to the Capitalism App</h1>
+ 
+<p>This is the editor screen, which lets you create and modify projects. You can exit at any time by pressing the > button.</p>
+
+<p>To create a new commodity, press the '+' button. When you have created your new commodity, you can edit its details in the table above.</p>
+
+<p>Or, you can load a simulation that has already been defined, and either modify it or simply run it, to see what it does.</p>
+
+<p>A commodity is anything that is bought and sold. Some theories adopt stricter definitions; this App has space for you to provide your own definition.</p>
+
+<p>It distinguishes four types of commodities. A commodity is either destined to be consumed, in which case its 'function' is a 'Consumer Good', or to be used to produce other commodities, in which case its function is a 'Productive Input'.</p>
+
+<p>A commodity can either be produced by an industry, in which case its 'origin' is 'Industrial', or it can be produced by a social class, in which case its origin is 'social'. A commodity may not be produced at all, for example some types of money.</p>
+

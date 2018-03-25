@@ -32,6 +32,11 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+/**
+ * Experimental class to be developed, possibly, into a docking help window
+ * Currently (25/3/18) not in use, but tested to hold a fixed position in the calling window
+ */
+
 public class HelpWindow {
 	private static Stage helpStage;
 	final static WebView browser = new WebView();
@@ -39,7 +44,7 @@ public class HelpWindow {
 	private static Stage editorStage;
 
 	static ChangeListener<Number> widthListener = (observable, oldValue, newValue) -> {
-		helpStage.setX(editorStage.getX() + editorStage.getWidth() / 2);
+		helpStage.setX(editorStage.getX() + editorStage.getHeight() / 2);
 	};
 	static ChangeListener<Number> heightListener = (observable, oldValue, newValue) -> {
 		helpStage.setY(editorStage.getY() + editorStage.getHeight() / 2);

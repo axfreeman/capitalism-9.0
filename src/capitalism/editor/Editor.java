@@ -67,9 +67,9 @@ public class Editor extends VBox {
 	private static Tab industryTab = new Tab("Industries");
 	private static Tab socialClassTab = new Tab("Classes");
 
-	private static VBox commodityBox = null;
-	private static VBox industryBox = null;
-	private static VBox socialClassBox = null;
+	private static EditorBox commodityBox = null;
+	private static EditorBox industryBox = null;
+	private static EditorBox socialClassBox = null;
 
 	private static TextField commodityField;
 	private static TextField industryField;
@@ -116,9 +116,9 @@ public class Editor extends VBox {
 	public Editor() {
 		buildDialogues();
 		// box for the commodity table
-		commodityBox = new EditorBox(commodityTable, commodityDialogueBox,Explanations.commodityText);
-		industryBox = new EditorBox(industryTable, industryDialogueBox,Explanations.industryText);
-		socialClassBox = new EditorBox(socialClassTable, socialClassDialogueBox,Explanations.socialClassText);
+		commodityBox = new EditorBox(commodityTable, commodityDialogueBox,"commodityHelp.txt",Explanations.commodityText);
+		industryBox = new EditorBox(industryTable, industryDialogueBox,"industryHelp.txt",Explanations.industryText);
+		socialClassBox = new EditorBox(socialClassTable, socialClassDialogueBox,"socialClassHelp.txt",Explanations.socialClassText);
 		
 		// the tabbed pane
 		tabPane = new TabPane();
@@ -294,8 +294,7 @@ public class Editor extends VBox {
 		double maxHeight=commodityBox.getMaxHeight();
 		logger.debug("Heights: actual {}, preferred {}, min {}, max{}",actualHeight,prefHeight,minHeight,maxHeight);
 	}
-	
-	
+		
 	/**
 	 * Set the table heights to accomodate the number of rows
 	 * TODO retrieve the heights dynamically
@@ -548,4 +547,34 @@ public class Editor extends VBox {
 		}
 		return sb.toString();
 	}
+	
+	/**
+	 * @return the Xposition where the help window should go
+	 * 
+	 */
+	public double xHelpPosition() {
+		return 0;
+	}
+
+	/**
+	 * @return the commodityBox
+	 */
+	public static EditorBox getCommodityBox() {
+		return commodityBox;
+	}
+
+	/**
+	 * @return the industryBox
+	 */
+	public static EditorBox getIndustryBox() {
+		return industryBox;
+	}
+
+	/**
+	 * @return the socialClassBox
+	 */
+	public static EditorBox getSocialClassBox() {
+		return socialClassBox;
+	}
+
 }

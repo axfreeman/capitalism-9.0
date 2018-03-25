@@ -18,7 +18,7 @@
 *   along with Capsim.  If not, see <http://www.gnu.org/licenses/>.
 */package capitalism.editor.command;
 
-import capitalism.help.HelpWindow;
+import capitalism.editor.Editor;
 import capitalism.view.command.DisplayCommand;
 import capitalism.view.custom.ImageButton;
 
@@ -31,9 +31,9 @@ public class HelpCommand implements DisplayCommand {
 	@Override public void execute(ImageButton caller) {
 		caller.switchStates();
 		if (caller.getState()) {
-			HelpWindow.hideHelpWindow();
+			Editor.getCommodityBox().hideHelp();
 		}else {
-			HelpWindow.showHelpWindow();
+			Editor.getCommodityBox().showHelp();
 		}
 	}
 }
