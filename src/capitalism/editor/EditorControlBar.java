@@ -22,11 +22,12 @@ package capitalism.editor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import capitalism.editor.command.AddRowCommand;
+import capitalism.editor.command.HelpCommand;
+import capitalism.editor.command.SaveEditorWindowCommand;
+import capitalism.editor.command.SimCommand;
 import capitalism.model.Project;
-import capitalism.view.command.AddRowCommand;
 import capitalism.view.command.CreateCommand;
-import capitalism.view.command.SaveEditorWindowCommand;
-import capitalism.view.command.SimCommand;
 import capitalism.view.custom.ImageButton;
 import capitalism.view.custom.RadioButtonPair;
 import javafx.collections.ObservableList;
@@ -79,6 +80,13 @@ public class EditorControlBar extends HBox {
 			new SaveEditorWindowCommand(),
 			"Save the contents of the editor window to a file on your computer",
 			"Save the contents of the editor window to a file on your computer");
+	private static ImageButton helpButton = new ImageButton(
+			"help.png",
+			"unhelp.png",
+			new HelpCommand(),
+			"Display the help window",
+			"Close the help window"
+			);
 	EventHandler<ActionEvent> btnSaveHandler = new EventHandler<ActionEvent>() {
 		@Override public void handle(ActionEvent t) {
 		}
@@ -94,7 +102,7 @@ public class EditorControlBar extends HBox {
 		currentProjectDescription = currentProject.getDescription();
 		projectCombo = new EditorProjectCombo(projects, currentProjectDescription);
 		// use spacer if need be to place one or more controls on the right of the bar
-		getChildren().addAll(projectCombo, stocksPair, spacer, createButton, saveButton, simButton, addNewRow);
+		getChildren().addAll(projectCombo, stocksPair, spacer, createButton, saveButton, simButton, addNewRow,helpButton);
 	}
 
 	public static boolean displayActuals() {

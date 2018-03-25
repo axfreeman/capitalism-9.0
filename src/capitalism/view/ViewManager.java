@@ -30,6 +30,7 @@ import capitalism.model.TimeStamp;
 import capitalism.view.custom.ActionButtonsBox;
 import capitalism.view.custom.ActionStates;
 import capitalism.view.custom.DisplayControlsBox;
+import capitalism.view.custom.SwitchableGraphicsGrid;
 import capitalism.view.custom.TimeStampView;
 import capitalism.view.custom.TimeStampViewItem;
 import capitalism.view.custom.TrackingControlsBox;

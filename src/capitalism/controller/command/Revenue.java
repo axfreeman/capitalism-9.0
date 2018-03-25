@@ -26,7 +26,7 @@ import capitalism.controller.Simulation;
 import capitalism.model.Industry;
 import capitalism.model.SocialClass;
 import capitalism.model.Stock;
-import capitalism.utils.Reporter;
+import capitalism.reporting.Reporter;
 import capitalism.view.custom.ActionStates;
 
 

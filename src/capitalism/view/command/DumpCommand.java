@@ -26,8 +26,8 @@ import org.apache.logging.log4j.Logger;
 
 import capitalism.controller.Simulation;
 import capitalism.model.OneProject;
+import capitalism.reporting.Dialogues;
 import capitalism.utils.DBHandler;
-import capitalism.utils.Dialogues;
 import capitalism.utils.XMLStuff;
 import capitalism.view.custom.ImageButton;
 

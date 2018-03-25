@@ -1,4 +1,4 @@
-package capitalism.view;
+package capitalism.view.custom;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

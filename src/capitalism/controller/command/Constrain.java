@@ -28,8 +28,8 @@ import capitalism.controller.Simulation;
 import capitalism.model.Commodity;
 import capitalism.model.Industry;
 import capitalism.model.Stock;
+import capitalism.reporting.Reporter;
 import capitalism.utils.MathStuff;
-import capitalism.utils.Reporter;
 import capitalism.view.custom.ActionStates;
 
 public class Constrain implements Command {

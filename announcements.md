@@ -1,4 +1,11 @@
-# Capitalism 9.0 announcements 3/24/2018 10:01:00 PM 
+# Capitalism 9.0 announcements 
+
+## 3/25/2018 5:46:53 AM 
+
+Prototype help window
+No new executable
+
+## 3/24/2018 10:01:00 PM 
 
 Fixed bug with Expanded Reproduction
 Fixed restart

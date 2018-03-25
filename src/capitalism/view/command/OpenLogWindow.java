@@ -1,6 +1,6 @@
 package capitalism.view.command;
 
-import capitalism.utils.Reporter;
+import capitalism.reporting.Reporter;
 import capitalism.view.custom.ImageButton;
 
 public class OpenLogWindow implements DisplayCommand{

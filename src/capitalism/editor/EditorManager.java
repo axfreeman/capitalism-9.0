@@ -22,7 +22,7 @@ package capitalism.editor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import capitalism.utils.Reporter;
+import capitalism.reporting.Reporter;
 import capitalism.view.ViewManager;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
@@ -70,4 +70,12 @@ public class EditorManager {
 	public static void closeEditorWindow() {
 		editorStage.close();
 	}
+
+	/**
+	 * @return the editorStage
+	 */
+	public static Stage getEditorStage() {
+		return editorStage;
+	}
+	
 }

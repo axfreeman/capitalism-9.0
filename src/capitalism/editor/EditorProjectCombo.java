@@ -23,7 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import capitalism.model.Project;
-import capitalism.utils.Dialogues;
+import capitalism.reporting.Dialogues;
 import capitalism.view.custom.ProjectCell;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;

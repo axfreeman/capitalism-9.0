@@ -29,6 +29,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import capitalism.Capitalism;
+import capitalism.reporting.Dialogues;
+import capitalism.reporting.Reporter;
 
 public class DBHandler {
 	private static final Logger logger = LogManager.getLogger(DBHandler.class);

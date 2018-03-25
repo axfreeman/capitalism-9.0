@@ -1,9 +1,9 @@
-package capitalism.view;
+package capitalism.view.custom;
 
 import java.util.HashMap;
 
 import capitalism.model.TimeStamp;
-import capitalism.view.custom.TrackingControlsBox;
+import capitalism.view.ViewManager;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;

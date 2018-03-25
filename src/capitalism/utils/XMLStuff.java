@@ -31,6 +31,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import capitalism.model.OneProject;
+import capitalism.reporting.Dialogues;
 
 public class XMLStuff {
 	private static final Logger logger = LogManager.getLogger("XML handler");

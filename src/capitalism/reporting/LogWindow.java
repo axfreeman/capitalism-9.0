@@ -18,7 +18,7 @@
 *   along with Capsim.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package capitalism.view.custom;
+package capitalism.reporting;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -26,8 +26,6 @@ import java.time.ZonedDateTime;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import capitalism.utils.Dialogues;
-import capitalism.utils.Reporter;
 import capitalism.view.ViewManager;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;

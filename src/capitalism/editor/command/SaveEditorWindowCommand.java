@@ -16,7 +16,7 @@
 *
 *   You should have received a copy of the GNU General Public License
 *   along with Capsim.  If not, see <http://www.gnu.org/licenses/>.
-*/package capitalism.view.command;
+*/package capitalism.editor.command;
 
 import java.io.File;
 
@@ -25,8 +25,9 @@ import org.apache.logging.log4j.Logger;
 
 import capitalism.editor.EditorLoader;
 import capitalism.model.OneProject;
-import capitalism.utils.Dialogues;
+import capitalism.reporting.Dialogues;
 import capitalism.utils.XMLStuff;
+import capitalism.view.command.DisplayCommand;
 import capitalism.view.custom.ImageButton;
 
 /**

@@ -27,6 +27,7 @@ import capitalism.model.Commodity;
 import capitalism.model.Commodity.FUNCTION;
 import capitalism.model.Stock.OWNERTYPE;
 import capitalism.model.Stock.STOCKTYPE;
+import capitalism.reporting.Reporter;
 import capitalism.model.Industry;
 import capitalism.model.Project;
 import capitalism.model.SocialClass;

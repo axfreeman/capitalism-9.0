@@ -33,8 +33,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import capitalism.controller.Simulation;
-import capitalism.utils.Dialogues;
-import capitalism.utils.Reporter;
+import capitalism.reporting.Dialogues;
+import capitalism.reporting.Reporter;
 import capitalism.utils.StringStuff;
 import capitalism.view.custom.ActionStates;
 import javafx.collections.FXCollections;

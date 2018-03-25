@@ -30,8 +30,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import capitalism.utils.Dialogues;
-import capitalism.utils.Reporter;
+import capitalism.reporting.Dialogues;
+import capitalism.reporting.Reporter;
 import capitalism.utils.Validate;
 import capitalism.view.custom.ActionStates;
 import capitalism.view.custom.DisplayControlsBox;

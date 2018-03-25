@@ -31,9 +31,9 @@ import capitalism.model.Industry;
 import capitalism.model.SocialClass;
 import capitalism.model.Stock;
 import capitalism.model.Commodity.ORIGIN;
-import capitalism.utils.Dialogues;
+import capitalism.reporting.Dialogues;
+import capitalism.reporting.Reporter;
 import capitalism.utils.MathStuff;
-import capitalism.utils.Reporter;
 import capitalism.view.custom.ActionStates;
 
 /**

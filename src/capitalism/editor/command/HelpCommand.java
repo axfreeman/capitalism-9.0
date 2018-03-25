@@ -16,18 +16,24 @@
 *
 *   You should have received a copy of the GNU General Public License
 *   along with Capsim.  If not, see <http://www.gnu.org/licenses/>.
-*/package capitalism.view.command;
+*/package capitalism.editor.command;
 
-import capitalism.editor.EditorManager;
+import capitalism.help.HelpWindow;
+import capitalism.view.command.DisplayCommand;
 import capitalism.view.custom.ImageButton;
 
 /**
- * This class, invoked via {@code EditorControlBar}, closes the editor window and gives control to the 
- * main simulation window.
- *  */
+ * This class, invoked via {@code EditorControlBar}, lets the user display the help window
+ */
 
-public class SimCommand implements DisplayCommand {
+public class HelpCommand implements DisplayCommand {
+
 	@Override public void execute(ImageButton caller) {
-		EditorManager.closeEditorWindow();
+		caller.switchStates();
+		if (caller.getState()) {
+			HelpWindow.hideHelpWindow();
+		}else {
+			HelpWindow.showHelpWindow();
+		}
 	}
 }

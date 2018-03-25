@@ -1,6 +1,7 @@
-package capitalism.view.command;
+package capitalism.editor.command;
 
 import capitalism.editor.EditorManager;
+import capitalism.view.command.DisplayCommand;
 import capitalism.view.custom.ImageButton;
 import javafx.stage.Stage;
 

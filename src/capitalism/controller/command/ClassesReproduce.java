@@ -25,7 +25,7 @@ import org.apache.logging.log4j.Logger;
 
 import capitalism.controller.Simulation;
 import capitalism.model.SocialClass;
-import capitalism.utils.Reporter;
+import capitalism.reporting.Reporter;
 import capitalism.view.custom.ActionStates;
 
 public class ClassesReproduce implements Command {

@@ -22,7 +22,7 @@ package capitalism;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import capitalism.utils.Reporter;
+import capitalism.reporting.Reporter;
 import capitalism.view.ViewManager;
 import javafx.animation.ScaleTransition;
 import javafx.application.Platform;

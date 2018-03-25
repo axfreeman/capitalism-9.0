@@ -40,8 +40,8 @@ import capitalism.model.Project;
 import capitalism.model.SocialClass;
 import capitalism.model.Stock;
 import capitalism.model.Stock.OWNERTYPE;
+import capitalism.reporting.Reporter;
 import capitalism.model.TimeStamp;
-import capitalism.utils.Reporter;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 

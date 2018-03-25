@@ -43,9 +43,9 @@ import org.apache.logging.log4j.Logger;
 
 import capitalism.controller.Simulation;
 import capitalism.model.Stock.VALUE_EXPRESSION;
-import capitalism.utils.Dialogues;
+import capitalism.reporting.Dialogues;
+import capitalism.reporting.Reporter;
 import capitalism.utils.MathStuff;
-import capitalism.utils.Reporter;
 import capitalism.view.TabbedTableViewer;
 import capitalism.view.ViewManager;
 import capitalism.view.custom.DisplayControlsBox;

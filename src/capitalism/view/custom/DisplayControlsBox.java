@@ -27,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 
 import capitalism.controller.Parameters;
 import capitalism.controller.Simulation;
+import capitalism.editor.command.ShowEditorCommand;
 import capitalism.model.Project;
 import capitalism.model.TimeStamp;
 import capitalism.view.command.ColourHintsCommand;
@@ -35,7 +36,6 @@ import capitalism.view.command.GraphicsCommand;
 import capitalism.view.command.LoadCommand;
 import capitalism.view.command.OpenLogWindow;
 import capitalism.view.command.RestartCommand;
-import capitalism.view.command.ShowEditorCommand;
 import capitalism.view.command.DumpCommand;
 import capitalism.view.command.ValueExpressionCommand;
 import javafx.beans.value.ChangeListener;

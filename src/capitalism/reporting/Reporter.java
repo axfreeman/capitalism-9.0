@@ -18,13 +18,12 @@
 *   along with Capsim.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package capitalism.utils;
+package capitalism.reporting;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import capitalism.Capitalism;
-import capitalism.view.custom.LogWindow;
 
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;

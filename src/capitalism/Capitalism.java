@@ -27,9 +27,10 @@ import com.sun.javafx.application.LauncherImpl;
 
 import capitalism.controller.Simulation;
 import capitalism.editor.EditorManager;
+import capitalism.help.HelpWindow;
+import capitalism.reporting.Dialogues;
+import capitalism.reporting.Reporter;
 import capitalism.utils.DBHandler;
-import capitalism.utils.Dialogues;
-import capitalism.utils.Reporter;
 import capitalism.view.ViewManager;
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -116,6 +117,7 @@ public class Capitalism extends Application {
 		ViewManager.getPrimaryStage().centerOnScreen();
         ViewManager.getPrimaryStage().show();
         EditorManager.buildEditorWindow();
+        HelpWindow.buildHelpWindow();
 		SplashScreenPreLoader.setProgress("Ready");
 		logger.debug("Finished initialising after {} milliseconds",Reporter.timeSinceStart());
         EditorManager.showEditorWindow();

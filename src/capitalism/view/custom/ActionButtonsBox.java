@@ -27,7 +27,7 @@ import org.apache.logging.log4j.Logger;
 
 import capitalism.controller.command.OnePeriod;
 import capitalism.model.Project;
-import capitalism.utils.Dialogues;
+import capitalism.reporting.Dialogues;
 import capitalism.view.ViewManager;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
