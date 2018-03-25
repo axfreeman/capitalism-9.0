@@ -157,7 +157,7 @@ public class Demand implements Command {
 	 * Primitive response function for the supply of Labour Power
 	 * 
 	 * @param response
-	 *            a per-project parameter
+	 *            a per-timeStamp parameter
 	 *            if this is FLEXIBLE, the supply changes to match demand
 	 *            if it is FIXED,supply is unaffected by demand
 	 */

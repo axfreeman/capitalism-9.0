@@ -73,6 +73,9 @@ public class Simulation {
 			validStart = false;
 		}
 		Reporter.report(logger, 0, "Initialise");
+		for (TimeStamp t:TimeStamp.all()) {
+			logger.debug("TimeStamp:{}",t.toString());
+		}
 		for (Project p : Project.all()) {
 			p.initialise();
 		}

@@ -798,4 +798,14 @@ public class TimeStamp implements Serializable {
 	public void setProjectID(int projectID) {
 		pk.projectID = projectID;
 	}
+	
+	/**
+	 * curtailed print formatted version of toString
+	 * @return readable version of essential fields
+	 */
+	@Override
+	public String toString() {
+		return String.format("project %d, time %d, period %d, labourSupply %s, priceResponse%s, meltResponse %s", 
+				pk.projectID, pk.timeStampID,period,labourSupplyResponse,priceResponse,meltResponse);
+	}	
 }

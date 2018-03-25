@@ -46,7 +46,7 @@ public class Parameters {
 	 * if FIXED, labour power cannot expand to meet demand and provides a supply constraint on output
 	 */
 	public static enum LABOUR_RESPONSE {
-		FIXED("Fixed"), FLEXIBLE("Flexible");
+		FLEXIBLE("Flexible"),FIXED("Fixed");
 		String text;
 
 		private LABOUR_RESPONSE(String text) {

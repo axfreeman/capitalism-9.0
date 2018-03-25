@@ -215,6 +215,7 @@ public class Project implements Serializable {
 		try {
 			// since we are initialising, we start with timeStampID 1
 			currentStamp = TimeStamp.single(projectID, 1);
+			logger.debug(" Initialising with timeStamp {}",currentStamp.toString());
 		} catch (Exception e) {
 			Dialogues.alert(logger, "There is no timeStamp record for the project called " +
 					description + "\nPlease check your data. Will attempt to continue with other projects");

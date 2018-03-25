@@ -1,5 +1,6 @@
-# Capitalism 9.0 announcements 3/24/2018 8:25:37 PM 
+# Capitalism 9.0 announcements 3/24/2018 10:01:00 PM 
 
+Fixed bug with Expanded Reproduction
 Fixed restart
 Watershed version
 Load, edit and save functional.
