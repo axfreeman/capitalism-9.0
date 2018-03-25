@@ -105,7 +105,7 @@ public class Commodity implements Serializable {
 		withFunctionQuery = entityManager.createQuery(
 				"SELECT u FROM Commodity u where u.pk.projectID= :project and u.pk.timeStampID = :timeStamp and u.function=:function order by u.displayOrder",
 				Commodity.class);
-		deleteQuery = entityManager.createQuery("Delete from Commodity c where c.pk.projectID=:project", Commodity.class);
+		deleteQuery = entityManager.createQuery("Delete from Commodity c where c.pk.projectID=:project and c.pk.timeStampID>1", Commodity.class);
 	}
 
 	// Enums
@@ -668,7 +668,6 @@ public class Commodity implements Serializable {
 	 * 
 	 * @return expansion demand from all stocks of this commodity
 	 */
-
 	public double expansionDemand() {
 		double demand = 0.0;
 		for (Stock s : Stock.stocksOfCommodity(pk.projectID, pk.timeStampID, pk.name)) {
@@ -845,13 +844,14 @@ public class Commodity implements Serializable {
 	}
 
 	/**
-	 * Delete all commodities with the given projectID
+	 * Delete all commodities with the given projectID except those with timeStamp 1
 	 * 
 	 * @param projectID
 	 *            the projectID whose commodities will be deleted
 	 */
 	public static void deleteFromProject(int projectID) {
 		deleteQuery.setParameter("project", projectID);
+		deleteQuery.executeUpdate();
 	}
 
 	/**

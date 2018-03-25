@@ -110,6 +110,7 @@ public class Stock implements Serializable {
 	private static TypedQuery<Stock> sourcesOfDemandQuery;
 	private static TypedQuery<Stock> withStockTypeQuery;
 	private static TypedQuery<Stock> productiveQuery;
+	private static TypedQuery<Stock> deleteQuery;
 
 	static {
 		entityManager = entityManagerFactory.createEntityManager();
@@ -138,6 +139,7 @@ public class Stock implements Serializable {
 				Stock.class);
 		productiveQuery = entityManager.createQuery(
 				"Select s from Stock s where s.pk.projectID =:project and s.pk.stockType ='PRODUCTIVE'", Stock.class);
+		deleteQuery = entityManager.createQuery("Delete from Stock s where s.pk.projectID=:project and s.pk.timeStampID>1", Stock.class);
 	}
 
 	/**
@@ -872,6 +874,18 @@ public class Stock implements Serializable {
 		ofCommodityAndTypeQuery.setParameter("stockType", Stock.STOCKTYPE.SALES.text());
 		return ofCommodityAndTypeQuery.getResultList();
 	}
+	
+	/**
+	 * Delete all stocks with the given projectID except those with timeStamp 1
+	 * 
+	 * @param projectID
+	 *            the projectID whose stocks will be deleted
+	 */
+	public static void deleteFromProject(int projectID) {
+		deleteQuery.setParameter("project", projectID);
+		deleteQuery.executeUpdate();
+	}
+
 
 	/**
 	 * @return the entityManager

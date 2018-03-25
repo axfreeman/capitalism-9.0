@@ -1,5 +1,6 @@
-# Capitalism 9.0 announcements 3/24/2018 5:47:20 PM 
+# Capitalism 9.0 announcements 3/24/2018 8:25:37 PM 
 
+Fixed restart
 Watershed version
 Load, edit and save functional.
 Saved projects run

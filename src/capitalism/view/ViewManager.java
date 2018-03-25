@@ -23,12 +23,10 @@ package capitalism.view;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import capitalism.Capitalism;
 import capitalism.controller.Simulation;
 import capitalism.editor.Editor;
 import capitalism.model.Project;
 import capitalism.model.TimeStamp;
-import capitalism.utils.Reporter;
 import capitalism.view.custom.ActionButtonsBox;
 import capitalism.view.custom.ActionStates;
 import capitalism.view.custom.DisplayControlsBox;
@@ -79,9 +77,9 @@ public class ViewManager {
 
 	final public static Rectangle2D screenBounds = Screen.getPrimary().getBounds();
 	final public static String deltaSymbol = "± ";
-	final public static double windowWidth=screenBounds.getWidth()*0.75;
-	final public static double windowHeight=screenBounds.getHeight()*0.8;
-	
+	final public static double windowWidth = screenBounds.getWidth() * 0.75;
+	final public static double windowHeight = screenBounds.getHeight() * 0.8;
+
 	// display parameters that can change as the simulation proceeds
 	private static String largeFormat = "%1$,.0f";	// Formats the display of large floating point numbers
 	private static String smallFormat = "%1$.2f";   // Formats the display of small floating point numbers
@@ -99,15 +97,15 @@ public class ViewManager {
 	private static TabbedTableViewer tabbedTableViewer;
 	private static DisplayControlsBox displayControlsBox;
 	private static TrackingControlsBox trackingControlsBox;
-	
+
 	public static void buildMainWindow(Stage stage) {
 		logger.debug("Creating the main window");
-		logger.debug("Screen is {} high and {} wide",windowHeight, windowWidth);
+		logger.debug("Screen is {} high and {} wide", windowHeight, windowWidth);
 		primaryStage = stage;
-		
+
 		// construct the root window, a simple container with almost no functionality
 		// height has to allow for the control bar. TODO can we set the window height directly?
-		rootLayout.setPrefHeight(windowHeight-25);
+		rootLayout.setPrefHeight(windowHeight - 25);
 		rootLayout.setPrefWidth(windowWidth);
 		Scene scene = new Scene(rootLayout);
 		String css = Editor.class.getResource("/SimulationTheme.css").toExternalForm();
@@ -142,7 +140,7 @@ public class ViewManager {
 		anchorPane = new AnchorPane();
 		anchorPane.setPrefHeight(windowHeight);
 		anchorPane.setPrefWidth(windowWidth);
-		
+
 		simulationResultsPane = new VBox();
 		manePane = new HBox();
 		bigEverything = new VBox();
@@ -209,25 +207,6 @@ public class ViewManager {
 	}
 
 	/**
-	 * Complete re-initialisation of the whole database from user data.
-	 * also reconstructs the main window and hence the entire display
-	 */
-
-	public static void restart() {
-		Reporter.report(logger, 1, "RESTART OF ENTIRE SIMULATION REQUESTED");
-		Capitalism.getDBHandler().restart();// fetch all the data
-		if (Simulation.startup()) {
-			logger.debug("Will attempt to continue despite database errors");
-			// TODO need some graceful action if this fails though because by this time we have full control, it would
-			// have to be a programme error. In future though we may provide options that, if we are not careful, 
-			// allow the user to break the database. Need precautions against that.
-		}
-		actionButtonsBox.setActionStateFromLabel("Accumulate");
-		refreshTimeStampView();
-		refreshDisplay();
-	}
-
-	/**
 	 * populate the number fields in the summary grid from the value of the TimeStamp persistent entity
 	 * defined by the displayCursor
 	 * 
@@ -251,7 +230,6 @@ public class ViewManager {
 	 *            selects whether to display as an intrinsic or an extrinsic magnitude
 	 * @return the requested expression of the value magnitude - unchanged if expressionDisplay is TIME but divided by MELT if expressionDisplay is MONEY
 	 */
-
 	public static double valueExpression(double intrinsicValueExpression, DisplayControlsBox.EXPRESSION_DISPLAY valuesExpressionDisplay) {
 		if (valuesExpressionDisplay == DisplayControlsBox.EXPRESSION_DISPLAY.MONEY) {
 			return intrinsicValueExpression;
@@ -267,7 +245,6 @@ public class ViewManager {
 	 * @param selectedTimeStamp
 	 *            the timeStamp that the user selected
 	 */
-
 	public static void viewTimeStamp(TimeStamp selectedTimeStamp) {
 		int selectedTimeStampID = selectedTimeStamp.getTimeStampID();
 		if (selectedTimeStampID > Simulation.timeStampIDCurrent())
@@ -457,5 +434,9 @@ public class ViewManager {
 	 */
 	public static void setSmallFormat(String smallFormat) {
 		ViewManager.smallFormat = smallFormat;
+	}
+
+	public static ActionButtonsBox getActionButtonsBox() {
+		return actionButtonsBox;
 	}
 }

@@ -65,11 +65,6 @@ public class Simulation {
 	 */
 	public static boolean startup() {
 		boolean validStart = true;
-		// initialise the two key state variables - the current period and the current project.
-		// all state variables are encapsulated in one or other of these variables.
-		// here for convenience we keep a copy that has to be kept synchronised with the database copy
-		// I am not sufficiently conversant with JPA to know if this happens automatically so
-		// we do some belt and braces. TODO resolve this.
 		timeStampCurrent = TimeStamp.single(1, 1);
 		timeStampCurrent.setPeriod(1);
 		projectCurrent = Project.get(1);
@@ -250,6 +245,43 @@ public class Simulation {
 		// }
 
 		logger.debug("Done Persisting: exit AdvanceOneStep");
+	}
+
+	/**
+	 * Re-initialise the current project by wiping out everything except the initial persistent entities.
+	 */
+	public static void restart() {
+		int projectID = Simulation.projectIDCurrent();
+		Project project=Project.get(projectID);
+		Reporter.report(logger, 1, "RESTART OF PROJECT %d REQUESTED", projectID);
+		Commodity.getEntityManager().getTransaction().begin();
+		Commodity.deleteFromProject(projectID);
+		Commodity.getEntityManager().getTransaction().commit();
+
+		Industry.getEntityManager().getTransaction().begin();
+		Industry.deleteFromProject(projectID);
+		Industry.getEntityManager().getTransaction().commit();
+
+		SocialClass.getEntityManager().getTransaction().begin();
+		SocialClass.deleteFromProject(projectID);
+		SocialClass.getEntityManager().getTransaction().commit();
+
+		Stock.getEntityManager().getTransaction().begin();
+		Stock.deleteFromProject(projectID);
+		Stock.getEntityManager().getTransaction().commit();
+		
+		TimeStamp.getEntityManager().getTransaction().begin();
+		TimeStamp.deleteFromProject(projectID);
+		TimeStamp.getEntityManager().getTransaction().commit();
+		
+		Project.getEntityManager().getTransaction().begin();
+		project.setTimeStampID(1);
+		project.setTimeStampComparatorCursor(1);
+		project.setTimeStampDisplayCursor(1);
+		Project.setTimeStampCursor(projectID, 1);
+		Project.getEntityManager().getTransaction().commit();
+		setPeriodCurrent(1);
+		setCapitals(projectID, 1);
 	}
 
 	/**

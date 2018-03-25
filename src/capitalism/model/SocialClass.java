@@ -78,6 +78,7 @@ public class SocialClass implements Serializable {
 	private static TypedQuery<SocialClass> allInProjectAndTimeStampQuery;
 	private static TypedQuery<SocialClass> allInProjectQuery;
 	private static TypedQuery<SocialClass> allQuery;
+	private static TypedQuery<SocialClass> deleteQuery;
 
 	static {
 		entityManager = entityManagerFactory.createEntityManager();
@@ -90,6 +91,7 @@ public class SocialClass implements Serializable {
 				"SELECT c FROM SocialClass c where c.pk.projectID= :project and c.pk.timeStampID = :timeStamp ", SocialClass.class);
 		allInProjectQuery = entityManager.createQuery(
 				"SELECT c FROM SocialClass c where c.pk.projectID= :project ", SocialClass.class);
+		deleteQuery = entityManager.createQuery("Delete from SocialClass s where s.pk.projectID=:project and s.pk.timeStampID>1", SocialClass.class);
 	}
 
 	/**
@@ -775,6 +777,18 @@ public class SocialClass implements Serializable {
 		}
 		this.revenue = revenue;
 	}
+	
+	/**
+	 * Delete all socialClasses with the given projectID except those with timeStamp 1
+	 * 
+	 * @param projectID
+	 *            the projectID whose socialClasses will be deleted
+	 */
+	public static void deleteFromProject(int projectID) {
+		deleteQuery.setParameter("project", projectID);
+		deleteQuery.executeUpdate();
+	}
+
 
 	/**
 	 * @return the previousComparator

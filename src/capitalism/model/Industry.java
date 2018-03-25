@@ -87,7 +87,7 @@ public class Industry implements Serializable {
 	private static TypedQuery<Industry> allWithProjectAndTimeStampQuery;
 	private static TypedQuery<Industry> withProjectTimeStampAndCommodityNameQuery;
 	private static TypedQuery<Industry> allQuery;
-
+	private static TypedQuery<Industry> deleteQuery;
 	static {
 		entityManager = entityManagerFactory.createEntityManager();
 		primaryQuery = entityManager.createQuery(
@@ -98,6 +98,7 @@ public class Industry implements Serializable {
 				"Select c from Industry c where c.pk.projectID=:project and c.pk.timeStampID=:timeStamp and c.commodityName=:commodityName", Industry.class);
 		allQuery = entityManager.createQuery("Select i from Industry i", Industry.class);
 		allWithProjectQuery=entityManager.createQuery("Select i from Industry i where i.pk.projectID = :project",Industry.class);
+		deleteQuery = entityManager.createQuery("Delete from Industry i where i.pk.projectID=:project and i.pk.timeStampID>1", Industry.class);
 	}
 
 	/**
@@ -1071,6 +1072,21 @@ public class Industry implements Serializable {
 		donorMoneyStock.transferStock(recipientMoneyStock, costOfExpansion);
 		donor.setRevenue(donor.getRevenue() - costOfExpansion);
 	}
+	
+	/**
+	 * Delete all industries with the given projectID except those with timeStamp 1
+	 * 
+	 * @param projectID
+	 *            the projectID whose industries will be deleted
+	 */
+	public static void deleteFromProject(int projectID) {
+		deleteQuery.setParameter("project", projectID);
+		deleteQuery.executeUpdate();
+	}
+
+
+
+
 
 	/**
 	 * set the comparator Industry of this Industry. When a TableCell displays a value from this Industry, it asks the Industry

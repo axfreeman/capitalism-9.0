@@ -58,6 +58,7 @@ public class TimeStamp implements Serializable {
 	private static TypedQuery<TimeStamp> superStateQuery;
 	private static TypedQuery<TimeStamp> allInProjectQuery;
 	private static TypedQuery<TimeStamp> allQuery;
+	private static TypedQuery<TimeStamp> deleteQuery;
 
 	// create the typed queries statically but not as named queries. This makes them easier to find and modify
 	static {
@@ -68,6 +69,7 @@ public class TimeStamp implements Serializable {
 		allInProjectQuery = entityManager.createQuery("Select t from TimeStamp t where t.pk.projectID =:project", TimeStamp.class);
 		superStateQuery = entityManager.createQuery(
 				"Select t from TimeStamp t where t.pk.projectID=:project and t.period= :period and t.superState=:superState", TimeStamp.class);
+		deleteQuery=entityManager.createQuery("Delete from TimeStamp t where t.pk.projectID=:project and t.pk.timeStampID>1", TimeStamp.class);
 	}
 
 	/**
@@ -464,6 +466,17 @@ public class TimeStamp implements Serializable {
 		return superStateQuery.getResultList();
 	}
 
+	/**
+	 * Delete all timeStamps with the given projectID except those with timeStampID 1
+	 * 
+	 * @param projectID
+	 *            the projectID whose timeStamps will be deleted
+	 */
+	public static void deleteFromProject(int projectID) {
+		deleteQuery.setParameter("project", projectID);
+		deleteQuery.executeUpdate();
+	}
+	
 	public static EntityManager getEntityManager() {
 		return entityManager;
 	}
