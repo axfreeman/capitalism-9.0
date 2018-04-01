@@ -31,9 +31,9 @@ public class HelpCommand implements DisplayCommand {
 	@Override public void execute(ImageButton caller) {
 		caller.switchStates();
 		if (caller.getState()) {
-			Editor.getCommodityBox().hideHelp();
-		}else {
 			Editor.getCommodityBox().showHelp();
+		}else {
+			Editor.getCommodityBox().hideHelp();
 		}
 	}
 }

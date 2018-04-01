@@ -1,0 +1,36 @@
+Project,TimeStamp,name,originType,UnitValue,UnitPrice,TurnoverTime,functionType,DisplayOrder,ImageName,Tooltip
+7,1,Circulating,INDUSTRIALLY_PRODUCED,1,1,60,PRODUCTIVE_INPUT,1,,Raw Materials
+3,1,Consumption,INDUSTRIALLY_PRODUCED,1,1,2,CONSUMER_GOOD,3,necessities.png,Necessities
+6,1,Consumption,INDUSTRIALLY_PRODUCED,1,1,1,CONSUMER_GOOD,3,necessities.png,Necessities
+7,1,Consumption,INDUSTRIALLY_PRODUCED,0.5,0.5,1,CONSUMER_GOOD,3,necessities.png,Necessities
+1,1,Consumption,INDUSTRIALLY_PRODUCED,1,1,1,CONSUMER_GOOD,3,necessities.png,Necessities
+8,1,Consumption,INDUSTRIALLY_PRODUCED,1,1,1,CONSUMER_GOOD,3,necessities.png,Necessities
+2,1,Consumption,INDUSTRIALLY_PRODUCED,1,1,1,CONSUMER_GOOD,3,necessities.png,Necessities
+5,1,Consumption,INDUSTRIALLY_PRODUCED,1,1,1,CONSUMER_GOOD,3,necessities.png,Necessities
+7,1,Fixed,INDUSTRIALLY_PRODUCED,1,1,360,PRODUCTIVE_INPUT,1,,Machinery
+8,1,Fixed,INDUSTRIALLY_PRODUCED,1,1,1,PRODUCTIVE_INPUT,1,Means of Production.png,Machinery
+8,1,Labour Power,SOCIALLY_PRODUCED,0.5,0.5,1,PRODUCTIVE_INPUT,2,labourPower.png,Waged labour
+6,1,Labour Power,SOCIALLY_PRODUCED,0.5,0.5,1,PRODUCTIVE_INPUT,2,labourPower.png,Waged labour
+4,1,Labour Power,SOCIALLY_PRODUCED,0.5,0.5,1,PRODUCTIVE_INPUT,2,labourPower.png,Waged labour
+2,1,Labour Power,SOCIALLY_PRODUCED,0.5,0.5,1,PRODUCTIVE_INPUT,2,labourPower.png,Waged labour
+1,1,Labour Power,SOCIALLY_PRODUCED,0.5,0.5,1,PRODUCTIVE_INPUT,2,labourPower.png,Waged labour
+7,1,Labour Power,SOCIALLY_PRODUCED,0.5,0.5,1,PRODUCTIVE_INPUT,2,labourPower.png,Waged labour
+3,1,Labour Power,SOCIALLY_PRODUCED,0.5,0.5,2,PRODUCTIVE_INPUT,2,labourPower.png,Waged labour
+5,1,Labour Power,SOCIALLY_PRODUCED,0.5,0.5,1,PRODUCTIVE_INPUT,2,labourPower.png,Waged labour
+4,1,Luxuries,INDUSTRIALLY_PRODUCED,1,1,1,CONSUMER_GOOD,3,,Luxuries
+1,1,Means of Production,INDUSTRIALLY_PRODUCED,1,1,1,PRODUCTIVE_INPUT,1,Means of Production.png,Anything used during production
+4,1,Means of Production,INDUSTRIALLY_PRODUCED,1,1,1,PRODUCTIVE_INPUT,1,Means of Production.png,Anything used during production
+2,1,Means of Production,INDUSTRIALLY_PRODUCED,1,1,1,PRODUCTIVE_INPUT,1,Means of Production.png,Anything used during production
+6,1,Means of Production,INDUSTRIALLY_PRODUCED,1,1,1,PRODUCTIVE_INPUT,1,Means of Production.png,Anything used during production
+3,1,Means of Production,INDUSTRIALLY_PRODUCED,1,1,2,PRODUCTIVE_INPUT,1,Means of Production.png,Anything used during production
+5,1,Means of Production,INDUSTRIALLY_PRODUCED,1,1,1,PRODUCTIVE_INPUT,1,Means of Production.png,Anything used during production
+2,1,Money,MONEY,1,1,0,MONEY,4,,Money
+6,1,Money,MONEY,1,1,0,MONEY,4,,Money
+7,1,Money,MONEY,1,1,0,MONEY,4,,Money
+8,1,Money,MONEY,1,1,0,MONEY,4,,Money
+5,1,Money,MONEY,1,1,0,MONEY,4,,Money
+3,1,Money,MONEY,1,1,0,MONEY,4,,Money
+1,1,Money,MONEY,1,1,0,MONEY,4,,Money
+4,1,Money,MONEY,1,1,0,MONEY,4,,Money
+4,1,Necessities,INDUSTRIALLY_PRODUCED,1,1,1,CONSUMER_GOOD,3,necessities.png,Necessities
+8,1,Raw Materials,INDUSTRIALLY_PRODUCED,1,1,1,PRODUCTIVE_INPUT,1,Means of Production.png,Raw Materials

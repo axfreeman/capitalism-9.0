@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<project name="capitalism-9.0" default="do-deploy" basedir="."  xmlns:fx="javafx:com.sun.javafx.tools.ant">
+	<target name="init-fx-tasks">
+		<path id="fxant">
+			<filelist>
+				<file name="${java.home}\..\lib\ant-javafx.jar"/>
+				<file name="${java.home}\lib\jfxrt.jar"/>
+			</filelist>
+		</path>
+	
+		<taskdef resource="com/sun/javafx/tools/ant/antlib.xml"
+			uri="javafx:com.sun.javafx.tools.ant"
+			classpathref="fxant"/>
+	</target>
+	<target name="setup-staging-area">
+		<delete dir="externalLibs" />
+		<delete dir="project" />
+		<delete dir="projectRefs" />
+	
+		<mkdir dir="externalLibs" />
+	
+		<copy todir="externalLibs">
+			<fileset dir="C:\Users\afree\eclipse-workspace\libraries\EclipseLink 2.5.2\eclipselink\jlib\moxy">
+				<filename name="com.sun.xml.bind_2.2.0.v201004141950.jar"/>
+			</fileset>
+		</copy>
+		<copy todir="externalLibs">
+			<fileset dir="C:\Users\afree\eclipse-workspace\libraries\EclipseLink 2.5.2\eclipselink\jlib\jpa">
+				<filename name="org.eclipse.persistence.jpa.modelgen_2.5.2.v20140319-9ad6abd.jar"/>
+			</fileset>
+		</copy>
+		<copy todir="externalLibs">
+			<fileset dir="C:\Users\afree\eclipse-workspace\capitalism-9.0\lib">
+				<filename name="commons-io-2.6-javadoc.jar"/>
+			</fileset>
+		</copy>
+		<copy todir="externalLibs">
+			<fileset dir="C:\Users\afree\eclipse-workspace\capitalism-9.0\lib">
+				<filename name="log4j-api-2.9.1-javadoc.jar"/>
+			</fileset>
+		</copy>
+		<copy todir="externalLibs">
+			<fileset dir="C:\Users\afree\eclipse-workspace\capitalism-9.0\lib">
+				<filename name="commons-io-2.6-sources.jar"/>
+			</fileset>
+		</copy>
+		<copy todir="externalLibs">
+			<fileset dir="C:\Users\afree\eclipse-workspace\libraries\EclipseLink 2.5.2\eclipselink\jlib\jpa">
+				<filename name="org.eclipse.persistence.jpars_2.5.2.v20140319-9ad6abd.jar"/>
+			</fileset>
+		</copy>
+		<copy todir="externalLibs">
+			<fileset dir="C:\Users\afree\eclipse-workspace\libraries\EclipseLink 2.5.2\eclipselink\jlib\moxy">
+				<filename name="javax.activation_1.1.0.v201108011116.jar"/>
+			</fileset>
+		</copy>
+		<copy todir="externalLibs">
+			<fileset dir="C:\Users\afree\eclipse-workspace\libraries\EclipseLink 2.5.2\eclipselink\jlib\moxy">
+				<filename name="javax.xml.bind_2.2.0.v201105210648.jar"/>
+			</fileset>
+		</copy>
+		<copy todir="externalLibs">
+			<fileset dir="C:\Users\afree\eclipse-workspace\libraries\EclipseLink 2.5.2\eclipselink\jlib\moxy">
+				<filename name="com.sun.tools.xjc_2.2.0.jar"/>
+			</fileset>
+		</copy>
+		<copy todir="externalLibs">
+			<fileset dir="C:\Users\afree\eclipse-workspace\capitalism-9.0\lib">
+				<filename name="log4j-core-2.9.1.jar"/>
+			</fileset>
+		</copy>
+		<copy todir="externalLibs">
+			<fileset dir="C:\Users\afree\eclipse-workspace\capitalism-9.0\lib">
+				<filename name="log4j-core-2.9.1-sources.jar"/>
+			</fileset>
+		</copy>
+		<copy todir="externalLibs">
+			<fileset dir="C:\Users\afree\eclipse-workspace\capitalism-9.0\lib">
+				<filename name="log4j-api-2.9.1-sources.jar"/>
+			</fileset>
+		</copy>
+		<copy todir="externalLibs">
+			<fileset dir="C:\Users\afree\eclipse-workspace\libraries\EclipseLink 2.5.2\eclipselink\jlib">
+				<filename name="eclipselink.jar"/>
+			</fileset>
+		</copy>
+		<copy todir="externalLibs">
+			<fileset dir="C:\Users\afree\eclipse-workspace\capitalism-9.0\lib">
+				<filename name="log4j-api-2.9.1.jar"/>
+			</fileset>
+		</copy>
+		<copy todir="externalLibs">
+			<fileset dir="C:\Users\afree\eclipse-workspace\libraries\EclipseLink 2.5.2\eclipselink\jlib\moxy">
+				<filename name="javax.mail_1.4.0.v201005080615.jar"/>
+			</fileset>
+		</copy>
+		<copy todir="externalLibs">
+			<fileset dir="C:\Users\afree\eclipse-workspace\libraries\EclipseLink 2.5.2\eclipselink\jlib\jpa">
+				<filename name="javax.persistence_2.1.0.v201304241213.jar"/>
+			</fileset>
+		</copy>
+		<copy todir="externalLibs">
+			<fileset dir="C:\Users\afree\eclipse-workspace\capitalism-9.0\lib">
+				<filename name="commons-io-2.6.jar"/>
+			</fileset>
+		</copy>
+		<copy todir="externalLibs">
+			<fileset dir="C:\Users\afree\eclipse-workspace\capitalism-9.0\lib">
+				<filename name="commons-math3-3.6.1.jar"/>
+			</fileset>
+		</copy>
+		<copy todir="externalLibs">
+			<fileset dir="C:\Users\afree\eclipse-workspace\libraries\EclipseLink 2.5.2\eclipselink\jlib\moxy">
+				<filename name="javax.xml.stream_1.0.1.v201004272200.jar"/>
+			</fileset>
+		</copy>
+		<copy todir="externalLibs">
+			<fileset dir="C:\Users\afree\eclipse-workspace\capitalism-9.0\lib">
+				<filename name="h2-1.4.196.jar"/>
+			</fileset>
+		</copy>
+	
+		<mkdir dir="project" />
+		<copy todir="project">
+			<fileset dir="C:\Users\afree\eclipse-workspace\capitalism-9.0">
+				<include name="log/**" />
+			</fileset>
+		</copy>
+		<copy todir="project">
+			<fileset dir="C:\Users\afree\eclipse-workspace\capitalism-9.0">
+				<include name="src/**" />
+			</fileset>
+		</copy>
+		<copy todir="project">
+			<fileset dir="C:\Users\afree\eclipse-workspace\capitalism-9.0">
+				<include name="img/**" />
+			</fileset>
+		</copy>
+		<copy todir="project">
+			<fileset dir="C:\Users\afree\eclipse-workspace\capitalism-9.0">
+				<include name="data/**" />
+			</fileset>
+		</copy>
+	
+		<mkdir dir="projectRefs" />
+	</target>
+	<target name='do-compile'>
+		<delete dir="build" />
+		<mkdir dir="build/src" />
+		<mkdir dir="build/libs" />
+		<mkdir dir="build/classes" />
+	
+		<!-- Copy project-libs references -->
+		<copy todir="build/libs">
+			<fileset dir="externalLibs">
+				<include name="log4j-core-2.9.1-sources.jar"/>
+				<include name="log4j-api-2.9.1.jar"/>
+				<include name="h2-1.4.196.jar"/>
+				<include name="log4j-api-2.9.1-sources.jar"/>
+				<include name="org.eclipse.persistence.jpars_2.5.2.v20140319-9ad6abd.jar"/>
+				<include name="javax.activation_1.1.0.v201108011116.jar"/>
+				<include name="javax.persistence_2.1.0.v201304241213.jar"/>
+				<include name="eclipselink.jar"/>
+				<include name="commons-io-2.6-sources.jar"/>
+				<include name="commons-io-2.6.jar"/>
+				<include name="javax.mail_1.4.0.v201005080615.jar"/>
+				<include name="javax.xml.bind_2.2.0.v201105210648.jar"/>
+				<include name="javax.xml.stream_1.0.1.v201004272200.jar"/>
+				<include name="log4j-core-2.9.1.jar"/>
+				<include name="com.sun.tools.xjc_2.2.0.jar"/>
+				<include name="commons-io-2.6-javadoc.jar"/>
+				<include name="commons-math3-3.6.1.jar"/>
+				<include name="org.eclipse.persistence.jpa.modelgen_2.5.2.v20140319-9ad6abd.jar"/>
+				<include name="com.sun.xml.bind_2.2.0.v201004141950.jar"/>
+				<include name="log4j-api-2.9.1-javadoc.jar"/>
+			</fileset>
+		</copy>
+	
+		<!-- Copy project references -->
+	
+		<!-- Copy project sources itself -->
+		<copy todir="build/src">
+			<fileset dir="project/img">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
+		<copy todir="build/src">
+			<fileset dir="project/data">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
+		<copy todir="build/src">
+			<fileset dir="project/log">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
+		<copy todir="build/src">
+			<fileset dir="project/src">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
+	
+		<javac includeantruntime="false" source="1.8" target="1.8" srcdir="build/src" destdir="build/classes" encoding="Cp1252">
+			<classpath>
+				<fileset dir="build/libs">
+					<include name="*"/>
+				</fileset>
+			</classpath>
+		</javac>
+	
+		<!-- Copy over none Java-Files -->
+		<copy todir="build/classes">
+		<fileset dir="project/img">
+			<exclude name="**/*.java"/>
+		</fileset>
+		<fileset dir="project/data">
+			<exclude name="**/*.java"/>
+		</fileset>
+		<fileset dir="project/log">
+			<exclude name="**/*.java"/>
+		</fileset>
+		<fileset dir="project/src">
+			<exclude name="**/*.java"/>
+		</fileset>
+		</copy>
+	
+	
+	</target>
+	<target name="do-deploy" depends="setup-staging-area, do-compile, init-fx-tasks">
+		<delete file="dist"/>
+		<delete file="deploy" />
+	
+		<mkdir dir="dist" />
+		<mkdir dir="dist/libs" />
+	
+		<copy todir="dist/libs">
+			<fileset dir="externalLibs">
+				<include name="*" />
+			</fileset>
+		</copy>
+	
+	
+		<fx:resources id="appRes">
+			<fx:fileset dir="dist" includes="capitalism-9.0.jar"/>
+			<fx:fileset dir="dist" includes="libs/*"/>
+		</fx:resources>
+	
+		<fx:application id="fxApplication"
+			name=""
+			mainClass=""
+		/>
+	
+		<mkdir dir="build/classes/META-INF" />
+	
+	
+	
+		<fx:jar destfile="dist/capitalism-9.0.jar">
+			<fx:application refid="fxApplication"/>
+			<fileset dir="build/classes">
+			</fileset>
+			<fx:resources refid="appRes"/>
+	
+			<manifest>
+				<attribute name="Implementation-Vendor" value=""/>
+				<attribute name="Implementation-Title" value=""/>
+				<attribute name="Implementation-Version" value=""/>
+				<attribute name="JavaFX-Feature-Proxy" value="None"/>
+			</manifest>
+		</fx:jar>
+	
+	
+	
+	
+	</target>
+</project>

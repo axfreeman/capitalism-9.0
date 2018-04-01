@@ -81,8 +81,8 @@ public class EditorControlBar extends HBox {
 			"Save the contents of the editor window to a file on your computer",
 			"Save the contents of the editor window to a file on your computer");
 	private static ImageButton helpButton = new ImageButton(
-			"help.png",
 			"unhelp.png",
+			"help.png",
 			new HelpCommand(),
 			"Display the help window",
 			"Close the help window"

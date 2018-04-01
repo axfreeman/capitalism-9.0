@@ -100,6 +100,9 @@ public class Capitalism extends Application {
 			Dialogues.alert(logger, "Data error on startup. Sorry, could not continue");
 			return;
 		}
+		if (!DBHandler.ExportHelpFiles()) {
+			Dialogues.alert(logger, "Help files could not be located. Will try to carry on without them");
+		}
 
 		SplashScreenPreLoader.setProgress("Initialising Simulation");
 		logger.debug("Starting simulation after {} milliseconds",Reporter.timeSinceStart());

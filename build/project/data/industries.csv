@@ -1,0 +1,20 @@
+project,timeStamp,industryName,CommodityName,output,GrowthRate
+1,1,Department I,Means of Production,6000,0
+1,1,Department II,Consumption,3000,0
+2,1,DII,Consumption,3000,0
+2,1,DI,Means of Production,6000,0
+3,1,Consumption,Consumption,1500,0
+3,1,Means of Production,Means of Production,3000,0
+4,1,Department I,Means of Production,6000,0
+4,1,Department IIa,Necessities,2400,0
+4,1,Department IIb,Luxuries,600,0
+5,1,Consumption,Consumption,3000,0.1
+5,1,Means of Production,Means of Production,6000,0.1
+6,1,Department I,Means of Production,6000,0
+6,1,Department II,Consumption,6000,0
+7,1,Consumption,Consumption,200,0
+7,1,Circulating,Circulating,500,0
+7,1,Fixed,Fixed,500,0
+8,1,Department Ia,Fixed,3000,0
+8,1,Department II,Consumption,3000,0
+8,1,Department Ib,Raw Materials,3000,0

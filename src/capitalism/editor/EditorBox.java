@@ -22,31 +22,22 @@ package capitalism.editor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import capitalism.utils.WebStuff;
-import javafx.geometry.Insets;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
+import capitalism.Capitalism;
+import capitalism.help.Browser;
 import javafx.scene.control.TableView;
-import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.TextAlignment;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
 
 /**
  * This class creates and handles a box to be placed in an editor pane.
  */
 public class EditorBox extends VBox {
 	private static final Logger logger = LogManager.getLogger("EditorBox");
-	private Label textArea = null;
-	final WebView browser = new WebView();
-	final WebEngine webEngine = browser.getEngine();
-	private ScrollPane scrollPane;
+
+	final Browser browser = new Browser();
 
 	/**
 	 * Create a box containing a table and a dialogueBox.
@@ -59,62 +50,30 @@ public class EditorBox extends VBox {
 	 * @param userGuide
 	 *            a text explaining what the user can do in this tab
 	 */
-	EditorBox(TableView<?> table, EditorDialogueBox dialogueBox, String helpFile, String userGuide) {
+	EditorBox(TableView<?> table, EditorDialogueBox dialogueBox, String helpFileName, String userGuide) {
 		setPrefWidth(Double.MAX_VALUE);
 		HBox dialogueContainer = new HBox();
-
+		String helpUrlString=Capitalism.getUserBasePath()+"help/"+helpFileName;
+		logger.debug("Accessing help file at {}",helpUrlString);
+		
 		// leave enough room for everything we might want to put in the dialogue box.
 		dialogueContainer.setPrefHeight(10000); // weird: if we set to MAX_VALUE, it squeezes everything else out
-		// dialogueContainer.setMaxHeight(Double.MAX_VALUE);
-		// textArea.setMaxHeight(Double.MAX_VALUE);
 		VBox.setVgrow(this, Priority.ALWAYS);
-		textArea = new Label();
-		textArea.setMaxWidth(Double.MAX_VALUE);
-		textArea.setWrapText(true);
-		HBox.setHgrow(textArea, Priority.ALWAYS);
-		textArea.setFont(new Font(14));
-		textArea.setText(userGuide);
-		textArea.setTextAlignment(TextAlignment.CENTER);
-		final String cssBackground = "-fx-background-color: LIGHTSTEELBLUE;\n"
-				+ "-fx-border-color: silver;\n"
-				+ "-fx-border-width: 3;\n"
-				+ "-fx-border-radius: 10 10 10 10;\n" +
-				"  -fx-background-radius: 10 10 10 10;";
-
-		// setStyle(cssBackground);
-		// final String cssTextArea = "-fx-background-color: #F4F4F4;\n"
-		// + "-fx-border-color: silver;\n"
-		// + "-fx-border-width: 1;\n";
-
-		textArea.setStyle(cssBackground);
-		textArea.setPadding(new Insets(5, 5, 5, 5));
 		DropShadow dropShadow = new DropShadow();
-		dropShadow.setOffsetX(0.5);
-		dropShadow.setOffsetY(0.5);
-		dropShadow.setColor(Color.CADETBLUE);
-		textArea.setEffect(dropShadow);
+		dropShadow.setOffsetX(3);
+		dropShadow.setOffsetY(2);
+		dropShadow.setColor(Color.GRAY);
 
-		textArea.setTranslateX(-10);
-		textArea.setTranslateY(10);
+		String roundCornerCss = 
+				 "	    -fx-background-radius: 18 18 18 18;"
+				+ "	    -fx-border-radius: 18 18 18 18;";
 
-		webEngine.loadContent("<p>welcome</p><p>Help facility under development</p>");
-		scrollPane = new ScrollPane();
-		scrollPane.setContent(browser);
-		scrollPane.setEffect(dropShadow);
-		String content = WebStuff.getFile(helpFile);
-		webEngine.loadContent(content);
-		logger.debug("\nWEBCONTENT");
-		System.out.print(textArea.getText());
-		scrollPane.setMaxHeight(400);
-		scrollPane.setMaxWidth(Double.MAX_VALUE);
-		scrollPane.setTranslateX(-15);
-		scrollPane.setTranslateY(10);
-		// User can scroll by panning, only
-		// and even that isn't implemented yet.
-		// basically we used a scrollPane because we couldn't get the VBox to size properly
-		scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
-		scrollPane.setVbarPolicy(ScrollBarPolicy.NEVER);
-		dialogueContainer.getChildren().addAll(dialogueBox, scrollPane /* ,textArea */);
+		browser.setPrefHeight(200);
+		browser.setMaxHeight(450);
+		browser.setPrefWidth(800);
+		browser.load("file:/"+helpUrlString);
+		browser.setStyle(roundCornerCss);
+		dialogueContainer.getChildren().addAll(dialogueBox, browser);
 		getChildren().addAll(table, dialogueContainer);
 	}
 
@@ -122,13 +81,13 @@ public class EditorBox extends VBox {
 	 * Hide the help box
 	 */
 	public void hideHelp() {
-		scrollPane.setVisible(false);
+		browser.setVisible(false);
 	}
 
 	/**
 	 * Show the help box
 	 */
 	public void showHelp() {
-		scrollPane.setVisible(true);
+		browser.setVisible(true);
 	}
 }

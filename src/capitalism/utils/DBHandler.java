@@ -132,7 +132,7 @@ public class DBHandler {
 	 *            the absolute path to the main directory in which subDirectory is to be found
 	 * 
 	 */
-	public static void copyDataFilesToUserDirectory(String basePath, String subDirectory, String resource) {
+	public static void copyFileToUserDirectory(String basePath, String subDirectory, String resource) {
 		URL inputUrl = DBHandler.class.getClassLoader().getResource(resource);
 		String userDestinationFile = basePath + subDirectory + resource;
 		File dest = new File(userDestinationFile);
@@ -155,16 +155,35 @@ public class DBHandler {
 	 */
 	public static boolean exportDataFiles() {
 		try {
-			copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "industries.csv");
-			copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "socialClasses.csv");
-			copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "projects.csv");
-			copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "stocks.csv");
-			copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "timeStamps.csv");
-			copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "commodities.csv");
-			copyDataFilesToUserDirectory(Capitalism.getUserBasePath(), "data/", "CreateRawTables.sql");
+			copyFileToUserDirectory(Capitalism.getUserBasePath(), "data/", "industries.csv");
+			copyFileToUserDirectory(Capitalism.getUserBasePath(), "data/", "socialClasses.csv");
+			copyFileToUserDirectory(Capitalism.getUserBasePath(), "data/", "projects.csv");
+			copyFileToUserDirectory(Capitalism.getUserBasePath(), "data/", "stocks.csv");
+			copyFileToUserDirectory(Capitalism.getUserBasePath(), "data/", "timeStamps.csv");
+			copyFileToUserDirectory(Capitalism.getUserBasePath(), "data/", "commodities.csv");
+			copyFileToUserDirectory(Capitalism.getUserBasePath(), "data/", "CreateRawTables.sql");
 			return true;
 		} catch (RuntimeException e) {
 			logger.error("Could not copy files to the user directory because {}", e.getMessage());
+			return false;
+		}
+	}
+	/**
+	 * Export the help files and images to the user directory
+	 * @return false if fail
+	 */
+	
+	
+	public static boolean ExportHelpFiles() {
+		try {
+			copyFileToUserDirectory(Capitalism.getUserBasePath(), "help/", "commodityHelp.html");
+			copyFileToUserDirectory(Capitalism.getUserBasePath(), "help/", "industryHelp.html");
+			copyFileToUserDirectory(Capitalism.getUserBasePath(), "help/", "socialClassHelp.html");
+			copyFileToUserDirectory(Capitalism.getUserBasePath(), "help/", "start.png");
+			copyFileToUserDirectory(Capitalism.getUserBasePath(), "help/", "unhelp.png");
+			return true;
+		} catch (RuntimeException e) {
+			logger.error("Could not copy help files to the user directory because {}", e.getMessage());
 			return false;
 		}
 	}
@@ -203,7 +222,7 @@ public class DBHandler {
 			saveOneTable(baseDirectoryURL, standardFiles[i]);
 		}
 		// Copy the initializer file so it can load the data files
-		copyDataFilesToUserDirectory(baseDirectoryURL, "/", "CreateRawTables.sql");
+		copyFileToUserDirectory(baseDirectoryURL, "/", "CreateRawTables.sql");
 	}
 
 	/**
@@ -234,23 +253,6 @@ public class DBHandler {
 			e.printStackTrace();
 			e.printStackTrace();
 		}
-	}
-	
-	/**
-	 * experimental XML writer to save one project to memory
-	 */
-	public void writeToXML() {
-		try {
-			Class.forName("org.h2.Driver");
-			String queryFirstPart = "jdbc:h2:mem:capitalism;";// this will be an XML connector
-			String queryWhole = queryFirstPart;
-			logger.debug("Attempting to connect to the database using {} ", queryWhole);
-			conn = DriverManager.getConnection(queryWhole, "sa", "");
-			Reporter.report(logger, 0, "Successfully connected");
-		} catch (Exception e) {
-			Dialogues.alert(logger, "Could not load the data because:\n" + e.getMessage());
-		}
-		
 	}
 }
 

@@ -21,14 +21,14 @@
 package capitalism.utils;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URL;
-import java.util.Scanner;
-
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import capitalism.reporting.Dialogues;
 
 /**
  * this class delivers web content as string to the WebView components of the app.
@@ -36,34 +36,78 @@ import capitalism.reporting.Dialogues;
 public class WebStuff {
 	private static final Logger logger = LogManager.getLogger("WebStuff");
 
-	  public static String getFile(String fileName) {
+	public static String getFile(String fileName) {
+		// Get file from local folder
+		File file = new File(fileName);
+		InputStream fis;
+		String result=null;
+		try {
+			fis = new FileInputStream(file);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+//		ClassLoader classLoader = WebStuff.class.getClassLoader();
+//		InputStream inStream = classLoader.getResource(fileName);
+		try {
+			result=inputStreamToString(fis);
+		} catch (Exception e1) {
+			logger.debug("inStream call failed because {}", e1.getMessage());
+			result = null;
+		}
+		try {
+			fis.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return result;
+// code below fails when app is run from jar
+//		StringBuilder result = new StringBuilder("");
+//		URL pathURL = null;
+//		pathURL = classLoader.getResource(fileName);
+//		if (pathURL == null) {
+//			Dialogues.alert(logger, "Help File Name missing. This is a programme error. Please contact the developer");
+//			logger.debug("Help File Missing");
+//			return "<p>Programme Error; please contact developer</p>";
+//		}
+//		String pathName = pathURL.getFile();
+//		logger.debug("pathURL is {}", pathURL.getFile());
+//		;
+//		File file = new File(pathName);
+//
+//		try (Scanner scanner = new Scanner(file)) {
+//
+//			while (scanner.hasNextLine()) {
+//				String line = scanner.nextLine();
+//				result.append(line).append("\n");
+//			}
+//
+//			scanner.close();
+//
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//
+//		return result.toString();
 
-			StringBuilder result = new StringBuilder("");
+	}
 
-			//Get file from resources folder
-			ClassLoader classLoader = WebStuff.class.getClassLoader();
-			URL pathURL= classLoader.getResource(fileName);
-			if (pathURL==null) {
-				Dialogues.alert(logger, "Help File Name missing. This is a programme error. Please contact the developer");
-				return"<p>Programme Error; please contact developer</p>";
+	/**
+	 * see https://stackoverflow.com/questions/309424/read-convert-an-inputstream-to-a-string
+	 * 
+	 */
+
+	public static String inputStreamToString(InputStream inputStream) throws IOException {
+		try (ByteArrayOutputStream result = new ByteArrayOutputStream()) {
+			byte[] buffer = new byte[1024];
+			int length;
+			while ((length = inputStream.read(buffer)) != -1) {
+				result.write(buffer, 0, length);
 			}
-			String	pathName=pathURL.getFile();
-			File file = new File(pathName);
 
-			try (Scanner scanner = new Scanner(file)) {
-
-				while (scanner.hasNextLine()) {
-					String line = scanner.nextLine();
-					result.append(line).append("\n");
-				}
-
-				scanner.close();
-
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-				
-			return result.toString();
-
-		  }
+			return result.toString(Charset.defaultCharset());
+		}
+	}
 }

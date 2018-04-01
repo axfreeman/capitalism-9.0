@@ -1,8 +1,8 @@
-# Capitalism 9.0 announcements 3/25/2018 8:40:15 AM 
+# Capitalism 9.0 announcements 4/1/2018 5:20:12 PM 
 
-## 3/25/2018 8:40:21 AM 
+## 4/1/2018 5:20:07 PM 
 
-Prototype help windows
+Prototype help windows (now using html)
 New executable
 
 ## 3/24/2018 10:01:00 PM 

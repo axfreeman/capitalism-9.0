@@ -1,0 +1,6 @@
+<h1>Welcome</h1>
+<p>To create a new social class, press the '+' button. This minimal information is likely to be insufficient to ensure the social class will function properly; you can complete the additional details by editing the social class in the table above, once you have created it. Or, you can load a simulation that has already been defined, and either modify it or simply run it, to see what it does.</p>
+
+<p>A social class is a group of people with a similar type of income or 'revenue', for example workers whose revenue comes from wages, or capitalists whose revenue derives from profit. You can specify where a class's revenue comes from.</p>
+
+<p>Social Classes own, and consume, consumer goods, according to rules which you can control.</p>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+<Properties>
+	<Property name="UserDataDir" value="${sys:user.home}\\Documents\\Capsim"></Property>
+</Properties>
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="[CAPITALISM] %-5c{1} - %msg%n" />
+		</Console>
+		<File name="Debug" fileName="${UserDataDir}\\logfiles\\debug.log">
+			<PatternLayout pattern="[%-20c{1}] %msg%n" />
+			</File>
+		<File name="Userview" fileName="${UserDataDir}\\logfiles\\userview.log">
+			<PatternLayout pattern="[%-20c{1}](%r) %msg%n" />
+		</File>
+	</Appenders>
+	<Loggers>
+		<Root level="trace">
+			<AppenderRef ref="Console" level ="DEBUG"/>
+			<AppenderRef ref="Debug" level = "DEBUG"/>
+			<AppenderRef ref="Userview" level="INFO"/>
+		</Root>
+	</Loggers>
+</Configuration>
