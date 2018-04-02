@@ -40,39 +40,28 @@ public class EditorBox extends VBox {
 	final Browser browser = new Browser();
 
 	/**
-	 * Create a box containing a table and a dialogueBox.
-	 * Create a textArea to display the 'userGuide' information
+	 * Create a box containing a table,a dialogueBox and a help browser.
+	 * The browser is given an initial URL in the local file system.
 	 * 
 	 * @param table
 	 *            the editable table
 	 * @param dialogueBox
 	 *            a dialogue box in which the user enters additional information
-	 * @param userGuide
-	 *            a text explaining what the user can do in this tab
+	 * @param helpFileName
+	 *            the name of the helpFile, relative to its containing directory
 	 */
-	EditorBox(TableView<?> table, EditorDialogueBox dialogueBox, String helpFileName, String userGuide) {
+	EditorBox(TableView<?> table, EditorDialogueBox dialogueBox, String helpFileName) {
 		setPrefWidth(Double.MAX_VALUE);
 		HBox dialogueContainer = new HBox();
-		String helpUrlString=Capitalism.getUserBasePath()+"help/"+helpFileName;
-		logger.debug("Accessing help file at {}",helpUrlString);
-		
+		String helpUrlString = Capitalism.getUserBasePath() + "help/" + helpFileName;
+		logger.debug("Accessing help file at {}", helpUrlString);
 		// leave enough room for everything we might want to put in the dialogue box.
 		dialogueContainer.setPrefHeight(10000); // weird: if we set to MAX_VALUE, it squeezes everything else out
 		VBox.setVgrow(this, Priority.ALWAYS);
-		DropShadow dropShadow = new DropShadow();
-		dropShadow.setOffsetX(3);
-		dropShadow.setOffsetY(2);
-		dropShadow.setColor(Color.GRAY);
-
-		String roundCornerCss = 
-				 "	    -fx-background-radius: 18 18 18 18;"
-				+ "	    -fx-border-radius: 18 18 18 18;";
-
 		browser.setPrefHeight(200);
 		browser.setMaxHeight(450);
 		browser.setPrefWidth(800);
-		browser.load("file:/"+helpUrlString);
-		browser.setStyle(roundCornerCss);
+		browser.load("file:/" + helpUrlString);
 		dialogueContainer.getChildren().addAll(dialogueBox, browser);
 		getChildren().addAll(table, dialogueContainer);
 	}

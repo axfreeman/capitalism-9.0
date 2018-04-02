@@ -23,29 +23,27 @@ import javafx.scene.layout.VBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 
+/**
+ * this little class does little more than deliver a browser in a Vbox
+ */
+
 public class Browser extends VBox {
-	 
-    final WebView browser = new WebView();
-    final WebEngine webEngine = browser.getEngine();
-     
-    public Browser() {
-        //apply the styles
-        getStyleClass().add("browser");
+
+	private WebView browser;
+	private WebEngine webEngine;
+
+	public Browser() {
+    	
+//		styling is handled directly within the html files that \re loaded into the user's help directory.
+//		This has many benefits, in particular customised help files.
+//		Basically, why keep a dog and bark.
+
+		browser = new WebView();
+    	webEngine = browser.getEngine();
         getChildren().addAll(browser);
-        setTranslateX(10);
-        setTranslateY(10);
     }
-    
-    public void load(String url) {
-		System.out.print("\nLOADING BROWSER FROM WEB LOCATION:"+url+"\n");
-    	webEngine.load(url);
-    }
-    
-  	/**
-	 * @return the webEngine
-	 */
-	public WebEngine getWebEngine() {
-		return webEngine;
+
+	public void load(String url) {
+		webEngine.load(url);
 	}
-    
 }

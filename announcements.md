@@ -1,20 +1,11 @@
-# Capitalism 9.0 announcements 4/1/2018 5:20:12 PM 
+# Capitalism 9.0 announcements 4/2/2018 9:47:56 AM 
 
-## 4/1/2018 5:20:07 PM 
+## 4/2/2018 9:48:03 AM 
 
-Prototype help windows (now using html)
-New executable
-
-## 3/24/2018 10:01:00 PM 
-
-Fixed bug with Expanded Reproduction
-Fixed restart
-Watershed version
-Load, edit and save functional.
-Saved projects run
-Benchmark projects not yet re-tested fully
-User Guide is quite far behind, though still useful.
-New Executable.
+Help panels now in place.
+Content to be developed in parallel with the user guide.
+New executable (.exe file)
+Benchmark projects will be re-tested as the documentation proceeds
 
 ## consolidated prior announcements
 

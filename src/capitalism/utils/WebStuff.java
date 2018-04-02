@@ -40,7 +40,7 @@ public class WebStuff {
 		// Get file from local folder
 		File file = new File(fileName);
 		InputStream fis;
-		String result=null;
+		String result = null;
 		try {
 			fis = new FileInputStream(file);
 		} catch (FileNotFoundException e) {
@@ -48,10 +48,10 @@ public class WebStuff {
 			e.printStackTrace();
 			return null;
 		}
-//		ClassLoader classLoader = WebStuff.class.getClassLoader();
-//		InputStream inStream = classLoader.getResource(fileName);
+		// ClassLoader classLoader = WebStuff.class.getClassLoader();
+		// InputStream inStream = classLoader.getResource(fileName);
 		try {
-			result=inputStreamToString(fis);
+			result = inputStreamToString(fis);
 		} catch (Exception e1) {
 			logger.debug("inStream call failed because {}", e1.getMessage());
 			result = null;
@@ -63,40 +63,46 @@ public class WebStuff {
 			e.printStackTrace();
 		}
 		return result;
-// code below fails when app is run from jar
-//		StringBuilder result = new StringBuilder("");
-//		URL pathURL = null;
-//		pathURL = classLoader.getResource(fileName);
-//		if (pathURL == null) {
-//			Dialogues.alert(logger, "Help File Name missing. This is a programme error. Please contact the developer");
-//			logger.debug("Help File Missing");
-//			return "<p>Programme Error; please contact developer</p>";
-//		}
-//		String pathName = pathURL.getFile();
-//		logger.debug("pathURL is {}", pathURL.getFile());
-//		;
-//		File file = new File(pathName);
-//
-//		try (Scanner scanner = new Scanner(file)) {
-//
-//			while (scanner.hasNextLine()) {
-//				String line = scanner.nextLine();
-//				result.append(line).append("\n");
-//			}
-//
-//			scanner.close();
-//
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-//
-//		return result.toString();
+		// code below fails when app is run from jar
+		// StringBuilder result = new StringBuilder("");
+		// URL pathURL = null;
+		// pathURL = classLoader.getResource(fileName);
+		// if (pathURL == null) {
+		// Dialogues.alert(logger, "Help File Name missing. This is a programme error. Please contact the developer");
+		// logger.debug("Help File Missing");
+		// return "<p>Programme Error; please contact developer</p>";
+		// }
+		// String pathName = pathURL.getFile();
+		// logger.debug("pathURL is {}", pathURL.getFile());
+		// ;
+		// File file = new File(pathName);
+		//
+		// try (Scanner scanner = new Scanner(file)) {
+		//
+		// while (scanner.hasNextLine()) {
+		// String line = scanner.nextLine();
+		// result.append(line).append("\n");
+		// }
+		//
+		// scanner.close();
+		//
+		// } catch (IOException e) {
+		// e.printStackTrace();
+		// }
+		//
+		// return result.toString();
 
 	}
 
 	/**
+	 * Reads a stream into a String in what is claimed to be the fastest way
 	 * see https://stackoverflow.com/questions/309424/read-convert-an-inputstream-to-a-string
 	 * 
+	 * @param inputStream
+	 *            the stream to be read
+	 * @return the result, as a String containing the contents of the stream
+	 * @throws IOException
+	 *             if anything goes wrong
 	 */
 
 	public static String inputStreamToString(InputStream inputStream) throws IOException {
@@ -108,6 +114,8 @@ public class WebStuff {
 			}
 
 			return result.toString(Charset.defaultCharset());
+		} catch (Exception e) {
+			throw new IOException("Could not read the input Stream");
 		}
 	}
 }

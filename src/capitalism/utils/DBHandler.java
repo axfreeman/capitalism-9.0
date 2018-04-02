@@ -43,6 +43,33 @@ public class DBHandler {
 	private static final Logger logger = LogManager.getLogger(DBHandler.class);
 	private static Connection conn;
 
+	/**
+	 * a list of all the help files to be exported to the user help directory
+	 */
+	private static String helpFiles[] = {
+			"commodityHelp.html",
+			"industryHelp.html",
+			"socialClassHelp.html",
+			"start.png",
+			"unhelp.png",
+			"edit.png",
+			"help.png",
+			"littlePlus.png",
+	};
+
+	/**
+	 * a list of all the data files to be exported to the user data directory
+	 */
+	private static String dataFiles[] = {
+			"industries.csv",
+			"socialClasses.csv",
+			"projects.csv",
+			"stocks.csv",
+			"timeStamps.csv",
+			"commodities.csv",
+			"CreateRawTables.sql"
+	};
+
 	public DBHandler() {
 	}
 
@@ -117,9 +144,8 @@ public class DBHandler {
 	}
 
 	/**
-	 * copy a file from the .jar file into the user file system. The base directory for these files in the user system is {@code Utilities.getUserBasePath()}
-	 * and is
-	 * set there statically
+	 * copy a file from the .jar file into the user file system. The base directory for these files in the user system is 
+	 * {@code Utilities.getUserBasePath()} and is set there statically
 	 * 
 	 * for example {@code copyDataFilesToUserDirectory("/data","commodities.csv")} copies the file called {@code usecommodities.csv} to the location
 	 * {@code Documents/Capsim/data/commodities.csv}, because the user base is initialised in {@code Utilities} to be {@code Documents/Capsim}
@@ -155,45 +181,41 @@ public class DBHandler {
 	 */
 	public static boolean exportDataFiles() {
 		try {
-			copyFileToUserDirectory(Capitalism.getUserBasePath(), "data/", "industries.csv");
-			copyFileToUserDirectory(Capitalism.getUserBasePath(), "data/", "socialClasses.csv");
-			copyFileToUserDirectory(Capitalism.getUserBasePath(), "data/", "projects.csv");
-			copyFileToUserDirectory(Capitalism.getUserBasePath(), "data/", "stocks.csv");
-			copyFileToUserDirectory(Capitalism.getUserBasePath(), "data/", "timeStamps.csv");
-			copyFileToUserDirectory(Capitalism.getUserBasePath(), "data/", "commodities.csv");
-			copyFileToUserDirectory(Capitalism.getUserBasePath(), "data/", "CreateRawTables.sql");
+			for (String file:dataFiles) {
+				copyFileToUserDirectory(Capitalism.getUserBasePath(), "data/", file);
+			}
 			return true;
 		} catch (RuntimeException e) {
-			logger.error("Could not copy files to the user directory because {}", e.getMessage());
+			logger.debug("Error copying data files:%s", e.getMessage());
 			return false;
 		}
 	}
+
 	/**
 	 * Export the help files and images to the user directory
+	 * 
 	 * @return false if fail
 	 */
-	
-	
 	public static boolean ExportHelpFiles() {
 		try {
-			copyFileToUserDirectory(Capitalism.getUserBasePath(), "help/", "commodityHelp.html");
-			copyFileToUserDirectory(Capitalism.getUserBasePath(), "help/", "industryHelp.html");
-			copyFileToUserDirectory(Capitalism.getUserBasePath(), "help/", "socialClassHelp.html");
-			copyFileToUserDirectory(Capitalism.getUserBasePath(), "help/", "start.png");
-			copyFileToUserDirectory(Capitalism.getUserBasePath(), "help/", "unhelp.png");
+			for (String file : helpFiles) {
+				copyFileToUserDirectory(Capitalism.getUserBasePath(), "help/", file);
+			}
 			return true;
 		} catch (RuntimeException e) {
-			logger.error("Could not copy help files to the user directory because {}", e.getMessage());
+			logger.debug("Error copying help files:%s", e.getMessage());
 			return false;
 		}
 	}
 
 	/**
 	 * export the data files to the user directory and open them
+	 * 
 	 * @return true if it worked, false otherwise
 	 */
 	public static boolean initialiseDataBaseAndStart() {
-		if (!exportDataFiles()) return false;
+		if (!exportDataFiles())
+			return false;
 		return openDatabase();
 	}
 
@@ -205,10 +227,10 @@ public class DBHandler {
 	 */
 	public static void saveCSVDataBase(File saveDirectory) {
 		String[] standardFiles = { "timeStamps", "projects", "commodities", "stocks", "socialClasses", "industries" };
-
 		String baseDirectoryURL;
 		try {
-			if (saveDirectory==null) return;
+			if (saveDirectory == null)
+				return;
 			baseDirectoryURL = saveDirectory.getCanonicalPath().replace('\\', '/');
 		} catch (IOException e) {
 			Dialogues.alert(logger, "Failed to create a meaningful name for the save directory");
@@ -255,4 +277,3 @@ public class DBHandler {
 		}
 	}
 }
-

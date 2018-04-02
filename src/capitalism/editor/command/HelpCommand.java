@@ -31,9 +31,31 @@ public class HelpCommand implements DisplayCommand {
 	@Override public void execute(ImageButton caller) {
 		caller.switchStates();
 		if (caller.getState()) {
-			Editor.getCommodityBox().showHelp();
-		}else {
-			Editor.getCommodityBox().hideHelp();
+			switch (Editor.selectedTab()) {
+			case COMMODITY:
+				Editor.getCommodityBox().showHelp();
+				break;
+			case INDUSTRY:
+				Editor.getIndustryBox().showHelp();
+				break;
+			case SOCIALCLASS:
+				Editor.getSocialClassBox().showHelp();
+				break;
+			default:
+			}
+		} else {
+			switch (Editor.selectedTab()) {
+			case COMMODITY:
+				Editor.getCommodityBox().hideHelp();
+				break;
+			case INDUSTRY:
+				Editor.getIndustryBox().hideHelp();
+				break;
+			case SOCIALCLASS:
+				Editor.getSocialClassBox().hideHelp();
+				break;
+			default:
+			}
 		}
 	}
 }

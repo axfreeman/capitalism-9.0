@@ -84,8 +84,8 @@ public class EditorControlBar extends HBox {
 			"unhelp.png",
 			"help.png",
 			new HelpCommand(),
-			"Display the help window",
-			"Close the help window"
+			"Display the help panel",
+			"Close the help panel"
 			);
 	EventHandler<ActionEvent> btnSaveHandler = new EventHandler<ActionEvent>() {
 		@Override public void handle(ActionEvent t) {

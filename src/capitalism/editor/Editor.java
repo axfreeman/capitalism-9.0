@@ -116,9 +116,9 @@ public class Editor extends VBox {
 	public Editor() {
 		buildDialogues();
 		// box for the commodity table
-		commodityBox = new EditorBox(commodityTable, commodityDialogueBox,"commodityHelp.html",Explanations.commodityText);
-		industryBox = new EditorBox(industryTable, industryDialogueBox,"industryHelp.html",Explanations.industryText);
-		socialClassBox = new EditorBox(socialClassTable, socialClassDialogueBox,"socialClassHelp.html",Explanations.socialClassText);
+		commodityBox = new EditorBox(commodityTable, commodityDialogueBox,"commodityHelp.html");
+		industryBox = new EditorBox(industryTable, industryDialogueBox,"industryHelp.html");
+		socialClassBox = new EditorBox(socialClassTable, socialClassDialogueBox,"socialClassHelp.html");
 		
 		// the tabbed pane
 		tabPane = new TabPane();
