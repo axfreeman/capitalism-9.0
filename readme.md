@@ -159,9 +159,7 @@ This may seem like overkill, but it's way less complicated than anything else an
 
 ## legal and license stuff
 
-The app, documentation, and code (in other words, everything on this site) is copyright. It is free for you to use and distribute but you must acknowledge it, and you can't make money from it.
-
-(well, you can, but I will probably sue you)
+The app, documentation, and code (in other words, everything on this site) is copyright. It is free for you to use and distribute but you must acknowledge it.
 
 Here's the formal statement:
 

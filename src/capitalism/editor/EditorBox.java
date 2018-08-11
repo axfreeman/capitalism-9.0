@@ -25,11 +25,11 @@ import org.apache.logging.log4j.Logger;
 import capitalism.Capitalism;
 import capitalism.help.Browser;
 import javafx.scene.control.TableView;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 
 /**
  * This class creates and handles a box to be placed in an editor pane.
@@ -37,7 +37,9 @@ import javafx.scene.paint.Color;
 public class EditorBox extends VBox {
 	private static final Logger logger = LogManager.getLogger("EditorBox");
 
-	final Browser browser = new Browser();
+	WebView browser;
+	WebEngine webEngine;
+
 
 	/**
 	 * Create a box containing a table,a dialogueBox and a help browser.
@@ -55,13 +57,23 @@ public class EditorBox extends VBox {
 		HBox dialogueContainer = new HBox();
 		String helpUrlString = Capitalism.getUserBasePath() + "help/" + helpFileName;
 		logger.debug("Accessing help file at {}", helpUrlString);
+		
 		// leave enough room for everything we might want to put in the dialogue box.
 		dialogueContainer.setPrefHeight(10000); // weird: if we set to MAX_VALUE, it squeezes everything else out
 		VBox.setVgrow(this, Priority.ALWAYS);
+		browser = new WebView();
+		webEngine= browser.getEngine();
+		VBox browser2=new VBox();
 		browser.setPrefHeight(200);
 		browser.setMaxHeight(450);
 		browser.setPrefWidth(800);
-		browser.load("file:/" + helpUrlString);
+		browser.setStyle("-fx-background-color:RED");
+		browser2.setPrefHeight(200);
+		browser2.setMaxHeight(450);
+		browser2.setPrefWidth(800);
+		browser2.setStyle("-fx-background-color:RED");
+		
+		webEngine.load("file:/" + helpUrlString);
 		dialogueContainer.getChildren().addAll(dialogueBox, browser);
 		getChildren().addAll(table, dialogueContainer);
 	}

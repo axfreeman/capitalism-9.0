@@ -57,7 +57,6 @@ public class EditorProjectCombo extends ComboBox<Project> {
 				if (newValue != null) {
 					logger.debug("Editor choice of project {}", newValue.getDescription());
 					setPromptText(newValue.getDescription());
-					Dialogues.info("Loading Project", String.format("Project %d",newValue.getProjectID()));
 					EditorLoader.loadFromSimulation(newValue.getProjectID());
 				}
 			}

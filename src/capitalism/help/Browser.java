@@ -37,7 +37,7 @@ public class Browser extends VBox {
 //		styling is handled directly within the html files that \re loaded into the user's help directory.
 //		This has many benefits, in particular customised help files.
 //		Basically, why keep a dog and bark.
-
+		
 		browser = new WebView();
     	webEngine = browser.getEngine();
         getChildren().addAll(browser);
