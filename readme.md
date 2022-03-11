@@ -1,5 +1,7 @@
 # Capitalism 9.0
 
+# NOTE: 2 January 2022 this project is being ported to Django; current version sits in the 'Capitalism 10.5' repository.=
+
 ##  What is this?
 
 Capitalism 9.0 is an app which shows how a capitalist economy functions, provides a testbed for different theories about how this happens, and allows users to learn about it and study it.
