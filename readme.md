@@ -1,6 +1,8 @@
 # Capitalism 9.0
 
-# NOTE: 2 January 2022 this project is being ported to Django; current version sits in the 'Capitalism 10.5' repository.=
+# NOTE: 16 March 2024 this project is now ported to two projects:
+* capsim-12.4
+* capfront.05
 
 ##  What is this?
 
